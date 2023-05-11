@@ -647,7 +647,7 @@ enum PlayerSlots
     // first slot for item stored (in any way in player m_items data)
     PLAYER_SLOT_START           = 0,
     // last+1 slot for item stored (in any way in player m_items data)
-    PLAYER_SLOT_END             = 218,
+    PLAYER_SLOT_END             = 227,
     PLAYER_SLOTS_COUNT          = (PLAYER_SLOT_END - PLAYER_SLOT_START)
 };
 
@@ -750,6 +750,7 @@ enum ChildEquipmentSlots
     CHILD_EQUIPMENT_SLOT_END     = 211,
 };
 
+// slots past 214 are guessed (unused in client)
 enum EquipableSpellSlots
 {
     EQUIPABLE_SPELL_OFFENSIVE_SLOT1 = 211,
@@ -757,8 +758,17 @@ enum EquipableSpellSlots
     EQUIPABLE_SPELL_OFFENSIVE_SLOT3 = 213,
     EQUIPABLE_SPELL_OFFENSIVE_SLOT4 = 214,
     EQUIPABLE_SPELL_UTILITY_SLOT1   = 215,
-    EQUIPABLE_SPELL_DEFENSIVE_SLOT1 = 216,
-    EQUIPABLE_SPELL_MOBILITY_SLOT1  = 217
+    EQUIPABLE_SPELL_UTILITY_SLOT2   = 216,
+    EQUIPABLE_SPELL_UTILITY_SLOT3   = 217,
+    EQUIPABLE_SPELL_UTILITY_SLOT4   = 218,
+    EQUIPABLE_SPELL_DEFENSIVE_SLOT1 = 219,
+    EQUIPABLE_SPELL_DEFENSIVE_SLOT2 = 220,
+    EQUIPABLE_SPELL_DEFENSIVE_SLOT3 = 221,
+    EQUIPABLE_SPELL_DEFENSIVE_SLOT4 = 222,
+    EQUIPABLE_SPELL_WEAPON_SLOT1    = 223,
+    EQUIPABLE_SPELL_WEAPON_SLOT2    = 224,
+    EQUIPABLE_SPELL_WEAPON_SLOT3    = 225,
+    EQUIPABLE_SPELL_WEAPON_SLOT4    = 226,
 };
 
 struct ItemPosCount
@@ -1111,6 +1121,7 @@ private:
 uint32 constexpr PLAYER_MAX_HONOR_LEVEL = 500;
 uint8 constexpr PLAYER_LEVEL_MIN_HONOR = 10;
 uint32 constexpr SPELL_PVP_RULES_ENABLED = 134735;
+float constexpr MAX_AREA_SPIRIT_HEALER_RANGE = 20.0f;
 
 enum class ZonePVPTypeOverride : uint32
 {
@@ -1171,7 +1182,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void ToggleDND();
         bool isAFK() const { return HasPlayerFlag(PLAYER_FLAGS_AFK); }
         bool isDND() const { return HasPlayerFlag(PLAYER_FLAGS_DND); }
-        uint8 GetChatFlags() const;
+        uint16 GetChatFlags() const;
         std::string autoReplyMsg;
 
         int64 GetBarberShopCost(Trinity::IteratorPair<UF::ChrCustomizationChoice const*> newCustomizations) const;
@@ -1363,7 +1374,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         std::vector<Item*> GetItemListByEntry(uint32 entry, bool inBankAlso = false) const;
         Item* GetItemByPos(uint16 pos) const;
         Item* GetItemByPos(uint8 bag, uint8 slot) const;
-		Item* GetEquippedItem(EquipmentSlots slot) const; //Custom
         Item* GetUseableItemByPos(uint8 bag, uint8 slot) const;
         Bag*  GetBagByPos(uint8 slot) const;
         std::vector<Item*> GetCraftingReagentItemsToDeposit();
@@ -1532,7 +1542,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void LoadCorpse(PreparedQueryResult result);
 
         bool AddItem(uint32 itemId, uint32 count);
-		bool AddItemBonus(uint32 itemId, uint32 count, uint32 bonusId); //Custom
 
         /*********************************************************/
         /***                    GOSSIP SYSTEM                  ***/
@@ -1738,7 +1747,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendRespecWipeConfirm(ObjectGuid const& guid, uint32 cost, SpecResetType respecType) const;
         void RegenerateAll();
         void Regenerate(Powers power);
-		void SendPowerUpdate(Powers power, int32 amount);
+        void InterruptPowerRegen(Powers power);
         void RegenerateHealth();
         void setRegenTimerCount(uint32 time) {m_regenTimerCount = time;}
         void setWeaponChangeTimer(uint32 time) {m_weaponChangeTimer = time;}
@@ -1822,7 +1831,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void RemoveOverrideSpell(uint32 overridenSpellId, uint32 newSpellId);
         void LearnSpecializationSpells();
         void RemoveSpecializationSpells();
-        void SendSpellCategoryCooldowns() const;
+        void AddSpellCategoryCooldownMod(int32 spellCategoryId, int32 mod);
+        void RemoveSpellCategoryCooldownMod(int32 spellCategoryId, int32 mod);
         void SetSpellFavorite(uint32 spellId, bool favorite);
 
         void AddStoredAuraTeleportLocation(uint32 spellId);
@@ -1849,7 +1859,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetPrimarySpecialization(uint32 spec) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::CurrentSpecID), spec); }
         uint8 GetActiveTalentGroup() const { return _specializationInfo.ActiveGroup; }
         void SetActiveTalentGroup(uint8 group){ _specializationInfo.ActiveGroup = group; }
-        TalentSpecialization GetSpecializationId() const { return (TalentSpecialization)GetPrimarySpecialization(); }
         uint32 GetDefaultSpecId() const;
 
         bool ResetTalents(bool noCost = false);
@@ -2051,10 +2060,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void ApplyModDamageDoneNeg(SpellSchools school, int32 mod, bool apply) { ApplyModUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ModDamageDoneNeg, school), mod, apply); }
         void ApplyModDamageDonePercent(SpellSchools school, float pct, bool apply) { ApplyPercentModUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ModDamageDonePercent, school), pct, apply); }
         void SetModDamageDonePercent(uint8 school, float pct) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ModDamageDonePercent, school), pct); }
-        float GetModDamageDonePos(SpellSchools school) { return m_activePlayerData->ModDamageDonePos[school]; }
-        float GetModDamageDoneNeg(SpellSchools school) { return m_activePlayerData->ModDamageDoneNeg[school]; }
-        float GetModDamageDonePercent(SpellSchools school) { return m_activePlayerData->ModDamageDonePercent[school]; }
-		void ApplyRatingMod(CombatRating cr, int32 value, bool apply);
+        void ApplyRatingMod(CombatRating cr, int32 value, bool apply);
         void UpdateRating(CombatRating cr);
         void UpdateAllRatings();
         void UpdateMastery();
@@ -2106,8 +2112,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void RemoveLootRoll(LootRoll* roll);
 
         void RemovedInsignia(Player* looterPlr);
-		
-		void SendRuneforgeLegendaryCraftingOpenNpc(ObjectGuid const& guid, bool isUpgrade) const;
 
         WorldSession* GetSession() const { return m_session; }
 
@@ -2847,10 +2851,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void SetTransportServerTime(int32 transportServerTime) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::TransportServerTime), transportServerTime); }
 
-		void SetTodayHonorableKills(uint32 kills) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::TodayHonorableKills), kills); }
-        void SetYesterdayHonorableKills(uint32 kills) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::YesterdayHonorableKills), kills); }
-        void SetLifetimeHonorableKills(uint32 kills) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::LifetimeHonorableKills), kills); }
-
         bool IsInFriendlyArea() const;
         bool IsFriendlyArea(AreaTableEntry const* inArea) const;
 
@@ -2867,10 +2867,16 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         UF::UpdateField<UF::PlayerData, 0, TYPEID_PLAYER> m_playerData;
         UF::UpdateField<UF::ActivePlayerData, 0, TYPEID_ACTIVE_PLAYER> m_activePlayerData;
 
+        void SetAreaSpiritHealer(Creature* creature);
+        ObjectGuid const& GetSpiritHealerGUID() const { return _areaSpiritHealerGUID; }
+        bool CanAcceptAreaSpiritHealFrom(Unit* spiritHealer) const { return spiritHealer->GetGUID() == _areaSpiritHealerGUID; }
+        void SendAreaSpiritHealerTime(Unit* spiritHealer) const;
+        void SendAreaSpiritHealerTime(ObjectGuid const& spiritHealerGUID, int32 timeLeft) const;
+
     protected:
         // Gamemaster whisper whitelist
         GuidList WhisperList;
-        uint32 m_combatExitTime;
+        TimePoint m_regenInterruptTimestamp;
         uint32 m_regenTimerCount;
         uint32 m_foodEmoteTimerCount;
         float m_powerFraction[MAX_POWERS_PER_CLASS];
@@ -3219,6 +3225,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         std::unique_ptr<RestMgr> _restMgr;
 
         bool _usePvpItemLevels;
+        ObjectGuid _areaSpiritHealerGUID;
 };
 
 TC_GAME_API void AddItemsSetItem(Player* player, Item const* item);

@@ -283,6 +283,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
         bool HasSpline = unit->IsSplineEnabled();
         bool HasInertia = unit->m_movementInfo.inertia.has_value();
         bool HasAdvFlying = unit->m_movementInfo.advFlying.has_value();
+        bool HasStandingOnGameObjectGUID = unit->m_movementInfo.standingOnGameObjectGUID.has_value();
 
         *data << GetGUID();                                             // MoverGUID
 
@@ -305,6 +306,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
         //for (std::size_t i = 0; i < RemoveForcesIDs.size(); ++i)
         //    *data << ObjectGuid(RemoveForcesIDs);
 
+        data->WriteBit(HasStandingOnGameObjectGUID);                    // HasStandingOnGameObjectGUID
         data->WriteBit(!unit->m_movementInfo.transport.guid.IsEmpty()); // HasTransport
         data->WriteBit(HasFall);                                        // HasFall
         data->WriteBit(HasSpline);                                      // HasSpline - marks that the unit uses spline movement
@@ -315,6 +317,9 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
 
         if (!unit->m_movementInfo.transport.guid.IsEmpty())
             *data << unit->m_movementInfo.transport;
+
+        if (HasStandingOnGameObjectGUID)
+            *data << *unit->m_movementInfo.standingOnGameObjectGUID;
 
         if (HasInertia)
         {
@@ -453,7 +458,6 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
         bool hasFaceMovementDir     = areaTriggerTemplate && areaTrigger->GetTemplate()->HasFlag(AREATRIGGER_FLAG_HAS_FACE_MOVEMENT_DIR);
         bool hasFollowsTerrain      = areaTriggerTemplate && areaTrigger->GetTemplate()->HasFlag(AREATRIGGER_FLAG_HAS_FOLLOWS_TERRAIN);
         bool hasUnk1                = areaTriggerTemplate && areaTrigger->GetTemplate()->HasFlag(AREATRIGGER_FLAG_UNK1);
-        bool hasUnk2                = false;
         bool hasTargetRollPitchYaw  = areaTriggerTemplate && areaTrigger->GetTemplate()->HasFlag(AREATRIGGER_FLAG_HAS_TARGET_ROLL_PITCH_YAW);
         bool hasScaleCurveID        = createProperties && createProperties->ScaleCurveId != 0;
         bool hasMorphCurveID        = createProperties && createProperties->MorphCurveId != 0;
@@ -475,7 +479,6 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
         data->WriteBit(hasFaceMovementDir);
         data->WriteBit(hasFollowsTerrain);
         data->WriteBit(hasUnk1);
-        data->WriteBit(hasUnk2);
         data->WriteBit(hasTargetRollPitchYaw);
         data->WriteBit(hasScaleCurveID);
         data->WriteBit(hasMorphCurveID);
@@ -846,6 +849,22 @@ void MovementInfo::OutDebug()
 
     if (flags & MOVEMENTFLAG_SPLINE_ELEVATION)
         TC_LOG_DEBUG("misc", "stepUpStartElevation: {}", stepUpStartElevation);
+
+    if (inertia)
+    {
+        TC_LOG_DEBUG("misc", "inertia->id: {}", inertia->id);
+        TC_LOG_DEBUG("misc", "inertia->force: {}", inertia->force.ToString());
+        TC_LOG_DEBUG("misc", "inertia->lifetime: {}", inertia->lifetime);
+    }
+
+    if (advFlying)
+    {
+        TC_LOG_DEBUG("misc", "advFlying->forwardVelocity: {}", advFlying->forwardVelocity);
+        TC_LOG_DEBUG("misc", "advFlying->upVelocity: {}", advFlying->upVelocity);
+    }
+
+    if (standingOnGameObjectGUID)
+        TC_LOG_DEBUG("misc", "standingOnGameObjectGUID: {}", standingOnGameObjectGUID->ToString());
 }
 
 WorldObject::WorldObject(bool isWorldObject) : Object(), WorldLocation(), LastUsedScriptID(0),

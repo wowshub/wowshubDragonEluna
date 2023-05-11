@@ -246,14 +246,17 @@ ObjectMgr::~ObjectMgr()
 {
 }
 
-void ObjectMgr::AddLocaleString(std::string&& value, LocaleConstant localeConstant, std::vector<std::string>& data)
+void ObjectMgr::AddLocaleString(std::string_view value, LocaleConstant localeConstant, std::vector<std::string>& data)
 {
     if (!value.empty())
     {
         if (data.size() <= size_t(localeConstant))
+        {
+            data.reserve(TOTAL_LOCALES);
             data.resize(localeConstant + 1);
+        }
 
-        data[localeConstant] = std::move(value);
+        data[localeConstant] = value;
     }
 }
 
@@ -272,18 +275,18 @@ void ObjectMgr::LoadCreatureLocales()
     {
         Field* fields = result->Fetch();
 
-        uint32 id               = fields[0].GetUInt32();
-        std::string localeName  = fields[1].GetString();
+        uint32 id                   = fields[0].GetUInt32();
+        std::string_view localeName = fields[1].GetStringView();
 
         LocaleConstant locale = GetLocaleByName(localeName);
         if (!IsValidLocale(locale) || locale == LOCALE_enUS)
             continue;
 
         CreatureLocale& data = _creatureLocaleStore[id];
-        AddLocaleString(fields[2].GetString(), locale, data.Name);
-        AddLocaleString(fields[3].GetString(), locale, data.NameAlt);
-        AddLocaleString(fields[4].GetString(), locale, data.Title);
-        AddLocaleString(fields[5].GetString(), locale, data.TitleAlt);
+        AddLocaleString(fields[2].GetStringView(), locale, data.Name);
+        AddLocaleString(fields[3].GetStringView(), locale, data.NameAlt);
+        AddLocaleString(fields[4].GetStringView(), locale, data.Title);
+        AddLocaleString(fields[5].GetStringView(), locale, data.TitleAlt);
 
     } while (result->NextRow());
 
@@ -306,17 +309,17 @@ void ObjectMgr::LoadGossipMenuItemsLocales()
     {
         Field* fields = result->Fetch();
 
-        uint32 menuId           = fields[0].GetUInt32();
-        uint32 optionId         = fields[1].GetUInt32();
-        std::string localeName  = fields[2].GetString();
+        uint32 menuId               = fields[0].GetUInt32();
+        uint32 optionId             = fields[1].GetUInt32();
+        std::string_view localeName = fields[2].GetStringView();
 
         LocaleConstant locale   = GetLocaleByName(localeName);
         if (!IsValidLocale(locale) || locale == LOCALE_enUS)
             continue;
 
         GossipMenuItemsLocale& data = _gossipMenuItemsLocaleStore[std::make_pair(menuId, optionId)];
-        AddLocaleString(fields[3].GetString(), locale, data.OptionText);
-        AddLocaleString(fields[4].GetString(), locale, data.BoxText);
+        AddLocaleString(fields[3].GetStringView(), locale, data.OptionText);
+        AddLocaleString(fields[4].GetStringView(), locale, data.BoxText);
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded {} gossip_menu_option locale strings in {} ms", _gossipMenuItemsLocaleStore.size(), GetMSTimeDiffToNow(oldMSTime));
@@ -337,15 +340,15 @@ void ObjectMgr::LoadPointOfInterestLocales()
     {
         Field* fields = result->Fetch();
 
-        uint32 id               = fields[0].GetUInt32();
-        std::string localeName  = fields[1].GetString();
+        uint32 id                   = fields[0].GetUInt32();
+        std::string_view localeName = fields[1].GetStringView();
 
         LocaleConstant locale = GetLocaleByName(localeName);
         if (!IsValidLocale(locale) || locale == LOCALE_enUS)
             continue;
 
         PointOfInterestLocale& data = _pointOfInterestLocaleStore[id];
-        AddLocaleString(fields[2].GetString(), locale, data.Name);
+        AddLocaleString(fields[2].GetStringView(), locale, data.Name);
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded {} points_of_interest locale strings in {} ms", uint32(_pointOfInterestLocaleStore.size()), GetMSTimeDiffToNow(oldMSTime));
@@ -2283,7 +2286,7 @@ void ObjectMgr::LoadTempSummons()
     TC_LOG_INFO("server.loading", ">> Loaded {} temp summons in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
-inline std::vector<Difficulty> ParseSpawnDifficulties(std::string const& difficultyString, std::string const& table, ObjectGuid::LowType spawnId, uint32 mapId,
+inline std::vector<Difficulty> ParseSpawnDifficulties(std::string_view difficultyString, std::string_view table, ObjectGuid::LowType spawnId, uint32 mapId,
     std::set<Difficulty> const& mapDifficulties)
 {
     std::vector<Difficulty> difficulties;
@@ -2368,7 +2371,7 @@ void ObjectMgr::LoadCreatures()
         data.curhealth      = fields[12].GetUInt32();
         data.curmana        = fields[13].GetUInt32();
         data.movementType   = fields[14].GetUInt8();
-        data.spawnDifficulties = ParseSpawnDifficulties(fields[15].GetString(), "creature", guid, data.mapId, spawnMasks[data.mapId]);
+        data.spawnDifficulties = ParseSpawnDifficulties(fields[15].GetStringView(), "creature", guid, data.mapId, spawnMasks[data.mapId]);
         int16 gameEvent     = fields[16].GetInt8();
         data.poolId         = fields[17].GetUInt32();
         data.npcflag        = fields[18].GetUInt64();
@@ -2756,7 +2759,7 @@ void ObjectMgr::LoadGameObjects()
         }
         data.goState       = GOState(go_state);
 
-        data.spawnDifficulties      = ParseSpawnDifficulties(fields[14].GetString(), "gameobject", guid, data.mapId, spawnMasks[data.mapId]);
+        data.spawnDifficulties      = ParseSpawnDifficulties(fields[14].GetStringView(), "gameobject", guid, data.mapId, spawnMasks[data.mapId]);
         if (data.spawnDifficulties.empty())
         {
             TC_LOG_ERROR("sql.sql", "Table `creature` has creature (GUID: {}) that is not spawned in any difficulty, skipped.", guid);
@@ -4730,8 +4733,8 @@ void ObjectMgr::LoadQuests()
         // 0        1      2      3      4      5      6
         { "QuestID, Type1, Type2, Type3, Type4, Type5, Type6",                                                                                                            "quest_reward_choice_items", "",                                  "reward choice items", &Quest::LoadRewardChoiceItems },
 
-        // 0        1        2
-        { "QuestID, SpellID, PlayerConditionID",                                                                                                                          "quest_reward_display_spell", "ORDER BY QuestID ASC, Idx ASC",    "reward display spells", &Quest::LoadRewardDisplaySpell },
+        // 0        1        2                  3
+        { "QuestID, SpellID, PlayerConditionID, Type",                                                                                                                    "quest_reward_display_spell", "ORDER BY QuestID ASC, Idx ASC",    "reward display spells", &Quest::LoadRewardDisplaySpell },
 
         // 0   1       2       3       4       5            6            7            8
         { "ID, Emote1, Emote2, Emote3, Emote4, EmoteDelay1, EmoteDelay2, EmoteDelay3, EmoteDelay4",                                                                       "quest_details",        "",                                       "details",             &Quest::LoadQuestDetails       },
@@ -5547,22 +5550,22 @@ void ObjectMgr::LoadQuestTemplateLocale()
         Field* fields = result->Fetch();
 
         uint32 id                       = fields[0].GetUInt32();
-        std::string localeName          = fields[1].GetString();
+        std::string_view localeName     = fields[1].GetStringView();
 
         LocaleConstant locale = GetLocaleByName(localeName);
         if (!IsValidLocale(locale) || locale == LOCALE_enUS)
             continue;
 
         QuestTemplateLocale& data = _questTemplateLocaleStore[id];
-        AddLocaleString(fields[2].GetString(), locale, data.LogTitle);
-        AddLocaleString(fields[3].GetString(), locale, data.LogDescription);
-        AddLocaleString(fields[4].GetString(), locale, data.QuestDescription);
-        AddLocaleString(fields[5].GetString(), locale, data.AreaDescription);
-        AddLocaleString(fields[6].GetString(), locale, data.PortraitGiverText);
-        AddLocaleString(fields[7].GetString(), locale, data.PortraitGiverName);
-        AddLocaleString(fields[8].GetString(), locale, data.PortraitTurnInText);
-        AddLocaleString(fields[9].GetString(), locale, data.PortraitTurnInName);
-        AddLocaleString(fields[10].GetString(), locale, data.QuestCompletionLog);
+        AddLocaleString(fields[2].GetStringView(), locale, data.LogTitle);
+        AddLocaleString(fields[3].GetStringView(), locale, data.LogDescription);
+        AddLocaleString(fields[4].GetStringView(), locale, data.QuestDescription);
+        AddLocaleString(fields[5].GetStringView(), locale, data.AreaDescription);
+        AddLocaleString(fields[6].GetStringView(), locale, data.PortraitGiverText);
+        AddLocaleString(fields[7].GetStringView(), locale, data.PortraitGiverName);
+        AddLocaleString(fields[8].GetStringView(), locale, data.PortraitTurnInText);
+        AddLocaleString(fields[9].GetStringView(), locale, data.PortraitTurnInName);
+        AddLocaleString(fields[10].GetStringView(), locale, data.QuestCompletionLog);
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded {} Quest Template locale strings in {} ms", _questTemplateLocaleStore.size(), GetMSTimeDiffToNow(oldMSTime));
@@ -5583,14 +5586,14 @@ void ObjectMgr::LoadQuestObjectivesLocale()
         Field* fields = result->Fetch();
 
         uint32 id                           = fields[0].GetUInt32();
-        std::string localeName              = fields[1].GetString();
+        std::string_view localeName         = fields[1].GetStringView();
 
         LocaleConstant locale = GetLocaleByName(localeName);
         if (!IsValidLocale(locale) || locale == LOCALE_enUS)
             continue;
 
         QuestObjectivesLocale& data = _questObjectivesLocaleStore[id];
-        AddLocaleString(fields[2].GetString(), locale, data.Description);
+        AddLocaleString(fields[2].GetStringView(), locale, data.Description);
     }
     while (result->NextRow());
 
@@ -5636,14 +5639,14 @@ void ObjectMgr::LoadQuestGreetingLocales()
                 continue;
         }
 
-        std::string localeName = fields[2].GetString();
+        std::string_view localeName = fields[2].GetStringView();
 
         LocaleConstant locale = GetLocaleByName(localeName);
         if (!IsValidLocale(locale) || locale == LOCALE_enUS)
             continue;
 
         QuestGreetingLocale& data = _questGreetingLocaleStore[type][id];
-        AddLocaleString(fields[3].GetString(), locale, data.Greeting);
+        AddLocaleString(fields[3].GetStringView(), locale, data.Greeting);
         ++count;
     }
     while (result->NextRow());
@@ -5666,14 +5669,14 @@ void ObjectMgr::LoadQuestOfferRewardLocale()
         Field* fields = result->Fetch();
 
         uint32 id = fields[0].GetUInt32();
-        std::string localeName = fields[1].GetString();
+        std::string_view localeName = fields[1].GetStringView();
 
         LocaleConstant locale = GetLocaleByName(localeName);
         if (!IsValidLocale(locale) || locale == LOCALE_enUS)
             continue;
 
         QuestOfferRewardLocale& data = _questOfferRewardLocaleStore[id];
-        AddLocaleString(fields[2].GetString(), locale, data.RewardText);
+        AddLocaleString(fields[2].GetStringView(), locale, data.RewardText);
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded {} Quest Offer Reward locale strings in {} ms", _questOfferRewardLocaleStore.size(), GetMSTimeDiffToNow(oldMSTime));
@@ -5694,14 +5697,14 @@ void ObjectMgr::LoadQuestRequestItemsLocale()
         Field* fields = result->Fetch();
 
         uint32 id = fields[0].GetUInt32();
-        std::string localeName = fields[1].GetString();
+        std::string_view localeName = fields[1].GetStringView();
 
         LocaleConstant locale = GetLocaleByName(localeName);
         if (!IsValidLocale(locale) || locale == LOCALE_enUS)
             continue;
 
         QuestRequestItemsLocale& data = _questRequestItemsLocaleStore[id];
-        AddLocaleString(fields[2].GetString(), locale, data.CompletionText);
+        AddLocaleString(fields[2].GetStringView(), locale, data.CompletionText);
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded {} Quest Request Items locale strings in {} ms", _questRequestItemsLocaleStore.size(), GetMSTimeDiffToNow(oldMSTime));
@@ -6333,14 +6336,14 @@ void ObjectMgr::LoadPageTextLocales()
         Field* fields = result->Fetch();
 
         uint32 id                   = fields[0].GetUInt32();
-        std::string localeName      = fields[1].GetString();
+        std::string_view localeName = fields[1].GetStringView();
 
         LocaleConstant locale = GetLocaleByName(localeName);
         if (!IsValidLocale(locale) || locale == LOCALE_enUS)
             continue;
 
         PageTextLocale& data = _pageTextLocaleStore[id];
-        AddLocaleString(fields[2].GetString(), locale, data.Text);
+        AddLocaleString(fields[2].GetStringView(), locale, data.Text);
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded {} PageText locale strings in {} ms", uint32(_pageTextLocaleStore.size()), GetMSTimeDiffToNow(oldMSTime));
@@ -7719,16 +7722,16 @@ void ObjectMgr::LoadGameObjectLocales()
         Field* fields = result->Fetch();
 
         uint32 id                   = fields[0].GetUInt32();
-        std::string localeName      = fields[1].GetString();
+        std::string_view localeName = fields[1].GetStringView();
 
         LocaleConstant locale = GetLocaleByName(localeName);
         if (!IsValidLocale(locale) || locale == LOCALE_enUS)
             continue;
 
         GameObjectLocale& data = _gameObjectLocaleStore[id];
-        AddLocaleString(fields[2].GetString(), locale, data.Name);
-        AddLocaleString(fields[3].GetString(), locale, data.CastBarCaption);
-        AddLocaleString(fields[4].GetString(), locale, data.Unk1);
+        AddLocaleString(fields[2].GetStringView(), locale, data.Name);
+        AddLocaleString(fields[3].GetStringView(), locale, data.CastBarCaption);
+        AddLocaleString(fields[4].GetStringView(), locale, data.Unk1);
 
     } while (result->NextRow());
 
@@ -9105,7 +9108,7 @@ bool ObjectMgr::LoadTrinityStrings()
         data.Content.resize(DEFAULT_LOCALE + 1);
 
         for (int8 i = OLD_TOTAL_LOCALES - 1; i >= 0; --i)
-            AddLocaleString(fields[i + 1].GetString(), LocaleConstant(i), data.Content);
+            AddLocaleString(fields[i + 1].GetStringView(), LocaleConstant(i), data.Content);
     }
     while (result->NextRow());
 
@@ -9725,7 +9728,7 @@ void ObjectMgr::LoadTrainers()
             Field* fields = trainersResult->Fetch();
             uint32 trainerId = fields[0].GetUInt32();
             Trainer::Type trainerType = Trainer::Type(fields[1].GetUInt8());
-            std::string greeting = fields[2].GetString();
+            std::string_view greeting = fields[2].GetStringView();
             std::vector<Trainer::Spell> spells;
             auto spellsItr = spellsByTrainer.find(trainerId);
             if (spellsItr != spellsByTrainer.end())
@@ -9734,7 +9737,7 @@ void ObjectMgr::LoadTrainers()
                 spellsByTrainer.erase(spellsItr);
             }
 
-            _trainers.emplace(std::piecewise_construct, std::forward_as_tuple(trainerId), std::forward_as_tuple(trainerId, trainerType, std::move(greeting), std::move(spells)));
+            _trainers.emplace(std::piecewise_construct, std::forward_as_tuple(trainerId), std::forward_as_tuple(trainerId, trainerType, greeting, std::move(spells)));
 
         } while (trainersResult->NextRow());
     }
@@ -11073,62 +11076,6 @@ void ObjectMgr::LoadRaceAndClassExpansionRequirements()
         TC_LOG_INFO("server.loading", ">> Loaded 0 class expansion requirements. DB table `class_expansion_requirement` is empty.");
 }
 
-void ObjectMgr::LoadRealmNames()
-{
-    uint32 oldMSTime = getMSTime();
-    _realmNameStore.clear();
-
-    //                                               0   1
-    QueryResult result = LoginDatabase.Query("SELECT id, name FROM `realmlist`");
-
-    if (!result)
-    {
-        TC_LOG_INFO("server.loading", ">> Loaded 0 realm names. DB table `realmlist` is empty.");
-        return;
-    }
-
-    uint32 count = 0;
-    do
-    {
-        Field* fields = result->Fetch();
-
-        uint32 realmId = fields[0].GetUInt32();
-        std::string realmName = fields[1].GetString();
-
-        _realmNameStore[realmId] = realmName;
-
-        ++count;
-    }
-    while (result->NextRow());
-    TC_LOG_INFO("server.loading", ">> Loaded {} realm names in {} ms.", count, GetMSTimeDiffToNow(oldMSTime));
-}
-
-std::string ObjectMgr::GetRealmName(uint32 realmId) const
-{
-    RealmNameContainer::const_iterator iter = _realmNameStore.find(realmId);
-    return iter != _realmNameStore.end() ? iter->second : "";
-}
-
-std::string ObjectMgr::GetNormalizedRealmName(uint32 realmId) const
-{
-    std::string name = GetRealmName(realmId);
-    name.erase(std::remove_if(name.begin(), name.end(), ::isspace), name.end());
-    return name;
-}
-
-bool ObjectMgr::GetRealmName(uint32 realmId, std::string& name, std::string& normalizedName) const
-{
-    RealmNameContainer::const_iterator itr = _realmNameStore.find(realmId);
-    if (itr != _realmNameStore.end())
-    {
-        name = itr->second;
-        normalizedName = itr->second;
-        normalizedName.erase(std::remove_if(normalizedName.begin(), normalizedName.end(), ::isspace), normalizedName.end());
-        return true;
-    }
-    return false;
-}
-
 ClassAvailability const* ObjectMgr::GetClassExpansionRequirement(uint8 raceId, uint8 classId) const
 {
     auto raceItr = std::find_if(_classExpansionRequirementStore.begin(), _classExpansionRequirementStore.end(), [raceId](RaceClassAvailability const& raceClass)
@@ -11731,8 +11678,8 @@ void ObjectMgr::LoadPlayerChoicesLocale()
         {
             Field* fields = result->Fetch();
 
-            uint32 choiceId         = fields[0].GetUInt32();
-            std::string localeName  = fields[1].GetString();
+            uint32 choiceId             = fields[0].GetUInt32();
+            std::string_view localeName = fields[1].GetStringView();
 
             if (!GetPlayerChoice(choiceId))
             {
@@ -11745,7 +11692,7 @@ void ObjectMgr::LoadPlayerChoicesLocale()
                 continue;
 
             PlayerChoiceLocale& data = _playerChoiceLocales[choiceId];
-            AddLocaleString(fields[2].GetString(), locale, data.Question);
+            AddLocaleString(fields[2].GetStringView(), locale, data.Question);
         } while (result->NextRow());
 
         TC_LOG_INFO("server.loading", ">> Loaded {} Player Choice locale strings in {} ms", _playerChoiceLocales.size(), GetMSTimeDiffToNow(oldMSTime));
@@ -11761,9 +11708,9 @@ void ObjectMgr::LoadPlayerChoicesLocale()
         {
             Field* fields = result->Fetch();
 
-            int32 choiceId         = fields[0].GetInt32();
-            int32 responseId       = fields[1].GetInt32();
-            std::string localeName = fields[2].GetString();
+            int32 choiceId              = fields[0].GetInt32();
+            int32 responseId            = fields[1].GetInt32();
+            std::string_view localeName = fields[2].GetStringView();
 
             auto itr = _playerChoiceLocales.find(choiceId);
             if (itr == _playerChoiceLocales.end())
@@ -11786,12 +11733,12 @@ void ObjectMgr::LoadPlayerChoicesLocale()
                 continue;
 
             PlayerChoiceResponseLocale& data = itr->second.Responses[responseId];
-            AddLocaleString(fields[3].GetString(), locale, data.Answer);
-            AddLocaleString(fields[4].GetString(), locale, data.Header);
-            AddLocaleString(fields[5].GetString(), locale, data.SubHeader);
-            AddLocaleString(fields[6].GetString(), locale, data.ButtonTooltip);
-            AddLocaleString(fields[7].GetString(), locale, data.Description);
-            AddLocaleString(fields[8].GetString(), locale, data.Confirmation);
+            AddLocaleString(fields[3].GetStringView(), locale, data.Answer);
+            AddLocaleString(fields[4].GetStringView(), locale, data.Header);
+            AddLocaleString(fields[5].GetStringView(), locale, data.SubHeader);
+            AddLocaleString(fields[6].GetStringView(), locale, data.ButtonTooltip);
+            AddLocaleString(fields[7].GetStringView(), locale, data.Description);
+            AddLocaleString(fields[8].GetStringView(), locale, data.Confirmation);
             ++count;
         } while (result->NextRow());
 
