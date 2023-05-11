@@ -1374,6 +1374,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         std::vector<Item*> GetItemListByEntry(uint32 entry, bool inBankAlso = false) const;
         Item* GetItemByPos(uint16 pos) const;
         Item* GetItemByPos(uint8 bag, uint8 slot) const;
+		Item* GetEquippedItem(EquipmentSlots slot) const; //Custom
         Item* GetUseableItemByPos(uint8 bag, uint8 slot) const;
         Bag*  GetBagByPos(uint8 slot) const;
         std::vector<Item*> GetCraftingReagentItemsToDeposit();
@@ -1542,6 +1543,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void LoadCorpse(PreparedQueryResult result);
 
         bool AddItem(uint32 itemId, uint32 count);
+		bool AddItemBonus(uint32 itemId, uint32 count, uint32 bonusId); //Custom
 
         /*********************************************************/
         /***                    GOSSIP SYSTEM                  ***/
@@ -2060,6 +2062,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void ApplyModDamageDoneNeg(SpellSchools school, int32 mod, bool apply) { ApplyModUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ModDamageDoneNeg, school), mod, apply); }
         void ApplyModDamageDonePercent(SpellSchools school, float pct, bool apply) { ApplyPercentModUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ModDamageDonePercent, school), pct, apply); }
         void SetModDamageDonePercent(uint8 school, float pct) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ModDamageDonePercent, school), pct); }
+        float GetModDamageDonePos(SpellSchools school) { return m_activePlayerData->ModDamageDonePos[school]; }
+        float GetModDamageDoneNeg(SpellSchools school) { return m_activePlayerData->ModDamageDoneNeg[school]; }
+        float GetModDamageDonePercent(SpellSchools school) { return m_activePlayerData->ModDamageDonePercent[school]; }
         void ApplyRatingMod(CombatRating cr, int32 value, bool apply);
         void UpdateRating(CombatRating cr);
         void UpdateAllRatings();

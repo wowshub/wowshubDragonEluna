@@ -9479,8 +9479,10 @@ void Unit::RemoveFromWorld()
         {
             if (owner->m_Controlled.find(this) != owner->m_Controlled.end())
             {
-                TC_LOG_FATAL("entities.unit", "Unit {} is in controlled list of {} when removed from world", GetEntry(), owner->GetEntry());
-                ABORT();
+                // Due to unaura changes replaced this panic with a removal.
+                owner->m_Controlled.erase(this);
+                //TC_LOG_FATAL("entities.unit", "Unit {} is in controlled list of {} when removed from world", GetEntry(), owner->GetEntry());
+                //ABORT();
             }
         }
 

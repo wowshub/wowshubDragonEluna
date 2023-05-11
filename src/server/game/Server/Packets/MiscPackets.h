@@ -1003,18 +1003,6 @@ namespace WorldPackets
             ObjectGuid ObjGUID;
             bool IsUpgrade;
         };
-
-        class UIItemInteractionOpenNpc  final : public ServerPacket
-        {
-        public:
-            UIItemInteractionOpenNpc() : ServerPacket(SMSG_UI_ITEM_INTERACTION_NPC, 23) {}
-
-            WorldPacket const* Write() override;
-
-            ObjectGuid ObjectGUID;
-            int32 UiUnk1 = 0;
-            int32 UiUnk2 = 0;
-        };
     }
 }
 

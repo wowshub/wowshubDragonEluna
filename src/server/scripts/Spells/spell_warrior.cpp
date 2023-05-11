@@ -746,7 +746,7 @@ class aura_warr_ravager : public AuraScript
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (Player* player = GetTarget()->ToPlayer())
-            if (player->GetSpecializationId() == TALENT_SPEC_WARRIOR_PROTECTION)
+            if (player->GetPrimarySpecialization() == TALENT_SPEC_WARRIOR_PROTECTION)
                 player->CastSpell(player, SPELL_WARRIOR_RAVAGER_PARRY, true);
     }
 
@@ -1039,7 +1039,7 @@ public:
                 return;
             }
 
-            if (l_Player->GetSpecializationId() == TALENT_SPEC_WARRIOR_FURY)
+            if (l_Player->GetPrimarySpecialization() == TALENT_SPEC_WARRIOR_FURY)
                 SetHitDamage(GetHitDamage() * 1.2f);
         }
 

@@ -383,6 +383,7 @@ void Roleplay::CreatureDelete(Creature* creature)
 {
     creature->CombatStop();
     creature->DeleteFromDB(creature->GetSpawnId());
+    // TODO: This should already happen in DeleteFromDB, check this.
     creature->AddObjectToRemoveList();
     // Remove spawn from custom npc spawns
     for (auto it : _customNpcStore)
@@ -781,7 +782,6 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
         creatureTemplate.KillCredit[i] = 0;
 
     creatureTemplate.Name = key;
-    creatureTemplate.GossipMenuId = 0;
     creatureTemplate.HealthScalingExpansion = EXPANSION_SHADOWLANDS;
     creatureTemplate.RequiredExpansion = EXPANSION_CLASSIC;
     creatureTemplate.VignetteID = 0;
@@ -821,7 +821,6 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
     creatureTemplate.maxgold = 0;
     creatureTemplate.AIName = "";
     creatureTemplate.MovementType = 0;
-    creatureTemplate.HoverHeight = 1;
     creatureTemplate.ModHealth = 1.0f;
     creatureTemplate.ModHealthExtra = 1.0f;
     creatureTemplate.ModMana = 1.0f;

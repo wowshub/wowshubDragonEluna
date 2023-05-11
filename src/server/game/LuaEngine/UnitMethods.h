@@ -184,7 +184,7 @@ namespace LuaUnit
      */
     int IsSpiritGuide(lua_State* L, Unit* unit)
     {
-        Eluna::Push(L, unit->IsSpiritGuide());
+        Eluna::Push(L, unit->IsAreaSpiritHealer());
         return 1;
     }
 
