@@ -47,7 +47,7 @@ void Roleplay::LoadAllTables()
     LoadCreatureTemplateExtras();
     LoadCustomNpcs();
 
-    TC_LOG_INFO("server.loading", ">> Loaded Roleplay tables in %u ms", GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded Roleplay tables in {} ms", GetMSTimeDiffToNow(oldMSTime));
 }
 
 #pragma region CREATURE
@@ -704,7 +704,7 @@ void Roleplay::LoadCustomNpcs()
         ++count;
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u custom npcs in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded {} custom npcs in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)

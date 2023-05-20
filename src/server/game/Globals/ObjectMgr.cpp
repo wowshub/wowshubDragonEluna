@@ -9857,7 +9857,7 @@ uint32 ObjectMgr::LoadReferenceVendor(int32 vendor, int32 item, std::set<uint32>
             vItem.PlayerConditionId = fields[7].GetUInt32();
             vItem.IgnoreFiltering   = fields[8].GetBool();
 
-            for (std::string_view token : Trinity::Tokenize(fields[5].GetStringView(), ' ', false))
+            for (std::string_view token : Trinity::Tokenize(fields[6].GetStringView(), ' ', false))
                 if (Optional<int32> bonusListID = Trinity::StringTo<int32>(token))
                     vItem.BonusListIDs.push_back(*bonusListID);
 
@@ -9915,7 +9915,7 @@ void ObjectMgr::LoadVendors()
             vItem.PlayerConditionId = fields[8].GetUInt32();
             vItem.IgnoreFiltering   = fields[9].GetBool();
 
-            for (std::string_view token : Trinity::Tokenize(fields[6].GetStringView(), ' ', false))
+            for (std::string_view token : Trinity::Tokenize(fields[7].GetStringView(), ' ', false))
                 if (Optional<int32> bonusListID = Trinity::StringTo<int32>(token))
                     vItem.BonusListIDs.push_back(*bonusListID);
 
