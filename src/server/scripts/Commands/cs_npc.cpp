@@ -679,7 +679,7 @@ public:
             return false;
         }
 		
-		WorldDatabase.PQuery("INSERT INTO creature_addon(guid,emote) VALUES(%i,%i);", target->GetSpawnId(), emote);
+		WorldDatabase.PQuery("INSERT INTO creature_addon(guid,emote) VALUES('{}',{});", target->GetSpawnId(), emote);
 
         target->SetEmoteState(Emote(emote));
 
@@ -1432,7 +1432,7 @@ public:
         //Cot? SQL
         guidLow = target->GetSpawnId();
         std::string auraString = std::to_string(uint32(spellId));
-        QueryResult guidSql = WorldDatabase.PQuery("SELECT auras FROM creature_addon WHERE guid = %u", guidLow);
+        QueryResult guidSql = WorldDatabase.PQuery("SELECT auras FROM creature_addon WHERE guid = '{}'", guidLow);
         if (!guidSql && spellId != 0)
         {
             WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_SET_AURA);
@@ -1479,7 +1479,7 @@ public:
 
      //Cot? SQL
      guidLow = target->GetSpawnId();
-     QueryResult guidSql = WorldDatabase.PQuery("SELECT guid FROM creature_addon WHERE guid = %u", guidLow);
+     QueryResult guidSql = WorldDatabase.PQuery("SELECT guid FROM creature_addon WHERE guid = '{}'", guidLow);
      if (!guidSql)
      {
          WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_SET_MOUNT);
@@ -1517,7 +1517,7 @@ public:
 
      //Cot? SQL
      guidLow = target->GetSpawnId();
-     QueryResult guidSql = WorldDatabase.PQuery("SELECT guid FROM creature_addon WHERE guid = %u", guidLow);
+     QueryResult guidSql = WorldDatabase.PQuery("SELECT guid FROM creature_addon WHERE guid = '{}'", guidLow);
      if (!guidSql)
      {
            WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_SET_ANIMKIT);
@@ -1553,7 +1553,7 @@ public:
 
         //Cot? SQL
         guidLow = target->GetSpawnId();
-        QueryResult guidSql = WorldDatabase.PQuery("SELECT guid FROM creature_addon WHERE guid = %u", guidLow);
+        QueryResult guidSql = WorldDatabase.PQuery("SELECT guid FROM creature_addon WHERE guid = '{}'", guidLow);
         if (!guidSql)
         {
             WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_SET_ANIM);

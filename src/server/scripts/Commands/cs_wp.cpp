@@ -1122,7 +1122,7 @@ public:
 
 
         //SQL
-        QueryResult guidSql = WorldDatabase.PQuery("SELECT move_type FROM waypoint_data WHERE id = %u", wpId);
+        QueryResult guidSql = WorldDatabase.PQuery("SELECT move_type FROM waypoint_data WHERE id = '{}'", wpId);
         if (!guidSql)
         {
             WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_WP_MOVETYPE);
@@ -1190,7 +1190,7 @@ public:
         }
 
         //SQL
-        QueryResult guidSql = WorldDatabase.PQuery("SELECT delay FROM waypoint_data WHERE id = %u", wpId);
+        QueryResult guidSql = WorldDatabase.PQuery("SELECT delay FROM waypoint_data WHERE id = '{}'", wpId);
         if (!guidSql)
         {
             WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_WP_DELAY);
