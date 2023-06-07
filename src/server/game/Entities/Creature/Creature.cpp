@@ -589,7 +589,7 @@ bool Creature::InitEntry(uint32 entry, CreatureData const* data /*= nullptr*/)
     if (data && data->size > 0.0f)
         SetObjectScale(data->size);
     else
-        SetObjectScale(cinfo->scale);
+        SetObjectScale(GetNativeObjectScale());
 
     SetCanDualWield(creatureInfo->flags_extra & CREATURE_FLAG_EXTRA_USE_OFFHAND_ATTACK);
 

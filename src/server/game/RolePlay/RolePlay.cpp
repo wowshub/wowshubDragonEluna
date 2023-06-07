@@ -775,14 +775,10 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
     }
     creatureTemplate.Entry = npcCreatureTemplateId;
 
-    for (uint32 i = 0; i < MAX_CREATURE_DIFFICULTIES; ++i)
-        creatureTemplate.DifficultyEntry[i] = 0;
-
     for (uint8 i = 0; i < MAX_KILL_CREDIT; ++i)
         creatureTemplate.KillCredit[i] = 0;
 
     creatureTemplate.Name = key;
-    creatureTemplate.HealthScalingExpansion = EXPANSION_SHADOWLANDS;
     creatureTemplate.RequiredExpansion = EXPANSION_CLASSIC;
     creatureTemplate.VignetteID = 0;
     creatureTemplate.faction = 35;
@@ -804,11 +800,6 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
     creatureTemplate.family = CREATURE_FAMILY_NONE;
     creatureTemplate.trainer_class = 0;
     creatureTemplate.type = CreatureType::CREATURE_TYPE_HUMANOID;
-    creatureTemplate.type_flags = 0;
-    creatureTemplate.type_flags2 = 2;
-    creatureTemplate.lootid = 0;
-    creatureTemplate.pickpocketLootId = 0;
-    creatureTemplate.SkinLootId = 0;
 
     for (uint8 i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
         creatureTemplate.resistance[i] = 0;
@@ -817,20 +808,11 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
         creatureTemplate.spells[i] = 0;
 
     creatureTemplate.VehicleId = 0;
-    creatureTemplate.mingold = 0;
-    creatureTemplate.maxgold = 0;
     creatureTemplate.AIName = "";
     creatureTemplate.MovementType = 0;
-    creatureTemplate.ModHealth = 1.0f;
-    creatureTemplate.ModHealthExtra = 1.0f;
-    creatureTemplate.ModMana = 1.0f;
-    creatureTemplate.ModManaExtra = 1.0f;
-    creatureTemplate.ModArmor = 1.0f;
-    creatureTemplate.ModDamage = 1.0f;
     creatureTemplate.ModExperience = 1.0f;
     creatureTemplate.RacialLeader = false;
     creatureTemplate.movementId = 100;
-    creatureTemplate.CreatureDifficultyID = 204488;
     creatureTemplate.WidgetSetID = 0;
     creatureTemplate.WidgetSetUnitConditionID = 0;
     creatureTemplate.RegenHealth = 1;
@@ -843,7 +825,7 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
 
     if (sWorld->getBoolConfig(CONFIG_CACHE_DATA_QUERIES)) {
         for (uint8 loc = LOCALE_enUS; loc < TOTAL_LOCALES; ++loc)
-            creatureTemplate.QueryData[loc] = creatureTemplate.BuildQueryData(static_cast<LocaleConstant>(loc));
+            creatureTemplate.QueryData[loc] = creatureTemplate.BuildQueryData(static_cast<LocaleConstant>(loc), DIFFICULTY_NONE);
     }
 
     sObjectMgr->CheckCreatureTemplate(&creatureTemplate);
@@ -1019,7 +1001,6 @@ void Roleplay::SetCustomNpcTameable(std::string const& key, bool tameable)
     CreatureTemplate cTemplate = sObjectMgr->_creatureTemplateStore[templateId];
     cTemplate.type = tameable ? 1 : 0;
     cTemplate.family = tameable ? CREATURE_FAMILY_GORILLA : CREATURE_FAMILY_NONE;
-    cTemplate.type_flags = tameable ? 1 : 0;
 
     sObjectMgr->_creatureTemplateStore[cTemplate.Entry] = cTemplate;
     SaveNpcCreatureTemplateToDb(cTemplate);
@@ -1176,7 +1157,7 @@ void Roleplay::SaveNpcCreatureTemplateToDb(CreatureTemplate cTemplate)
         }
         else
         {
-            WorldPacket response = cTemplate.BuildQueryData(iter->second->GetSessionDbLocaleIndex());
+            WorldPacket response = cTemplate.BuildQueryData(iter->second->GetSessionDbLocaleIndex(), DIFFICULTY_NONE);
             iter->second->SendPacket(&response);
         }
     }
