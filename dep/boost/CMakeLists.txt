@@ -14,7 +14,6 @@ if (POLICY CMP0074)
 endif()
 
 if(WIN32)
-  set(BOOST_DEBUG ON)
   if(DEFINED ENV{BOOST_ROOT})
     set(BOOST_ROOT $ENV{BOOST_ROOT})
   endif()
@@ -23,6 +22,8 @@ if(WIN32)
   set(Boost_USE_MULTITHREADED      ON)
   set(Boost_USE_STATIC_RUNTIME     OFF)
 endif()
+
+set(Boost_NO_WARN_NEW_VERSIONS ON)
 
 include (CheckCXXSourceCompiles)
 
