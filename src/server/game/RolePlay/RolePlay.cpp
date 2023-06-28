@@ -796,7 +796,6 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
     creatureTemplate.unit_flags = 0;
     creatureTemplate.unit_flags2 = 0;
     creatureTemplate.unit_flags3 = 0;
-    creatureTemplate.dynamicflags = 0;
     creatureTemplate.family = CREATURE_FAMILY_NONE;
     creatureTemplate.trainer_class = 0;
     creatureTemplate.type = CreatureType::CREATURE_TYPE_HUMANOID;

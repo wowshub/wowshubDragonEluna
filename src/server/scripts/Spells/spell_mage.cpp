@@ -1657,7 +1657,7 @@ public:
     {
         at_mage_meteor_timerAI(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
 
-        void OnCreate() override
+        void OnCreate(Spell const* /*creatingSpell*/) override
         {
             Unit* caster = at->GetCaster();
             if (!caster)
