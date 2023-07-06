@@ -26,7 +26,6 @@
 #include "GridNotifiersImpl.h"
 #include "Group.h"
 #include "Guild.h"
-#include "GuildMgr.h"
 #include "Item.h"
 #include "Log.h"
 #include "Loot.h"
@@ -82,7 +81,6 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPackets::Loot::LootItem& p
     AELootResult aeResult;
     AELootResult* aeResultPtr = player->GetAELootView().size() > 1 ? &aeResult : nullptr;
 
-    /// @todo Implement looting by LootObject guid
     for (WorldPackets::Loot::LootRequest const& req : packet.Loot)
     {
         Loot* loot = Trinity::Containers::MapGetValuePtr(player->GetAELootView(), req.Object);
@@ -205,7 +203,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& /*packet
         sEluna->OnLootMoney(player, loot->gold);
 #endif
 
-        loot->gold = 0;
+        loot->LootMoney();
 
         // Delete the money loot record from the DB
         if (loot->loot_type == LOOT_ITEM)
