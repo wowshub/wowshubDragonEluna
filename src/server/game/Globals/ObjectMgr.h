@@ -1101,6 +1101,9 @@ class TC_GAME_API ObjectMgr
 
         typedef std::unordered_map<uint64, AccessRequirement> AccessRequirementContainer;
 
+        typedef std::set<uint32> EventContainer;
+        typedef std::unordered_map<uint32, uint32> EventScriptContainer;
+
         typedef std::unordered_map<uint32, RepRewardRate > RepRewardRateContainer;
         typedef std::unordered_map<uint32, ReputationOnKillEntry> RepOnKillContainer;
         typedef std::unordered_map<uint32, RepSpilloverTemplate> RepSpilloverTemplateContainer;
@@ -1225,6 +1228,11 @@ class TC_GAME_API ObjectMgr
             return _gameObjectForQuestStore.find(entry) != _gameObjectForQuestStore.end();
         }
 
+        bool IsValidEvent(uint32 eventId) const
+        {
+            return _eventStore.find(eventId) != _eventStore.end();
+        }
+
         NpcText const* GetNpcText(uint32 textID) const;
         QuestGreeting const* GetQuestGreeting(TypeID type, uint32 id) const;
         QuestGreetingLocale const* GetQuestGreetingLocale(TypeID type, uint32 id) const;
@@ -1245,6 +1253,7 @@ class TC_GAME_API ObjectMgr
         AreaTriggerStruct const* GetMapEntranceTrigger(uint32 Map) const;
 
         uint32 GetAreaTriggerScriptId(uint32 trigger_id) const;
+        uint32 GetEventScriptId(uint32 eventId) const;
         SpellScriptsBounds GetSpellScriptsBounds(uint32 spellId);
 
         RepRewardRate const* GetRepRewardRate(uint32 factionId) const
@@ -1822,6 +1831,9 @@ class TC_GAME_API ObjectMgr
         DungeonEncounterContainer _dungeonEncounterStore;
         std::unordered_map<uint32, WorldSafeLocsEntry> _worldSafeLocs;
 
+        EventContainer _eventStore;
+        EventScriptContainer _eventScriptStore;
+
         RepRewardRateContainer _repRewardRateStore;
         RepOnKillContainer _repOnKillStore;
         RepSpilloverTemplateContainer _repSpilloverTemplateStore;
@@ -1878,6 +1890,7 @@ class TC_GAME_API ObjectMgr
         std::unordered_map<uint32, std::vector<TerrainSwapInfo*>> _terrainSwapInfoByMap;
 
     private:
+        void LoadEventSet();
         void LoadScripts(ScriptsType type);
         void LoadQuestRelationsHelper(QuestRelations& map, QuestRelationsReverse* reverseMap, std::string const& table);
         QuestRelationResult GetQuestRelationsFrom(QuestRelations const& map, uint32 key, bool onlyActive) const { return { map.equal_range(key), onlyActive }; }
