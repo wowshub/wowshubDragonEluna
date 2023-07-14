@@ -46,7 +46,6 @@
 #include "CombatPackets.h"
 #include "Common.h"
 #include "ConditionMgr.h"
-#include "Config.h"
 #include "Containers.h"
 #include "CreatureAI.h"
 #include "DB2Stores.h"
@@ -131,9 +130,6 @@
 #include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
-#ifdef ELUNA
-#include "LuaEngine.h"
-#endif
 #include "WorldStateMgr.h"
 #include "WorldStatePackets.h"
 #include <G3D/g3dmath.h>
@@ -687,11 +683,8 @@ int32 Player::getMaxTimer(MirrorTimerType timer) const
 {
     switch (timer)
     {
-        if (sConfigMgr->GetBoolDefault("fatigue.enabled", true)) // If "fatigue.enabled" is enabled
-        {
-    case FATIGUE_TIMER:
-        return MINUTE * IN_MILLISECONDS;
-        }
+        case FATIGUE_TIMER:
+            return MINUTE * IN_MILLISECONDS;
         case BREATH_TIMER:
         {
             if (!IsAlive() || HasAuraType(SPELL_AURA_WATER_BREATHING) || GetSession()->GetSecurity() >= AccountTypes(sWorld->getIntConfig(CONFIG_DISABLE_BREATHING)))
@@ -773,9 +766,6 @@ void Player::HandleDrowning(uint32 time_diff)
     }
 
     // In dark water
-	if (sConfigMgr->GetBoolDefault("fatigue.enabled", true)) // If "fatigue.enabled" is enabled
-	{
-	
     if (m_MirrorTimerFlags & UNDERWATER_INDARKWATER)
     {
         // Fatigue timer not activated - activate it
@@ -812,7 +802,6 @@ void Player::HandleDrowning(uint32 time_diff)
         else if (m_MirrorTimerFlagsLast & UNDERWATER_INDARKWATER)
             SendMirrorTimer(FATIGUE_TIMER, DarkWaterTime, m_MirrorTimer[FATIGUE_TIMER], 10);
     }
-	}
 
     if (m_MirrorTimerFlags & (UNDERWATER_INLAVA /*| UNDERWATER_INSLIME*/) && !(_lastLiquid && _lastLiquid->SpellID))
     {
@@ -4449,10 +4438,6 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
 
     // recast lost by death auras of any items held in the inventory
     CastAllObtainSpells();
-
-#ifdef ELUNA
-    sEluna->OnResurrect(this);
-#endif
 
     if (!applySickness)
         return;
@@ -9506,12 +9491,6 @@ Item* Player::GetItemByPos(uint8 bag, uint8 slot) const
     return nullptr;
 }
 
-//Need for custom script
-Item* Player::GetEquippedItem(EquipmentSlots slot) const
-{
-    return GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
-}
-
 //Does additional check for disarmed weapons
 Item* Player::GetUseableItemByPos(uint8 bag, uint8 slot) const
 {
@@ -11404,12 +11383,6 @@ InventoryResult Player::CanUseItem(ItemTemplate const* proto, bool skipRequiredL
         if (artifact->ChrSpecializationID != GetPrimarySpecialization())
             return EQUIP_ERR_CANT_USE_ITEM;
 
-#ifdef ELUNA
-    InventoryResult eres = sEluna->OnCanUseItem(this, proto->GetId());
-    if (eres != EQUIP_ERR_OK)
-        return eres;
-#endif
-
     return EQUIP_ERR_OK;
 }
 
@@ -11521,8 +11494,6 @@ Item* Player::StoreNewItem(ItemPosCountVec const& pos, uint32 itemId, bool updat
 
         if (item->GetTemplate()->GetInventoryType() != INVTYPE_NON_EQUIP)
             UpdateAverageItemLevelTotal();
-		
-		item->CheckArtifactRelicSlotUnlock(this);
     }
 
     return item;
@@ -11771,10 +11742,6 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
 
         ApplyEquipCooldown(pItem2);
 
-#ifdef ELUNA
-        sEluna->OnEquip(this, pItem2, bag, slot);
-#endif
-
         return pItem2;
     }
 
@@ -11786,10 +11753,6 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
     UpdateCriteria(CriteriaType::EquipItemInSlot, slot, pItem->GetEntry());
 
     UpdateAverageItemLevelEquipped();
-
-#ifdef ELUNA
-    sEluna->OnEquip(this, pItem, bag, slot);
-#endif
 
     return pItem;
 }
@@ -11916,10 +11879,6 @@ void Player::QuickEquipItem(uint16 pos, Item* pItem)
 
         UpdateCriteria(CriteriaType::EquipItem, pItem->GetEntry());
         UpdateCriteria(CriteriaType::EquipItemInSlot, slot, pItem->GetEntry());
-		
-#ifdef ELUNA
-        sEluna->OnEquip(this, pItem, (pos >> 8), slot);
-#endif
     }
 }
 
@@ -14174,7 +14133,8 @@ void Player::OnGossipSelect(WorldObject* source, int32 gossipOptionId, uint32 me
             SendRespecWipeConfirm(guid, sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST) ? 0 : GetNextResetTalentsCost(), SPEC_RESET_TALENTS);
             break;
         case GossipOptionNpc::Stablemaster:
-            GetSession()->SendStablePet(guid);
+            SetStableMaster(guid);
+            handled = false;
             break;
         case GossipOptionNpc::PetSpecializationMaster:
             PlayerTalkClass->SendCloseGossip();
@@ -14721,9 +14681,6 @@ void Player::AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver)
     {
         case TYPEID_UNIT:
             PlayerTalkClass->ClearMenus();
-#ifdef ELUNA
-            sEluna->OnQuestAccept(this, questGiver->ToCreature(), quest);
-#endif
             questGiver->ToCreature()->AI()->OnQuestAccept(this, quest);
             break;
         case TYPEID_ITEM:
@@ -14758,9 +14715,6 @@ void Player::AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver)
         }
         case TYPEID_GAMEOBJECT:
             PlayerTalkClass->ClearMenus();
-#ifdef ELUNA
-            sEluna->OnQuestAccept(this, questGiver->ToGameObject(), quest);
-#endif
             questGiver->ToGameObject()->AI()->OnQuestAccept(this, quest);
             break;
         default:
@@ -14938,7 +14892,7 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
     }
 
     SetQuestSlotEndTime(log_slot, endTime);
-    SetQuestSlotAcceptTime(log_slot, GameTime::GetGameTime());
+    questStatusData.AcceptTime = GameTime::GetGameTime();
 
     m_QuestStatusSave[quest_id] = QUEST_DEFAULT_SAVE_TYPE;
 
@@ -16144,10 +16098,6 @@ QuestGiverStatus Player::GetQuestDialogStatus(Object const* questgiver) const
     {
         case TYPEID_GAMEOBJECT:
         {
-#ifdef ELUNA
-            sEluna->GetDialogStatus(this, questgiver->ToGameObject());
-#endif
-			
             if (GameObjectAI* ai = questgiver->ToGameObject()->AI())
                 if (Optional<QuestGiverStatus> questStatus = ai->GetDialogStatus(this))
                     return *questStatus;
@@ -16157,10 +16107,6 @@ QuestGiverStatus Player::GetQuestDialogStatus(Object const* questgiver) const
         }
         case TYPEID_UNIT:
         {
-#ifdef ELUNA
-            sEluna->GetDialogStatus(this, questgiver->ToCreature());
-#endif
-			
             if (CreatureAI* ai = questgiver->ToCreature()->AI())
                 if (Optional<QuestGiverStatus> questStatus = ai->GetDialogStatus(this))
                     return *questStatus;
@@ -16186,7 +16132,9 @@ QuestGiverStatus Player::GetQuestDialogStatus(Object const* questgiver) const
         switch (GetQuestStatus(questId))
         {
             case QUEST_STATUS_COMPLETE:
-                if (quest->GetQuestTag() == QuestTagType::CovenantCalling)
+                if (quest->IsImportant())
+                    result |= quest->HasFlag(QUEST_FLAGS_HIDE_REWARD_POI) ? QuestGiverStatus::ImportantQuestRewardCompleteNoPOI : QuestGiverStatus::ImportantQuestRewardCompletePOI;
+                else if (quest->GetQuestTag() == QuestTagType::CovenantCalling)
                     result |= quest->HasFlag(QUEST_FLAGS_HIDE_REWARD_POI) ? QuestGiverStatus::CovenantCallingRewardCompleteNoPOI : QuestGiverStatus::CovenantCallingRewardCompletePOI;
                 else if (quest->HasFlagEx(QUEST_FLAGS_EX_LEGENDARY))
                     result |= quest->HasFlag(QUEST_FLAGS_HIDE_REWARD_POI) ? QuestGiverStatus::LegendaryRewardCompleteNoPOI : QuestGiverStatus::LegendaryRewardCompletePOI;
@@ -16194,8 +16142,12 @@ QuestGiverStatus Player::GetQuestDialogStatus(Object const* questgiver) const
                     result |= quest->HasFlag(QUEST_FLAGS_HIDE_REWARD_POI) ? QuestGiverStatus::RewardCompleteNoPOI : QuestGiverStatus::RewardCompletePOI;
                 break;
             case QUEST_STATUS_INCOMPLETE:
-                if (quest->GetQuestTag() == QuestTagType::CovenantCalling)
+                if (quest->IsImportant())
+                    result |= QuestGiverStatus::ImportantQuestReward;
+                else if (quest->GetQuestTag() == QuestTagType::CovenantCalling)
                     result |= QuestGiverStatus::CovenantCallingReward;
+                else if (quest->HasFlagEx(QUEST_FLAGS_EX_LEGENDARY))
+                    result |= QuestGiverStatus::LegendaryReward;
                 else
                     result |= QuestGiverStatus::Reward;
                 break;
@@ -16227,22 +16179,20 @@ QuestGiverStatus Player::GetQuestDialogStatus(Object const* questgiver) const
             {
                 if (SatisfyQuestLevel(quest, false))
                 {
-                    if (GetLevel() <= (GetQuestLevel(quest) + sWorld->getIntConfig(CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF)))
-                    {
-                        if (quest->GetQuestTag() == QuestTagType::CovenantCalling)
-                            result |= QuestGiverStatus::CovenantCallingQuest;
-                        else if (quest->HasFlagEx(QUEST_FLAGS_EX_LEGENDARY))
-                            result |= QuestGiverStatus::LegendaryQuest;
-                        else if (quest->IsDaily())
-                            result |= QuestGiverStatus::DailyQuest;
-                        else
-                            result |= QuestGiverStatus::Quest;
-                    }
+                    bool isTrivial = GetLevel() <= (GetQuestLevel(quest) + sWorld->getIntConfig(CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF));
+                    if (quest->IsImportant())
+                        result |= isTrivial ? QuestGiverStatus::TrivialImportantQuest : QuestGiverStatus::ImportantQuest;
+                    else if (quest->GetQuestTag() == QuestTagType::CovenantCalling)
+                        result |= isTrivial ? QuestGiverStatus::TrivialCovenantCallingQuest : QuestGiverStatus::CovenantCallingQuest;
+                    else if (quest->HasFlagEx(QUEST_FLAGS_EX_LEGENDARY))
+                        result |= isTrivial ? QuestGiverStatus::TrivialLegendaryQuest : QuestGiverStatus::LegendaryQuest;
                     else if (quest->IsDaily())
-                        result |= QuestGiverStatus::TrivialDailyQuest;
+                        result |= isTrivial ? QuestGiverStatus::TrivialDailyQuest : QuestGiverStatus::DailyQuest;
                     else
-                        result |= QuestGiverStatus::Trivial;
+                        result |= isTrivial ? QuestGiverStatus::Trivial : QuestGiverStatus::Quest;
                 }
+                else if (quest->HasFlagEx(QUEST_FLAGS_EX_LEGENDARY))
+                    result |= QuestGiverStatus::FutureLegendaryQuest;
                 else
                     result |= QuestGiverStatus::Future;
             }
@@ -16319,14 +16269,9 @@ uint16 Player::GetQuestSlotCounter(uint16 slot, uint8 counter) const
     return 0;
 }
 
-uint32 Player::GetQuestSlotEndTime(uint16 slot) const
+int64 Player::GetQuestSlotEndTime(uint16 slot) const
 {
     return m_playerData->QuestLog[slot].EndTime;
-}
-
-uint32 Player::GetQuestSlotAcceptTime(uint16 slot) const
-{
-    return m_playerData->QuestLog[slot].AcceptTime;
 }
 
 bool Player::GetQuestSlotObjectiveFlag(uint16 slot, int8 objectiveIndex) const
@@ -16364,7 +16309,6 @@ void Player::SetQuestSlot(uint16 slot, uint32 quest_id)
     SetUpdateFieldValue(questLogField.ModifyValue(&UF::QuestLog::QuestID), quest_id);
     SetUpdateFieldValue(questLogField.ModifyValue(&UF::QuestLog::StateFlags), 0);
     SetUpdateFieldValue(questLogField.ModifyValue(&UF::QuestLog::EndTime), 0);
-    SetUpdateFieldValue(questLogField.ModifyValue(&UF::QuestLog::AcceptTime), 0);
     SetUpdateFieldValue(questLogField.ModifyValue(&UF::QuestLog::ObjectiveFlags), 0);
     for (uint32 i = 0; i < MAX_QUEST_COUNTS; ++i)
         SetUpdateFieldValue(questLogField.ModifyValue(&UF::QuestLog::ObjectiveProgress, i), 0);
@@ -16399,13 +16343,6 @@ void Player::SetQuestSlotEndTime(uint16 slot, time_t endTime)
     SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData)
         .ModifyValue(&UF::PlayerData::QuestLog, slot)
         .ModifyValue(&UF::QuestLog::EndTime), uint32(endTime));
-}
-
-void Player::SetQuestSlotAcceptTime(uint16 slot, time_t acceptTime)
-{
-    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData)
-        .ModifyValue(&UF::PlayerData::QuestLog, slot)
-        .ModifyValue(&UF::QuestLog::AcceptTime), uint32(acceptTime));
 }
 
 void Player::SetQuestSlotObjectiveFlag(uint16 slot, int8 objectiveIndex)
@@ -19085,7 +19022,7 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
 
                     SetQuestSlot(slot, quest_id);
                     SetQuestSlotEndTime(slot, endTime);
-                    SetQuestSlotAcceptTime(slot, acceptTime);
+                    questStatusData.AcceptTime = acceptTime;
 
                     if (questStatusData.Status == QUEST_STATUS_COMPLETE)
                         SetQuestSlotState(slot, QUEST_STATE_COMPLETE);
@@ -20545,7 +20482,7 @@ void Player::_SaveQuestStatus(CharacterDatabaseTransaction trans)
                 stmt->setUInt32(1, statusItr->first);
                 stmt->setUInt8(2, uint8(qData.Status));
                 stmt->setBool(3, qData.Explored);
-                stmt->setInt64(4, GetQuestSlotAcceptTime(qData.Slot));
+                stmt->setInt64(4, qData.AcceptTime);
                 stmt->setInt64(5, GetQuestSlotEndTime(qData.Slot));
                 trans->Append(stmt);
 
@@ -21130,6 +21067,19 @@ bool Player::IsLockedToDungeonEncounter(uint32 dungeonEncounterId) const
     return (instanceLock->GetData()->CompletedEncountersMask & (1u << dungeonEncounter->Bit)) != 0;
 }
 
+bool Player::IsLockedToDungeonEncounter(uint32 dungeonEncounterId, Difficulty difficulty) const
+{
+    DungeonEncounterEntry const* dungeonEncounter = sDungeonEncounterStore.LookupEntry(dungeonEncounterId);
+    if (!dungeonEncounter)
+        return false;
+
+    InstanceLock const* instanceLock = sInstanceLockMgr.FindActiveInstanceLock(GetGUID(), { uint32(dungeonEncounter->MapID), difficulty });
+    if (!instanceLock)
+        return false;
+
+    return (instanceLock->GetData()->CompletedEncountersMask & (1u << dungeonEncounter->Bit)) != 0;
+}
+
 /*********************************************************/
 /***              Update timers                        ***/
 /*********************************************************/
@@ -21298,8 +21248,24 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
 
     PetStable::PetInfo const* currentPet = m_petStable->GetCurrentPet();
     ASSERT(currentPet && currentPet->PetNumber == pet->GetCharmInfo()->GetPetNumber());
-    if (mode == PET_SAVE_NOT_IN_SLOT || mode == PET_SAVE_AS_DELETED)
+    if (mode == PET_SAVE_NOT_IN_SLOT)
         m_petStable->CurrentPetIndex.reset();
+    else if (mode == PET_SAVE_AS_DELETED)
+    {
+        if (m_activePlayerData->PetStable.has_value())
+        {
+            int32 ufIndex = m_activePlayerData->PetStable->Pets.FindIndexIf([currentPet](UF::StablePetInfo const& p) { return p.PetNumber == currentPet->PetNumber; });
+            if (ufIndex >= 0)
+                RemoveDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+                    .ModifyValue(&UF::ActivePlayerData::PetStable, 0)
+                    .ModifyValue(&UF::StableInfo::Pets), ufIndex);
+        }
+
+        if (Optional<uint32> petIndex = m_petStable->GetCurrentActivePetIndex())
+            m_petStable->ActivePets[*petIndex].reset();
+
+        m_petStable->CurrentPetIndex.reset();
+    }
     // else if (stable slots) handled in opcode handlers due to required swaps
     // else (current pet) doesnt need to do anything
 
@@ -21455,7 +21421,7 @@ void Player::TextEmote(std::string_view text, WorldObject const* /*= nullptr*/, 
 
     WorldPackets::Chat::Chat packet;
     packet.Initialize(CHAT_MSG_EMOTE, LANG_UNIVERSAL, this, this, _text);
-    SendMessageToSetInRange(packet.Write(), sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), true);
+    SendMessageToSetInRange(packet.Write(), sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), true, !GetSession()->HasPermission(rbac::RBAC_PERM_TWO_SIDE_INTERACTION_CHAT), true);
 }
 
 void Player::WhisperAddon(std::string const& text, std::string const& prefix, bool isLogged, Player* receiver)
@@ -23876,45 +23842,14 @@ void Player::SendInitialPacketsBeforeAddToMap()
     m_questObjectiveCriteriaMgr->SendAllData(this);
 
     /// SMSG_LOGIN_SETTIMESPEED
-    if (sConfigMgr->GetBoolDefault("TimeIsTime.Enable", true))
-    {
-        static float  stimeistime_speed_rate, stimeistime_hour_offset;
-        static uint32 stimeistime_time_start;
-
-        stimeistime_speed_rate = sConfigMgr->GetFloatDefault("TimeIsTime.SpeedRate", 1.0);
-        stimeistime_hour_offset = sConfigMgr->GetFloatDefault("TimeIsTime.HourOffset", 0.0);
-        stimeistime_time_start = sConfigMgr->GetIntDefault("TimeIsTime.TimeStart", 0);
-
-        static float const TimeSpeed = 0.01666667f * stimeistime_speed_rate;
-        float  hour_offset = stimeistime_hour_offset * 3600;
-        uint32 time_start = stimeistime_time_start + hour_offset;
-
-        WorldPackets::Misc::LoginSetTimeSpeed loginSetTimeSpeed;
-        loginSetTimeSpeed.NewSpeed = TimeSpeed;
-        loginSetTimeSpeed.GameTime = GameTime::GetGameTime();
-        if (time_start == 0)
-        {
-            loginSetTimeSpeed.ServerTime = GameTime::GetGameTime();
-        }
-        else if (time_start != 0)
-        {
-            loginSetTimeSpeed.ServerTime = time_start;
-        }
-        loginSetTimeSpeed.GameTimeHolidayOffset = 0; /// @todo
-        loginSetTimeSpeed.ServerTimeHolidayOffset = 0; /// @todo
-        SendDirectMessage(loginSetTimeSpeed.Write());
-    }
-    else
-    {
-        static float const TimeSpeed = 0.01666667f;
-        WorldPackets::Misc::LoginSetTimeSpeed loginSetTimeSpeed;
-        loginSetTimeSpeed.NewSpeed = TimeSpeed;
-        loginSetTimeSpeed.GameTime = GameTime::GetGameTime();
-        loginSetTimeSpeed.ServerTime = GameTime::GetGameTime();
-        loginSetTimeSpeed.GameTimeHolidayOffset = 0; /// @todo
-        loginSetTimeSpeed.ServerTimeHolidayOffset = 0; /// @todo
-        SendDirectMessage(loginSetTimeSpeed.Write());
-    }
+    static float const TimeSpeed = 0.01666667f;
+    WorldPackets::Misc::LoginSetTimeSpeed loginSetTimeSpeed;
+    loginSetTimeSpeed.NewSpeed = TimeSpeed;
+    loginSetTimeSpeed.GameTime = GameTime::GetGameTime();
+    loginSetTimeSpeed.ServerTime = GameTime::GetGameTime();
+    loginSetTimeSpeed.GameTimeHolidayOffset = 0; /// @todo
+    loginSetTimeSpeed.ServerTimeHolidayOffset = 0; /// @todo
+    SendDirectMessage(loginSetTimeSpeed.Write());
 
     /// SMSG_WORLD_SERVER_INFO
     WorldPackets::Misc::WorldServerInfo worldServerInfo;
@@ -26051,10 +25986,6 @@ void Player::StoreLootItem(ObjectGuid lootWorldObjectGuid, uint8 lootSlot, Loot*
         if (loot->loot_type == LOOT_ITEM)
             sLootItemStorage->RemoveStoredLootItemForContainer(lootWorldObjectGuid.GetCounter(), item->itemid, item->count, item->LootListId);
 
-#ifdef ELUNA
-        sEluna->OnLootItem(this, newitem, item->count, this->GetLootGUID());
-#endif
-
         ApplyItemLootedSpell(newitem, true);
     }
     else
@@ -26455,10 +26386,6 @@ TalentLearnResult Player::LearnTalent(uint32 talentId, int32* spellOnCooldown)
         return TALENT_FAILED_UNKNOWN;
 
     TC_LOG_DEBUG("misc", "Player::LearnTalent: TalentID: {} Spell: {} Group: {}\n", talentId, spellid, GetActiveTalentGroup());
-
-#ifdef ELUNA
-    sEluna->OnLearnTalents(this, talentId, spellid);
-#endif
 
     return TALENT_LEARN_OK;
 }
@@ -28135,27 +28062,194 @@ PetStable& Player::GetOrInitPetStable()
     return *m_petStable;
 }
 
-// For custom spawn item with bonus id
-bool Player::AddItemBonus(uint32 itemId, uint32 count, uint32 bonusId)
+void Player::AddPetToUpdateFields(PetStable::PetInfo const& pet, PetSaveMode slot, PetStableFlags flags)
 {
-    std::vector<int32> bonusListIDs;
-    uint32 noSpaceForCount = 0;
-    ItemPosCountVec dest;
-    InventoryResult msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, count, &noSpaceForCount);
-    if (msg != EQUIP_ERR_OK)
-        count -= noSpaceForCount;
+    auto ufStable = m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::PetStable, 0);
+    auto ufPet = AddDynamicUpdateFieldValue(ufStable.ModifyValue(&UF::StableInfo::Pets));
+    ufPet.ModifyValue(&UF::StablePetInfo::PetSlot).SetValue(slot);
+    ufPet.ModifyValue(&UF::StablePetInfo::PetNumber).SetValue(pet.PetNumber);
+    ufPet.ModifyValue(&UF::StablePetInfo::CreatureID).SetValue(pet.CreatureId);
+    ufPet.ModifyValue(&UF::StablePetInfo::DisplayID).SetValue(pet.DisplayId);
+    ufPet.ModifyValue(&UF::StablePetInfo::ExperienceLevel).SetValue(pet.Level);
+    ufPet.ModifyValue(&UF::StablePetInfo::PetFlags).SetValue(flags);
+    ufPet.ModifyValue(&UF::StablePetInfo::Name).SetValue(pet.Name);
+}
 
-    bonusListIDs.push_back(bonusId);
+void Player::SetPetSlot(uint32 petNumber, PetSaveMode dstPetSlot)
+{
+    RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags::Interacting);
 
-    if (count == 0 || dest.empty())
+    WorldSession* sess = GetSession();
+    PetStable* petStable = GetPetStable();
+    if (!petStable)
     {
-        /// @todo Send to mailbox if no space
-        ChatHandler(GetSession()).PSendSysMessage("You don't have any space in your bags.");
-        return false;
+        sess->SendPetStableResult(StableResult::InternalError);
+        return;
     }
 
-    Item* item = StoreNewItem(dest, itemId, true, GenerateItemRandomBonusListId(itemId), GuidSet(), ItemContext::NONE, &bonusListIDs, true);
-    return true;
+    auto [srcPet, srcPetSlot] = Pet::GetLoadPetInfo(*petStable, 0, petNumber, {});
+    PetStable::PetInfo const* dstPet = Pet::GetLoadPetInfo(*petStable, 0, 0, dstPetSlot).first;
+
+    if (!srcPet || srcPet->Type != HUNTER_PET)
+    {
+        sess->SendPetStableResult(StableResult::InternalError);
+        return;
+    }
+
+    if (dstPet && dstPet->Type != HUNTER_PET)
+    {
+        sess->SendPetStableResult(StableResult::InternalError);
+        return;
+    }
+
+    Optional<PetStable::PetInfo>* src = nullptr;
+    Optional<PetStable::PetInfo>* dst = nullptr;
+    Optional<uint32> newActivePetIndex;
+
+    if (IsActivePetSlot(srcPetSlot) && IsActivePetSlot(dstPetSlot))
+    {
+        // active<->active: only swap ActivePets and CurrentPetIndex (do not despawn pets)
+        src = &petStable->ActivePets[srcPetSlot - PET_SAVE_FIRST_ACTIVE_SLOT];
+        dst = &petStable->ActivePets[dstPetSlot - PET_SAVE_FIRST_ACTIVE_SLOT];
+
+        if (petStable->GetCurrentActivePetIndex() == uint32_t(srcPetSlot))
+            newActivePetIndex = dstPetSlot;
+        else if (petStable->GetCurrentActivePetIndex() == uint32(dstPetSlot))
+            newActivePetIndex = srcPetSlot;
+    }
+    else if (IsStabledPetSlot(srcPetSlot) && IsStabledPetSlot(dstPetSlot))
+    {
+        // stabled<->stabled: only swap StabledPets
+        src = &petStable->StabledPets[srcPetSlot - PET_SAVE_FIRST_STABLE_SLOT];
+        dst = &petStable->StabledPets[dstPetSlot - PET_SAVE_FIRST_STABLE_SLOT];
+    }
+    else if (IsActivePetSlot(srcPetSlot) && IsStabledPetSlot(dstPetSlot))
+    {
+        // active<->stabled: swap petStable contents and despawn active pet if it is involved in swap
+        if (petStable->CurrentPetIndex == uint32(srcPetSlot))
+        {
+            Pet* oldPet = GetPet();
+            if (oldPet && !oldPet->IsAlive())
+            {
+                sess->SendPetStableResult(StableResult::InternalError);
+                return;
+            }
+
+            RemovePet(oldPet, PET_SAVE_NOT_IN_SLOT);
+        }
+
+        if (dstPet)
+        {
+            CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(dstPet->CreatureId);
+            if (!creatureInfo || !creatureInfo->IsTameable(CanTameExoticPets(), creatureInfo->GetDifficulty(DIFFICULTY_NONE)))
+            {
+                sess->SendPetStableResult(StableResult::CantControlExotic);
+                return;
+            }
+        }
+
+        src = &petStable->ActivePets[srcPetSlot - PET_SAVE_FIRST_ACTIVE_SLOT];
+        dst = &petStable->StabledPets[dstPetSlot - PET_SAVE_FIRST_STABLE_SLOT];
+    }
+    else if (IsStabledPetSlot(srcPetSlot) && IsActivePetSlot(dstPetSlot))
+    {
+        // stabled<->active: swap petStable contents and despawn active pet if it is involved in swap
+        if (petStable->CurrentPetIndex == uint32(dstPetSlot))
+        {
+            Pet* oldPet = GetPet();
+            if (oldPet && !oldPet->IsAlive())
+            {
+                sess->SendPetStableResult(StableResult::InternalError);
+                return;
+            }
+
+            RemovePet(oldPet, PET_SAVE_NOT_IN_SLOT);
+        }
+
+        CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(srcPet->CreatureId);
+        if (!creatureInfo || !creatureInfo->IsTameable(CanTameExoticPets(), creatureInfo->GetDifficulty(DIFFICULTY_NONE)))
+        {
+            sess->SendPetStableResult(StableResult::CantControlExotic);
+            return;
+        }
+
+        src = &petStable->StabledPets[srcPetSlot - PET_SAVE_FIRST_STABLE_SLOT];
+        dst = &petStable->ActivePets[dstPetSlot - PET_SAVE_FIRST_ACTIVE_SLOT];
+    }
+
+    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_PET_SLOT_BY_ID);
+    stmt->setInt16(0, dstPetSlot);
+    stmt->setUInt64(1, GetGUID().GetCounter());
+    stmt->setUInt32(2, srcPet->PetNumber);
+    trans->Append(stmt);
+
+    if (dstPet)
+    {
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_PET_SLOT_BY_ID);
+        stmt->setInt16(0, srcPetSlot);
+        stmt->setUInt64(1, GetGUID().GetCounter());
+        stmt->setUInt32(2, dstPet->PetNumber);
+        trans->Append(stmt);
+    }
+
+    GetSession()->AddTransactionCallback(CharacterDatabase.AsyncCommitTransaction(trans)).AfterComplete(
+        [sess = GetSession(), this, src, srcPetSlot = srcPetSlot, dst, dstPetSlot = dstPetSlot, newActivePetIndex](bool success)
+    {
+        if (sess->GetPlayer() == this)
+        {
+            if (success)
+            {
+                std::swap(*src, *dst);
+                if (newActivePetIndex)
+                    sess->GetPlayer()->GetPetStable()->SetCurrentActivePetIndex(*newActivePetIndex);
+
+                int32 srcPetIndex = m_activePlayerData->PetStable->Pets.FindIndexIf([srcPetSlot](UF::StablePetInfo const& p) { return p.PetSlot == uint32(srcPetSlot); });
+                int32 dstPetIndex = m_activePlayerData->PetStable->Pets.FindIndexIf([dstPetSlot](UF::StablePetInfo const& p) { return p.PetSlot == uint32(dstPetSlot); });
+
+                if (srcPetIndex >= 0)
+                {
+                    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+                        .ModifyValue(&UF::ActivePlayerData::PetStable, 0)
+                        .ModifyValue(&UF::StableInfo::Pets, srcPetIndex)
+                        .ModifyValue(&UF::StablePetInfo::PetSlot), dstPetSlot);
+                }
+
+                if (dstPetIndex >= 0)
+                {
+                    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+                        .ModifyValue(&UF::ActivePlayerData::PetStable, 0)
+                        .ModifyValue(&UF::StableInfo::Pets, dstPetIndex)
+                        .ModifyValue(&UF::StablePetInfo::PetSlot), srcPetSlot);
+                }
+
+                sess->SendPetStableResult(StableResult::StableSuccess);
+            }
+            else
+            {
+                sess->SendPetStableResult(StableResult::InternalError);
+            }
+        }
+    });
+}
+
+ObjectGuid Player::GetStableMaster() const
+{
+    if (!m_activePlayerData->PetStable.has_value())
+        return ObjectGuid::Empty;
+
+    return m_activePlayerData->PetStable->StableMaster;
+}
+
+void Player::SetStableMaster(ObjectGuid stableMaster)
+{
+    if (!m_activePlayerData->PetStable.has_value())
+        return;
+
+    SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData)
+        .ModifyValue(&UF::ActivePlayerData::PetStable, 0)
+        .ModifyValue(&UF::StableInfo::StableMaster), stableMaster);
 }
 
 void Player::SendItemRefundResult(Item* item, ItemExtendedCostEntry const* iece, uint8 error) const
@@ -28369,6 +28463,7 @@ void Player::_LoadPetStable(uint32 summonedPetNumber, PreparedQueryResult result
     // SELECT id, entry, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = ?
     if (result)
     {
+
         do
         {
             Field* fields = result->Fetch();
@@ -28390,9 +28485,19 @@ void Player::_LoadPetStable(uint32 summonedPetNumber, PreparedQueryResult result
             petInfo.Type = PetType(fields[14].GetUInt8());
             petInfo.SpecializationId = fields[15].GetUInt16();
             if (slot >= PET_SAVE_FIRST_ACTIVE_SLOT && slot < PET_SAVE_LAST_ACTIVE_SLOT)
+            {
                 m_petStable->ActivePets[slot] = std::move(petInfo);
+
+                if (m_petStable->ActivePets[slot]->Type == HUNTER_PET)
+                    AddPetToUpdateFields(*m_petStable->ActivePets[slot], slot, PET_STABLE_ACTIVE);
+            }
             else if (slot >= PET_SAVE_FIRST_STABLE_SLOT && slot < PET_SAVE_LAST_STABLE_SLOT)
+            {
                 m_petStable->StabledPets[slot - PET_SAVE_FIRST_STABLE_SLOT] = std::move(petInfo);
+
+                if (m_petStable->StabledPets[slot - PET_SAVE_FIRST_STABLE_SLOT]->Type == HUNTER_PET)
+                    AddPetToUpdateFields(*m_petStable->StabledPets[slot - PET_SAVE_FIRST_STABLE_SLOT], slot, PET_STABLE_INACTIVE);
+            }
             else if (slot == PET_SAVE_NOT_IN_SLOT)
                 m_petStable->UnslottedPets.push_back(std::move(petInfo));
 

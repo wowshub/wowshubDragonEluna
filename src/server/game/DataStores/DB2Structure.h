@@ -140,7 +140,7 @@ struct AreaTableEntry
     uint32 UwIntroSound;
     uint8 FactionGroupMask;
     float AmbientMultiplier;
-    uint8 MountFlags;
+    int32 MountFlags;
     int16 PvpCombatWorldStateID;
     uint8 WildBattlePetLevelMin;
     uint8 WildBattlePetLevelMax;
@@ -745,6 +745,7 @@ struct ChrCustomizationOptionEntry
 struct ChrCustomizationReqEntry
 {
     uint32 ID;
+    Trinity::RaceMask<int64> RaceMask;
     LocalizedString ReqSource;
     int32 Flags;
     int32 ClassMask;
@@ -891,6 +892,16 @@ struct CinematicSequencesEntry
     uint32 ID;
     uint32 SoundID;
     std::array<uint16, 8> Camera;
+};
+
+struct ConditionalChrModelEntry
+{
+    int32 ID;
+    uint32 ChrModelID;                                      // This is the PK
+    int32 ChrCustomizationReqID;
+    int32 PlayerConditionID;
+    int32 Flags;
+    int32 ChrCustomizationCategoryID;
 };
 
 struct ConditionalContentTuningEntry
@@ -1292,12 +1303,12 @@ struct CriteriaEntry
         int32 DungeonScore;
     } Asset;
     uint32 ModifierTreeId;
-    uint8 StartEvent;
+    int32 StartEvent;
     int32 StartAsset;
     uint16 StartTimer;
-    uint8 FailEvent;
+    int32 FailEvent;
     int32 FailAsset;
-    uint8 Flags;
+    int32 Flags;
     int16 EligibilityWorldStateID;
     int8 EligibilityWorldStateValue;
 
@@ -1310,7 +1321,7 @@ struct CriteriaTreeEntry
     LocalizedString Description;
     uint32 Parent;
     uint32 Amount;
-    int8 Operator;
+    int32 Operator;
     uint32 CriteriaID;
     int32 OrderIndex;
     int32 Flags;
@@ -1679,6 +1690,9 @@ struct GameObjectDisplayInfoEntry
     int16 ObjectEffectPackageID;
     float OverrideLootEffectScale;
     float OverrideNameScale;
+    int32 AlternateDisplayType;
+    int32 ClientCreatureDisplayInfoID;
+    int32 ClientItemID;
 };
 
 struct GameObjectsEntry
@@ -3637,7 +3651,7 @@ struct SpellCategoryEntry
 {
     uint32 ID;
     LocalizedString Name;
-    int8 Flags;
+    int32 Flags;
     uint8 UsesPerWeek;
     int8 MaxCharges;
     int32 ChargeRecoveryTime;
@@ -4471,7 +4485,8 @@ struct UiMapEntry
     uint8 Type;
     int32 BountySetID;
     uint32 BountyDisplayLocation;
-    int32 VisibilityPlayerConditionID;
+    int32 VisibilityPlayerConditionID2; // if not met then map is skipped when evaluating UiMapAssignment
+    int32 VisibilityPlayerConditionID;  // if not met then client checks other maps with the same AlternateUiMapGroup, not re-evaluating UiMapAssignment for them
     int8 HelpTextPosition;
     int32 BkgAtlasID;
     int32 AlternateUiMapGroup;
