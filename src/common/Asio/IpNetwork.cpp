@@ -67,7 +67,7 @@ bool IsInNetwork(boost::asio::ip::network_v6 const& network, boost::asio::ip::ad
     return endpointAsNetwork.is_subnet_of(network);
 }
 
-Optional<std::size_t> SelectAddressForClient(boost::asio::ip::address const& clientAddress, std::span<boost::asio::ip::address> const& addresses)
+Optional<std::size_t> SelectAddressForClient(boost::asio::ip::address const& clientAddress, std::span<boost::asio::ip::address const> const& addresses)
 {
     Optional<std::size_t> localIpv6Index;
     Optional<std::size_t> externalIpv6Index;
@@ -104,7 +104,6 @@ Optional<std::size_t> SelectAddressForClient(boost::asio::ip::address const& cli
             if (address.is_v4() && !externalIpv4Index)
                 externalIpv4Index = i;
         }
-
     }
 
     if (IsInLocalNetwork(clientAddress) || clientAddress.is_loopback())
