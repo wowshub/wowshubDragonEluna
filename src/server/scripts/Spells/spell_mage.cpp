@@ -1565,38 +1565,6 @@ class spell_mage_water_elemental_freeze : public SpellScript
     }
 };
 
-// Mirror Image - 55342
-class spell_mage_mirror_image_summon : public SpellScriptLoader
-{
-public:
-    spell_mage_mirror_image_summon() : SpellScriptLoader("spell_mage_mirror_image_summon") { }
-
-    class spell_mage_mirror_image_summon_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_mage_mirror_image_summon_SpellScript);
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            if (Unit* caster = GetCaster())
-            {
-                caster->CastSpell(caster, SPELL_MAGE_MIRROR_IMAGE_LEFT, true);
-                caster->CastSpell(caster, SPELL_MAGE_MIRROR_IMAGE_FRONT, true);
-                caster->CastSpell(caster, SPELL_MAGE_MIRROR_IMAGE_RIGHT, true);
-            }
-        }
-
-        void Register() override
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_mage_mirror_image_summon_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_mage_mirror_image_summon_SpellScript();
-    }
-};
-
 // Meteor - 153561
 class spell_mage_meteor : public SpellScript
 {
@@ -1858,7 +1826,6 @@ void AddSC_mage_spell_scripts()
     RegisterSpellScript(spell_mage_water_elemental_freeze);
 
     //new
-    RegisterSpellScript(spell_mage_mirror_image_summon);
     RegisterSpellScript(spell_mage_meteor);
     RegisterSpellScript(spell_mage_meteor_damage);
     new at_mage_meteor_timer();
