@@ -483,13 +483,42 @@ class spell_dru_earthwarden : public AuraScript
 
 // 339 - Entangling Roots
 // 102359 - Mass Entanglement
-class spell_dru_entangling_roots : public AuraScript
+class spell_dru_entangling_roots : public SpellScript
 {
-    PrepareAuraScript(spell_dru_entangling_roots);
+    PrepareSpellScript(spell_dru_entangling_roots);
 
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
-        return ValidateSpellInfo({ SPELL_DRUID_CURIOUS_BRAMBLEPATCH, SPELL_DRUID_ENTANGLING_ROOTS, SPELL_DRUID_MASS_ENTANGLEMENT });
+        return ValidateSpellInfo({ SPELL_DRUID_CURIOUS_BRAMBLEPATCH });
+    }
+
+    void HandleCuriousBramblepatch(WorldObject*& target)
+    {
+        if (!GetCaster()->HasAura(SPELL_DRUID_CURIOUS_BRAMBLEPATCH))
+            target = nullptr;
+    }
+
+    void HandleCuriousBramblepatchAOE(std::list<WorldObject*>& targets)
+    {
+        if (!GetCaster()->HasAura(SPELL_DRUID_CURIOUS_BRAMBLEPATCH))
+            targets.clear();
+    }
+
+    void Register() override
+    {
+        OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_dru_entangling_roots::HandleCuriousBramblepatch, EFFECT_1, TARGET_UNIT_TARGET_ENEMY);
+        if (m_scriptSpellId == SPELL_DRUID_MASS_ENTANGLEMENT)
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dru_entangling_roots::HandleCuriousBramblepatchAOE, EFFECT_1, TARGET_UNIT_DEST_AREA_ENEMY);
+    }
+};
+
+class spell_dru_entangling_roots_aura : public AuraScript
+{
+    PrepareAuraScript(spell_dru_entangling_roots_aura);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_DRUID_ENTANGLING_ROOTS, SPELL_DRUID_MASS_ENTANGLEMENT });
     }
 
     bool CheckProc(ProcEventInfo& eventInfo)
@@ -503,19 +532,9 @@ class spell_dru_entangling_roots : public AuraScript
         return true;
     }
 
-    void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
-    {
-        if (Unit* caster = GetCaster())
-        {
-            if (!caster->HasAura(SPELL_DRUID_CURIOUS_BRAMBLEPATCH))
-                PreventDefaultAction();
-        }
-    }
-
     void Register() override
     {
-        DoCheckProc += AuraCheckProcFn(spell_dru_entangling_roots::CheckProc);
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_dru_entangling_roots::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
+        DoCheckProc += AuraCheckProcFn(spell_dru_entangling_roots_aura::CheckProc);
     }
 };
 
@@ -1763,7 +1782,7 @@ void AddSC_druid_spell_scripts()
     RegisterSpellScript(spell_dru_eclipse_aura);
     RegisterSpellScript(spell_dru_eclipse_dummy);
     RegisterSpellScript(spell_dru_eclipse_ooc);
-    RegisterSpellScript(spell_dru_entangling_roots);
+    RegisterSpellAndAuraScriptPair(spell_dru_entangling_roots, spell_dru_entangling_roots_aura);
     RegisterSpellScript(spell_dru_ferocious_bite);
     RegisterSpellScript(spell_dru_forms_trinket);
     RegisterSpellScript(spell_dru_galactic_guardian);
