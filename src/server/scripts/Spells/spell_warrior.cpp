@@ -74,6 +74,8 @@ enum WarriorSpells
     SPELL_WARRIOR_RALLYING_CRY                      = 97463,
     SPELL_WARRIOR_SHIELD_BLOCK_AURA                 = 132404,
     SPELL_WARRIOR_SHIELD_CHARGE_EFFECT              = 385953,
+    SPELL_WARRIOR_SHIELD_SLAM                       = 23922,
+    SPELL_WARRIOR_SHIELD_SLAM_MARKER                = 224324,
     SPELL_WARRIOR_SHOCKWAVE                         = 46968,
     SPELL_WARRIOR_SHOCKWAVE_STUN                    = 132168,
     SPELL_WARRIOR_STOICISM                          = 70845,
@@ -111,8 +113,6 @@ enum WarriorMisc
 // 23881 - Bloodthirst
 class spell_warr_bloodthirst : public SpellScript
 {
-    PrepareSpellScript(spell_warr_bloodthirst);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_BLOODTHIRST_HEAL });
@@ -132,8 +132,6 @@ class spell_warr_bloodthirst : public SpellScript
 // 384036 - Brutal Vitality
 class spell_warr_brutal_vitality : public AuraScript
 {
-    PrepareAuraScript(spell_warr_brutal_vitality);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_IGNORE_PAIN });
@@ -168,8 +166,6 @@ private:
 // 100 - Charge
 class spell_warr_charge : public SpellScript
 {
-    PrepareSpellScript(spell_warr_charge);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo
@@ -197,8 +193,6 @@ class spell_warr_charge : public SpellScript
 // 126661 - Warrior Charge Drop Fire Periodic
 class spell_warr_charge_drop_fire_periodic : public AuraScript
 {
-    PrepareAuraScript(spell_warr_charge_drop_fire_periodic);
-
     void DropFireVisual(AuraEffect const* aurEff)
     {
         PreventDefaultAction();
@@ -223,8 +217,6 @@ class spell_warr_charge_drop_fire_periodic : public AuraScript
 // 218104 - Charge Effect
 class spell_warr_charge_effect : public SpellScript
 {
-    PrepareSpellScript(spell_warr_charge_effect);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo
@@ -254,8 +246,6 @@ class spell_warr_charge_effect : public SpellScript
 // 262161 - Warbreaker
 class spell_warr_colossus_smash : public SpellScript
 {
-    PrepareSpellScript(spell_warr_colossus_smash);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_COLOSSUS_SMASH_AURA, SPELL_WARRIOR_IN_FOR_THE_KILL, SPELL_WARRIOR_IN_FOR_THE_KILL_HASTE })
@@ -306,8 +296,6 @@ private:
 // 389306 - Critical Thinking
 class spell_warr_critical_thinking : public AuraScript
 {
-    PrepareAuraScript(spell_warr_critical_thinking);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_CRITICAL_THINKING_ENERGIZE });
@@ -326,11 +314,35 @@ class spell_warr_critical_thinking : public AuraScript
     }
 };
 
+// 236279 - Devastator
+class spell_warr_devastator : public AuraScript
+{
+    bool Validate(SpellInfo const* spellInfo) override
+    {
+        return ValidateSpellEffect({ { spellInfo->Id, EFFECT_1 } }) && ValidateSpellInfo({ SPELL_WARRIOR_SHIELD_SLAM, SPELL_WARRIOR_SHIELD_SLAM_MARKER });
+    }
+
+    void OnProc(AuraEffect const* /*aurEff*/, ProcEventInfo const& /*eventInfo*/) const
+    {
+        if (GetTarget()->GetSpellHistory()->HasCooldown(SPELL_WARRIOR_SHIELD_SLAM))
+        {
+            if (roll_chance_i(GetEffectInfo(EFFECT_1).CalcValue()))
+            {
+                GetTarget()->GetSpellHistory()->ResetCooldown(SPELL_WARRIOR_SHIELD_SLAM, true);
+                GetTarget()->CastSpell(GetTarget(), SPELL_WARRIOR_SHIELD_SLAM_MARKER, TRIGGERED_IGNORE_CAST_IN_PROGRESS);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectProc += AuraEffectProcFn(spell_warr_devastator::OnProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+    }
+};
+
 // 383103  - Fueled by Violence
 class spell_warr_fueled_by_violence : public AuraScript
 {
-    PrepareAuraScript(spell_warr_fueled_by_violence);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_FUELED_BY_VIOLENCE_HEAL });
@@ -369,8 +381,6 @@ private:
 // 6544 - Heroic leap
 class spell_warr_heroic_leap : public SpellScript
 {
-    PrepareSpellScript(spell_warr_heroic_leap);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_HEROIC_LEAP_JUMP });
@@ -425,8 +435,6 @@ class spell_warr_heroic_leap : public SpellScript
 // Heroic Leap (triggered by Heroic Leap (6544)) - 178368
 class spell_warr_heroic_leap_jump : public SpellScript
 {
-    PrepareSpellScript(spell_warr_heroic_leap_jump);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo(
@@ -455,8 +463,6 @@ class spell_warr_heroic_leap_jump : public SpellScript
 // 202168 - Impending Victory
 class spell_warr_impending_victory : public SpellScript
 {
-    PrepareSpellScript(spell_warr_impending_victory);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_IMPENDING_VICTORY_HEAL });
@@ -478,8 +484,6 @@ class spell_warr_impending_victory : public SpellScript
 // 5246 - Intimidating Shout
 class spell_warr_intimidating_shout : public SpellScript
 {
-    PrepareSpellScript(spell_warr_intimidating_shout);
-
     void FilterTargets(std::list<WorldObject*>& unitList)
     {
         unitList.remove(GetExplTargetWorldObject());
@@ -495,8 +499,6 @@ class spell_warr_intimidating_shout : public SpellScript
 // 70844 - Item - Warrior T10 Protection 4P Bonus
 class spell_warr_item_t10_prot_4p_bonus : public AuraScript
 {
-    PrepareAuraScript(spell_warr_item_t10_prot_4p_bonus);
-
     bool Validate(SpellInfo const* spellInfo) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_STOICISM })
@@ -523,8 +525,6 @@ class spell_warr_item_t10_prot_4p_bonus : public AuraScript
 // 12294 - Mortal Strike 7.1.5
 class spell_warr_mortal_strike : public SpellScript
 {
-    PrepareSpellScript(spell_warr_mortal_strike);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_MORTAL_WOUNDS });
@@ -545,8 +545,6 @@ class spell_warr_mortal_strike : public SpellScript
 // 97462 - Rallying Cry
 class spell_warr_rallying_cry : public SpellScript
 {
-    PrepareSpellScript(spell_warr_rallying_cry);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_RALLYING_CRY });
@@ -574,8 +572,6 @@ class spell_warr_rallying_cry : public SpellScript
 // 2565 - Shield Block
 class spell_warr_shield_block : public SpellScript
 {
-    PrepareSpellScript(spell_warr_shield_block);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_SHIELD_BLOCK_AURA });
@@ -595,8 +591,6 @@ class spell_warr_shield_block : public SpellScript
 // 385952 - Shield Charge
 class spell_warr_shield_charge : public SpellScript
 {
-    PrepareSpellScript(spell_warr_shield_charge);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_SHIELD_CHARGE_EFFECT });
@@ -616,8 +610,6 @@ class spell_warr_shield_charge : public SpellScript
 // 46968 - Shockwave
 class spell_warr_shockwave : public SpellScript
 {
-    PrepareSpellScript(spell_warr_shockwave);
-
     bool Validate(SpellInfo const* spellInfo) override
     {
         return !ValidateSpellInfo({ SPELL_WARRIOR_SHOCKWAVE, SPELL_WARRIOR_SHOCKWAVE_STUN })
@@ -654,8 +646,6 @@ class spell_warr_shockwave : public SpellScript
 // 107570 - Storm Bolt
     class spell_warr_storm_bolt : public SpellScript
     {
-        PrepareSpellScript(spell_warr_storm_bolt);
-
         bool Validate(SpellInfo const* /*spellInfo*/) override
         {
             return ValidateSpellInfo
@@ -678,8 +668,6 @@ class spell_warr_shockwave : public SpellScript
 // 52437 - Sudden Death
 class spell_warr_sudden_death : public AuraScript
 {
-    PrepareAuraScript(spell_warr_sudden_death);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_COLOSSUS_SMASH });
@@ -701,8 +689,6 @@ class spell_warr_sudden_death : public AuraScript
 // 12328, 18765, 35429 - Sweeping Strikes
 class spell_warr_sweeping_strikes : public AuraScript
 {
-    PrepareAuraScript(spell_warr_sweeping_strikes);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_SWEEPING_STRIKES_EXTRA_ATTACK_1, SPELL_WARRIOR_SWEEPING_STRIKES_EXTRA_ATTACK_2 });
@@ -746,8 +732,6 @@ class spell_warr_sweeping_strikes : public AuraScript
 // 215538 - Trauma
 class spell_warr_trauma : public AuraScript
 {
-    PrepareAuraScript(spell_warr_trauma);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_TRAUMA_EFFECT });
@@ -772,8 +756,6 @@ class spell_warr_trauma : public AuraScript
 // 28845 - Cheat Death
 class spell_warr_t3_prot_8p_bonus : public AuraScript
 {
-    PrepareAuraScript(spell_warr_t3_prot_8p_bonus);
-
     bool CheckProc(ProcEventInfo& eventInfo)
     {
         if (eventInfo.GetActionTarget()->HealthBelowPct(20))
@@ -796,8 +778,6 @@ class spell_warr_t3_prot_8p_bonus : public AuraScript
 // 32215 - Victorious State
 class spell_warr_victorious_state : public AuraScript
 {
-    PrepareAuraScript(spell_warr_victorious_state);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARRIOR_IMPENDING_VICTORY });
@@ -820,8 +800,6 @@ class spell_warr_victorious_state : public AuraScript
 // 34428 - Victory Rush
 class spell_warr_victory_rush : public SpellScript
 {
-    PrepareSpellScript(spell_warr_victory_rush);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo
@@ -1328,6 +1306,7 @@ void AddSC_warrior_spell_scripts()
     RegisterSpellScript(spell_warr_charge_effect);
     RegisterSpellScript(spell_warr_colossus_smash);
     RegisterSpellScript(spell_warr_critical_thinking);
+    RegisterSpellScript(spell_warr_devastator);
     RegisterSpellScript(spell_warr_fueled_by_violence);
     RegisterSpellScript(spell_warr_heroic_leap);
     RegisterSpellScript(spell_warr_heroic_leap_jump);

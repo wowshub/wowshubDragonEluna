@@ -113,8 +113,6 @@ enum Misc
 // 70656 - Advantage (T10 4P Melee Bonus)
 class spell_dk_advantage_t10_4p : public AuraScript
 {
-    PrepareAuraScript(spell_dk_advantage_t10_4p);
-
     bool CheckProc(ProcEventInfo& eventInfo)
     {
         if (Unit* caster = eventInfo.GetActor())
@@ -142,8 +140,6 @@ class spell_dk_advantage_t10_4p : public AuraScript
 // 48707 - Anti-Magic Shell
 class spell_dk_anti_magic_shell : public AuraScript
 {
-    PrepareAuraScript(spell_dk_anti_magic_shell);
-
 public:
     spell_dk_anti_magic_shell()
     {
@@ -220,8 +216,6 @@ static uint32 const ArmyTransforms[]
 /// 6.x, does this belong here or in spell_generic? where do we cast this? sniffs say this is only cast when caster has glyph of foul menagerie.
 class spell_dk_army_transform : public SpellScript
 {
-    PrepareSpellScript(spell_dk_army_transform);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_DK_GLYPH_OF_FOUL_MENAGERIE });
@@ -256,8 +250,6 @@ class spell_dk_army_transform : public SpellScript
 // 50842 - Blood Boil
 class spell_dk_blood_boil : public SpellScript
 {
-    PrepareSpellScript(spell_dk_blood_boil);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_DK_BLOOD_PLAGUE });
@@ -278,8 +270,6 @@ class spell_dk_blood_boil : public SpellScript
 /// 7.1.5
 class spell_dk_dancing_rune_weapon : public AuraScript
 {
-    PrepareAuraScript(spell_dk_dancing_rune_weapon);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         if (!sObjectMgr->GetCreatureTemplate(NPC_DK_DANCING_RUNE_WEAPON))
@@ -332,8 +322,6 @@ class spell_dk_dancing_rune_weapon : public AuraScript
 // 43265 - Death and Decay
 class spell_dk_death_and_decay : public SpellScript
 {
-    PrepareSpellScript(spell_dk_death_and_decay);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_DK_TIGHTENING_GRASP, SPELL_DK_TIGHTENING_GRASP_SLOW });
@@ -355,8 +343,6 @@ class spell_dk_death_and_decay : public SpellScript
 // 43265 - Death and Decay (Aura)
 class spell_dk_death_and_decay_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_dk_death_and_decay_AuraScript);
-
         void HandleDummyTick(AuraEffect const* aurEff)
         {
             if (Unit* caster = GetCaster())
@@ -372,8 +358,6 @@ class spell_dk_death_and_decay_AuraScript : public AuraScript
 // 47541 - Death Coil
 class spell_dk_death_coil : public SpellScript
 {
-    PrepareSpellScript(spell_dk_death_coil);
-
     bool Validate(SpellInfo const* /*spell*/) override
     {
         return ValidateSpellInfo({ SPELL_DK_DEATH_COIL_DAMAGE, SPELL_DK_UNHOLY, SPELL_DK_UNHOLY_VIGOR });
@@ -396,8 +380,6 @@ class spell_dk_death_coil : public SpellScript
 // 52751 - Death Gate
 class spell_dk_death_gate : public SpellScript
 {
-    PrepareSpellScript(spell_dk_death_gate);
-
     SpellCastResult CheckClass()
     {
         if (GetCaster()->GetClass() != CLASS_DEATH_KNIGHT)
@@ -426,8 +408,6 @@ class spell_dk_death_gate : public SpellScript
 // 49576 - Death Grip Initial
 class spell_dk_death_grip_initial : public SpellScript
 {
-    PrepareSpellScript(spell_dk_death_grip_initial);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo(
@@ -467,8 +447,6 @@ class spell_dk_death_grip_initial : public SpellScript
 // 48743 - Death Pact
 class spell_dk_death_pact : public AuraScript
 {
-    PrepareAuraScript(spell_dk_death_pact);
-
     bool Validate(SpellInfo const* spellInfo) override
     {
         return ValidateSpellEffect({ { spellInfo->Id, EFFECT_2 } });
@@ -489,8 +467,6 @@ class spell_dk_death_pact : public AuraScript
 // 49998 - Death Strike
 class spell_dk_death_strike : public SpellScript
 {
-    PrepareSpellScript(spell_dk_death_strike);
-
     bool Validate(SpellInfo const* spellInfo) override
     {
         return ValidateSpellInfo(
@@ -542,8 +518,6 @@ class spell_dk_death_strike : public SpellScript
 // 89832 - Death Strike Enabler - SPELL_DK_DEATH_STRIKE_ENABLER
 class spell_dk_death_strike_enabler : public AuraScript
 {
-    PrepareAuraScript(spell_dk_death_strike_enabler);
-
     // Amount of seconds we calculate damage over
     constexpr static uint8 LAST_SECONDS = 5;
 
@@ -585,8 +559,6 @@ private:
 // 85948 - Festering Strike
 class spell_dk_festering_strike : public SpellScript
 {
-    PrepareSpellScript(spell_dk_festering_strike);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_DK_FESTERING_WOUND });
@@ -606,8 +578,6 @@ class spell_dk_festering_strike : public SpellScript
 // 47496 - Explode, Ghoul spell for Corpse Explosion
 class spell_dk_ghoul_explode : public SpellScript
 {
-    PrepareSpellScript(spell_dk_ghoul_explode);
-
     bool Validate(SpellInfo const* spellInfo) override
     {
         return ValidateSpellInfo({ SPELL_DK_CORPSE_EXPLOSION_TRIGGERED }) && ValidateSpellEffect({ { spellInfo->Id, EFFECT_2 } });
@@ -637,8 +607,6 @@ class spell_dk_ghoul_explode : public SpellScript
 // 69961 - Glyph of Scourge Strike
 class spell_dk_glyph_of_scourge_strike_script : public SpellScript
 {
-    PrepareSpellScript(spell_dk_glyph_of_scourge_strike_script);
-
     void HandleScriptEffect(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -677,8 +645,6 @@ class spell_dk_glyph_of_scourge_strike_script : public SpellScript
 // 49184 - Howling Blast
 class spell_dk_howling_blast : public SpellScript
 {
-    PrepareSpellScript(spell_dk_howling_blast);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_DK_FROST_FEVER });
@@ -698,8 +664,6 @@ class spell_dk_howling_blast : public SpellScript
 // 206940 - Mark of Blood
 class spell_dk_mark_of_blood : public AuraScript
 {
-    PrepareAuraScript(spell_dk_mark_of_blood);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_DK_MARK_OF_BLOOD_HEAL });
@@ -721,8 +685,6 @@ class spell_dk_mark_of_blood : public AuraScript
 // 207346 - Necrosis
 class spell_dk_necrosis : public AuraScript
 {
-    PrepareAuraScript(spell_dk_necrosis);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_DK_NECROSIS_EFFECT });
@@ -743,8 +705,6 @@ class spell_dk_necrosis : public AuraScript
 // 207256 - Obliteration
 class spell_dk_obliteration : public AuraScript
 {
-    PrepareAuraScript(spell_dk_obliteration);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_DK_OBLITERATION, SPELL_DK_OBLITERATION_RUNE_ENERGIZE, SPELL_DK_KILLING_MACHINE_PROC })
@@ -771,8 +731,6 @@ class spell_dk_obliteration : public AuraScript
 /// 6.x, does this belong here or in spell_generic? apply this in creature_template_addon? sniffs say this is always cast on raise dead.
 class spell_dk_pet_geist_transform : public SpellScript
 {
-    PrepareSpellScript(spell_dk_pet_geist_transform);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_DK_GLYPH_OF_THE_GEIST });
@@ -802,8 +760,6 @@ class spell_dk_pet_geist_transform : public SpellScript
 /// 6.x, does this belong here or in spell_generic? apply this in creature_template_addon? sniffs say this is always cast on raise dead.
 class spell_dk_pet_skeleton_transform : public SpellScript
 {
-    PrepareSpellScript(spell_dk_pet_skeleton_transform);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_DK_GLYPH_OF_THE_SKELETON });
@@ -828,8 +784,6 @@ class spell_dk_pet_skeleton_transform : public SpellScript
 /// 7.1.5
 class spell_dk_pvp_4p_bonus : public AuraScript
 {
-    PrepareAuraScript(spell_dk_pvp_4p_bonus);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_DK_RUNIC_RETURN });
@@ -860,8 +814,6 @@ class spell_dk_pvp_4p_bonus : public AuraScript
 // 46584 - Raise Dead
 class spell_dk_raise_dead : public SpellScript
 {
-    PrepareSpellScript(spell_dk_raise_dead);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_DK_RAISE_DEAD_SUMMON, SPELL_DK_SLUDGE_BELCHER, SPELL_DK_SLUDGE_BELCHER_SUMMON });
@@ -885,8 +837,6 @@ class spell_dk_raise_dead : public SpellScript
 // 59057 - Rime
 class spell_dk_rime : public AuraScript
 {
-    PrepareAuraScript(spell_dk_rime);
-
     bool Validate(SpellInfo const* spellInfo) override
     {
         return ValidateSpellEffect({ { spellInfo->Id, EFFECT_1 } }) && ValidateSpellInfo({ SPELL_DK_FROST_SCYTHE });
@@ -910,8 +860,6 @@ class spell_dk_rime : public AuraScript
 // 242057 - Rune Empowered
 class spell_dk_t20_2p_rune_empowered : public AuraScript
 {
-    PrepareAuraScript(spell_dk_t20_2p_rune_empowered);
-
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_DK_PILLAR_OF_FROST, SPELL_DK_BREATH_OF_SINDRAGOSA });
@@ -956,8 +904,6 @@ class spell_dk_t20_2p_rune_empowered : public AuraScript
 // 55233 - Vampiric Blood
 class spell_dk_vampiric_blood : public AuraScript
 {
-    PrepareAuraScript(spell_dk_vampiric_blood);
-
     void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
     {
         amount = GetUnitOwner()->CountPctFromMaxHealth(amount);
