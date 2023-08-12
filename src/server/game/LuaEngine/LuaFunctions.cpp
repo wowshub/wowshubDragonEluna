@@ -443,7 +443,7 @@ ElunaRegister<Player> PlayerMethods[] =
     { "GetInGameTime", &LuaPlayer::GetInGameTime },
     { "GetComboPoints", &LuaPlayer::GetComboPoints },
     { "GetGuildName", &LuaPlayer::GetGuildName },
-    { "GetActiveSpec", &LuaPlayer::GetActiveSpec },
+    //{ "GetActiveSpec", &LuaPlayer::GetActiveSpec },
     { "GetSpecsCount", &LuaPlayer::GetSpecsCount },
     { "GetSpellCooldownDelay", &LuaPlayer::GetSpellCooldownDelay },
     { "GetGuildRank", &LuaPlayer::GetGuildRank },

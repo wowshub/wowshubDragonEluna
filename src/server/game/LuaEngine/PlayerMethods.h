@@ -666,11 +666,11 @@ namespace LuaPlayer
      *
      * @return uint32 specId
      */
-    int GetActiveSpec(lua_State* L, Player* player)
-    {
-        Eluna::Push(L, player->GetPrimarySpecialization());
-        return 1;
-    }
+    //int GetActiveSpec(lua_State* L, Player* player)
+    //{
+    //    Eluna::Push(L, player->GetPrimarySpecialization());
+    //    return 1;
+    //}
 
     /**
      * Returns the [Player]s cooldown delay by specified [Spell] ID
@@ -1012,7 +1012,7 @@ namespace LuaPlayer
      */
     int GetComboPoints(lua_State* L, Player* player)
     {
-        Eluna::Push(L, player->GetComboPoints());
+        Eluna::Push(L, player->GetPower(POWER_COMBO_POINTS));
         return 1;
     }
 
@@ -2168,7 +2168,7 @@ namespace LuaPlayer
      */
     int ClearComboPoints(lua_State* /*L*/, Player* player)
     {
-        player->ClearComboPoints();
+        player->SetPower(POWER_COMBO_POINTS, 0);;
         return 0;
     }
 
