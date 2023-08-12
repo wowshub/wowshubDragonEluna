@@ -1056,23 +1056,15 @@ private:
 // 64208 - Consumption
 class spell_gen_consumption : public SpellScript
 {
-    void HandleDamageCalc(SpellEffIndex /*effIndex*/)
+    void CalculateDamage(Unit const* /*victim*/, int32& damage, int32& /*flatMod*/, float& /*pctMod*/) const
     {
-        Creature* caster = GetCaster()->ToCreature();
-        if (!caster)
-            return;
-
-        int32 damage = 0;
-        if (SpellInfo const* createdBySpell = sSpellMgr->GetSpellInfo(caster->m_unitData->CreatedBySpell, GetCastDifficulty()))
+        if (SpellInfo const* createdBySpell = sSpellMgr->GetSpellInfo(GetCaster()->m_unitData->CreatedBySpell, GetCastDifficulty()))
             damage = createdBySpell->GetEffect(EFFECT_1).CalcValue();
-
-        if (damage)
-            SetEffectValue(damage);
     }
 
     void Register() override
     {
-        OnEffectLaunchTarget += SpellEffectFn(spell_gen_consumption::HandleDamageCalc, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        CalcDamage += SpellCalcDamageFn(spell_gen_consumption::CalculateDamage);
     }
 };
 
@@ -4792,7 +4784,7 @@ class spell_summon_battle_pet : public SpellScript
 
             Unit* caster = GetCaster();
             SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(uint32(GetEffectInfo().MiscValueB));
-            uint32 duration = uint32(GetSpellInfo()->CalcDuration(caster));
+            Milliseconds duration = Milliseconds(GetSpellInfo()->CalcDuration(caster));
             Position pos = GetHitDest()->GetPosition();
 
             if (Creature* summon = caster->GetMap()->SummonCreature(creatureId, pos, properties, duration, caster, GetSpellInfo()->Id))
