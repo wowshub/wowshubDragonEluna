@@ -1057,6 +1057,7 @@ void GameObject::Update(uint32 diff)
                         // splash bobber (bobber ready now)
                         Unit* caster = GetOwner();
                         if (caster && caster->GetTypeId() == TYPEID_PLAYER)
+                            SetGoAnimProgress(0);
                             SendCustomAnim(0);
 
                         m_lootState = GO_READY;                 // can be successfully open with some chance
