@@ -144,7 +144,7 @@ SpellCastTargets::SpellCastTargets(Unit* caster, WorldPackets::Spells::SpellCast
         else
             pos = &m_src._position;
 
-        pos->Relocate(spellCastRequest.Target.SrcLocation->Location);
+        pos->Relocate(spellCastRequest.Target.SrcLocation->Location.Pos);
         if (spellCastRequest.Target.Orientation)
             pos->SetOrientation(*spellCastRequest.Target.Orientation);
     }
@@ -158,7 +158,7 @@ SpellCastTargets::SpellCastTargets(Unit* caster, WorldPackets::Spells::SpellCast
         else
             pos = &m_dst._position;
 
-        pos->Relocate(spellCastRequest.Target.DstLocation->Location);
+        pos->Relocate(spellCastRequest.Target.DstLocation->Location.Pos);
         if (spellCastRequest.Target.Orientation)
             pos->SetOrientation(*spellCastRequest.Target.Orientation);
     }
@@ -3538,7 +3538,7 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
         {
             // stealth must be removed at cast starting (at show channel bar)
             // skip triggered spell (item equip spell casting and other not explicit character casts/item uses)
-            if (!(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS) && !m_spellInfo->HasAttribute(SPELL_ATTR2_NOT_AN_ACTION))
+            if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_IN_PROGRESS) && !m_spellInfo->HasAttribute(SPELL_ATTR2_NOT_AN_ACTION))
                 unitCaster->RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags::Action, m_spellInfo);
 
             // Do not register as current spell when requested to ignore cast in progress
@@ -3917,7 +3917,7 @@ void Spell::_cast(bool skipCheck)
     if (!(hitMask & PROC_HIT_CRITICAL))
         hitMask |= PROC_HIT_NORMAL;
 
-    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS) && !m_spellInfo->HasAttribute(SPELL_ATTR2_NOT_AN_ACTION))
+    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_IN_PROGRESS) && !m_spellInfo->HasAttribute(SPELL_ATTR2_NOT_AN_ACTION))
         m_originalCaster->RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags::ActionDelayed, m_spellInfo);
 
     if (!m_spellInfo->HasAttribute(SPELL_ATTR3_SUPPRESS_CASTER_PROCS))
@@ -4734,7 +4734,7 @@ void Spell::SendSpellStart()
     }
 
     if (castFlags & CAST_FLAG_PROJECTILE)
-        UpdateSpellCastDataAmmo(castData.Ammo);
+        castData.AmmoDisplayID = GetSpellCastDataAmmo();
 
     if (castFlags & CAST_FLAG_IMMUNITY)
     {
@@ -4883,7 +4883,7 @@ void Spell::UpdateSpellCastDataTargets(WorldPackets::Spells::SpellCastData& data
         m_channelTargetEffectMask = 0;
 }
 
-void Spell::UpdateSpellCastDataAmmo(WorldPackets::Spells::SpellAmmo& ammo)
+int32 Spell::GetSpellCastDataAmmo()
 {
     uint32 ammoInventoryType = 0;
     uint32 ammoDisplayID = 0;
@@ -4950,8 +4950,7 @@ void Spell::UpdateSpellCastDataAmmo(WorldPackets::Spells::SpellAmmo& ammo)
         }
     }
 
-    ammo.DisplayID = ammoDisplayID;
-    ammo.InventoryType = ammoInventoryType;
+    return ammoDisplayID;
 }
 
 void Spell::SendSpellExecuteLog()

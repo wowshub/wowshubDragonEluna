@@ -1313,7 +1313,7 @@ void GameObject::Update(uint32 diff)
                         m_loot->Update();
 
                         // Non-consumable chest was partially looted and restock time passed, restock all loot now
-                        if (GetGOInfo()->chest.consumable == 0 && GetGOInfo()->chest.chestRestockTime && GameTime::GetGameTime() >= m_restockTime)
+                        if (GetGOInfo()->chest.consumable == 0 && m_restockTime && GameTime::GetGameTime() >= m_restockTime)
                         {
                             m_restockTime = 0;
                             m_lootState = GO_READY;
@@ -2977,11 +2977,11 @@ void GameObject::Use(Unit* user)
                     {
                         case 179785:                        // Silverwing Flag
                         case 179786:                        // Warsong Flag
-                            if (bg->GetTypeID(true) == BATTLEGROUND_WS)
+                            if (bg->GetTypeID() == BATTLEGROUND_WS)
                                 bg->EventPlayerClickedOnFlag(player, this);
                             break;
                         case 184142:                        // Netherstorm Flag
-                            if (bg->GetTypeID(true) == BATTLEGROUND_EY)
+                            if (bg->GetTypeID() == BATTLEGROUND_EY)
                                 bg->EventPlayerClickedOnFlag(player, this);
                             break;
                     }
@@ -3022,7 +3022,11 @@ void GameObject::Use(Unit* user)
             if (!info)
                 return;
 
-            if (user->GetTypeId() != TYPEID_PLAYER)
+            Player* player = user->ToPlayer();
+            if (!player)
+                return;
+
+            if (!player->CanUseBattlegroundObject(this))
                 return;
 
             GameObjectType::NewFlag const* newFlag = dynamic_cast<GameObjectType::NewFlag const*>(m_goTypeImpl.get());
@@ -3045,11 +3049,14 @@ void GameObject::Use(Unit* user)
             if (user->GetTypeId() != TYPEID_PLAYER)
                 return;
 
+            if (!user->IsAlive())
+                return;
+
             if (GameObject* owner = GetMap()->GetGameObject(GetOwnerGUID()))
             {
                 if (owner->GetGoType() == GAMEOBJECT_TYPE_NEW_FLAG)
                 {
-                    GameObjectType::NewFlag const* newFlag = dynamic_cast<GameObjectType::NewFlag const*>(m_goTypeImpl.get());
+                    GameObjectType::NewFlag const* newFlag = dynamic_cast<GameObjectType::NewFlag const*>(owner->m_goTypeImpl.get());
                     if (!newFlag)
                         return;
 

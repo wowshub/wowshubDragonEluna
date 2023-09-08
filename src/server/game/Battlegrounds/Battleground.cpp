@@ -62,7 +62,6 @@ Battleground::Battleground(BattlegroundTemplate const* battlegroundTemplate) : _
 {
     ASSERT(_battlegroundTemplate, "Nonexisting Battleground Template passed to battleground ctor!");
 
-    m_RandomTypeID      = BATTLEGROUND_TYPE_NONE;
     m_InstanceID        = 0;
     m_Status            = STATUS_NONE;
     m_ClientInstanceID  = 0;
@@ -78,7 +77,6 @@ Battleground::Battleground(BattlegroundTemplate const* battlegroundTemplate) : _
     m_Events            = 0;
     m_StartDelayTime    = 0;
     m_IsRated           = false;
-    m_IsRandom          = false;
     m_InBGFreeSlotQueue = false;
     m_SetDeleteThis     = false;
 
@@ -103,8 +101,6 @@ Battleground::Battleground(BattlegroundTemplate const* battlegroundTemplate) : _
     m_PrematureCountDownTimer = 0;
 
     m_LastPlayerPositionBroadcast = 0;
-
-    m_HonorMode = BG_NORMAL;
 
     StartDelayTimes[BG_STARTING_EVENT_FIRST]  = BG_START_DELAY_2M;
     StartDelayTimes[BG_STARTING_EVENT_SECOND] = BG_START_DELAY_1M;
@@ -434,7 +430,7 @@ inline void Battleground::_ProcessJoin(uint32 diff)
 
         for (auto const& [guid, _] : GetPlayers())
             if (Player* player = ObjectAccessor::FindPlayer(guid))
-                player->AtStartOfEncounter();
+                player->AtStartOfEncounter(EncounterType::Battleground);
 
         // Remove preparation
         if (isArena())
@@ -695,7 +691,7 @@ void Battleground::EndBattleground(uint32 winner)
         stmt->setUInt64(0, battlegroundId);
         stmt->setUInt8(1, GetWinner());
         stmt->setUInt8(2, GetUniqueBracketId());
-        stmt->setUInt8(3, GetTypeID(true));
+        stmt->setUInt32(3, GetTypeID());
         CharacterDatabase.Execute(stmt);
     }
 
@@ -764,18 +760,22 @@ void Battleground::EndBattleground(uint32 winner)
         // Reward winner team
         if (team == winner)
         {
-            if (IsRandom() || BattlegroundMgr::IsBGWeekend(GetTypeID()))
+            if (BattlegroundPlayer const* bgPlayer = GetBattlegroundPlayerData(player->GetGUID()))
             {
-                UpdatePlayerScore(player, SCORE_BONUS_HONOR, GetBonusHonorFromKill(winnerKills));
-                if (!player->GetRandomWinner())
+                if (BattlegroundMgr::IsRandomBattleground(bgPlayer->queueTypeId.BattlemasterListId)
+                    || BattlegroundMgr::IsBGWeekend(BattlegroundTypeId(bgPlayer->queueTypeId.BattlemasterListId)))
                 {
-                    player->SetRandomWinner(true);
-                    // TODO: win honor xp
+                    UpdatePlayerScore(player, SCORE_BONUS_HONOR, GetBonusHonorFromKill(winnerKills));
+                    if (!player->GetRandomWinner())
+                    {
+                        player->SetRandomWinner(true);
+                        // TODO: win honor xp
+                    }
                 }
-            }
-            else
-            {
-                // TODO: loss honor xp
+                else
+                {
+                    // TODO: loss honor xp
+                }
             }
 
             player->UpdateCriteria(CriteriaType::WinBattleground, player->GetMapId());
@@ -791,8 +791,12 @@ void Battleground::EndBattleground(uint32 winner)
         }
         else
         {
-            if (IsRandom() || BattlegroundMgr::IsBGWeekend(GetTypeID()))
-                UpdatePlayerScore(player, SCORE_BONUS_HONOR, GetBonusHonorFromKill(loserKills));
+            if (BattlegroundPlayer const* bgPlayer = GetBattlegroundPlayerData(player->GetGUID()))
+            {
+                if (BattlegroundMgr::IsRandomBattleground(bgPlayer->queueTypeId.BattlemasterListId)
+                    || BattlegroundMgr::IsBGWeekend(BattlegroundTypeId(bgPlayer->queueTypeId.BattlemasterListId)))
+                    UpdatePlayerScore(player, SCORE_BONUS_HONOR, GetBonusHonorFromKill(loserKills));
+            }
         }
 
         player->ResetAllPowers();
@@ -830,8 +834,10 @@ void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
     bool participant = false;
     // Remove from lists/maps
     BattlegroundPlayerMap::iterator itr = m_Players.find(guid);
+    Optional<BattlegroundQueueTypeId> bgQueueTypeId;
     if (itr != m_Players.end())
     {
+        bgQueueTypeId = itr->second.queueTypeId;
         UpdatePlayersCountByTeam(team, true);               // -1 player
         m_Players.erase(itr);
         // check if the player was a participant of the match, or only entered through gm command (goname)
@@ -861,7 +867,7 @@ void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
         player->RemoveAura(SPELL_MERCENARY_SHAPESHIFT);
         player->RemovePlayerFlagEx(PLAYER_FLAGS_EX_MERCENARY_MODE);
 
-        player->AtEndOfEncounter();
+        player->AtEndOfEncounter(EncounterType::Battleground);
 
         player->RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags2::LeaveArenaOrBattleground);
 
@@ -879,8 +885,6 @@ void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
 
     RemovePlayer(player, guid, team);                           // BG subclass specific code
 
-    BattlegroundQueueTypeId bgQueueTypeId = GetQueueId();
-
     if (participant) // if the player was a match participant, remove auras, calc rating, update queue
     {
         if (player)
@@ -895,15 +899,16 @@ void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
                 player->ResummonPetTemporaryUnSummonedIfAny();
             }
 
-            if (SendPacket)
+            if (SendPacket && bgQueueTypeId)
             {
                 WorldPackets::Battleground::BattlefieldStatusNone battlefieldStatus;
-                sBattlegroundMgr->BuildBattlegroundStatusNone(&battlefieldStatus, player, player->GetBattlegroundQueueIndex(bgQueueTypeId), player->GetBattlegroundQueueJoinTime(bgQueueTypeId));
+                sBattlegroundMgr->BuildBattlegroundStatusNone(&battlefieldStatus, player, player->GetBattlegroundQueueIndex(*bgQueueTypeId), player->GetBattlegroundQueueJoinTime(*bgQueueTypeId));
                 player->SendDirectMessage(battlefieldStatus.Write());
             }
 
             // this call is important, because player, when joins to battleground, this method is not called, so it must be called when leaving bg
-            player->RemoveBattlegroundQueueId(bgQueueTypeId);
+            if (bgQueueTypeId)
+                player->RemoveBattlegroundQueueId(*bgQueueTypeId);
         }
 
         // remove from raid group if player is member
@@ -914,11 +919,11 @@ void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
         }
         DecreaseInvitedCount(team);
         //we should update battleground queue, but only if bg isn't ending
-        if (isBattleground() && GetStatus() < STATUS_WAIT_LEAVE)
+        if (isBattleground() && GetStatus() < STATUS_WAIT_LEAVE && bgQueueTypeId)
         {
             // a player has left the battleground, so there are free slots -> add to queue
             AddToBGFreeSlotQueue();
-            sBattlegroundMgr->ScheduleQueueUpdate(0, bgQueueTypeId, GetBracketId());
+            sBattlegroundMgr->ScheduleQueueUpdate(0, *bgQueueTypeId, GetBracketId());
         }
 
         // Let others know
@@ -930,7 +935,7 @@ void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
     if (player)
     {
         // Do next only if found in battleground
-        player->SetBattlegroundId(0, BATTLEGROUND_TYPE_NONE);  // We're not in BG.
+        player->SetBattlegroundId(0, BATTLEGROUND_TYPE_NONE, BATTLEGROUND_QUEUE_NONE);  // We're not in BG.
         // reset destination bg team
         player->SetBGTeam(0);
 
@@ -997,7 +1002,7 @@ void Battleground::TeleportPlayerToExploitLocation(Player* player)
         player->TeleportTo(loc->Loc);
 }
 
-void Battleground::AddPlayer(Player* player)
+void Battleground::AddPlayer(Player* player, BattlegroundQueueTypeId queueId)
 {
     // remove afk from player
     if (player->isAFK())
@@ -1010,7 +1015,8 @@ void Battleground::AddPlayer(Player* player)
     BattlegroundPlayer bp;
     bp.OfflineRemoveTime = 0;
     bp.Team = team;
-    bp.Mercenary = player->IsMercenaryForBattlegroundQueueType(GetQueueId());
+    bp.Mercenary = player->IsMercenaryForBattlegroundQueueType(queueId);
+    bp.queueTypeId = queueId;
 
     bool const isInBattleground = IsPlayerInBattleground(player->GetGUID());
     // Add to list/maps
@@ -1050,8 +1056,9 @@ void Battleground::AddPlayer(Player* player)
         pvpMatchInitialize.Duration = std::chrono::duration_cast<Seconds>(duration);
         pvpMatchInitialize.StartTime = GameTime::GetSystemTime() - duration;
     }
+
     pvpMatchInitialize.ArenaFaction = player->GetBGTeam() == HORDE ? PVP_TEAM_HORDE : PVP_TEAM_ALLIANCE;
-    pvpMatchInitialize.BattlemasterListID = GetTypeID();
+    pvpMatchInitialize.BattlemasterListID = queueId.BattlemasterListId;
     pvpMatchInitialize.Registered = false;
     pvpMatchInitialize.AffectsRating = isRated();
 
@@ -1190,7 +1197,7 @@ void Battleground::AddToBGFreeSlotQueue()
 {
     if (!m_InBGFreeSlotQueue && isBattleground())
     {
-        sBattlegroundMgr->AddToBGFreeSlotQueue(GetQueueId(), this);
+        sBattlegroundMgr->AddToBGFreeSlotQueue(this);
         m_InBGFreeSlotQueue = true;
     }
 }
@@ -1200,7 +1207,7 @@ void Battleground::RemoveFromBGFreeSlotQueue()
 {
     if (m_InBGFreeSlotQueue)
     {
-        sBattlegroundMgr->RemoveFromBGFreeSlotQueue(GetQueueId(), m_InstanceID);
+        sBattlegroundMgr->RemoveFromBGFreeSlotQueue(GetMapId(), m_InstanceID);
         m_InBGFreeSlotQueue = false;
     }
 }
@@ -1755,11 +1762,6 @@ uint32 Battleground::GetAlivePlayersCountByTeam(uint32 Team) const
     return count;
 }
 
-void Battleground::SetHoliday(bool is_holiday)
-{
-    m_HonorMode = is_holiday ? BG_HOLIDAY : BG_NORMAL;
-}
-
 int32 Battleground::GetObjectType(ObjectGuid guid)
 {
     for (uint32 i = 0; i < BgObjects.size(); ++i)
@@ -1828,9 +1830,9 @@ char const* Battleground::GetName() const
     return _battlegroundTemplate->BattlemasterEntry->Name[sWorld->GetDefaultDbcLocale()];
 }
 
-BattlegroundTypeId Battleground::GetTypeID(bool getRandom) const
+BattlegroundTypeId Battleground::GetTypeID() const
 {
-    return getRandom ? m_RandomTypeID : _battlegroundTemplate->Id;
+    return _battlegroundTemplate->Id;
 }
 
 BattlegroundBracketId Battleground::GetBracketId() const
