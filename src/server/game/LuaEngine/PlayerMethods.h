@@ -248,11 +248,11 @@ namespace LuaPlayer
      *
      * @return bool canUninviteFromGroup
      */
-    int CanUninviteFromGroup(lua_State* L, Player* player)
+    /*int CanUninviteFromGroup(lua_State* L, Player* player)
     {
         Eluna::Push(L, player->CanUninviteFromGroup() == ERR_PARTY_RESULT_OK);
         return 1;
-    }
+    }*/
 
     /**
      * Returns 'true' if the [Player] can fly, 'false' otherwise.

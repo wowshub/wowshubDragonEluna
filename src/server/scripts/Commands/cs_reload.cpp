@@ -1242,7 +1242,7 @@ public:
     {
         // hotfix_data
         TC_LOG_INFO("misc", "Reloading hotfix info...");
-        sDB2Manager.LoadHotfixData();
+        sDB2Manager.LoadHotfixData(13); //change on your lang mask 
 
         // DB2
         sAreaTableStore.LoadFromDB();
