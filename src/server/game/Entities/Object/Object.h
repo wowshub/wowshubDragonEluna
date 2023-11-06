@@ -472,6 +472,7 @@ struct FindGameObjectOptions
 
     Optional<ObjectGuid> OwnerGuid;
     Optional<ObjectGuid> PrivateObjectOwnerGuid;
+    Optional<GameobjectTypes> GameObjectType;
 };
 
 class TC_GAME_API WorldObject : public Object, public WorldLocation
@@ -630,6 +631,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         GameObject* FindNearestGameObjectOfType(GameobjectTypes type, float range) const;
         Player* SelectNearestPlayer(float distance) const;
 
+        virtual ObjectGuid GetCreatorGUID() const = 0;
         virtual ObjectGuid GetOwnerGUID() const = 0;
         virtual ObjectGuid GetCharmerOrOwnerGUID() const { return GetOwnerGUID(); }
         ObjectGuid GetCharmerOrOwnerOrOwnGUID() const;

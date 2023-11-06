@@ -38,6 +38,23 @@ enum class EncounterType : uint8
     MythicPlusRun
 };
 
+class TC_GAME_API ControlZoneHandler
+{
+public:
+    explicit ControlZoneHandler() = default;
+    virtual ~ControlZoneHandler() = default;
+
+    virtual void HandleCaptureEventHorde([[maybe_unused]] GameObject* controlZone) { }
+    virtual void HandleCaptureEventAlliance([[maybe_unused]] GameObject* controlZone) { }
+    virtual void HandleContestedEventHorde([[maybe_unused]] GameObject* controlZone) { }
+    virtual void HandleContestedEventAlliance([[maybe_unused]] GameObject* controlZone) { }
+    virtual void HandleProgressEventHorde([[maybe_unused]] GameObject* controlZone) { }
+    virtual void HandleProgressEventAlliance([[maybe_unused]] GameObject* controlZone) { }
+    virtual void HandleNeutralEventHorde([[maybe_unused]] GameObject* controlZone) { HandleNeutralEvent(controlZone); }
+    virtual void HandleNeutralEventAlliance([[maybe_unused]] GameObject* controlZone) { HandleNeutralEvent(controlZone); }
+    virtual void HandleNeutralEvent([[maybe_unused]] GameObject* controlZone) { }
+};
+
 class TC_GAME_API ZoneScript
 {
     public:
@@ -60,7 +77,7 @@ class TC_GAME_API ZoneScript
         virtual void OnAreaTriggerCreate([[maybe_unused]] AreaTrigger* areaTrigger) { }
         virtual void OnAreaTriggerRemove([[maybe_unused]] AreaTrigger* areaTrigger) { }
 
-        virtual void OnUnitDeath(Unit*) { }
+        virtual void OnUnitDeath([[maybe_unused]] Unit* unit) { }
 
         //All-purpose data storage ObjectGuid
         virtual ObjectGuid GetGuidData(uint32 /*DataId*/) const { return ObjectGuid::Empty; }

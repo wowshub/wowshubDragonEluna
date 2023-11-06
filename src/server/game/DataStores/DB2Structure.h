@@ -545,6 +545,21 @@ struct BroadcastTextDurationEntry
     int32 Duration;
 };
 
+struct Cfg_CategoriesEntry
+{
+    uint32 ID;
+    LocalizedString Name;
+    uint16 LocaleMask;
+    uint8 CreateCharsetMask;
+    uint8 ExistingCharsetMask;
+    uint8 Flags;
+    int8 Order;
+
+    EnumFlag<CfgCategoriesCharsets> GetCreateCharsetMask() const { return static_cast<CfgCategoriesCharsets>(CreateCharsetMask); }
+    EnumFlag<CfgCategoriesCharsets> GetExistingCharsetMask() const { return static_cast<CfgCategoriesCharsets>(ExistingCharsetMask); }
+    EnumFlag<CfgCategoriesFlags> GetFlags() const { return static_cast<CfgCategoriesFlags>(Flags); }
+};
+
 struct Cfg_RegionsEntry
 {
     uint32 ID;
@@ -618,6 +633,9 @@ struct ChatChannelsEntry
     int32 Flags;
     int8 FactionGroup;
     int32 Ruleset;
+
+    EnumFlag<ChatChannelFlags> GetFlags() const { return static_cast<ChatChannelFlags>(Flags); }
+    ChatChannelRuleset GetRuleset() const { return static_cast<ChatChannelRuleset>(Ruleset); }
 };
 
 struct ChrClassUIDisplayEntry
@@ -1145,6 +1163,8 @@ struct CriteriaEntry
         int32 AchievementID;
 
         // CriteriaType::CompleteQuestsInZone                       = 11
+        // CriteriaType::EnterTopLevelArea                          = 225
+        // CriteriaType::LeaveTopLevelArea                          = 226
         int32 ZoneID;
 
         // CriteriaType::CurrencyGained                             = 12
@@ -1178,8 +1198,6 @@ struct CriteriaEntry
         // CriteriaType::PVPKillInArea                              = 31
         // CriteriaType::EnterArea                                  = 163
         // CriteriaType::LeaveArea                                  = 164
-        // CriteriaType::EnterTopLevelArea                          = 225
-        // CriteriaType::LeaveTopLevelArea                          = 226
         int32 AreaID;
 
         // CriteriaType::AcquireItem                                = 36
@@ -2789,6 +2807,7 @@ struct MapEntry
     {
         return ID == 609 || // Acherus (DeathKnight Start)
             ID == 1265 ||   // Assault on the Dark Portal (WoD Intro)
+            ID == 1481 ||   // Mardum (DH Start)
             ID == 2175 ||   // Exiles Reach - NPE
             ID == 2570;     // Forbidden Reach (Dracthyr/Evoker Start)
     }
@@ -4157,6 +4176,23 @@ struct TaxiNodesEntry
     uint32 SpecialIconConditionID;
     uint32 VisibilityConditionID;
     std::array<int32, 2> MountCreatureID;
+
+    EnumFlag<TaxiNodeFlags> GetFlags() const { return static_cast<TaxiNodeFlags>(Flags); }
+
+    bool IsPartOfTaxiNetwork() const
+    {
+        return GetFlags().HasFlag(TaxiNodeFlags::ShowOnAllianceMap | TaxiNodeFlags::ShowOnHordeMap)
+            // manually whitelisted nodes
+            || ID == 1985   // [Hidden] Argus Ground Points Hub (Ground TP out to here, TP to Vindicaar from here)
+            || ID == 1986   // [Hidden] Argus Vindicaar Ground Hub (Vindicaar TP out to here, TP to ground from here)
+            || ID == 1987   // [Hidden] Argus Vindicaar No Load Hub (Vindicaar No Load transition goes through here)
+            || ID == 2627   // [Hidden] 9.0 Bastion Ground Points Hub (Ground TP out to here, TP to Sanctum from here)
+            || ID == 2628   // [Hidden] 9.0 Bastion Ground Hub (Sanctum TP out to here, TP to ground from here)
+            || ID == 2732   // [HIDDEN] 9.2 Resonant Peaks - Teleport Network - Hidden Hub (Connects all Nodes to each other without unique paths)
+            || ID == 2835   // [Hidden] 10.0 Travel Network - Destination Input
+            || ID == 2843   // [Hidden] 10.0 Travel Network - Destination Output
+        ;
+    }
 };
 
 struct TaxiPathEntry

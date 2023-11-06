@@ -51,7 +51,6 @@ enum class GossipOptionFlags : int32;
 enum class GossipOptionNpc : uint8;
 struct AccessRequirement;
 struct DeclinedName;
-struct DungeonEncounterEntry;
 struct FactionEntry;
 struct PlayerInfo;
 struct PlayerLevelInfo;
@@ -995,26 +994,6 @@ struct ExtendedPlayerName
 
 ExtendedPlayerName ExtractExtendedPlayerName(std::string const& name);
 
-enum EncounterCreditType : uint8
-{
-    ENCOUNTER_CREDIT_KILL_CREATURE  = 0,
-    ENCOUNTER_CREDIT_CAST_SPELL     = 1
-};
-
-struct DungeonEncounter
-{
-    DungeonEncounter(DungeonEncounterEntry const* _dbcEntry, EncounterCreditType _creditType, uint32 _creditEntry, uint32 _lastEncounterDungeon)
-        : dbcEntry(_dbcEntry), creditType(_creditType), creditEntry(_creditEntry), lastEncounterDungeon(_lastEncounterDungeon) { }
-
-    DungeonEncounterEntry const* dbcEntry;
-    EncounterCreditType creditType;
-    uint32 creditEntry;
-    uint32 lastEncounterDungeon;
-};
-
-typedef std::vector<DungeonEncounter> DungeonEncounterList;
-typedef std::unordered_map<uint64, DungeonEncounterList> DungeonEncounterContainer;
-
 struct TerrainSwapInfo
 {
     uint32 Id;
@@ -1296,8 +1275,6 @@ class TC_GAME_API ObjectMgr
         VehicleTemplate const* GetVehicleTemplate(Vehicle* veh) const;
         VehicleAccessoryList const* GetVehicleAccessoryList(Vehicle* veh) const;
 
-        DungeonEncounterList const* GetDungeonEncounterList(uint32 mapId, Difficulty difficulty) const;
-
         void LoadQuests();
         void LoadQuestStartersAndEnders();
         void LoadGameobjectQuestStarters();
@@ -1372,7 +1349,6 @@ class TC_GAME_API ObjectMgr
         void LoadGossipMenuItemsLocales();
         void LoadPointOfInterestLocales();
         void LoadInstanceTemplate();
-        void LoadInstanceEncounters();
         void LoadMailLevelRewards();
         void LoadVehicleTemplateAccessories();
         void LoadVehicleTemplate();
@@ -1491,15 +1467,9 @@ class TC_GAME_API ObjectMgr
             return nullptr;
         }
 
-        CellObjectGuids const& GetCellObjectGuids(uint32 mapid, Difficulty spawnMode, uint32 cell_id)
-        {
-            return _mapObjectGuidsStore[{ mapid, spawnMode }][cell_id];
-        }
+        CellObjectGuids const* GetCellObjectGuids(uint32 mapid, Difficulty spawnMode, uint32 cell_id);
 
-        CellObjectGuidsMap const& GetMapObjectGuids(uint32 mapid, Difficulty spawnMode)
-        {
-            return _mapObjectGuidsStore[{ mapid, spawnMode }];
-        }
+        CellObjectGuidsMap const* GetMapObjectGuids(uint32 mapid, Difficulty spawnMode);
 
         bool HasPersonalSpawns(uint32 mapid, Difficulty spawnMode, uint32 phaseId) const;
         CellObjectGuids const* GetCellPersonalObjectGuids(uint32 mapid, Difficulty spawnMode, uint32 phaseId, uint32 cell_id) const;
@@ -1829,7 +1799,6 @@ class TC_GAME_API ObjectMgr
         AreaTriggerContainer _areaTriggerStore;
         AreaTriggerScriptContainer _areaTriggerScriptStore;
         AccessRequirementContainer _accessRequirementStore;
-        DungeonEncounterContainer _dungeonEncounterStore;
         std::unordered_map<uint32, WorldSafeLocsEntry> _worldSafeLocs;
 
         EventContainer _eventStore;

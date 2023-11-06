@@ -69,6 +69,7 @@ TC_GAME_API extern DB2Storage<BattlePetSpeciesEntry>                sBattlePetSp
 TC_GAME_API extern DB2Storage<BattlePetSpeciesStateEntry>           sBattlePetSpeciesStateStore;
 TC_GAME_API extern DB2Storage<BattlemasterListEntry>                sBattlemasterListStore;
 TC_GAME_API extern DB2Storage<BroadcastTextEntry>                   sBroadcastTextStore;
+TC_GAME_API extern DB2Storage<Cfg_CategoriesEntry>                  sCfgCategoriesStore;
 TC_GAME_API extern DB2Storage<Cfg_RegionsEntry>                     sCfgRegionsStore;
 TC_GAME_API extern DB2Storage<ChallengeModeItemBonusOverrideEntry>  sChallengeModeItemBonusOverrideStore;
 TC_GAME_API extern DB2Storage<CharTitlesEntry>                      sCharTitlesStore;
@@ -385,6 +386,8 @@ public:
         HotfixId ID;
         Status HotfixStatus = Status::Invalid;
 
+        uint32 AvailableLocalesMask = 0;
+
         friend std::strong_ordering operator<=>(HotfixRecord const& left, HotfixRecord const& right)
         {
             if (std::strong_ordering cmp = left.ID <=> right.ID; advstd::is_neq(cmp))
@@ -403,7 +406,13 @@ public:
         std::vector<uint8> Data;
     };
 
-    using HotfixContainer = std::map<int32, std::vector<HotfixRecord>>;
+    struct HotfixPush
+    {
+        std::vector<HotfixRecord> Records;
+        uint32 AvailableLocalesMask = 0;
+    };
+
+    using HotfixContainer = std::map<int32, HotfixPush>;
 
     using FriendshipRepReactionSet = std::set<FriendshipRepReactionEntry const*, FriendshipRepReactionEntryComparator>;
     using MapDifficultyConditionsContainer = std::vector<std::pair<uint32, PlayerConditionEntry const*>>;
@@ -415,7 +424,7 @@ public:
     uint32 LoadStores(std::string const& dataPath, LocaleConstant defaultLocale);
     DB2StorageBase const* GetStorage(uint32 type) const;
 
-    void LoadHotfixData();
+    void LoadHotfixData(uint32 localeMask);
     void LoadHotfixBlob(uint32 localeMask);
     void LoadHotfixOptionalData(uint32 localeMask);
     uint32 GetHotfixCount() const;

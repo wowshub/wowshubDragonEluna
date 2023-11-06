@@ -1782,7 +1782,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendRemoveControlBar() const;
         bool HasSpell(uint32 spell) const override;
         bool HasActiveSpell(uint32 spell) const;            // show in spellbook
-        SpellInfo const* GetCastSpellInfo(SpellInfo const* spellInfo) const override;
+        SpellInfo const* GetCastSpellInfo(SpellInfo const* spellInfo, TriggerCastFlags& triggerFlag) const override;
         bool IsSpellFitByClassAndRace(uint32 spell_id) const;
         bool HandlePassiveSpellLearn(SpellInfo const* spellInfo);
 
@@ -2643,10 +2643,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         std::vector<uint32> GetCompletedAchievementIds() const;
         bool HasAchieved(uint32 achievementId) const;
         void ResetAchievements();
-        void ResetCriteria(CriteriaFailEvent condition, int32 failAsset, bool evenIfCriteriaComplete = false);
+        void FailCriteria(CriteriaFailEvent condition, int32 failAsset);
         void UpdateCriteria(CriteriaType type, uint64 miscValue1 = 0, uint64 miscValue2 = 0, uint64 miscValue3 = 0, WorldObject* ref = nullptr);
-        void StartCriteriaTimer(CriteriaStartEvent startEvent, uint32 entry, uint32 timeLost = 0);
-        void RemoveCriteriaTimer(CriteriaStartEvent startEvent, uint32 entry);
+        void StartCriteria(CriteriaStartEvent startEvent, uint32 entry, Milliseconds timeLost = Milliseconds::zero());
         void CompletedAchievement(AchievementEntry const* entry);
         bool ModifierTreeSatisfied(uint32 modifierTreeId) const;
 
