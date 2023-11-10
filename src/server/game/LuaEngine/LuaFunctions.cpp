@@ -630,7 +630,7 @@ ElunaRegister<Player> PlayerMethods[] =
     { "SendTrainerList", &LuaPlayer::SendTrainerList },
     { "SendListInventory", &LuaPlayer::SendListInventory },
     { "SendShowBank", &LuaPlayer::SendShowBank },
-    { "SendTabardVendorActivate", &LuaPlayer::SendTabardVendorActivate },
+    //{ "SendTabardVendorActivate", &LuaPlayer::SendTabardVendorActivate },
     { "SendSpiritResurrect", &LuaPlayer::SendSpiritResurrect },
     { "SendTaxiMenu", &LuaPlayer::SendTaxiMenu },
     { "SendUpdateWorldState", &LuaPlayer::SendUpdateWorldState },
