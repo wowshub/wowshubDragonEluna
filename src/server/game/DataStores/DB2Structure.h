@@ -165,7 +165,7 @@ struct AreaTriggerEntry
     DBCPosition3D Pos;
     uint32 ID;
     int16 ContinentID;
-    int8 PhaseUseFlags;
+    int32 PhaseUseFlags;
     int16 PhaseID;
     int16 PhaseGroupID;
     float Radius;
@@ -591,22 +591,6 @@ struct CharTitlesEntry
     int8 Flags;
 };
 
-struct CharHairGeosetsEntry
-{
-    uint32 ID;
-    uint8 RaceID;
-    uint8 SexID;
-    int8 VariationID;
-    int8 GeosetID;
-    uint8 Showscalp;
-    int8 VariationType;
-    int8 GeosetType;
-    int8 ColorIndex;
-    int32 CustomGeoFileDataID;
-    int32 HdCustomGeoFileDataID;
-    int8 unk83;
-};
-
 struct CharacterLoadoutEntry
 {
     uint32 ID;
@@ -718,6 +702,7 @@ struct ChrCustomizationDisplayInfoEntry
     int32 DisplayID;
     float BarberShopMinCameraDistance;
     float BarberShopHeightOffset;
+    float BarberShopCameraZoomOffset;
 };
 
 struct ChrCustomizationElementEntry
@@ -735,13 +720,7 @@ struct ChrCustomizationElementEntry
     int32 ChrCustomizationVoiceID;
     int32 AnimKitID;
     int32 ParticleColorID;
-};
-
-struct ChrCustomizationMaterialEntry
-{
-    uint32 ID;
-    int32 ChrModelTextureTargetID;
-    int32 MaterialResourcesID;
+    int32 ChrCustGeoComponentLinkID;
 };
 
 struct ChrCustomizationOptionEntry
@@ -986,6 +965,7 @@ struct ConversationLineEntry
 {
     uint32 ID;
     uint32 BroadcastTextID;
+    uint32 Unused1020;
     uint32 SpellVisualKitID;
     int32 AdditionalDuration;
     uint16 NextConversationLineID;
@@ -1053,14 +1033,6 @@ struct CreatureDisplayInfoExtraEntry
     int8 Flags;
     int32 BakeMaterialResourcesID;
     int32 HDBakeMaterialResourcesID;
-};
-
-struct CreatureDisplayInfoOptionEntry
-{
-    uint32 ID;
-    int32 ChrCustomizationOptionID;
-    int32 ChrCustomizationChoiceID;
-    int32 CreatureDisplayInfoExtraID;
 };
 
 struct CreatureFamilyEntry
@@ -1454,7 +1426,7 @@ struct CurvePointEntry
     DBCPosition2D Pos;
     DBCPosition2D PreSLSquishPos;
     uint32 ID;
-    int32 CurveID;
+    uint32 CurveID;
     uint8 OrderIndex;
 };
 
@@ -1733,16 +1705,6 @@ struct GameObjectsEntry
     int32 PhaseID;
     int32 PhaseGroupID;
     std::array<int32, 8> PropValue;
-};
-
-struct GameTipsEntry
-{
-    uint32 ID;
-    LocalizedString Text;
-    uint8 SortIndex;
-    int32 MinLevel;
-    int32 MaxLevel;
-    int32 ContentTuningID;
 };
 
 struct GarrAbilityEntry
@@ -2678,9 +2640,6 @@ struct LightEntry
     float GameFalloffEnd;
     int16 ContinentID;
     std::array<uint16, 8> LightParamsID;
-	
-	// Helpers
-    int16 Continent() const { return ContinentID; }
 };
 
 struct LiquidTypeEntry
@@ -2858,15 +2817,6 @@ struct MapDifficultyEntry
     EnumFlag<MapDifficultyFlags> GetFlags() const { return static_cast<MapDifficultyFlags>(Flags); }
 };
 
-struct ModelFileDataEntry
-{
-	std::array<float, 6> Geobox;
-    uint32 ID;
-    uint8 Flags;
-    uint8 LogCount;
-    uint32 ModelID;
-};  
-
 struct MapDifficultyXConditionEntry
 {
     uint32 ID;
@@ -2902,7 +2852,7 @@ struct MountEntry
     LocalizedString Description;
     uint32 ID;
     uint16 MountTypeID;
-    uint16 Flags;
+    int32 Flags;
     int8 SourceTypeEnum;
     int32 SourceSpellID;
     uint32 PlayerConditionID;
@@ -2917,7 +2867,7 @@ struct MountEntry
 struct MountCapabilityEntry
 {
     uint32 ID;
-    uint8 Flags;
+    int32 Flags;
     uint16 ReqRidingSkill;
     uint16 ReqAreaID;
     uint32 ReqSpellAuraID;
@@ -2951,7 +2901,7 @@ struct MovieEntry
     uint8 KeyID;
     uint32 AudioFileDataID;
     uint32 SubtitleFileDataID;
-    int32 SubtitleFileFormat;
+    uint32 SubtitleFileFormat;
 };
 
 struct MythicPlusSeasonEntry
@@ -2990,21 +2940,6 @@ struct NamesReservedLocaleEntry
     uint8 LocaleMask;
 };
 
-struct NPCModelItemSlotDisplayInfoEntry
-{
-    uint32 ID;
-    int32 DisplayID;
-    int8 Slot;
-    uint32 ExtendedDisplayID;
-};
-
-struct CreatureDisplayInfoStore
-{
-    bool HasRecord(uint32 id) const;
-    const CreatureDisplayInfoEntry* LookupEntry(uint32 id) const;
-	const CreatureDisplayInfoEntry* AssertEntry(uint32 id) const;
-};
-
 struct NumTalentsAtLevelEntry
 {
     uint32 ID;
@@ -3034,7 +2969,7 @@ struct ParagonReputationEntry
 struct PhaseEntry
 {
     uint32 ID;
-    uint16 Flags;
+    int32 Flags;
 
     EnumFlag<PhaseEntryFlags> GetFlags() const { return static_cast<PhaseEntryFlags>(Flags); }
 };
@@ -3086,7 +3021,7 @@ struct PlayerConditionEntry
     int32 MaxAvgItemLevel;
     uint16 MinAvgEquippedItemLevel;
     uint16 MaxAvgEquippedItemLevel;
-    uint8 PhaseUseFlags;
+    int32 PhaseUseFlags;
     uint16 PhaseID;
     uint32 PhaseGroupID;
     int32 Flags;
@@ -3407,21 +3342,10 @@ struct SceneScriptTextEntry
     char const* Script;
 };
 
-struct ScreenEffectEntry
+struct ServerMessagesEntry
 {
-    int32 ID;
-    char const* DisplayName;
-    int32 Param[4];
-    int8 Effect;
-    uint32 FullScreenEffectID;
-    uint16 LightParamsID;
-    uint16 LightParamsFadeIn;
-    uint16 LightParamsFadeOut;
-    uint32 SoundAmbienceID;
-    uint32 ZoneMusicID;
-    int16 TimeOfDayOverride;
-    int8 EffectMask;
-    uint8 LightFlags;
+    uint32 ID;
+    LocalizedString Text;
 };
 
 struct SkillLineEntry
@@ -3518,77 +3442,6 @@ struct SoundKitEntry
     uint32 SoundMixGroupID;
 };
 
-// FileOptions: Index, None
-struct SoundKitEntryEntry
-{
-    int32       ID;
-    uint32      SoundKitID;
-    int32       FileDataID;
-    uint8       Frequency;
-    float       Volume;
-};
-
-struct SoundKitAdvancedEntry
-{
-    int32       ID;
-    uint32      SoundKitID;
-    float       InnerRadius2D;
-    float       OuterRadius2D;
-    uint32      TimeA;
-    uint32      TimeB;
-    uint32      TimeC;
-    uint32      TimeD;
-    int32       RandomOffsetRange;
-    int8        Usage;
-    uint32      TimeIntervalMin;
-    uint32      TimeIntervalMax;
-    uint32      DelayMin;
-    uint32      DelayMax;
-    uint8       VolumeSliderCategory;
-    float       DuckToSFX;
-    float       DuckToMusic;
-    float       DuckToAmbience;
-    float       DuckToDialog;
-    float       DuckToSuppressors;
-    float       DuckToCinematicSFX;
-    float       DuckToCinematicMusic;
-    float       InnerRadiusOfInfluence;
-    float       OuterRadiusOfInfluence;
-    uint32      TimeToDuck;
-    uint32      TimeToUnduck;
-    float       InsideAngle;
-    float       OutsideAngle;
-    float       OutsideVolume;
-    uint8       MinRandomPosOffset;
-    uint16      MaxRandomPosOffset;
-    int32       MsOffset;
-    uint32      TimeCooldownMin;
-    uint32      TimeCooldownMax;
-    uint8       MaxInstancesBehavior;
-    uint8       VolumeControlType;
-    int32       VolumeFadeInTimeMin;
-    int32       VolumeFadeInTimeMax;
-    uint32      VolumeFadeInCurveID;
-    int32       VolumeFadeOutTimeMin;
-    int32       VolumeFadeOutTimeMax;
-    uint32      VolumeFadeOutCurveID;
-    float       ChanceToPlay;
-    int32       RolloffType;
-    float       RolloffParam0;
-    float       Field_8_2_0_30080_045;
-    float       Field_8_2_0_30080_046;
-    int32       Field_8_2_0_30080_047;
-    int32       Field_8_2_0_30080_048;
-    float       Field_8_2_0_30080_049;
-    float       Field_8_2_0_30080_050;
-    float       Field_8_2_0_30080_051;
-    float       Field_8_2_0_30080_052;
-    float       Field_8_2_0_30080_053;
-    float       Field_8_2_0_30080_054;
-    float       Field_9_1_0_38312_055;
-    float       Field_9_1_0_38312_056;
-};
-
 struct SpecializationSpellsEntry
 {
     LocalizedString Description;
@@ -3597,13 +3450,6 @@ struct SpecializationSpellsEntry
     int32 SpellID;
     int32 OverridesSpellID;
     uint8 DisplayOrder;
-};
-
-struct SpecializationSpellsDisplayEntry
-{
-    uint32 ID;
-    uint16 SpecializationID;
-    uint32 SpecllID[6];
 };
 
 struct SpecSetMemberEntry
@@ -3759,17 +3605,6 @@ struct SpellEquippedItemsEntry
     int8 EquippedItemClass;
     int32 EquippedItemInvTypes;
     int32 EquippedItemSubclass;
-};
-
-// FileOptions: Index, None
-struct SpellEntry
-{
-    uint32 ID;
-    LocalizedString NameSubtext;
-    LocalizedString Description;
-    LocalizedString AuraDescription;
-
-    SpellEffectEntry const* GetSpellEffect(uint32 eff, uint8 diff = 0) const;
 };
 
 struct SpellFocusObjectEntry
@@ -3999,6 +3834,7 @@ struct SpellShapeshiftFormEntry
 {
     uint32 ID;
     LocalizedString Name;
+    uint32 CreatureDisplayID;
     int8 CreatureType;
     int32 Flags;
     int32 AttackIconFileID;
@@ -4006,7 +3842,6 @@ struct SpellShapeshiftFormEntry
     int16 CombatRoundTime;
     float DamageVariance;
     uint16 MountTypeID;
-    std::array<uint32, 4> CreatureDisplayID;
     std::array<uint32, MAX_SHAPESHIFT_SPELLS> PresetSpellID;
 
     EnumFlag<SpellShapeshiftFormFlags> GetFlags() const { return static_cast<SpellShapeshiftFormFlags>(Flags); }
@@ -4214,13 +4049,6 @@ struct TaxiPathNodeEntry
     uint32 Delay;
     int32 ArrivalEventID;
     int32 DepartureEventID;
-};
-
-struct TextureFileDataEntry
-{
-    uint32 ID;
-    uint8 UsageType;
-    int32 TextureID;
 };
 
 struct TotemCategoryEntry
@@ -4529,7 +4357,7 @@ struct UiMapEntry
     uint32 ID;
     int32 ParentUiMapID;
     int32 Flags;
-    uint8 System;
+    int8 System;
     uint8 Type;
     int32 BountySetID;
     uint32 BountyDisplayLocation;
@@ -4736,16 +4564,6 @@ struct VehicleSeatEntry
     inline bool IsEjectable() const { return HasFlag(VEHICLE_SEAT_FLAG_B_EJECTABLE); }
 };
 
-struct VehiclePOITypeEntry
-{
-    int32 ID;
-    int32 Flags;
-    int32 TextureWidth;
-    int32 TextureHeight;
-    int32 OccupiedTexture;
-    int32 UnoccupiedTexture;
-};
-
 struct WMOAreaTableEntry
 {
     LocalizedString AreaName;
@@ -4799,42 +4617,6 @@ struct WorldStateExpressionEntry
 {
     uint32 ID;
     char const* Expression;
-};
-
-struct ZoneLightEntry
-{
-    uint32 ID;
-    char const* Name;
-    uint16 MapID;
-    uint16 LightID;
-    uint8 Flags;
-    float Zmin;
-    float Zmax;
-};
-
-struct LightSkyboxEntry
-{
-    uint32 ID;
-    char const* Name;
-    uint8 Flags;
-    int32 SkyboxFileDataID;
-    int32 CelestialSkyboxFileDataID;
-};
-
-struct LightParamsEntry
-{
-    float OverrideCelestialSphere[3];
-    uint32 ID;
-    uint8 HighlightSky;
-    uint16 LightSkyboxID;
-    uint8 CloudTypeID;
-    float Glow;
-    float WaterShallowAlpha;
-    float WaterDeepAlpha;
-    float OceanShallowAlpha;
-    float OceanDeepAlpha;
-    int32 Flags;
-    int32 SsaoSettingsID;
 };
 
 #pragma pack(pop)
