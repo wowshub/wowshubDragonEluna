@@ -12872,6 +12872,16 @@ bool Unit::SetDisableGravity(bool disable, bool updateAnimTier /*= true*/)
             SetAnimTier(AnimTier::Ground);
     }
 
+    if (IsAlive())
+    {
+        if (IsGravityDisabled() || IsHovering())
+            SetPlayHoverAnim(true);
+        else
+            SetPlayHoverAnim(false);
+    }
+    else if (IsPlayer()) // To update player who dies while flying/hovering
+        SetPlayHoverAnim(false, false);
+
     return true;
 }
 
@@ -13087,6 +13097,16 @@ bool Unit::SetHover(bool enable, bool updateAnimTier /*= true*/)
         else
             SetAnimTier(AnimTier::Ground);
     }
+
+    if (IsAlive())
+    {
+        if (IsGravityDisabled() || IsHovering())
+            SetPlayHoverAnim(true);
+        else
+            SetPlayHoverAnim(false);
+    }
+    else if (IsPlayer()) // To update player who dies while flying/hovering
+        SetPlayHoverAnim(false, false);
 
     return true;
 }
@@ -13399,9 +13419,15 @@ void Unit::UpdateMovementForcesModMagnitude()
     }
 }
 
-void Unit::SetPlayHoverAnim(bool enable)
+void Unit::SetPlayHoverAnim(bool enable, bool sendUpdate /*= true*/)
 {
+    if (IsPlayingHoverAnim() == enable)
+        return;
+
     _playHoverAnim = enable;
+
+    if (!sendUpdate)
+        return;
 
     WorldPackets::Misc::SetPlayHoverAnim data;
     data.UnitGUID = GetGUID();
