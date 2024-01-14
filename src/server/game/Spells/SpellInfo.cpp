@@ -369,7 +369,7 @@ std::array<SpellImplicitTargetInfo::StaticData, TOTAL_SPELL_TARGETS> SpellImplic
     {TARGET_OBJECT_TYPE_UNIT, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 126 TARGET_UNIT_CASTER_AREA_ENEMY_CLUMP
     {TARGET_OBJECT_TYPE_DEST, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 127 TARGET_DEST_CASTER_ENEMY_CLUMP_CENTROID
     {TARGET_OBJECT_TYPE_UNIT, TARGET_REFERENCE_TYPE_CASTER, TARGET_SELECT_CATEGORY_CONE,    TARGET_CHECK_ALLY,     TARGET_DIR_FRONT},       // 128 TARGET_UNIT_RECT_CASTER_ALLY
-    {TARGET_OBJECT_TYPE_UNIT, TARGET_REFERENCE_TYPE_CASTER, TARGET_SELECT_CATEGORY_CONE,    TARGET_CHECK_ENTRY,    TARGET_DIR_FRONT},       // 129 TARGET_UNIT_RECT_CASTER_ENEMY
+    {TARGET_OBJECT_TYPE_UNIT, TARGET_REFERENCE_TYPE_CASTER, TARGET_SELECT_CATEGORY_CONE,    TARGET_CHECK_ENEMY,    TARGET_DIR_FRONT},       // 129 TARGET_UNIT_RECT_CASTER_ENEMY
     {TARGET_OBJECT_TYPE_UNIT, TARGET_REFERENCE_TYPE_CASTER, TARGET_SELECT_CATEGORY_CONE,    TARGET_CHECK_DEFAULT,  TARGET_DIR_FRONT},       // 130 TARGET_UNIT_RECT_CASTER
     {TARGET_OBJECT_TYPE_DEST, TARGET_REFERENCE_TYPE_CASTER, TARGET_SELECT_CATEGORY_DEFAULT, TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 131 TARGET_DEST_SUMMONER
     {TARGET_OBJECT_TYPE_DEST, TARGET_REFERENCE_TYPE_TARGET, TARGET_SELECT_CATEGORY_DEFAULT, TARGET_CHECK_ALLY,     TARGET_DIR_NONE},        // 132 TARGET_DEST_TARGET_ALLY
@@ -674,17 +674,26 @@ float SpellEffectInfo::CalcRadius(WorldObject* caster /*= nullptr*/, SpellTarget
     // TargetA -> TargetARadiusEntry
     // TargetB -> TargetBRadiusEntry
     // Aura effects have TargetARadiusEntry == TargetBRadiusEntry (mostly)
+    SpellImplicitTargetInfo target = TargetA;
     SpellRadiusEntry const* entry = TargetARadiusEntry;
     if (targetIndex == SpellTargetIndex::TargetB && HasRadius(targetIndex))
+    {
+        target = TargetB;
         entry = TargetBRadiusEntry;
+    }
 
     if (!entry)
         return 0.0f;
 
     float radius = entry->RadiusMin;
 
-    // Client uses max if min is 0
-    if (radius == 0.0f)
+    // Random targets use random value between RadiusMin and RadiusMax
+    // For other cases, client uses RadiusMax if RadiusMin is 0
+    if (target.GetTarget() == TARGET_DEST_CASTER_RANDOM ||
+        target.GetTarget() == TARGET_DEST_TARGET_RANDOM ||
+        target.GetTarget() == TARGET_DEST_DEST_RANDOM)
+        radius += (entry->RadiusMax - radius) * rand_norm();
+    else if (radius == 0.0f)
         radius = entry->RadiusMax;
 
     if (caster)
@@ -5050,18 +5059,8 @@ void SpellInfo::_InitializeSpellPositivity()
 void SpellInfo::_UnloadImplicitTargetConditionLists()
 {
     // find the same instances of ConditionList and delete them.
-    for (SpellEffectInfo const& effect : _effects)
-    {
-        ConditionContainer* cur = effect.ImplicitTargetConditions;
-        if (!cur)
-            continue;
-
-        for (size_t j = effect.EffectIndex; j < _effects.size(); ++j)
-            if (_effects[j].ImplicitTargetConditions == cur)
-                _effects[j].ImplicitTargetConditions = nullptr;
-
-        delete cur;
-    }
+    for (SpellEffectInfo& effect : _effects)
+        effect.ImplicitTargetConditions = nullptr;
 }
 
 bool SpellInfo::MeetsFutureSpellPlayerCondition(Player const* player) const

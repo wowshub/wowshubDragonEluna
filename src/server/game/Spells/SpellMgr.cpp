@@ -1144,8 +1144,8 @@ void SpellMgr::LoadSpellTargetPositions()
 
     mSpellTargetPositions.clear();                                // need for reload case
 
-    //                                               0   1            2      3          4          5
-    QueryResult result = WorldDatabase.Query("SELECT ID, EffectIndex, MapID, PositionX, PositionY, PositionZ FROM spell_target_position");
+    //                                               0   1            2      3          4          5          6
+    QueryResult result = WorldDatabase.Query("SELECT ID, EffectIndex, MapID, PositionX, PositionY, PositionZ, Orientation FROM spell_target_position");
     if (!result)
     {
         TC_LOG_INFO("server.loading", ">> Loaded 0 spell target coordinates. DB table `spell_target_position` is empty.");
@@ -1193,11 +1193,16 @@ void SpellMgr::LoadSpellTargetPositions()
             continue;
         }
 
-        // target facing is in degrees for 6484 & 9268... (blizz sucks)
-        if (spellInfo->GetEffect(effIndex).PositionFacing > 2 * M_PI)
-            st.target_Orientation = spellInfo->GetEffect(effIndex).PositionFacing * float(M_PI) / 180;
+        if (!fields[6].IsNull())
+            st.target_Orientation = fields[6].GetFloat();
         else
-            st.target_Orientation = spellInfo->GetEffect(effIndex).PositionFacing;
+        {
+            // target facing is in degrees for 6484 & 9268... (blizz sucks)
+            if (spellInfo->GetEffect(effIndex).PositionFacing > 2 * float(M_PI))
+                st.target_Orientation = spellInfo->GetEffect(effIndex).PositionFacing * float(M_PI) / 180;
+            else
+                st.target_Orientation = spellInfo->GetEffect(effIndex).PositionFacing;
+        }
 
         auto hasTarget = [&](Targets target)
         {
@@ -4744,6 +4749,24 @@ void SpellMgr::LoadSpellInfoCorrections()
     ApplySpellFix({ 374523 }, [](SpellInfo* spellInfo)
     {
         spellInfo->AttributesEx8 |= SPELL_ATTR8_ATTACK_IGNORE_IMMUNE_TO_PC_FLAG;
+    });
+
+    // Jump to Center (DNT)
+    ApplySpellFix({ 387981 }, [](SpellInfo* spellInfo)
+    {
+        ApplySpellEffectFix(spellInfo, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+        {
+            spellEffectInfo->TargetA = SpellImplicitTargetInfo(TARGET_DEST_DEST);
+        });
+    });
+
+    // Jump to Platform (DNT)
+    ApplySpellFix({ 388082 }, [](SpellInfo* spellInfo)
+    {
+        ApplySpellEffectFix(spellInfo, EFFECT_0, [](SpellEffectInfo* spellEffectInfo)
+        {
+            spellEffectInfo->TargetA = SpellImplicitTargetInfo(TARGET_DEST_DEST);
+        });
     });
 
     // ENDOF THE AZURE VAULT SPELLS
