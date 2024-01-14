@@ -471,9 +471,9 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPackets::Loot::MasterLootItem
         else
             target->ApplyItemLootedSpell(sObjectMgr->GetItemTemplate(item.itemid));
 
-#ifdef ELUNA
-        sEluna->OnLootItem(target, newitem, item.count, loot->GetOwnerGUID());
-#endif
+//#ifdef ELUNA
+//        sEluna->OnLootItem(target, newitem, item.count, loot->GetOwnerGUID());
+//#endif
 
         // mark as looted
         item.count = 0;

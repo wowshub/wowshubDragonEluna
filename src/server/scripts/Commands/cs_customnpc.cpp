@@ -29,7 +29,6 @@ public:
             { "guild",     HandleCustomNpcSetGuildCommand,         rbac::RBAC_PERM_COMMAND_CUSTOMNPC_SET_GUILD,       Console::No },
             { "name",      HandleCustomNpcSetDisplayNameCommand,   rbac::RBAC_PERM_COMMAND_CUSTOMNPC_SET_DISPLAYNAME, Console::No },
             { "race",      HandleCustomNpcSetRaceCommand,          rbac::RBAC_PERM_COMMAND_CUSTOMNPC_SET_RACE,        Console::No },
-            { "rank",      HandleCustomNpcSetRankCommand,          rbac::RBAC_PERM_COMMAND_CUSTOMNPC_SET_RANK,        Console::No },
             { "scale",     HandleCustomNpcSetScaleCommand,         rbac::RBAC_PERM_COMMAND_CUSTOMNPC_SET_SCALE,       Console::No },
             { "subname",   HandleCustomNpcSetSubNameCommand,       rbac::RBAC_PERM_COMMAND_CUSTOMNPC_SET_SUBNAME,     Console::No },
             { "tameable",  HandleCustomNpcSetTameableCommand,      rbac::RBAC_PERM_COMMAND_CUSTOMNPC_SET_TAMEABLE,    Console::No },
@@ -622,19 +621,6 @@ public:
 
         sRoleplay->SetCustomNpcModelScale(name, variation, scale);
         handler->PSendSysMessage("Custom NPC %s, model variation %u has been set to scale %f!", name, variation, scale);
-        return true;
-    }
-
-    static bool HandleCustomNpcSetRankCommand(ChatHandler* handler, std::string const& name, uint32 rank)
-    {
-        if (!sRoleplay->CustomNpcNameExists(name)) {
-            handler->PSendSysMessage("There is no Custom NPC with the name: %s", name);
-            handler->SetSentErrorMessage(true);
-            return false;
-        }
-
-        sRoleplay->SetCustomNpcRank(name, rank);
-        handler->PSendSysMessage("Custom NPC %s now has rank %u!", name, rank);
         return true;
     }
 

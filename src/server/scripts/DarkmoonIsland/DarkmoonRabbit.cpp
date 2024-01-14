@@ -124,8 +124,6 @@ public:
                     break;
                 }
             }
-
-            DoMeleeAttackIfReady();
         }
 
         EventMap events;

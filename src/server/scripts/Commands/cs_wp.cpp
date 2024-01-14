@@ -635,7 +635,7 @@ public:
             handler->SendSysMessage(LANG_SELECT_CREATURE);
             return false;
         }
-        uint32 pathId = target->GetWaypointPath();
+        uint32 pathId = target->GetWaypointPathId();
         if (!pathId)
         {
             handler->PSendSysMessage(LANG_RANDOM_MESSAGE, "pathId");

@@ -181,7 +181,7 @@ namespace LuaCreature
      */
     int IsElite(lua_State* L, Creature* creature)
     {
-        Eluna::Push(L, creature->isElite());
+        Eluna::Push(L, creature->IsElite());
         return 1;
     }
 
@@ -384,7 +384,7 @@ namespace LuaCreature
      */
     int GetWaypointPath(lua_State* L, Creature* creature)
     {
-        Eluna::Push(L, creature->GetWaypointPath());
+        Eluna::Push(L, creature->GetWaypointPathId());
         return 1;
     }
 
@@ -982,7 +982,7 @@ namespace LuaCreature
      */
     int MoveWaypoint(lua_State* /*L*/, Creature* creature)
     {
-        creature->GetMotionMaster()->MovePath(creature->GetWaypointPath(), true);
+        creature->GetMotionMaster()->MovePath(creature->GetWaypointPathId(), true);
         return 0;
     }
 

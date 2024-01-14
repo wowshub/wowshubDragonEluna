@@ -2010,10 +2010,6 @@ bool Creature::LoadFromDB(ObjectGuid::LowType spawnId, Map* map, bool addToMap, 
     // checked at creature_template loading
     m_defaultMovementType = MovementGeneratorType(data->movementType);
 
-	if (data->displayid) {
-        SetDisplayId(data->displayid);
-    }
-
     m_stringIds[1] = data->StringId;
 
     if (addToMap && !GetMap()->AddToMap(this))

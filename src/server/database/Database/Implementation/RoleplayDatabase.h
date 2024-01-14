@@ -50,9 +50,7 @@ class TC_DATABASE_API RoleplayDatabaseConnection : public MySQLConnection
 public:
     typedef RoleplayDatabaseStatements Statements;
 
-    //- Constructors for sync and async connections
-    RoleplayDatabaseConnection(MySQLConnectionInfo& connInfo);
-    RoleplayDatabaseConnection(ProducerConsumerQueue<SQLOperation*>* q, MySQLConnectionInfo& connInfo);
+    RoleplayDatabaseConnection(MySQLConnectionInfo& connInfo, ConnectionFlags connectionFlags);
     ~RoleplayDatabaseConnection();
 
     //- Loads database type specific prepared statements

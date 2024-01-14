@@ -786,7 +786,6 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
     creatureTemplate.speed_walk = 1.0f;
     creatureTemplate.speed_run = 1.14286f;
     creatureTemplate.scale = 1.0f;
-    creatureTemplate.rank = 0;
     creatureTemplate.dmgschool = 0;
     creatureTemplate.BaseAttackTime = 0;
     creatureTemplate.RangeAttackTime = 0;
@@ -966,17 +965,6 @@ void Roleplay::SetCustomNpcModelScale(std::string const& key, uint8 variationId,
     cTemplate.Models[variationId - 1] = model;
     sObjectMgr->_creatureTemplateStore[templateId] = cTemplate;
     SaveNpcModelInfo(model, templateId, variationId);
-    ReloadSpawnedCustomNpcs(key);
-}
-
-void Roleplay::SetCustomNpcRank(std::string const& key, uint32 rank)
-{
-    uint32 templateId = _customNpcStore[key].templateId;
-    CreatureTemplate cTemplate = sObjectMgr->_creatureTemplateStore[templateId];
-    cTemplate.rank = rank;
-
-    sObjectMgr->_creatureTemplateStore[cTemplate.Entry] = cTemplate;
-    SaveNpcCreatureTemplateToDb(cTemplate);
     ReloadSpawnedCustomNpcs(key);
 }
 

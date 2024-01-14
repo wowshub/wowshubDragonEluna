@@ -39,11 +39,7 @@ void RoleplayDatabaseConnection::DoPrepareStatements()
     PrepareStatement(Roleplay_REP_CUSTOMNPCDATA, "REPLACE INTO custom_npcs (`Key`, Entry) VALUES (?, ?)", CONNECTION_ASYNC);
 }
 
-RoleplayDatabaseConnection::RoleplayDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)
-{
-}
-
-RoleplayDatabaseConnection::RoleplayDatabaseConnection(ProducerConsumerQueue<SQLOperation*>* q, MySQLConnectionInfo& connInfo) : MySQLConnection(q, connInfo)
+RoleplayDatabaseConnection::RoleplayDatabaseConnection(MySQLConnectionInfo& connInfo, ConnectionFlags connectionFlags) : MySQLConnection(connInfo, connectionFlags)
 {
 }
 
