@@ -684,7 +684,7 @@ bool StartDB()
 
 void StopDB()
 {
-    HotfixDatabase.Close();
+    //HotfixDatabase.Close();
     WorldDatabase.Close();
     CharacterDatabase.Close();
     LoginDatabase.Close();
