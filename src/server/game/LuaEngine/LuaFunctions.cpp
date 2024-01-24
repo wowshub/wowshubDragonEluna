@@ -291,11 +291,10 @@ ElunaRegister<Unit> UnitMethods[] =
     { "SetMaxPower", &LuaUnit::SetMaxPower },
     { "SetPowerType", &LuaUnit::SetPowerType },
     { "SetDisplayId", &LuaUnit::SetDisplayId },
-    //{ "SetNativeDisplayId", &LuaUnit::SetNativeDisplayId }, Trinity delete this func
     { "SetFacing", &LuaUnit::SetFacing },
     { "SetFacingToObject", &LuaUnit::SetFacingToObject },
     { "SetSpeed", &LuaUnit::SetSpeed },
-    // {"SetStunned", &LuaUnit::SetStunned},                           // :SetStunned([enable]) - UNDOCUMENTED - Stuns or removes stun
+    {"SetStunned", &LuaUnit::SetStunned},                           // :SetStunned([enable]) - UNDOCUMENTED - Stuns or removes stun
     {"SetRooted", &LuaUnit::SetRooted},
     {"SetConfused", &LuaUnit::SetConfused},
     {"SetFeared", &LuaUnit::SetFeared},
@@ -304,7 +303,7 @@ ElunaRegister<Unit> UnitMethods[] =
     { "SetSanctuary", &LuaUnit::SetSanctuary },
     { "SetCanFly", &LuaUnit::SetCanFly},                             // :SetCanFly(apply) - Test
     { "SetCanTransitionBetweenSwimAndFly", &LuaUnit::SetCanTransitionBetweenSwimAndFly},                             // :SetCanTransitionBetweenSwimAndFly(apply) - Test
-    // {"SetVisible", &LuaUnit::SetVisible},                           // :SetVisible(x) - UNDOCUMENTED
+    {"SetVisible", &LuaUnit::SetVisible},                           // :SetVisible(x) - UNDOCUMENTED
     { "SetOwnerGUID", &LuaUnit::SetOwnerGUID },
     { "SetName", &LuaUnit::SetName },
     { "SetSheath", &LuaUnit::SetSheath },
@@ -346,9 +345,9 @@ ElunaRegister<Unit> UnitMethods[] =
     { "IsMounted", &LuaUnit::IsMounted },
     { "AttackStop", &LuaUnit::AttackStop },
     { "Attack", &LuaUnit::Attack },
-    // {"IsVisible", &LuaUnit::IsVisible},                              // :IsVisible() - UNDOCUMENTED
-    // {"IsMoving", &LuaUnit::IsMoving},                                // :IsMoving() - UNDOCUMENTED
-    // {"IsFlying", &LuaUnit::IsFlying},                                // :IsFlying() - UNDOCUMENTED
+    {"IsVisible", &LuaUnit::IsVisible},                              // :IsVisible() - UNDOCUMENTED
+    {"IsMoving", &LuaUnit::IsMoving},                                // :IsMoving() - UNDOCUMENTED
+    {"IsFlying", &LuaUnit::IsFlying},                                // :IsFlying() - UNDOCUMENTED
     { "IsStopped", &LuaUnit::IsStopped },
     { "HasUnitState", &LuaUnit::HasUnitState },
     { "IsQuestGiver", &LuaUnit::IsQuestGiver },

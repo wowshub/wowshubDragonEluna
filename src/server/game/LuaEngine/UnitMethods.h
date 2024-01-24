@@ -460,23 +460,23 @@ namespace LuaUnit
         return 1;
     }
 
-    /*int IsVisible(lua_State* L, Unit* unit)
+    int IsVisible(lua_State* L, Unit* unit)
     {
         Eluna::Push(L, unit->IsVisible());
         return 1;
-    }*/
+    }
 
-    /*int IsMoving(lua_State* L, Unit* unit)
+    int IsMoving(lua_State* L, Unit* unit)
     {
         Eluna::Push(L, unit->isMoving());
         return 1;
-    }*/
+    }
 
-    /*int IsFlying(lua_State* L, Unit* unit)
+    int IsFlying(lua_State* L, Unit* unit)
     {
         Eluna::Push(L, unit->IsFlying());
         return 1;
-    }*/
+    }
 
     /**
      * Returns the [Unit]'s owner.
@@ -1508,19 +1508,6 @@ namespace LuaUnit
     }
 
     /**
-     * Sets the [Unit]'s native/default modelID.
-     *
-     * @param uint32 displayId
-     */
-    /*int SetNativeDisplayId(lua_State* L, Unit* unit)
-    {
-        uint32 model = Eluna::CHECKVAL<uint32>(L, 2);
-
-        unit->SetNativeDisplayId(model);
-        return 0;
-    }*/
-
-    /**
      * Sets the [Unit]'s facing/orientation.
      *
      * @param uint32 orientation
@@ -1663,12 +1650,12 @@ namespace LuaUnit
         return 0;
     }
 
-    /*int SetStunned(lua_State* L, Unit* unit)
+    int SetStunned(lua_State* L, Unit* unit)
     {
     bool apply = Eluna::CHECKVAL<bool>(L, 2, true);
     unit->SetControlled(apply, UNIT_STATE_STUNNED);
     return 0;
-    }*/
+    }
 
     /**
      * Roots the [Unit] to the ground, if 'false' specified, unroots the [Unit].
@@ -1709,19 +1696,12 @@ namespace LuaUnit
         return 0;
     }
 
-    /*int SetCanFly(lua_State* L, Unit* unit)
-    {
-        bool apply = Eluna::CHECKVAL<bool>(L, 2, true);
-        unit->SetCanFly(apply);
-        return 0;
-    }*/
-
-    /*int SetVisible(lua_State* L, Unit* unit)
+    int SetVisible(lua_State* L, Unit* unit)
     {
         bool x = Eluna::CHECKVAL<bool>(L, 2, true);
         unit->SetVisible(x);
         return 0;
-    }*/
+    }
 
     /**
      * Clears the [Unit]'s threat list.
