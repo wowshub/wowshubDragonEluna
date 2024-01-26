@@ -1553,7 +1553,7 @@ class TC_GAME_API Unit : public WorldObject
 
         virtual float GetNativeObjectScale() const { return 1.0f; }
         virtual void RecalculateObjectScale();
-        uint32 GetDisplayId() const { return m_unitData->DisplayID; }
+        virtual uint32 GetDisplayId() const { return m_unitData->DisplayID; }
         float GetDisplayScale() const { return m_unitData->DisplayScale; }
         virtual void SetDisplayId(uint32 displayId, bool setNative = false);
         uint32 GetNativeDisplayId() const { return m_unitData->NativeDisplayID; }

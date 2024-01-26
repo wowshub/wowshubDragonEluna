@@ -9074,9 +9074,9 @@ void ObjectMgr::LoadCreatureOutfits()
     {
         auto* maleModel = sDB2Manager.GetChrModel(e->ID, GENDER_MALE);
         auto* femaleModel = sDB2Manager.GetChrModel(e->ID, GENDER_FEMALE);
-        ASSERT(maleModel && femaleModel, "Dress NPCs cannot find male or female model from DBC with race {}", e->Name[DEFAULT_LOCALE]);
-        ASSERT(GetCreatureModelInfo(maleModel->DisplayID), "Dress NPCs requires an entry in creature_model_info for modelid {} ({} Male)", maleModel->DisplayID, e->Name[DEFAULT_LOCALE]);
-        ASSERT(GetCreatureModelInfo(femaleModel->DisplayID), "Dress NPCs requires an entry in creature_model_info for modelid {} ({} Female)", femaleModel->DisplayID, e->Name[DEFAULT_LOCALE]);
+        ASSERT(maleModel && femaleModel, "Dress NPCs cannot find male or female model from DBC with race %u", e->Name[DEFAULT_LOCALE]);
+        ASSERT(GetCreatureModelInfo(maleModel->DisplayID), "Dress NPCs requires an entry in creature_model_info for modelid %u (%u Male)", maleModel->DisplayID, e->Name[DEFAULT_LOCALE]);
+        ASSERT(GetCreatureModelInfo(femaleModel->DisplayID), "Dress NPCs requires an entry in creature_model_info for modelid %u (%u Female)", femaleModel->DisplayID, e->Name[DEFAULT_LOCALE]);
     }
 
     QueryResult result = WorldDatabase.Query("SELECT entry, race, class, gender, spellvisualkitid, customizations, "
@@ -9148,6 +9148,93 @@ void ObjectMgr::LoadCreatureOutfits()
             co->Customizations.push_back(customization);
         }
 
+        auto ValidateAppearance = [](Races race, Classes /*playerClass*/, Gender gender, Trinity::IteratorPair<UF::ChrCustomizationChoice const*> customizations) {
+            // Skip validation if there are no customizations to validate
+            if (customizations.begin() == customizations.end())
+                return true;
+
+            // WorldSession::ValidateAppearance copy paste
+            std::vector<ChrCustomizationOptionEntry const*> const* options = sDB2Manager.GetCustomiztionOptions(race, gender);
+            if (!options)
+                return false;
+
+            uint32 previousOption = 0;
+
+            for (UF::ChrCustomizationChoice playerChoice : customizations)
+            {
+                // check uniqueness of options
+                if (playerChoice.ChrCustomizationOptionID == previousOption)
+                    return false;
+
+                previousOption = playerChoice.ChrCustomizationOptionID;
+
+                // check if we can use this option
+                auto customizationOptionDataItr = std::find_if(options->begin(), options->end(), [&](ChrCustomizationOptionEntry const* option)
+                {
+                    return option->ID == playerChoice.ChrCustomizationOptionID;
+                });
+
+                // option not found for race/gender combination
+                if (customizationOptionDataItr == options->end())
+                    return false;
+
+                // Skip this as it just checks player requirements like achievements etc.
+                //if (ChrCustomizationReqEntry const* req = sChrCustomizationReqStore.LookupEntry((*customizationOptionDataItr)->ChrCustomizationReqID))
+                //    if (!MeetsChrCustomizationReq(req, playerClass, false, customizations))
+                //        return false;
+
+                std::vector<ChrCustomizationChoiceEntry const*> const* choicesForOption = sDB2Manager.GetCustomiztionChoices(playerChoice.ChrCustomizationOptionID);
+                if (!choicesForOption)
+                    return false;
+
+                auto customizationChoiceDataItr = std::find_if(choicesForOption->begin(), choicesForOption->end(), [&](ChrCustomizationChoiceEntry const* choice)
+                {
+                    return choice->ID == playerChoice.ChrCustomizationChoiceID;
+                });
+
+                // choice not found for option
+                if (customizationChoiceDataItr == choicesForOption->end())
+                    return false;
+
+                if (ChrCustomizationReqEntry const* req = sChrCustomizationReqStore.LookupEntry((*customizationChoiceDataItr)->ChrCustomizationReqID))
+                {
+                    // WorldSession::MeetsChrCustomizationReq copy paste
+                    // Just the part that checks choice requirements
+                    if (std::vector<std::pair<uint32, std::vector<uint32>>> const* requiredChoices = sDB2Manager.GetRequiredCustomizationChoices(req->ID))
+                    {
+                        for (auto const& [chrCustomizationOptionId, requiredChoicesForOption] : *requiredChoices)
+                        {
+                            bool hasRequiredChoiceForOption = false;
+                            for (uint32 requiredChoice : requiredChoicesForOption)
+                            {
+                                auto choiceItr = std::find_if(customizations.begin(), customizations.end(), [requiredChoice](UF::ChrCustomizationChoice const& choice)
+                                {
+                                    return choice.ChrCustomizationChoiceID == requiredChoice;
+                                });
+
+                                if (choiceItr != customizations.end())
+                                {
+                                    hasRequiredChoiceForOption = true;
+                                    break;
+                                }
+                            }
+
+                            if (!hasRequiredChoiceForOption)
+                                return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
+        };
+
+        if (!ValidateAppearance((Races)co->race, (Classes)co->Class, (Gender)co->gender, MakeChrCustomizationChoiceRange(co->Customizations)))
+        {
+            TC_LOG_ERROR("server.loading", ">> Outfit entry {} in `creature_template_outfits` has invalid customizations for (gender, race, class) combination", entry);
+            continue;
+        }
+
         for (EquipmentSlots slot : CreatureOutfit::item_slots)
         {
             int64 displayInfo = fields[i++].GetInt64();
@@ -9177,7 +9264,8 @@ void ObjectMgr::LoadCreatureOutfits()
         _creatureOutfitStore[co->id] = std::move(co);
 
         ++count;
-    } while (result->NextRow());
+    }
+    while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded {} creature outfits in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
 }

@@ -82,7 +82,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SetObjectScale(float scale) override;
         void SetDisplayId(uint32 displayId, bool setNative = false) override;
         void SetDisplayFromModel(uint32 modelIdx);
-        virtual uint32 GetDisplayId() const final;
+        uint32 GetDisplayId() const final;
         void SetDisplayIdRaw(uint32 modelId, bool setNative = false);
 
         std::shared_ptr<CreatureOutfit>& GetOutfit() { return m_outfit; };
