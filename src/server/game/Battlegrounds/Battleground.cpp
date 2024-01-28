@@ -1464,7 +1464,10 @@ void Battleground::SetBgMap(BattlegroundMap* map)
 {
     m_Map = map;
     if (map)
+    {
         _pvpStatIds = sDB2Manager.GetPVPStatIDsForMap(map->GetId());
+        OnMapSet(map);
+    }
     else
         _pvpStatIds = nullptr;
 }
