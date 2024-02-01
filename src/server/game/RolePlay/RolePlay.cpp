@@ -814,8 +814,6 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
     creatureTemplate.WidgetSetID = 0;
     creatureTemplate.WidgetSetUnitConditionID = 0;
     creatureTemplate.RegenHealth = 1;
-    creatureTemplate.MechanicImmuneMask = 0;
-    creatureTemplate.SpellSchoolImmuneMask = 0;
     creatureTemplate.flags_extra = 0;
     creatureTemplate.ScriptID = sObjectMgr->GetScriptId("");
 
