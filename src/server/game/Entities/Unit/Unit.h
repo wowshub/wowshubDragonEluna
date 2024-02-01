@@ -26,6 +26,7 @@
 #include "Timer.h"
 #include "UnitDefines.h"
 #include "Util.h"
+#include "TaskScheduler.h"
 #include <array>
 #include <forward_list>
 #include <map>
@@ -1450,6 +1451,10 @@ class TC_GAME_API Unit : public WorldObject
         Creature* GetSummonedCreatureByEntry(uint32 entry);
         void UnsummonCreatureByEntry(uint32 entry, uint32 ms = 0);
 
+        void GetAttackableUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange) const;
+        int32 GetAuraEffectAmount(AuraType auraType, SpellFamilyNames spellFamilyName, uint32 IconFileDataId, uint8 effIndex) const;
+        int32 GetAuraEffectAmount(uint32 spellId, uint8 effIndex, ObjectGuid casterGuid = ObjectGuid::Empty) const;
+
         ShapeshiftForm GetShapeshiftForm() const { return ShapeshiftForm(*m_unitData->ShapeshiftForm); }
         void SetShapeshiftForm(ShapeshiftForm form);
 
@@ -1981,6 +1986,10 @@ class TC_GAME_API Unit : public WorldObject
         std::unordered_map<ObjectGuid, uint32/*entry*/> m_SummonedCreatures;
 
         bool _isCombatDisallowed;
+
+    public:
+        TaskScheduler _scheduler;
+        TaskScheduler& GetScheduler() { return _scheduler; }
 };
 
 #endif
