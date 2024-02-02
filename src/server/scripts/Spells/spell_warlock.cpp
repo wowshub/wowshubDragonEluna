@@ -152,6 +152,8 @@ enum WarlockSpells
     SPELL_WARLOCK_STOLEN_POWER_BUFF                 = 211583,
     SPELL_WARLOCK_FEL_FIREBOLT                      = 104318,
     SPELL_INQUISITORS_GAZE                          = 386344,
+    SPELL_WARLOCK_FIRE_AND_BRIMSTONE                = 196408,
+    SPELL_WARLOCK_AGONY                             = 980,
 };
 
 enum MiscSpells
@@ -2384,6 +2386,88 @@ class spell_warlock_inquisitors_gaze : public SpellScript
     }
 };
 
+// Incinerate - 29722
+class spell_warl_incinerate : public SpellScript
+{
+    PrepareSpellScript(spell_warl_incinerate);
+
+    void HandleOnHitMainTarget(SpellEffIndex /*effIndex*/)
+    {
+        GetCaster()->ModifyPower(POWER_SOUL_SHARDS, 5.0f);
+    }
+
+    void HandleOnHitTarget(SpellEffIndex /*effIndex*/)
+    {
+        if (Unit* target = GetHitUnit())
+            if (!GetCaster()->HasAura(SPELL_WARLOCK_FIRE_AND_BRIMSTONE))
+                if (target != GetExplTargetUnit())
+                    PreventHitDamage();
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_warl_incinerate::HandleOnHitMainTarget, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnEffectHitTarget += SpellEffectFn(spell_warl_incinerate::HandleOnHitTarget, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
+// 980 - Agony
+class spell_warlock_agony : public SpellScriptLoader
+{
+public:
+    spell_warlock_agony() : SpellScriptLoader("spell_warlock_agony") {}
+
+    class spell_warlock_agony_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_warlock_agony_AuraScript);
+
+        void HandleDummyPeriodic(AuraEffect const* auraEffect)
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            float soulShardAgonyTick = caster->VariableStorage.GetValue<float>("SoulShardAgonyTick", frand(0.0f, 99.0f));
+            soulShardAgonyTick += 16.0f;
+
+            if (soulShardAgonyTick >= 100.0f)
+            {
+                soulShardAgonyTick = frand(0.0f, 99.0f);
+
+                if (Player* player = GetCaster()->ToPlayer())
+                    if (player->GetPower(POWER_SOUL_SHARDS) < player->GetMaxPower(POWER_SOUL_SHARDS))
+                        player->SetPower(POWER_SOUL_SHARDS, player->GetPower(POWER_SOUL_SHARDS) + 10);
+            }
+
+            caster->VariableStorage.Set("SoulShardAgonyTick", soulShardAgonyTick);
+
+            // If we have more than maxStackAmount, dont do anything
+            if (GetStackAmount() >= auraEffect->GetBase()->GetMaxStackAmount())
+                return;
+
+            SetStackAmount(GetStackAmount() + 1);
+        }
+
+        void OnRemove(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            // If last agony removed, remove tick counter
+            if (Unit* caster = GetCaster())
+                if (!caster->GetOwnedAura(SPELL_WARLOCK_AGONY))
+                    caster->VariableStorage.Remove("SoulShardAgonyTick");
+        }
+
+        void Register() override
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_warlock_agony_AuraScript::HandleDummyPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            AfterEffectRemove += AuraEffectRemoveFn(spell_warlock_agony_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_warlock_agony_AuraScript();
+    }
+};
 
 void AddSC_warlock_spell_scripts()
 {
@@ -2454,4 +2538,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warlock_fel_firebolt_wild_imp();
     RegisterCreatureAI(npc_pet_warlock_wild_imp);
     new spell_warlock_inquisitors_gaze();
+    RegisterSpellScript(spell_warl_incinerate);
+    new spell_warlock_agony();
 }
