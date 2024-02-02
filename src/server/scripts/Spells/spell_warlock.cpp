@@ -56,7 +56,7 @@
 #include "GridNotifiers.h"
 #include "Item.h"
 #include <G3D/Vector3.h>
-#include <Hoff/Hoff.h>
+#include <Hoff.h>
 
 
 
@@ -143,6 +143,15 @@ enum WarlockSpells
     SPELL_WARLOCK_IMMOLATE_FIRE_AND_BRIMSTONE       = 108686,
     SPELL_WARLOCK_SOUL_FIRE                         = 6353,
     SPELL_WARLOCK_CHANNEL_DEMONFIRE_DAMAGE          = 196448,
+    SPELL_WARLOCK_SOUL_CONDUIT_REFUND               = 215942,
+    SPELL_SHADOW_EMBRACE                            = 32388,
+    SPELL_SHADOW_EMBRACE_TARGET_DEBUFF              = 32390,
+    SPELL_WARLOCK_INFERNAL_FURNACE                  = 211119,
+    SPELL_WARLOCK_STOLEN_POWER                      = 211530,
+    SPELL_WARLOCK_STOLEN_POWER_COUNTER              = 211529,
+    SPELL_WARLOCK_STOLEN_POWER_BUFF                 = 211583,
+    SPELL_WARLOCK_FEL_FIREBOLT                      = 104318,
+    SPELL_INQUISITORS_GAZE                          = 386344,
 };
 
 enum MiscSpells
@@ -2180,6 +2189,201 @@ public:
     }
 };
 
+// Soul Conduit - 215941
+class spell_warl_soul_conduit : public SpellScriptLoader
+{
+public:
+    spell_warl_soul_conduit() : SpellScriptLoader("spell_warl_soul_conduit") {}
+
+    class spell_warl_soul_conduit_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_warl_soul_conduit_AuraScript);
+
+        int32 refund = 0;
+
+        bool CheckProc(ProcEventInfo& eventInfo)
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return false;
+            if (eventInfo.GetActor() && eventInfo.GetActor() != caster)
+                return false;
+
+            if (Spell const* spell = eventInfo.GetProcSpell())
+            {
+                std::vector<SpellPowerCost> const& costs = spell->GetPowerCost();
+                auto costData = std::find_if(costs.begin(), costs.end(), [](SpellPowerCost const& cost) { return cost.Power == POWER_MANA && cost.Amount > 0; });
+                if (costData == costs.end())
+                    return false;
+
+                refund = costData->Amount;
+                return true;
+            }
+
+            return false;
+        }
+
+        void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            if (roll_chance_i(GetSpellInfo()->GetEffect(EFFECT_0).BasePoints))
+                caster->CastSpell(caster, SPELL_WARLOCK_SOUL_CONDUIT_REFUND, CastSpellExtraArgs(TRIGGERED_FULL_MASK).AddSpellBP0(refund));
+        }
+
+        void Register() override
+        {
+            DoCheckProc += AuraCheckProcFn(spell_warl_soul_conduit_AuraScript::CheckProc);
+            OnEffectProc += AuraEffectProcFn(spell_warl_soul_conduit_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_warl_soul_conduit_AuraScript();
+    }
+};
+
+//232670
+class spell_warr_shadowbolt_affliction : public SpellScript
+{
+    PrepareSpellScript(spell_warr_shadowbolt_affliction);
+
+    void HandleOnHit()
+    {
+        Unit* caster = GetCaster();
+        Unit* target = GetHitUnit();
+        if (!caster || !target)
+            return;
+
+        if (caster->HasAura(SPELL_SHADOW_EMBRACE))
+            caster->AddAura(SPELL_SHADOW_EMBRACE_TARGET_DEBUFF, target);
+    }
+
+    void Register() override
+    {
+        OnHit += SpellHitFn(spell_warr_shadowbolt_affliction::HandleOnHit);
+    }
+};
+
+// 104318 - Fel Firebolt @ Wild Imp
+class spell_warlock_fel_firebolt_wild_imp : public SpellScriptLoader
+{
+public:
+    spell_warlock_fel_firebolt_wild_imp() : SpellScriptLoader("spell_warlock_fel_firebolt_wild_imp") { }
+
+    class spell_warlock_fel_firebolt_wild_imp_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_warlock_fel_firebolt_wild_imp_SpellScript);
+
+        void HandleHit(SpellEffIndex /*effIndex*/)
+        {
+            // "Increases damage dealt by your Wild Imps' Firebolt by 10%."
+            if (Unit* owner = GetCaster()->GetOwner())
+            {
+                if (uint32 pct = owner->GetAuraEffectAmount(SPELL_WARLOCK_INFERNAL_FURNACE, EFFECT_0))
+                    SetHitDamage(GetHitDamage() + CalculatePct(GetHitDamage(), pct));
+
+                if (owner->HasAura(SPELL_WARLOCK_STOLEN_POWER))
+                {
+                    if (Aura* aur = owner->AddAura(SPELL_WARLOCK_STOLEN_POWER_COUNTER, owner))
+                    {
+                        if (aur->GetStackAmount() == 100)
+                        {
+                            owner->CastSpell(owner, SPELL_WARLOCK_STOLEN_POWER_BUFF, true);
+                            aur->Remove();
+                        }
+                    }
+                }
+            }
+        }
+
+        void Register() override
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_warlock_fel_firebolt_wild_imp_SpellScript::HandleHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_warlock_fel_firebolt_wild_imp_SpellScript();
+    }
+};
+
+// Wild Imp - 99739
+struct npc_pet_warlock_wild_imp : public PetAI
+{
+    npc_pet_warlock_wild_imp(Creature* creature) : PetAI(creature)
+    {
+        if (Unit* owner = me->GetOwner())
+        {
+            me->SetLevel(owner->GetLevel());
+            me->SetMaxHealth(owner->GetMaxHealth() / 3);
+            me->SetHealth(owner->GetHealth() / 3);
+        }
+    }
+
+    void UpdateAI(uint32 /*diff*/) override
+    {
+        Unit* owner = me->GetOwner();
+        if (!owner)
+            return;
+
+        Unit* target = GetTarget();
+        ObjectGuid newtargetGUID = owner->GetTarget();
+        if (newtargetGUID.IsEmpty() || newtargetGUID == _targetGUID)
+        {
+            CastSpellOnTarget(owner, target);
+            return;
+        }
+
+        if (Unit* newTarget = ObjectAccessor::GetUnit(*me, newtargetGUID))
+            if (target != newTarget && me->IsValidAttackTarget(newTarget))
+                target = newTarget;
+
+        CastSpellOnTarget(owner, target);
+    }
+
+private:
+    Unit* GetTarget() const
+    {
+        return ObjectAccessor::GetUnit(*me, _targetGUID);
+    }
+
+    void CastSpellOnTarget(Unit* owner, Unit* target)
+    {
+        if (target && me->IsValidAttackTarget(target))
+        {
+            _targetGUID = target->GetGUID();
+            me->CastSpell(target, SPELL_WARLOCK_FEL_FIREBOLT, CastSpellExtraArgs(TRIGGERED_NONE).SetOriginalCaster(owner->GetGUID()));
+        }
+    }
+
+    ObjectGuid _targetGUID;
+};
+
+// Inquisitor's Gaze - 386344
+class spell_warlock_inquisitors_gaze : public SpellScript
+{
+    PrepareSpellScript(spell_warlock_inquisitors_gaze);
+
+    void HandleOnHit(SpellEffIndex /*effIndex*/)
+    {
+        if (Unit* target = GetHitUnit())
+        {
+            int32 damage = (GetCaster()->SpellBaseDamageBonusDone(GetSpellInfo()->GetSchoolMask()) * 15 * 16) / 100;
+            GetCaster()->CastSpell(target, SPELL_INQUISITORS_GAZE, &damage);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_warlock_inquisitors_gaze::HandleOnHit, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 
 void AddSC_warlock_spell_scripts()
 {
@@ -2245,4 +2449,9 @@ void AddSC_warlock_spell_scripts()
     new spell_warlock_soul_fire();
     new spell_warl_channel_demonfire();
     new spell_warl_cataclysm();
+    new spell_warl_soul_conduit();
+    RegisterSpellScript(spell_warr_shadowbolt_affliction);
+    new spell_warlock_fel_firebolt_wild_imp();
+    RegisterCreatureAI(npc_pet_warlock_wild_imp);
+    new spell_warlock_inquisitors_gaze();
 }
