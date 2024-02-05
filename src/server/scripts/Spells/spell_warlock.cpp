@@ -1248,34 +1248,6 @@ class spell_warlock_drain_life : public AuraScript
     }
 };
 
-// 108416 - Dark Pact
-class spell_warl_dark_pact : public AuraScript
-{
-    PrepareAuraScript(spell_warl_dark_pact);
-
-    bool Validate(SpellInfo const* spellInfo) override
-    {
-        return ValidateSpellEffect({ { spellInfo->Id, EFFECT_1 }, { spellInfo->Id, EFFECT_2 } });
-    }
-
-    void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
-    {
-        canBeRecalculated = false;
-        if (Unit* caster = GetCaster())
-        {
-            float extraAmount = caster->SpellBaseDamageBonusDone(GetSpellInfo()->GetSchoolMask()) * 2.5f;
-            int32 absorb = caster->CountPctFromCurHealth(GetEffectInfo(EFFECT_1).CalcValue(caster));
-            caster->SetHealth(caster->GetHealth() - absorb);
-            amount = CalculatePct(absorb, GetEffectInfo(EFFECT_2).CalcValue(caster)) + extraAmount;
-        }
-    }
-
-    void Register() override
-    {
-        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_dark_pact::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-    }
-};
-
 // 205179
 class aura_warl_phantomatic_singularity : public AuraScript
 {
@@ -1990,33 +1962,6 @@ public:
     }
 };
 
-// 116858 - Chaos Bolt
-class spell_warl_chaos_bolt : public SpellScript
-{
-    PrepareSpellScript(spell_warl_chaos_bolt);
-
-    bool Load() override
-    {
-        return GetCaster()->GetTypeId() == TYPEID_PLAYER;
-    }
-
-    void HandleDummy(SpellEffIndex /*effIndex*/)
-    {
-        SetHitDamage(GetHitDamage() + CalculatePct(GetHitDamage(), GetCaster()->ToPlayer()->m_activePlayerData->SpellCritPercentage));
-    }
-
-    void CalcCritChance(Unit const* /*victim*/, float& critChance)
-    {
-        critChance = 100.0f;
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_warl_chaos_bolt::HandleDummy, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-        OnCalcCritChance += SpellOnCalcCritChanceFn(spell_warl_chaos_bolt::CalcCritChance);
-    }
-};
-
 // 17962 - Conflagrate
 class spell_warl_conflagrate : public SpellScript
 {
@@ -2510,7 +2455,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_fear_buff();
     RegisterSpellScript(spell_warl_corruption_effect);
     RegisterSpellScript(spell_warlock_drain_life);
-    RegisterSpellScript(spell_warl_dark_pact);
     RegisterSpellScript(aura_warl_phantomatic_singularity);
     RegisterSpellScript(aura_warl_haunt);
     RegisterSpellScript(spell_warlock_summon_darkglare);
@@ -2527,7 +2471,6 @@ void AddSC_warlock_spell_scripts()
     RegisterSpellScript(spell_warl_demonbolt);
     new spell_warl_implosion();
     new spell_warlock_doom();
-    RegisterSpellScript(spell_warl_chaos_bolt);
     RegisterSpellScript(spell_warl_conflagrate);
     RegisterSpellScript(spell_warl_conflagrate_aura);
     new spell_warlock_soul_fire();
