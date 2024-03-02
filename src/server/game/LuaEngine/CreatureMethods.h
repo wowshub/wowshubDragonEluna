@@ -157,7 +157,7 @@ namespace LuaCreature
      */
     int CanWalk(lua_State* L, Creature* creature)
     {
-        Eluna::Push(L, creature->CanWalk());
+        Eluna::Push(L, !creature->IsAquatic());
         return 1;
     }
 

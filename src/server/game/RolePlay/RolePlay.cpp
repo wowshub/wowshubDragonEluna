@@ -172,14 +172,6 @@ void Roleplay::CreatureSetBytes1(Creature* creature)
     creature->SetStandState(UnitStandStateType(addonData->standState));
     creature->ReplaceAllVisFlags(UnitVisFlags(addonData->visFlags));
     creature->SetAnimTier(AnimTier(addonData->animTier), false);
-
-    //! Suspected correlation between UNIT_FIELD_BYTES_1, offset 3, value 0x2:
-    //! If no inhabittype_fly (if no MovementFlag_DisableGravity or MovementFlag_CanFly flag found in sniffs)
-    //! Check using InhabitType as movement flags are assigned dynamically
-    //! basing on whether the creature is in air or not
-    //! Set MovementFlag_Hover. Otherwise do nothing.
-    if (creature->CanHover())
-        creature->AddUnitMovementFlag(MOVEMENTFLAG_HOVER);
 }
 
 void Roleplay::CreatureSetBytes2(Creature* creature)
@@ -255,7 +247,7 @@ bool Roleplay::CreatureCanSwim(Creature const* creature)
 bool Roleplay::CreatureCanWalk(Creature const* creature)
 {
     // Todo: Check this. Based off Creature::UpdateMovementFlags since InhabitType seems to no longer exist.
-    return creature->GetMovementTemplate().IsGroundAllowed();
+    return !creature->IsAquatic();
     // return (creature->GetCreatureTemplate()->InhabitType & INHABIT_GROUND) != 0;
 }
 
@@ -265,7 +257,7 @@ bool Roleplay::CreatureCanFly(Creature const* creature)
     if (it == _creatureExtraStore.end())
     {
         // Todo: Check this. Based off Creature::UpdateMovementFlags since InhabitType seems to no longer exist.
-        _creatureExtraStore[creature->GetSpawnId()].fly = creature->GetMovementTemplate().IsFlightAllowed();
+        _creatureExtraStore[creature->GetSpawnId()].fly = creature->CanFly();
     }
 
     return _creatureExtraStore[creature->GetSpawnId()].fly;
@@ -428,7 +420,7 @@ Creature* Roleplay::CreatureCreate(Player* creator, CreatureTemplate const* crea
 
     ObjectGuid::LowType db_guid = creature->GetSpawnId();
 
-    sRoleplay->CreatureSetFly(creature, creature->GetMovementTemplate().IsFlightAllowed());
+    sRoleplay->CreatureSetFly(creature, creature->CanFly());
 
     // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells()
     // current "creature" variable is deleted and created fresh new, otherwise old values might trigger asserts or cause undefined behavior

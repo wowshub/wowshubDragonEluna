@@ -130,7 +130,6 @@ enum WarlockSpells
     SPELL_WARLOCK_SHADOW_BOLT                       = 686,
     SPELL_WARLOCK_IMPLOSION_DAMAGE                  = 196278,
     SPELL_WARLOCK_IMPLOSION_JUMP                    = 205205,
-    SPELL_WARLOCK_DOOM_ENERGIZE                     = 193318,
     SPELL_WARLOCK_IMPENDING_DOOM                    = 196270,
     SPELL_WARLOCK_DOOM_DOUBLED                      = 218572,
     SPELL_WARLOCK_IMMOLATE                          = 348,

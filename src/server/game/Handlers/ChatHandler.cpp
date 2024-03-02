@@ -261,7 +261,7 @@ ChatMessageResult WorldSession::HandleChatMessage(ChatMsg type, Language lang, s
 
 #ifdef ELUNA
             if (!sEluna->OnChat(sender, type, lang, msg))
-                return;
+                return ChatMessageResult::Ok;
 #endif
 
             sender->Say(msg, lang);
@@ -281,7 +281,7 @@ ChatMessageResult WorldSession::HandleChatMessage(ChatMsg type, Language lang, s
 
 #ifdef ELUNA
             if (!sEluna->OnChat(sender, type, LANG_UNIVERSAL, msg))
-                return;
+                return ChatMessageResult::Ok;
 #endif
 
             sender->TextEmote(msg);
@@ -301,7 +301,7 @@ ChatMessageResult WorldSession::HandleChatMessage(ChatMsg type, Language lang, s
 
 #ifdef ELUNA
             if (!sEluna->OnChat(sender, type, lang, msg))
-                return;
+                return ChatMessageResult::Ok;
 #endif
 
             sender->Yell(msg, lang);
@@ -355,7 +355,7 @@ ChatMessageResult WorldSession::HandleChatMessage(ChatMsg type, Language lang, s
 
 #ifdef ELUNA
             if (!sEluna->OnChat(GetPlayer(), type, lang, msg, receiver))
-                return;
+                return ChatMessageResult::Ok;
 #endif
 
             GetPlayer()->Whisper(msg, lang, receiver);
@@ -379,7 +379,7 @@ ChatMessageResult WorldSession::HandleChatMessage(ChatMsg type, Language lang, s
 
 #ifdef ELUNA
             if (!sEluna->OnChat(sender, type, lang, msg, group))
-                return;
+                return ChatMessageResult::Ok;
 #endif
 
             WorldPackets::Chat::Chat packet;
@@ -397,7 +397,7 @@ ChatMessageResult WorldSession::HandleChatMessage(ChatMsg type, Language lang, s
 
 #ifdef ELUNA
                     if (!sEluna->OnChat(sender, type, lang, msg, guild))
-                        return;
+                        return ChatMessageResult::Ok;
 #endif
 
                     guild->BroadcastToGuild(this, false, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
@@ -415,7 +415,7 @@ ChatMessageResult WorldSession::HandleChatMessage(ChatMsg type, Language lang, s
 
 #ifdef ELUNA
                     if (!sEluna->OnChat(sender, type, lang, msg, guild))
-                        return;
+                        return ChatMessageResult::Ok;
 #endif
 
                     guild->BroadcastToGuild(this, true, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
@@ -455,7 +455,7 @@ ChatMessageResult WorldSession::HandleChatMessage(ChatMsg type, Language lang, s
 
 #ifdef ELUNA
             if (!sEluna->OnChat(sender, type, lang, msg, group))
-                return;
+                return ChatMessageResult::Ok;
 #endif
 
             sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, group);
@@ -490,7 +490,7 @@ ChatMessageResult WorldSession::HandleChatMessage(ChatMsg type, Language lang, s
 
 #ifdef ELUNA
                 if (!sEluna->OnChat(sender, type, lang, msg, chn))
-                    return;
+                    return ChatMessageResult::Ok;
 #endif
 
                 chn->Say(sender->GetGUID(), msg, lang);
@@ -510,7 +510,7 @@ ChatMessageResult WorldSession::HandleChatMessage(ChatMsg type, Language lang, s
 
 #ifdef ELUNA
             if (!sEluna->OnChat(sender, type, lang, msg, group))
-                return;
+                return ChatMessageResult::Ok;
 #endif
 
             WorldPackets::Chat::Chat packet;
