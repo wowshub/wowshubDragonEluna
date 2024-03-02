@@ -1763,7 +1763,7 @@ void WorldSession::HandleAlterAppearance(WorldPackets::Character::AlterApperance
     if (!ValidateAppearance(Races(_player->GetRace()), Classes(_player->GetClass()), Gender(packet.NewSex), customizations))
         return;
 
-    /* GameObject* go = _player->FindNearestGameObjectOfType(GAMEOBJECT_TYPE_BARBER_CHAIR, 5.0f);
+    GameObject* go = _player->FindNearestGameObjectOfType(GAMEOBJECT_TYPE_BARBER_CHAIR, 5.0f);
     if (!go)
     {
         SendPacket(WorldPackets::Character::BarberShopResult(WorldPackets::Character::BarberShopResult::ResultEnum::NotOnChair).Write());
@@ -1774,7 +1774,7 @@ void WorldSession::HandleAlterAppearance(WorldPackets::Character::AlterApperance
     {
         SendPacket(WorldPackets::Character::BarberShopResult(WorldPackets::Character::BarberShopResult::ResultEnum::NotOnChair).Write());
         return;
-    } */
+    }
 
     int64 cost = _player->GetBarberShopCost(customizations);
 
@@ -1789,8 +1789,8 @@ void WorldSession::HandleAlterAppearance(WorldPackets::Character::AlterApperance
 
     SendPacket(WorldPackets::Character::BarberShopResult(WorldPackets::Character::BarberShopResult::ResultEnum::Success).Write());
 
-    //_player->ModifyMoney(-cost);                     // it isn't free
-    //_player->UpdateCriteria(CriteriaType::MoneySpentAtBarberShop, cost);
+    _player->ModifyMoney(-cost);                     // it isn't free
+    _player->UpdateCriteria(CriteriaType::MoneySpentAtBarberShop, cost);
 
     if (_player->GetNativeGender() != packet.NewSex)
     {
@@ -1844,7 +1844,7 @@ void WorldSession::HandleCharCustomizeCallback(std::shared_ptr<WorldPackets::Cha
     Gender plrGender = Gender(fields[3].GetUInt8());
     uint16 atLoginFlags = fields[4].GetUInt16();
 
-    if (!ValidateAppearance(plrRace, plrClass, Gender(customizeInfo->SexID), MakeChrCustomizationChoiceRange(customizeInfo->Customizations)))
+    if (!ValidateAppearance(plrRace, plrClass, plrGender, MakeChrCustomizationChoiceRange(customizeInfo->Customizations)))
     {
         SendCharCustomize(CHAR_CREATE_ERROR, customizeInfo.get());
         return;
@@ -1918,15 +1918,6 @@ void WorldSession::HandleCharCustomizeCallback(std::shared_ptr<WorldPackets::Cha
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_DECLINED_NAME);
         stmt->setUInt64(0, lowGuid);
 
-        trans->Append(stmt);
-    }
-
-    if (plrGender != customizeInfo->SexID) {
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_RACE);
-        stmt->setUInt8(0, plrRace);
-        stmt->setUInt8(1, customizeInfo->SexID);
-        stmt->setUInt16(2, PLAYER_EXTRA_HAS_RACE_CHANGED);
-        stmt->setUInt64(3, lowGuid);
         trans->Append(stmt);
     }
 
@@ -2254,9 +2245,8 @@ void WorldSession::HandleCharRaceOrFactionChangeCallback(std::shared_ptr<WorldPa
     {
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_RACE);
         stmt->setUInt8(0, factionChangeInfo->RaceID);
-        stmt->setUInt8(1, factionChangeInfo->SexID);
-        stmt->setUInt16(2, PLAYER_EXTRA_HAS_RACE_CHANGED);
-        stmt->setUInt64(3, lowGuid);
+        stmt->setUInt16(1, PLAYER_EXTRA_HAS_RACE_CHANGED);
+        stmt->setUInt64(2, lowGuid);
 
         trans->Append(stmt);
     }
@@ -2284,7 +2274,8 @@ void WorldSession::HandleCharRaceOrFactionChangeCallback(std::shared_ptr<WorldPa
         trans->Append(stmt);
 
         // Race specific languages
-        if (factionChangeInfo->RaceID != RACE_ORC && factionChangeInfo->RaceID != RACE_HUMAN && factionChangeInfo->RaceID != RACE_MAGHAR_ORC && factionChangeInfo->RaceID != RACE_KUL_TIRAN && factionChangeInfo->RaceID != RACE_MAGHAR_ORC)
+        std::array<uint8, 4> const racesWithoutSpecificLanguages = { RACE_ORC, RACE_HUMAN, RACE_MAGHAR_ORC, RACE_KUL_TIRAN };
+        if (std::find(racesWithoutSpecificLanguages.begin(), racesWithoutSpecificLanguages.end(), factionChangeInfo->RaceID) == racesWithoutSpecificLanguages.end())
         {
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_SKILL_LANGUAGE);
             stmt->setUInt64(0, lowGuid);
@@ -2316,8 +2307,8 @@ void WorldSession::HandleCharRaceOrFactionChangeCallback(std::shared_ptr<WorldPa
                 case RACE_HIGHMOUNTAIN_TAUREN:
                     stmt->setUInt16(1, 115);
                     break;
-				case RACE_ZANDALARI_TROLL:
                 case RACE_TROLL:
+                case RACE_ZANDALARI_TROLL:
                     stmt->setUInt16(1, 315);
                     break;
                 case RACE_BLOODELF:
@@ -2332,9 +2323,14 @@ void WorldSession::HandleCharRaceOrFactionChangeCallback(std::shared_ptr<WorldPa
                     break;
                 case RACE_VULPERA:
                     stmt->setUInt16(1, 2776);
-				case RACE_DRACTHYR_ALLIANCE:
+                    break;
+                case LANG_PANDAREN_ALLIANCE:
+                case LANG_PANDAREN_HORDE:
+                    stmt->setUInt16(1, 905);
+                    break;
+                case RACE_DRACTHYR_ALLIANCE:
                 case RACE_DRACTHYR_HORDE:
-                    stmt->setUInt16(1, 11);
+                    stmt->setUInt16(1, 138);
                     break;
                 default:
                     TC_LOG_ERROR("entities.player", "Could not find language data for race ({}).", factionChangeInfo->RaceID);
