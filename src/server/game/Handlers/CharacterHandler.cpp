@@ -1773,7 +1773,7 @@ void WorldSession::HandleAlterAppearance(WorldPackets::Character::AlterApperance
 
     if (!_player->_justPassedBarberChecks)
     {
-        GameObject* go = _player->FindNearestGameObjectOfType(GAMEOBJECT_TYPE_BARBER_CHAIR, 5.0f);
+        /*GameObject* go = _player->FindNearestGameObjectOfType(GAMEOBJECT_TYPE_BARBER_CHAIR, 5.0f);
         if (!go)
         {
             SendPacket(WorldPackets::Character::BarberShopResult(WorldPackets::Character::BarberShopResult::ResultEnum::NotOnChair).Write());
@@ -1784,7 +1784,7 @@ void WorldSession::HandleAlterAppearance(WorldPackets::Character::AlterApperance
         {
             SendPacket(WorldPackets::Character::BarberShopResult(WorldPackets::Character::BarberShopResult::ResultEnum::NotOnChair).Write());
             return;
-        }
+        }*/
 
         SendPacket(WorldPackets::Character::BarberShopResult(WorldPackets::Character::BarberShopResult::ResultEnum::Success).Write());
 
