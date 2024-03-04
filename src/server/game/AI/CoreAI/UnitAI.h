@@ -177,6 +177,34 @@ class TC_GAME_API UnitAI
         Unit* FinalizeTargetSelection(std::list<Unit*>& targetList, SelectTargetMethod targetType);
         bool PrepareTargetListSelection(std::list<Unit*>& targetList, SelectTargetMethod targetType, uint32 offset);
         void FinalizeTargetListSelection(std::list<Unit*>& targetList, uint32 num, SelectTargetMethod targetType);
+
+    public:
+        /// Add timed delayed operation
+        /// @p_Timeout  : Delay time
+        /// @p_Function : Callback function
+        void AddTimedDelayedOperation(uint32 p_Timeout, std::function<void()>&& p_Function)
+        {
+            m_EmptyWarned = false;
+            m_TimedDelayedOperations.push_back(std::pair<uint32, std::function<void()>>(p_Timeout, p_Function));
+        }
+
+        /// Called after last delayed operation was deleted
+        /// Do whatever you want
+        virtual void LastOperationCalled() { }
+
+        void ClearDelayedOperations()
+        {
+            m_TimedDelayedOperations.clear();
+            m_EmptyWarned = false;
+        }
+
+        std::vector<std::pair<int32, std::function<void()>>>    m_TimedDelayedOperations;   ///< Delayed operations
+        bool                                                    m_EmptyWarned;              ///< Warning when there are no more delayed operations
+        void SetBaseAttackSpell(uint32 spellId) { _baseAttackSpell = spellId; }
+        uint32 GetBaseAttackSpell() { return _baseAttackSpell; }
+
+       private:
+           uint32 _baseAttackSpell = 0;
 };
 
 #endif

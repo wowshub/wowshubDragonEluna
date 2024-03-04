@@ -3237,6 +3237,8 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         void CancelPendingCastRequest();
         bool CanRequestSpellCast(SpellInfo const* spell, Unit const* castingUnit) const;
 
+        bool HasQuest(uint32 questID) const;
+
     private:
         std::unique_ptr<SpellCastRequest> _pendingSpellCastRequest;
         void ExecutePendingSpellCastRequest();

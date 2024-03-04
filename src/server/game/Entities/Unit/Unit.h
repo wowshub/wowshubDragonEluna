@@ -1461,6 +1461,18 @@ class TC_GAME_API Unit : public WorldObject
         Creature* GetSummonedCreatureByEntry(uint32 entry);
         void UnsummonCreatureByEntry(uint32 entry, uint32 ms = 0);
 
+
+        /// Add timed delayed operation
+        /// @p_Timeout  : Delay time
+        /// @p_Function : Callback function
+        void AddDelayedEvent(uint32 timeout, std::function<void()>&& function)
+        {
+            emptyWarned = false;
+            timedDelayedOperations.push_back(std::pair<uint32, std::function<void()>>(timeout, function));
+        }
+        std::vector<std::pair<int32, std::function<void()>>>timedDelayedOperations; ///< Delayed operations
+        bool emptyWarned; ///< Warning when there are no more delayed operations
+
         void GetAttackableUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange) const;
         int32 GetAuraEffectAmount(AuraType auraType, SpellFamilyNames spellFamilyName, uint32 IconFileDataId, uint8 effIndex) const;
         int32 GetAuraEffectAmount(uint32 spellId, uint8 effIndex, ObjectGuid casterGuid = ObjectGuid::Empty) const;
