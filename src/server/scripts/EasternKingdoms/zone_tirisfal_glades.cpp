@@ -635,7 +635,7 @@ class spell_murloc_leash : public SpellScript
     }
 };
 
-void AddSC_DekkCore_tirisfal_glades()
+void AddSC_tirisfal_glades()
 {
     new npc_calvin_montague();
     new go_mausoleum_door();
