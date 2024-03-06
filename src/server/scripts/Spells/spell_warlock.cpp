@@ -154,6 +154,7 @@ enum WarlockSpells
     SPELL_INQUISITORS_GAZE                          = 386344,
     SPELL_WARLOCK_FIRE_AND_BRIMSTONE                = 196408,
     SPELL_WARLOCK_AGONY                             = 980,
+    SPELL_WARLOCK_FIREBOLT_BONUS                    = 231795,
 };
 
 enum MiscSpells
@@ -2434,6 +2435,43 @@ public:
     }
 };
 
+// 3110 - Firebolt
+class spell_warlock_imp_firebolt : public SpellScriptLoader
+{
+public:
+    spell_warlock_imp_firebolt() : SpellScriptLoader("spell_warlock_imp_firebolt") { }
+
+    class spell_warlock_imp_firebolt_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_warlock_imp_firebolt_SpellScript);
+
+        void HandleHit(SpellEffIndex /*effIndex*/)
+        {
+            Unit* caster = GetCaster();
+            Unit* target = GetHitUnit();
+            if (!caster || !caster->GetOwner() || !target)
+                return;
+
+            Unit* owner = caster->GetOwner();
+            int32 damage = GetHitDamage();
+            if (target->HasAura(SPELL_WARLOCK_IMMOLATE_DOT, owner->GetGUID()))
+                AddPct(damage, owner->GetAuraEffectAmount(SPELL_WARLOCK_FIREBOLT_BONUS, EFFECT_0));
+
+            SetHitDamage(damage);
+        }
+
+        void Register() override
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_warlock_imp_firebolt_SpellScript::HandleHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_warlock_imp_firebolt_SpellScript();
+    }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     RegisterSpellScript(spell_warl_banish);
@@ -2504,4 +2542,5 @@ void AddSC_warlock_spell_scripts()
     new spell_warlock_inquisitors_gaze();
     RegisterSpellScript(spell_warl_incinerate);
     new spell_warlock_agony();
+    new spell_warlock_imp_firebolt();
 }
