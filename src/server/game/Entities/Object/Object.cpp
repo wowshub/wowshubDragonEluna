@@ -997,6 +997,7 @@ void WorldObject::ProcessPositionDataChanged(PositionFullTerrainStatus const& da
     m_outdoors = data.outdoors;
     m_staticFloorZ = data.floorZ;
     m_liquidStatus = data.liquidStatus;
+    m_currentWmo = data.wmoLocation;
 }
 
 void WorldObject::AddToWorld()
