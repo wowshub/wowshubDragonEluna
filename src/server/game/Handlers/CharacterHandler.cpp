@@ -600,9 +600,9 @@ bool WorldSession::ValidateAppearance(Races race, Classes playerClass, Gender ge
 
             // check if we can use this option
             auto customizationOptionDataItr = std::find_if(options->begin(), options->end(), [&](ChrCustomizationOptionEntry const* option)
-            {
-                return option->ID == playerChoice.ChrCustomizationOptionID;
-            });
+                {
+                    return option->ID == playerChoice.ChrCustomizationOptionID;
+                });
 
             // option not found for race/gender combination
             if (customizationOptionDataItr == options->end())
@@ -617,9 +617,9 @@ bool WorldSession::ValidateAppearance(Races race, Classes playerClass, Gender ge
                 return false;
 
             auto customizationChoiceDataItr = std::find_if(choicesForOption->begin(), choicesForOption->end(), [&](ChrCustomizationChoiceEntry const* choice)
-            {
-                return choice->ID == playerChoice.ChrCustomizationChoiceID;
-            });
+                {
+                    return choice->ID == playerChoice.ChrCustomizationChoiceID;
+                });
 
             // choice not found for option
             if (customizationChoiceDataItr == choicesForOption->end())
@@ -2300,7 +2300,7 @@ void WorldSession::HandleCharRaceOrFactionChangeCallback(std::shared_ptr<WorldPa
         trans->Append(stmt);
 
         // Race specific languages
-        const std::array<uint8, 4> racesWithoutSpecificLanguages = { RACE_ORC, RACE_HUMAN, RACE_MAGHAR_ORC, RACE_KUL_TIRAN };
+        std::array<uint8, 4> const racesWithoutSpecificLanguages = { RACE_ORC, RACE_HUMAN, RACE_MAGHAR_ORC, RACE_KUL_TIRAN };
         if (std::find(racesWithoutSpecificLanguages.begin(), racesWithoutSpecificLanguages.end(), factionChangeInfo->RaceID) == racesWithoutSpecificLanguages.end())
         {
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_SKILL_LANGUAGE);

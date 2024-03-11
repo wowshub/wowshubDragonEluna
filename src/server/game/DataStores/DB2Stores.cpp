@@ -1147,6 +1147,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     std::unordered_map<uint32, ChrCustomizationDisplayInfoEntry const*> displayInfoByCustomizationChoice;
 
     // build shapeshift form model lookup
+    std::array<uint8, 7> const druidRaces = { RACE_NIGHTELF, RACE_TAUREN, RACE_TROLL, RACE_WORGEN, RACE_HIGHMOUNTAIN_TAUREN, RACE_ZANDALARI_TROLL, RACE_KUL_TIRAN };
     for (ChrCustomizationElementEntry const* customizationElement : sChrCustomizationElementStore)
     {
         if (ChrCustomizationDisplayInfoEntry const* customizationDisplayInfo = sChrCustomizationDisplayInfoStore.LookupEntry(customizationElement->ChrCustomizationDisplayInfoID))
@@ -1158,7 +1159,6 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
                 {
                     if (customizationDisplayInfo->ShapeshiftFormID)
                     {
-                        static const std::vector<uint8> druidRaces = { RACE_NIGHTELF, RACE_TAUREN, RACE_TROLL, RACE_WORGEN, RACE_HIGHMOUNTAIN_TAUREN, RACE_TROLL, RACE_KUL_TIRAN };
                         if (ChrCustomizationReqEntry const* customizationReq = sChrCustomizationReqStore.LookupEntry(customizationChoice->ChrCustomizationReqID))
                         {
                             for (const auto race : druidRaces)
@@ -1167,7 +1167,9 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
                                 {
                                     shapeshiftFormByRace.emplace(race, std::make_pair(customizationOption->ID, uint8(customizationDisplayInfo->ShapeshiftFormID)));
                                     if (customizationReq->AchievementID == 0 && customizationReq->QuestID == 0 && customizationReq->ItemModifiedAppearanceID == 0 && customizationReq->RaceMask.RawValue != -1)
+                                    {
                                         _shapeshiftRaceFormDefaultOptions.emplace(std::make_pair(race, uint8(customizationDisplayInfo->ShapeshiftFormID)), customizationChoice);
+                                    }
                                 }
                             }
                         }
@@ -1229,7 +1231,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
             }
 
             // link shapeshift displays to race/gender/form
-            for (std::pair<uint32 const, std::pair<uint32, uint8>> const& shapeshiftOptionsForModel : Trinity::Containers::MapEqualRange(shapeshiftFormByRace, raceModel->ChrRacesID))
+            for (std::pair<uint8 const, std::pair<uint32, uint8>> const& shapeshiftOptionsForModel : Trinity::Containers::MapEqualRange(shapeshiftFormByRace, raceModel->ChrRacesID))
             {
                 ShapeshiftFormModelData& data = _chrCustomizationChoicesForShapeshifts[{ uint8(raceModel->ChrRacesID), shapeshiftOptionsForModel.second.second }];
                 data.OptionID = shapeshiftOptionsForModel.second.first;
