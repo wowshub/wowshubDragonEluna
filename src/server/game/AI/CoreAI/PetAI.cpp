@@ -273,7 +273,7 @@ void PetAI::OwnerAttackedBy(Unit* attacker)
         return;
 
     // Passive pets don't do anything
-    if (me->HasReactState(REACT_PASSIVE))
+    if (me->HasReactState(REACT_PASSIVE) || me->HasReactState(REACT_ASSIST))
         return;
 
     // Prevent pet from disengaging from current target
@@ -294,7 +294,7 @@ void PetAI::OwnerAttacked(Unit* target)
         return;
 
     // Passive pets don't do anything
-    if (me->HasReactState(REACT_PASSIVE))
+    if (me->HasReactState(REACT_PASSIVE) || me->HasReactState(REACT_DEFENSIVE))
         return;
 
     // Prevent pet from disengaging from current target
@@ -409,7 +409,6 @@ void PetAI::DoAttack(Unit* target, bool chase)
             owner->SetUnitFlag(UNIT_FLAG_PET_IN_COMBAT);
 
         me->SetUnitFlag(UNIT_FLAG_PET_IN_COMBAT); // on player pets, this flag indicates we're actively going after a target - that's what we're doing, so set it
-
         // Play sound to let the player know the pet is attacking something it picked on its own
         if (me->HasReactState(REACT_AGGRESSIVE) && !me->GetCharmInfo()->IsCommandAttack())
             me->SendPetAIReaction(me->GetGUID());
