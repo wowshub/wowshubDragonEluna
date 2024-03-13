@@ -26591,7 +26591,7 @@ void Player::InitRunes()
     SetUpdateFieldValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::PowerRegenInterruptedFlatModifier, runeIndex), 0.0f);
 }
 
-void Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, ItemContext context, bool broadcast, bool createdByPlayer)
+void Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, ItemContext context, bool broadcast, bool createdByPlayer, DisplayToastMethod toastMethod /*PersonalLoot*/)
 {
     Loot loot(nullptr, ObjectGuid::Empty, LOOT_NONE, nullptr);
     loot.FillLoot(loot_id, store, this, true, false, LOOT_MODE_DEFAULT, context);
@@ -30725,4 +30725,21 @@ bool Player::HasQuest(uint32 questID) const
     }
 
     return false;
+}
+
+bool Player::TeleportToDigsiteInMap(uint32 mapId)
+{
+    std::set<uint32> sites;
+
+    if (sites.empty())
+        return false;
+
+    uint32 site_id = Trinity::Containers::SelectRandomContainerElement(sites);
+
+    MapEntry const* map = sMapStore.LookupEntry(mapId);
+    if (!map)
+        return false;
+
+    return true;
+
 }

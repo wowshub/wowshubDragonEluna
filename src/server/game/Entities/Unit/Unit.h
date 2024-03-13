@@ -1608,6 +1608,7 @@ class TC_GAME_API Unit : public WorldObject
         void AddGameObject(GameObject* gameObj);
         void RemoveGameObject(GameObject* gameObj, bool del);
         void RemoveGameObject(uint32 spellid, bool del);
+        void RemoveAllAreaObjects();//new
         void RemoveAllGameObjects();
 
         // AreaTrigger management
@@ -1956,6 +1957,9 @@ class TC_GAME_API Unit : public WorldObject
     public:
         void AtStartOfEncounter(EncounterType type);
         void AtEndOfEncounter(EncounterType type);
+
+        typedef std::list<AreaTrigger*> AreaObjectList;//new
+        AreaObjectList m_AreaObj; //new
 
     private:
 

@@ -431,6 +431,24 @@ class TC_GAME_API Spell
         void EffectChangeActiveCombatTraitConfig();
         void EffectTeleportGraveyard();
 
+        //NEW
+        void EffectApplyAreaAura();
+        void EffectSurvey();
+        void EffectCorpseLoot();
+        void EffectSpecCount();
+        void EffectDespawnAreatrigger();
+        void SendScene();
+        void EffectLootWithToast();
+        void EffectJoinOrLeavePlayerParty();
+        uint8 m_diffMode;
+        void EffectTeleportToDigsite();
+        void EffectModReputation();
+        void EffectRemovePhase();
+        void EffectIncreaseSkill();
+        void EffectForceEquipItem();
+        void EffectScrapItem();
+        void EffectSetChromieTime();
+
         typedef std::unordered_set<Aura*> UsedSpellMods;
 
         Spell(WorldObject* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, ObjectGuid originalCasterGUID = ObjectGuid::Empty, ObjectGuid originalCastId = ObjectGuid::Empty);

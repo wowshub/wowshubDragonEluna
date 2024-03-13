@@ -13903,3 +13903,11 @@ int32 Unit::GetAuraEffectAmount(uint32 spellId, uint8 effIndex, ObjectGuid caste
 
     return 0;
 }
+
+void Unit::RemoveAllAreaObjects()
+{
+    while (!m_AreaObj.empty())
+    {
+        m_AreaObj.front()->Remove();
+    }
+}
