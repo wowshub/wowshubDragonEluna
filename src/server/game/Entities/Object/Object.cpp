@@ -57,10 +57,6 @@
 #include "VMapManager2.h"
 #include "World.h"
 #include <G3D/Vector3.h>
-#ifdef ELUNA
-#include "LuaEngine.h"
-#include "ElunaEventMgr.h"
-#endif
 #include <sstream>
 
 constexpr float VisibilityDistances[AsUnderlyingType(VisibilityDistanceType::Max)] =
@@ -90,8 +86,8 @@ Object::~Object()
     if (IsInWorld())
     {
         TC_LOG_FATAL("misc", "Object::~Object {} deleted but still in world!!", GetGUID().ToString());
-        if (isType(TYPEMASK_ITEM))
-            TC_LOG_FATAL("misc", "Item slot {}", ((Item*)this)->GetSlot());
+        if (Item* item = ToItem())
+            TC_LOG_FATAL("misc", "Item slot {}", item->GetSlot());
         ABORT();
     }
 
@@ -876,8 +872,8 @@ void MovementInfo::OutDebug()
 }
 
 WorldObject::WorldObject(bool isWorldObject) : Object(), WorldLocation(), LastUsedScriptID(0),
-m_movementInfo(), m_name(), m_isActive(false), m_isFarVisible(false), m_isWorldObject(isWorldObject), m_zoneScript(nullptr),
-ElunaEvents(NULL), m_transport(nullptr), m_zoneId(0), m_areaId(0), m_staticFloorZ(VMAP_INVALID_HEIGHT), m_outdoors(false), m_liquidStatus(LIQUID_MAP_NO_WATER),
+m_movementInfo(), m_name(), m_isActive(false), m_isFarVisible(false), m_isStoredInWorldObjectGridContainer(isWorldObject), m_zoneScript(nullptr),
+m_transport(nullptr), m_zoneId(0), m_areaId(0), m_staticFloorZ(VMAP_INVALID_HEIGHT), m_outdoors(false), m_liquidStatus(LIQUID_MAP_NO_WATER),
 m_currMap(nullptr), m_InstanceId(0), _dbPhase(0), m_notifyflags(0)
 {
     m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE | GHOST_VISIBILITY_GHOST);
@@ -886,13 +882,8 @@ m_currMap(nullptr), m_InstanceId(0), _dbPhase(0), m_notifyflags(0)
 
 WorldObject::~WorldObject()
 {
-#ifdef ELUNA
-    delete ElunaEvents;
-    ElunaEvents = NULL;
-#endif
-	
     // this may happen because there are many !create/delete
-    if (IsWorldObject() && m_currMap)
+    if (IsStoredInWorldObjectGridContainer() && m_currMap)
     {
         if (GetTypeId() == TYPEID_CORPSE)
         {
@@ -907,13 +898,9 @@ WorldObject::~WorldObject()
 void WorldObject::Update(uint32 diff)
 {
     m_Events.Update(diff);
-	
-#ifdef ELUNA
-    ElunaEvents->Update(diff);
-#endif
 }
 
-void WorldObject::SetWorldObject(bool on)
+void WorldObject::SetIsStoredInWorldObjectGridContainer(bool on)
 {
     if (!IsInWorld())
         return;
@@ -921,9 +908,9 @@ void WorldObject::SetWorldObject(bool on)
     GetMap()->AddObjectToSwitchList(this, on);
 }
 
-bool WorldObject::IsWorldObject() const
+bool WorldObject::IsStoredInWorldObjectGridContainer() const
 {
-    if (m_isWorldObject)
+    if (m_isStoredInWorldObjectGridContainer)
         return true;
 
     if (ToCreature() && ToCreature()->m_isTempWorldObject)
@@ -958,15 +945,29 @@ void WorldObject::setActive(bool on)
 void WorldObject::SetVisibilityDistanceOverride(VisibilityDistanceType type)
 {
     ASSERT(type < VisibilityDistanceType::Max);
-    return SetVisibilityDistanceOverride(VisibilityDistances[AsUnderlyingType(type)]);
-}
+    if (GetTypeId() == TYPEID_PLAYER)
+        return;
 
-void WorldObject::SetVisibilityDistanceOverride(float distance)
-{
-		if(GetTypeId() == TYPEID_PLAYER)
-	return;
+    if (Creature* creature = ToCreature())
+    {
+        creature->RemoveUnitFlag2(UNIT_FLAG2_LARGE_AOI | UNIT_FLAG2_GIGANTIC_AOI | UNIT_FLAG2_INFINITE_AOI);
+        switch (type)
+        {
+            case VisibilityDistanceType::Large:
+                creature->SetUnitFlag2(UNIT_FLAG2_LARGE_AOI);
+                break;
+            case VisibilityDistanceType::Gigantic:
+                creature->SetUnitFlag2(UNIT_FLAG2_GIGANTIC_AOI);
+                break;
+            case VisibilityDistanceType::Infinite:
+                creature->SetUnitFlag2(UNIT_FLAG2_INFINITE_AOI);
+                break;
+            default:
+                break;
+        }
+    }
 
-    m_visibilityDistanceOverride = distance;
+    m_visibilityDistanceOverride = VisibilityDistances[AsUnderlyingType(type)];
 }
 
 void WorldObject::SetFarVisible(bool on)
@@ -1360,7 +1361,11 @@ void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
 {
     float new_z = GetMapHeight(x, y, z);
     if (new_z > INVALID_HEIGHT)
-        z = new_z + (isType(TYPEMASK_UNIT) ? static_cast<Unit const*>(this)->GetHoverOffset() : 0.0f);
+    {
+        z = new_z;
+        if (Unit const* unit = ToUnit())
+            z += unit->GetHoverOffset();
+    }
 }
 
 void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z, float* groundZ) const
@@ -1526,15 +1531,6 @@ bool WorldObject::CanSeeOrDetect(WorldObject const* obj, bool implicitDetect, bo
 
     if (!obj->IsPrivateObject() && !sConditionMgr->IsObjectMeetingVisibilityByObjectIdConditions(obj->GetTypeId(), obj->GetEntry(), this))
         return false;
-
-	if (const GameObject* object = obj->ToGameObject()) {
-        const std::set<ObjectGuid> infinites = object->GetMap()->GetInfiniteGameObjects();
-        if (std::find(infinites.begin(), infinites.end(), object->GetGUID()) != infinites.end()) {
-            float distance = GetDistance(obj);
-            //TC_LOG_ERROR("misc", "[+) WorldObject::CanSeeOrDetect(Infinite) : %f ", distance);
-            return true && (distance <= object->GetVisibilityRange());
-        }
-    }
 
     bool corpseVisibility = false;
     if (distanceCheck)
@@ -1809,14 +1805,7 @@ void WorldObject::SetMap(Map* map)
     m_currMap = map;
     m_mapId = map->GetId();
     m_InstanceId = map->GetInstanceId();
-	
-#ifdef ELUNA
-    delete ElunaEvents;
-    // On multithread replace this with a pointer to map's Eluna pointer stored in a map
-    ElunaEvents = new ElunaEventProcessor(&Eluna::GEluna, this);
-#endif
-	
-    if (IsWorldObject())
+    if (IsStoredInWorldObjectGridContainer())
         m_currMap->AddWorldObject(this);
 }
 
@@ -1824,14 +1813,8 @@ void WorldObject::ResetMap()
 {
     ASSERT(m_currMap);
     ASSERT(!IsInWorld());
-    if (IsWorldObject())
+    if (IsStoredInWorldObjectGridContainer())
         m_currMap->RemoveWorldObject(this);
-	
-#ifdef ELUNA
-    delete ElunaEvents;
-    ElunaEvents = NULL;
-#endif
-	
     m_currMap = nullptr;
     //maybe not for corpse
     //m_mapId = 0;
@@ -3333,24 +3316,6 @@ void WorldObject::GetCreatureListWithEntryInGrid(Container& creatureContainer, u
     Cell::VisitGridObjects(this, searcher, maxSearchRange);
 }
 
-void WorldObject::GetGameObjectListWithEntryInGridAppend(std::list<GameObject*>& gameobjectList, uint32 entry, float maxSearchRange) const
-{
-    std::list<GameObject*> tempList;
-    GetGameObjectListWithEntryInGrid(tempList, entry, maxSearchRange);
-    gameobjectList.sort();
-    tempList.sort();
-    gameobjectList.merge(tempList);
-}
-
-void WorldObject::GetCreatureListWithEntryInGridAppend(std::list<Creature*>& creatureList, uint32 entry, float maxSearchRange) const
-{
-    std::list<Creature*> tempList;
-    GetCreatureListWithEntryInGrid(tempList, entry, maxSearchRange);
-    creatureList.sort();
-    tempList.sort();
-    creatureList.merge(tempList);
-}
-
 template <typename Container>
 void WorldObject::GetCreatureListWithOptionsInGrid(Container& creatureContainer, float maxSearchRange, FindCreatureOptions const& options) const
 {
@@ -3674,7 +3639,7 @@ void WorldObject::DestroyForNearbyPlayers()
         if (!player->HaveAtClient(this))
             continue;
 
-        if (isType(TYPEMASK_UNIT) && ToUnit()->GetCharmerGUID() == player->GetGUID()) /// @todo this is for puppet
+        if (Unit const* unit = ToUnit(); unit && unit->GetCharmerGUID() == player->GetGUID()) /// @todo this is for puppet
             continue;
 
         DestroyForPlayer(player);
@@ -3825,139 +3790,6 @@ std::string WorldObject::GetDebugInfo() const
          << "Name: " << GetName();
     return sstr.str();
 }
-
-std::list<Creature*> WorldObject::FindAllCreaturesInRange(float range)
-{
-    std::list<Creature*> templist;
-    float x, y, z;
-    GetPosition(x, y, z);
-
-    CellCoord pair(Trinity::ComputeCellCoord(x, y));
-    Cell cell(pair);
-    cell.SetNoCreate();
-
-    Trinity::AllCreaturesInRange check(this, range);
-    Trinity::CreatureListSearcher<Trinity::AllCreaturesInRange> searcher(this, templist, check);
-    TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesInRange>, GridTypeMapContainer> cSearcher(searcher);
-    cell.Visit(pair, cSearcher, *(GetMap()), *this, this->GetGridActivationRange());
-
-    return templist;
-}
-
-std::list<Creature*> WorldObject::FindAllUnfriendlyCreaturesInRange(float range)
-{
-    std::list<Creature*> templist;
-    if (Unit* unit = this->ToUnit())
-    {
-        float x, y, z;
-        unit->GetPosition(x, y, z);
-
-        CellCoord pair(Trinity::ComputeCellCoord(x, y));
-        Cell cell(pair);
-        cell.SetNoCreate();
-
-        Trinity::AttackableUnitInObjectRangeCheck check(unit, range);
-        Trinity::CreatureListSearcher<Trinity::AttackableUnitInObjectRangeCheck> searcher(unit, templist, check);
-        TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AttackableUnitInObjectRangeCheck>, GridTypeMapContainer> cSearcher(searcher);
-        cell.Visit(pair, cSearcher, *(unit->GetMap()), *unit, unit->GetGridActivationRange());
-    }
-    return templist;
-}
-
-std::list<GameObject*> WorldObject::FindNearestGameObjects(uint32 entry, float range) const
-{
-    std::list<GameObject*> goList;
-    GetGameObjectListWithEntryInGrid(goList, entry, range);
-    return goList;
-}
-
-std::list<Creature*> WorldObject::FindNearestCreatures(uint32 entry, float range) const
-{
-    std::list<Creature*> creatureList;
-    GetCreatureListWithEntryInGrid(creatureList, entry, range);
-    return creatureList;
-}
-
-AreaTrigger* WorldObject::SelectNearestAreaTrigger(uint32 spellId, float distance) const
-{
-    AreaTrigger* target = nullptr;
-
-    Trinity::NearestAreaTriggerWithIdInObjectRangeCheck checker(this, spellId, distance);
-    Trinity::AreaTriggerSearcher<Trinity::NearestAreaTriggerWithIdInObjectRangeCheck> searcher(this, target, checker);
-    Cell::VisitAllObjects(this, searcher, distance);
-
-    return target;
-}
-
-std::list<AreaTrigger*> WorldObject::SelectNearestAreaTriggers(uint32 spellId, float range)
-{
-    std::list<AreaTrigger*> atList;
-    Trinity::AnyAreatriggerInObjectRangeCheck checker(this, range);
-    Trinity::AreaTriggerListSearcher<Trinity::AnyAreatriggerInObjectRangeCheck> searcher(this, atList, checker);
-    Cell::VisitGridObjects(this, searcher, range);
-
-    atList.remove_if([spellId](AreaTrigger* p_AreaTrigger)
-    {
-        if (p_AreaTrigger == nullptr || p_AreaTrigger->GetSpellId() != spellId)
-            return true;
-
-        return false;
-    });
-
-    return atList;
-}
-
-std::list<Player*> WorldObject::SelectNearestPlayers(float range, bool alive)
-{
-    std::list<Player*> PlayerList;
-    Trinity::AnyPlayerInObjectRangeCheck checker(this, range, alive);
-    Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, PlayerList, checker);
-    Cell::VisitGridObjects(this, searcher, range);
-    return PlayerList;
-}
-
-template <typename Container>
-void WorldObject::GetCreatureListInGrid(Container& creatureList, float maxSearchRange) const
-{
-    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
-    Cell cell(pair);
-    cell.SetNoCreate();
-
-    Trinity::AllCreaturesInRange check(this, maxSearchRange);
-    Trinity::CreatureListSearcher<Trinity::AllCreaturesInRange> searcher(this, creatureList, check);
-    TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesInRange>, GridTypeMapContainer> visitor(searcher);
-
-    cell.Visit(pair, visitor, *(this->GetMap()), *this, maxSearchRange);
-}
-
-Player* WorldObject::FindNearestPlayer(float range, bool /*alive*/)
-{
-    Player* player = nullptr;
-    Trinity::AnyPlayerInObjectRangeCheck check(this, GetVisibilityRange());
-    Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, check);
-    Cell::VisitGridObjects(this, searcher, range);
-    return player;
-}
-
-std::list<Creature*> WorldObject::FindNearestCreatures(std::list<uint32> entrys, float range) const
-{
-    std::list<Creature*> creatureList;
-
-    for (std::list<uint32>::iterator itr = entrys.begin(); itr != entrys.end(); ++itr)
-        GetCreatureListWithEntryInGrid(creatureList, (*itr), range);
-    return creatureList;
-}
-
-template<class NOTIFIER>
-void WorldObject::VisitNearbyGridObject(const float& radius, NOTIFIER& notifier) const
-{
-    if (IsInWorld())
-        GetMap()->VisitGrid(GetPositionX(), GetPositionY(), radius, notifier);
-}
-
-template TC_GAME_API void WorldObject::GetCreatureListInGrid(std::list<Creature*>&, float) const;
-template TC_GAME_API void WorldObject::GetCreatureListInGrid(std::deque<Creature*>&, float) const;
-template TC_GAME_API void WorldObject::GetCreatureListInGrid(std::vector<Creature*>&, float) const;
 
 template TC_GAME_API void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>&, uint32, float) const;
 template TC_GAME_API void WorldObject::GetGameObjectListWithEntryInGrid(std::deque<GameObject*>&, uint32, float) const;
