@@ -16,6 +16,7 @@
  */
 
 #include "MapManager.h"
+#include "BattlefieldMgr.h"
 #include "Battleground.h"
 #include "Containers.h"
 #include "DatabaseEnv.h"
@@ -25,6 +26,7 @@
 #include "InstanceLockMgr.h"
 #include "Log.h"
 #include "Map.h"
+#include "OutdoorPvPMgr.h"
 #include "Player.h"
 #include "ScenarioMgr.h"
 #include "ScriptMgr.h"
@@ -267,6 +269,10 @@ Map* MapManager::CreateMap(uint32 mapId, Player* player)
         {
             ptr.reset(map);
             map->SetWeakPtr(ptr);
+
+            sScriptMgr->OnCreateMap(map);
+            sOutdoorPvPMgr->CreateOutdoorPvPForMap(map);
+            sBattlefieldMgr->CreateBattlefieldsForMap(map);
         }
     }
 
@@ -363,6 +369,10 @@ bool MapManager::DestroyMap(Map* map)
     if (map->HavePlayers())
         return false;
 
+    sOutdoorPvPMgr->DestroyOutdoorPvPForMap(map);
+    sBattlefieldMgr->DestroyBattlefieldsForMap(map);
+    sScriptMgr->OnDestroyMap(map);
+
     map->UnloadAll();
 
     // Free up the instance id and allow it to be reused for normal dungeons, bgs and arenas
@@ -382,7 +392,13 @@ void MapManager::UnloadAll()
 {
     // first unload maps
     for (auto iter = i_maps.begin(); iter != i_maps.end(); ++iter)
+    {
         iter->second->UnloadAll();
+
+        sOutdoorPvPMgr->DestroyOutdoorPvPForMap(iter->second.get());
+        sBattlefieldMgr->DestroyBattlefieldsForMap(iter->second.get());
+        sScriptMgr->OnDestroyMap(iter->second.get());
+    }
 
     // then delete them
     i_maps.clear();
