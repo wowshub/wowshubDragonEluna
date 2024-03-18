@@ -448,7 +448,6 @@ class TC_GAME_API Spell
         void EffectIncreaseSkill();
         void EffectForceEquipItem();
         void EffectScrapItem();
-        void EffectSetChromieTime();
 
         typedef std::unordered_set<Aura*> UsedSpellMods;
 

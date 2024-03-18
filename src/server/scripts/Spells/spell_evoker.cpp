@@ -32,15 +32,21 @@
 
 enum EvokerSpells
 {
-    SPELL_EVOKER_ENERGIZING_FLAME          = 400006,
-    SPELL_EVOKER_GLIDE_KNOCKBACK           = 358736,
-    SPELL_EVOKER_HOVER                     = 358267,
-    SPELL_EVOKER_LIVING_FLAME              = 361469,
-    SPELL_EVOKER_LIVING_FLAME_DAMAGE       = 361500,
-    SPELL_EVOKER_LIVING_FLAME_HEAL         = 361509,
-    SPELL_EVOKER_PERMEATING_CHILL_TALENT   = 370897,
-    SPELL_EVOKER_PYRE_DAMAGE               = 357212,
-    SPELL_EVOKER_SOAR_RACIAL               = 369536
+    SPELL_EVOKER_ENERGIZING_FLAME                   = 400006,
+    SPELL_EVOKER_GLIDE_KNOCKBACK                    = 358736,
+    SPELL_EVOKER_HOVER                              = 358267,
+    SPELL_EVOKER_LIVING_FLAME                       = 361469,
+    SPELL_EVOKER_LIVING_FLAME_DAMAGE                = 361500,
+    SPELL_EVOKER_LIVING_FLAME_HEAL                  = 361509,
+    SPELL_EVOKER_PERMEATING_CHILL_TALENT            = 370897,
+    SPELL_EVOKER_PYRE_DAMAGE                        = 357212,
+    SPELL_EVOKER_SOAR_RACIAL                        = 369536,
+    SPELL_SKYWARD_ASCENT                            = 367033,
+    SPELL_SURGE_FORWARD                             = 369541,
+    SPELL_VISAGE                                    = 372014,
+    SPELL_ALTERED_FORM                              = 97709,
+    SPELL_HATRED                                    = 118328,
+    SPELL_CROSS_ROCKS_TO_POOL_OF_REFLECTION_CREDIT  = 108590,
 };
 
 enum EvokerSpellLabels
@@ -203,6 +209,123 @@ class spell_evo_pyre : public SpellScript
     }
 };
 
+// 357208, 382266 - Fire Breath
+class spell_evo_fire_breath : public AuraScript
+{
+    PrepareAuraScript(spell_evo_fire_breath);
+
+    enum eSpells
+    {
+        FireBreath = 357209,
+    };
+
+    void HandleAfterRemove(AuraEffect const* p_AuraEff, AuraEffectHandleModes p_Mode)
+    {
+        Unit* l_Caster = GetCaster();
+        if (!l_Caster || GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_CANCEL)
+            return;
+
+        l_Caster->CastSpell(l_Caster, eSpells::FireBreath, true);
+    }
+
+    void Register() override
+    {
+        AfterEffectRemove += AuraEffectRemoveFn(spell_evo_fire_breath::HandleAfterRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+//357208 - Fire Breath
+class spell_evo_fire_breath_2 : public SpellScript
+{
+    PrepareSpellScript(spell_evo_fire_breath_2);
+
+    void HandleOnHit()
+    {
+        if (Unit* target = GetHitUnit())
+        {
+            int32 damage = GetHitDamage();
+            int32 maxHealth = target->GetMaxHealth();
+
+            if (target->GetHealth() + damage > maxHealth)
+                damage = maxHealth - target->GetHealth();
+
+            SetHitDamage(damage);
+            target->SetHealth(target->GetHealth() - damage);
+        }
+    }
+
+    void Register() override
+    {
+        OnHit += SpellHitFn(spell_evo_fire_breath_2::HandleOnHit);
+    }
+};
+
+// 369536 - Soar
+class spell_evo_soar : public SpellScript
+{
+    PrepareSpellScript(spell_evo_soar);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_EVOKER_SOAR_RACIAL, SPELL_SKYWARD_ASCENT, SPELL_SURGE_FORWARD });
+    }
+
+    void HandleOnHit(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        // Increase flight speed by 830540%
+        caster->SetSpeedRate(MOVE_FLIGHT, 83054.0f);
+
+        Player* player = GetHitPlayer();
+        // Add "Skyward Ascent" and "Surge Forward" to the caster's spellbook
+        player->LearnSpell(SPELL_SKYWARD_ASCENT, false);
+        player->LearnSpell(SPELL_SURGE_FORWARD, false);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_evo_soar::HandleOnHit, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+// 351239 - Visage (Racial)
+class spell_evo_cosmic_visage : public SpellScript
+{
+    PrepareSpellScript(spell_evo_cosmic_visage);
+
+    void HandleOnCast()
+    {
+        Unit* caster = GetCaster();
+
+        if (caster->HasAura(SPELL_VISAGE))
+        {
+            // Dracthyr Form
+            caster->RemoveAurasDueToSpell(SPELL_VISAGE);
+            caster->CastSpell(caster, SPELL_ALTERED_FORM, true);
+            caster->SendPlaySpellVisual(caster, SPELL_HATRED, 0, 0, 60, false);
+            caster->SetDisplayId(SPELL_CROSS_ROCKS_TO_POOL_OF_REFLECTION_CREDIT);
+        }
+        else
+        {
+            // Visage Form
+            if (caster->HasAura(SPELL_ALTERED_FORM))
+                caster->RemoveAurasDueToSpell(SPELL_ALTERED_FORM);
+
+            caster->CastSpell(caster, SPELL_VISAGE, true);
+            caster->SendPlaySpellVisual(caster, SPELL_HATRED, 0, 0, 60, false);
+            caster->SetDisplayId(104597);
+        }
+    }
+
+    void Register()
+    {
+        OnCast += SpellCastFn(spell_evo_cosmic_visage::HandleOnCast);
+    }
+};
+
 void AddSC_evoker_spell_scripts()
 {
     RegisterSpellScript(spell_evo_azure_strike);
@@ -211,4 +334,10 @@ void AddSC_evoker_spell_scripts()
     RegisterSpellScript(spell_evo_living_flame);
     RegisterSpellScript(spell_evo_permeating_chill);
     RegisterSpellScript(spell_evo_pyre);
+
+    //new
+    RegisterSpellScript(spell_evo_fire_breath);
+    RegisterSpellScript(spell_evo_fire_breath_2);
+    RegisterSpellScript(spell_evo_soar);
+    RegisterSpellScript(spell_evo_cosmic_visage);
 }
