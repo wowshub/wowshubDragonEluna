@@ -1822,6 +1822,29 @@ class spell_hun_spearhead : public SpellScript
     }
 };
 
+// 360966 - Wildfire Bomb - Need test
+class spell_hun_wildfire_bomb : public SpellScript
+{
+    PrepareSpellScript(spell_hun_wildfire_bomb);
+
+    void HandleDummy(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        Unit* target = caster->ToPlayer()->GetSelectedUnit();
+
+        if (!caster || !target )
+            return;
+
+        caster->CastSpell(target, 265157, true);
+        caster->CastSpell(target, 259496, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_hun_wildfire_bomb::HandleDummy, EFFECT_2, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     RegisterSpellScript(spell_hun_a_murder_of_crows);
@@ -1872,4 +1895,5 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_barrage();
     RegisterSpellScript(spell_hun_flanking_strike);
     RegisterSpellScript(spell_hun_spearhead);
+    RegisterSpellScript(spell_hun_wildfire_bomb);
 }
