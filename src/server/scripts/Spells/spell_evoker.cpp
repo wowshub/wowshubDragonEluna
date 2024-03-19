@@ -46,7 +46,6 @@ enum EvokerSpells
     SPELL_VISAGE                                    = 372014,
     SPELL_ALTERED_FORM                              = 97709,
     SPELL_HATRED                                    = 118328,
-    SPELL_CROSS_ROCKS_TO_POOL_OF_REFLECTION_CREDIT  = 108590,
 };
 
 enum EvokerSpellLabels
@@ -306,7 +305,7 @@ class spell_evo_cosmic_visage : public SpellScript
             caster->RemoveAurasDueToSpell(SPELL_VISAGE);
             caster->CastSpell(caster, SPELL_ALTERED_FORM, true);
             caster->SendPlaySpellVisual(caster, SPELL_HATRED, 0, 0, 60, false);
-            caster->SetDisplayId(SPELL_CROSS_ROCKS_TO_POOL_OF_REFLECTION_CREDIT);
+            caster->SetDisplayId(108590);
         }
         else
         {
