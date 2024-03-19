@@ -18,9 +18,9 @@
 #include "Log.h"
 
 typedef QueryResult ElunaQuery;
-#define ELUNA_LOG_INFO(...)     TC_LOG_INFO("eluna", __VA_ARGS__);
-#define ELUNA_LOG_ERROR(...)    TC_LOG_ERROR("eluna", __VA_ARGS__);
-#define ELUNA_LOG_DEBUG(...)    TC_LOG_DEBUG("eluna", __VA_ARGS__);
+#define ELUNA_LOG_INFO(message__, ...)     TC_LOG_INFO("eluna", message__, ## __VA_ARGS__);
+#define ELUNA_LOG_ERROR(message__, ...)    TC_LOG_ERROR("eluna", message__, ## __VA_ARGS__);
+#define ELUNA_LOG_DEBUG(message__, ...)    TC_LOG_DEBUG("eluna", message__, ## __VA_ARGS__);
 #define GET_GUID                GetGUID
 
 #define HIGHGUID_PLAYER         HighGuid::Player
