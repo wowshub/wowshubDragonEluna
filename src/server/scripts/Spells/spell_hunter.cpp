@@ -113,6 +113,11 @@ enum DireBeastSpells
     DIRE_BEAST_VALLEY_OF_THE_FOUR_WINDS             = 122811,
 };
 
+enum MiscNpcs
+{
+    NPC_VOLLEY = 60942
+};
+
 // 131894 - A Murder of Crows
 class spell_hun_a_murder_of_crows : public AuraScript
 {
@@ -1288,30 +1293,6 @@ class spell_hun_intimidation : public SpellScript
     }
 };
 
-// 375891 - Death Chakram - Need more info (retarged + math dam %)
-class spell_hun_death_chakram : public SpellScript
-{
-
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        return ValidateSpellInfo({ SPELL_DEATH_CHAKRAM_DAMAGE });
-    }
-
-    void HandleEffectHitTarget(SpellEffIndex /*effIndex*/)
-    {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
-
-        caster->CastSpell(GetHitUnit(), SPELL_DEATH_CHAKRAM_DAMAGE, true);
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_hun_death_chakram::HandleEffectHitTarget, EFFECT_1, SPELL_EFFECT_DUMMY);
-    }
-};
-
 // 19574 - Bestial Wrath
 class spell_hun_bestial_wrath : public SpellScript
 {
@@ -1527,28 +1508,6 @@ public:
     }
 };
 
-// 201430 - Stampede - Need more info (visual)
-class spell_hun_stampede : public AuraScript
-{
-    PrepareSpellScript(spell_hun_stampede);
-
-    void HandleProc(AuraEffect* aurEff, ProcEventInfo& /*eventInfo*/)
-    {
-        Unit* caster = GetCaster();
-        Unit* target = GetTarget();
-        if (!caster || !target)
-            return;
-
-        caster->CastSpell(target, SPELL_STAMPEDE_DAMAGE, aurEff);
-        caster->CastSpell(target, SPELL_STAMPEDE_SOUND, true);
-    }
-
-    void Register() override
-    {
-        AfterEffectProc += AuraEffectProcFn(spell_hun_stampede::HandleProc, EFFECT_1, SPELL_AURA_DUMMY);
-    }
-};
-
 // 321530 - Bloodshed - Work half
 class spell_hun_bloodshed : public SpellScript
 {
@@ -1583,23 +1542,63 @@ class spell_hun_bloodshed : public SpellScript
     }
 };
 
-// 260243 - Volley
-class spell_hun_volley : public AuraScript
+// 260243 - Volley (Aura)
+class spell_hun_volley_aura : public AuraScript
 {
-    bool Validate(SpellInfo const* /*spellInfo*/) override
+public:
+    void SetVisualDummy(TempSummon* summon)
     {
-        return ValidateSpellInfo({ SPELL_VOLLEY_DAMAGE });
+        _visualDummy = summon->GetGUID();
+        _dest = summon->GetPosition();
     }
 
-    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+private:
+    void HandleEffectPeriodic(AuraEffect const* aurEff)
     {
-        if (Unit* caster = GetCaster())
-            caster->CastSpell(GetTarget(), SPELL_VOLLEY_DAMAGE, true);
+        GetTarget()->CastSpell(_dest, SPELL_VOLLEY_DAMAGE, aurEff);
+    }
+
+    void HandleEffecRemoved(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Creature* summon = ObjectAccessor::GetCreature(*GetTarget(), _visualDummy))
+            summon->DespawnOrUnsummon();
     }
 
     void Register() override
     {
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_hun_volley::HandlePeriodic, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+        OnEffectRemove += AuraEffectRemoveFn(spell_hun_volley_aura::HandleEffecRemoved, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_hun_volley_aura::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+    }
+
+    ObjectGuid _visualDummy;
+    Position _dest;
+};
+
+// 260243 - Volley
+class spell_hun_volley : public SpellScript
+{
+    PrepareSpellScript(spell_hun_volley);
+
+    void InitializeVisualStalker()
+    {
+        if (Aura* aura = GetHitAura())
+        {
+            if (WorldLocation const* dest = GetExplTargetDest())
+            {
+                Milliseconds duration = Milliseconds(GetSpellInfo()->CalcDuration(GetOriginalCaster()));
+                TempSummon* summon = GetCaster()->GetMap()->SummonCreature(NPC_VOLLEY, *dest, nullptr, duration, GetOriginalCaster());
+                if (!summon)
+                    return;
+
+                if (spell_hun_volley_aura* script = aura->GetScript<spell_hun_volley_aura>())
+                    script->SetVisualDummy(summon);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        AfterHit += SpellHitFn(spell_hun_volley::InitializeVisualStalker);
     }
 };
 
@@ -1845,29 +1844,6 @@ class spell_hun_spearhead : public SpellScript
     }
 };
 
-// 259495 - Wildfire Bomb - Need test
-class spell_hun_wildfire_bomb : public SpellScript
-{
-    PrepareSpellScript(spell_hun_wildfire_bomb);
-
-    void HandleDummy(SpellEffIndex /*effIndex*/)
-    {
-        Unit* caster = GetCaster();
-        Unit* target = caster->ToPlayer()->GetSelectedUnit();
-
-        if (!caster || !target )
-            return;
-
-        caster->CastSpell(target, 265157, true);
-        caster->CastSpell(target, 259496, true);
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_hun_wildfire_bomb::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
-    }
-};
-
 // Exposive Trap - 236775
 // AreaTriggerID - 9810
 class at_hun_explosive_trap : public AreaTriggerEntityScript
@@ -1984,19 +1960,16 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_kill_command();
     new spell_hun_kill_command_proc();
     RegisterSpellScript(spell_hun_intimidation);
-    RegisterSpellScript(spell_hun_death_chakram); //no effect
     RegisterSpellScript(spell_hun_bestial_wrath);
     new spell_hun_barbed_shot();
     new spell_hun_dire_beast();
     new at_hun_binding_shot();
-    RegisterSpellScript(spell_hun_stampede); //no effect
     RegisterSpellScript(spell_hun_bloodshed); //work half
-    RegisterSpellScript(spell_hun_volley); //no effect
+    RegisterSpellAndAuraScriptPair(spell_hun_volley, spell_hun_volley_aura);
     new spell_bursting_shot();
     new at_hun_steel_trap();
     new spell_hun_barrage();
     RegisterSpellScript(spell_hun_flanking_strike);
     RegisterSpellScript(spell_hun_spearhead);
-    RegisterSpellScript(spell_hun_wildfire_bomb); //no effect
     new at_hun_explosive_trap();
 }
