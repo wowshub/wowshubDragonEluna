@@ -1291,21 +1291,24 @@ class spell_hun_intimidation : public SpellScript
 // 375891 - Death Chakram - Need more info (retarged + math dam %)
 class spell_hun_death_chakram : public SpellScript
 {
-    PrepareSpellScript(spell_hun_death_chakram);
 
-    void HandleDummy(SpellEffIndex /*effIndex*/)
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_DEATH_CHAKRAM_DAMAGE });
+    }
+
+    void HandleEffectHitTarget(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
-        Unit* target = caster->ToPlayer()->GetSelectedUnit();
-        if (!caster || !target)
+        if (!caster)
             return;
 
-        caster->CastSpell(target, SPELL_DEATH_CHAKRAM_DAMAGE, true);
+        caster->CastSpell(GetHitUnit(), SPELL_DEATH_CHAKRAM_DAMAGE, true);
     }
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_hun_death_chakram::HandleDummy, EFFECT_2, SPELL_EFFECT_DUMMY);
+        OnEffectHitTarget += SpellEffectFn(spell_hun_death_chakram::HandleEffectHitTarget, EFFECT_1, SPELL_EFFECT_DUMMY);
     }
 };
 
@@ -1524,29 +1527,29 @@ public:
     }
 };
 
-// 102199 - Stampede - Need more info (visual)
-class spell_hun_stampede : public SpellScript
+// 201430 - Stampede - Need more info (visual)
+class spell_hun_stampede : public AuraScript
 {
     PrepareSpellScript(spell_hun_stampede);
 
-    void HandleDummy(SpellEffIndex /*effIndex*/)
+    void HandleProc(AuraEffect* aurEff, ProcEventInfo& /*eventInfo*/)
     {
         Unit* caster = GetCaster();
-        Unit* target = caster->ToPlayer()->GetSelectedUnit();
+        Unit* target = GetTarget();
         if (!caster || !target)
             return;
 
-        caster->CastSpell(target, SPELL_STAMPEDE_DAMAGE, true);
+        caster->CastSpell(target, SPELL_STAMPEDE_DAMAGE, aurEff);
         caster->CastSpell(target, SPELL_STAMPEDE_SOUND, true);
     }
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_hun_stampede::HandleDummy, EFFECT_2, SPELL_EFFECT_DUMMY);
+        AfterEffectProc += AuraEffectProcFn(spell_hun_stampede::HandleProc, EFFECT_1, SPELL_AURA_DUMMY);
     }
 };
 
-// 321530 - Bloodshed - Need more info
+// 321530 - Bloodshed - Work half
 class spell_hun_bloodshed : public SpellScript
 {
     PrepareSpellScript(spell_hun_bloodshed);
@@ -1555,15 +1558,28 @@ class spell_hun_bloodshed : public SpellScript
     {
         Unit* caster = GetCaster();
         Unit* target = caster->ToPlayer()->GetSelectedUnit();
-        if (!caster || !target)
+        Player* player = caster->ToPlayer();
+        Pet* pet = player->GetPet();
+
+        if (!caster || !player || !target || !pet)
             return;
 
-        caster->CastSpell(target, SPELL_BLOODSHED_PROC, true);
+        if (pet->GetVictim())
+        {
+            pet->AttackStop();
+            pet->ToCreature()->AI()->AttackStart(GetExplTargetUnit());
+            pet->CastSpell(GetExplTargetUnit(), SPELL_BLOODSHED_PROC, true);
+        }
+        else
+            pet->ToCreature()->AI()->AttackStart(GetExplTargetUnit());
+            pet->CastSpell(GetExplTargetUnit(), SPELL_BLOODSHED_PROC, true);
+
+        
     }
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_hun_bloodshed::HandleDummy, EFFECT_2, SPELL_EFFECT_DUMMY);
+        OnEffectHitTarget += SpellEffectFn(spell_hun_bloodshed::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
     }
 };
 
@@ -1640,6 +1656,7 @@ public:
 
         void OnCreate(Spell const* /*creatingSpell*/) override
         {
+
             Unit* caster = at->GetCaster();
 
             if (!caster)
@@ -1670,6 +1687,12 @@ public:
 
             if (!caster->ToPlayer())
                 return;
+
+            if (caster->HasAura(212574)) // Nesingwary's Trapping Treads
+                caster->CastSpell(caster, 212575, true);
+
+            if (caster->HasAura(199543)) // Expert Trapper
+                caster->CastSpell(unit, 201199, true);
 
             if (!caster->IsFriendlyTo(unit))
             {
@@ -1763,7 +1786,7 @@ public:
     }
 };
 
-// 269751 - Flanking Strike - Need test
+// 269751 - Flanking Strike
 class spell_hun_flanking_strike : public SpellScript
 {
     PrepareSpellScript(spell_hun_flanking_strike);
@@ -1796,7 +1819,7 @@ class spell_hun_flanking_strike : public SpellScript
     }
 };
 
-// 360966 - Spearhead - Need test
+// 360966 - Spearhead
 class spell_hun_spearhead : public SpellScript
 {
     PrepareSpellScript(spell_hun_spearhead);
@@ -1808,21 +1831,21 @@ class spell_hun_spearhead : public SpellScript
         Player* player = caster->ToPlayer();
         Pet* pet = player->GetPet();
 
-        if (!caster || !player || !target || !pet)
+        if (!caster || !player || !pet)
             return;
 
-        caster->CastSpell(target, 360972, true);
-        caster->CastSpell(target, 389881, true);
-        pet->CastSpell(target, 360972, true);
+        caster->CastSpell(GetHitUnit(), 360972, true);
+        caster->CastSpell(GetHitUnit(), 389881, true);
+        pet->CastSpell(GetHitUnit(), 360972, true);
     }
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_hun_spearhead::HandleDummy, EFFECT_2, SPELL_EFFECT_DUMMY);
+        OnEffectHitTarget += SpellEffectFn(spell_hun_spearhead::HandleDummy, EFFECT_5, SPELL_EFFECT_DUMMY);
     }
 };
 
-// 360966 - Wildfire Bomb - Need test
+// 259495 - Wildfire Bomb - Need test
 class spell_hun_wildfire_bomb : public SpellScript
 {
     PrepareSpellScript(spell_hun_wildfire_bomb);
@@ -1841,7 +1864,86 @@ class spell_hun_wildfire_bomb : public SpellScript
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_hun_wildfire_bomb::HandleDummy, EFFECT_2, SPELL_EFFECT_DUMMY);
+        OnEffectHitTarget += SpellEffectFn(spell_hun_wildfire_bomb::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+    }
+};
+
+// Exposive Trap - 236775
+// AreaTriggerID - 9810
+class at_hun_explosive_trap : public AreaTriggerEntityScript
+{
+public:
+
+    at_hun_explosive_trap() : AreaTriggerEntityScript("at_hun_explosive_trap") { }
+
+    struct at_hun_explosive_trapAI : AreaTriggerAI
+    {
+        int32 timeInterval;
+
+        enum UsedSpells
+        {
+            SPELL_HUNTER_EXPLOSIVE_TRAP_DAMAGE = 236777
+        };
+
+        at_hun_explosive_trapAI(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
+        {
+            timeInterval = 200;
+        }
+
+        void OnCreate(Spell const* /*creatingSpell*/) override
+        {
+            Unit* caster = at->GetCaster();
+
+            if (!caster)
+                return;
+
+            if (!caster->ToPlayer())
+                return;
+
+            for (auto itr : at->GetInsideUnits())
+            {
+                Unit* target = ObjectAccessor::GetUnit(*caster, itr);
+                if (!caster->IsFriendlyTo(target))
+                {
+                    if (TempSummon* tempSumm = caster->SummonCreature(WORLD_TRIGGER, at->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 200ms))
+                    {
+                        tempSumm->SetFaction(caster->GetFaction());
+                        tempSumm->SetSummonerGUID(caster->GetGUID());
+                        PhasingHandler::InheritPhaseShift(tempSumm, caster);
+                        caster->CastSpell(tempSumm, SPELL_HUNTER_EXPLOSIVE_TRAP_DAMAGE, true);
+                        at->Remove();
+                    }
+                }
+            }
+        }
+
+        void OnUnitEnter(Unit* unit) override
+        {
+            Unit* caster = at->GetCaster();
+
+            if (!caster || !unit)
+                return;
+
+            if (!caster->ToPlayer())
+                return;
+
+            if (!caster->IsFriendlyTo(unit))
+            {
+                if (TempSummon* tempSumm = caster->SummonCreature(WORLD_TRIGGER, at->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 200ms))
+                {
+                    tempSumm->SetFaction(caster->GetFaction());
+                    tempSumm->SetSummonerGUID(caster->GetGUID());
+                    PhasingHandler::InheritPhaseShift(tempSumm, caster);
+                    caster->CastSpell(tempSumm, SPELL_HUNTER_EXPLOSIVE_TRAP_DAMAGE, true);
+                    at->Remove();
+                }
+            }
+        }
+    };
+
+    AreaTriggerAI* GetAI(AreaTrigger* areatrigger) const override
+    {
+        return new at_hun_explosive_trapAI(areatrigger);
     }
 };
 
@@ -1882,18 +1984,19 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_kill_command();
     new spell_hun_kill_command_proc();
     RegisterSpellScript(spell_hun_intimidation);
-    RegisterSpellScript(spell_hun_death_chakram);
+    RegisterSpellScript(spell_hun_death_chakram); //no effect
     RegisterSpellScript(spell_hun_bestial_wrath);
     new spell_hun_barbed_shot();
     new spell_hun_dire_beast();
     new at_hun_binding_shot();
-    RegisterSpellScript(spell_hun_stampede);
-    RegisterSpellScript(spell_hun_bloodshed);
-    RegisterSpellScript(spell_hun_volley);
+    RegisterSpellScript(spell_hun_stampede); //no effect
+    RegisterSpellScript(spell_hun_bloodshed); //work half
+    RegisterSpellScript(spell_hun_volley); //no effect
     new spell_bursting_shot();
     new at_hun_steel_trap();
     new spell_hun_barrage();
     RegisterSpellScript(spell_hun_flanking_strike);
     RegisterSpellScript(spell_hun_spearhead);
-    RegisterSpellScript(spell_hun_wildfire_bomb);
+    RegisterSpellScript(spell_hun_wildfire_bomb); //no effect
+    new at_hun_explosive_trap();
 }
