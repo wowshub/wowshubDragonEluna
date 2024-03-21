@@ -1140,7 +1140,6 @@ public:
 
     class spell_hun_kill_command_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_hun_kill_command_SpellScript);
         enum sspell {
             AnimalInstinctsReduction = 232646,
             AspectoftheBeast = 191384,
@@ -1237,8 +1236,6 @@ public:
 
     class spell_hun_kill_command_proc_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_hun_kill_command_proc_SpellScript);
-
         void HandleDamage(SpellEffIndex /*effIndex*/)
         {
             Unit* caster = GetCaster();
@@ -1275,8 +1272,6 @@ public:
 // Intimidation - 19577
 class spell_hun_intimidation : public SpellScript
 {
-    PrepareSpellScript(spell_hun_intimidation);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -1296,8 +1291,6 @@ class spell_hun_intimidation : public SpellScript
 // 19574 - Bestial Wrath
 class spell_hun_bestial_wrath : public SpellScript
 {
-    PrepareSpellScript(spell_hun_bestial_wrath);
-
     void OnActivate()
     {
         if (Unit* caster = GetCaster())
@@ -1324,8 +1317,6 @@ public:
 
     class spell_hun_barbed_shot_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_hun_barbed_shot_SpellScript);
-
         void HandleOnCast()
         {
             if (Unit* caster = GetCaster())
@@ -1365,8 +1356,6 @@ public:
 
     class spell_hun_dire_beast_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_hun_dire_beast_SpellScript);
-
         void HandleOnHit()
         {
             if (Player* player = GetCaster()->ToPlayer())
@@ -1511,8 +1500,6 @@ public:
 // 321530 - Bloodshed - Work half
 class spell_hun_bloodshed : public SpellScript
 {
-    PrepareSpellScript(spell_hun_bloodshed);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -1577,8 +1564,6 @@ private:
 // 260243 - Volley
 class spell_hun_volley : public SpellScript
 {
-    PrepareSpellScript(spell_hun_volley);
-
     void InitializeVisualStalker()
     {
         if (Aura* aura = GetHitAura())
@@ -1610,8 +1595,6 @@ public:
 
     class spell_bursting_shot_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_bursting_shot_SpellScript);
-
         void HandleAfterHit()
         {
             if (Unit* caster = GetCaster())
@@ -1717,8 +1700,6 @@ public:
 
     class spell_hun_barrage_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_hun_barrage_SpellScript);
-
         void CheckLOS(std::list<WorldObject*>& targets)
         {
             if (targets.empty())
@@ -1788,8 +1769,6 @@ public:
 // 269751 - Flanking Strike
 class spell_hun_flanking_strike : public SpellScript
 {
-    PrepareSpellScript(spell_hun_flanking_strike);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
@@ -1821,8 +1800,6 @@ class spell_hun_flanking_strike : public SpellScript
 // 360966 - Spearhead
 class spell_hun_spearhead : public SpellScript
 {
-    PrepareSpellScript(spell_hun_spearhead);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
