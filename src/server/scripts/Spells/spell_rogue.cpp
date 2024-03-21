@@ -1167,7 +1167,7 @@ enum ePoisons
     LeechingPoison = 108211,
     ParalyticPoison = 108215,
     DeadlyPoison = 2823,
-    InstantPoison = 315584
+    InstantPoison = 315584,
 };
 
 class spell_rog_poisons : public SpellScript
@@ -1419,6 +1419,96 @@ public:
     }
 };
 
+// Crimson Tempest - 121411
+class spell_rog_crimson_tempest : public AuraScript
+{
+    bool Load() override
+    {
+        Unit* caster = GetCaster();
+        return caster && caster->GetTypeId() == TYPEID_PLAYER;
+    }
+
+    void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
+    {
+        canBeRecalculated = false;
+
+        if (Unit* caster = GetCaster())
+        {
+            // 0.01 * $AP * cp
+            int32 cp = caster->GetPower(POWER_COMBO_POINTS);
+
+            AuraEffect const* auraEffIdolOfWorship = caster->GetAuraEffect(121411, EFFECT_0);
+            amount += cp * auraEffIdolOfWorship->GetAmount();
+
+            amount += int32(CalculatePct(caster->GetTotalAttackPowerValue(BASE_ATTACK), cp));
+        }
+    }
+
+    void Register() override
+    {
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_rog_crimson_tempest::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+    }
+};
+
+// Grappling Hook - 195457
+class spell_rog_grappling_hook : public SpellScriptLoader
+{
+public:
+    spell_rog_grappling_hook() : SpellScriptLoader("spell_rog_grappling_hook") {}
+
+    class spell_rog_grappling_hook_SpellScript : public SpellScript
+    {
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo(
+                {
+                    SPELL_ROGUE_GRAPPLING_HOOK,
+                    SPELL_ROGUE_GRAPPLING_HOOK_TRIGGER
+                });
+        }
+
+        void HandleDummy()
+        {
+            Unit* caster = GetCaster();
+            WorldLocation const* dest = GetExplTargetDest();
+            if (!caster || !dest)
+                return;
+
+            caster->CastSpell(Position(dest->GetPositionX(), dest->GetPositionY(), dest->GetPositionZ()), SPELL_ROGUE_GRAPPLING_HOOK_TRIGGER, true);
+        }
+
+        void Register() override
+        {
+            OnCast += SpellCastFn(spell_rog_grappling_hook_SpellScript::HandleDummy);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_rog_grappling_hook_SpellScript();
+    }
+};
+
+// 385616 - Blade Rush
+class spell_rog_blade_rush : public SpellScript
+{
+    void HandleDummy(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        Unit* target = GetExplTargetUnit();
+
+        caster->CastSpell(target, 271878, true);
+        caster->CastSpell(target, 271881, true);
+        caster->AddAura(271896, caster);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_rog_blade_rush::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+
 void AddSC_rogue_spell_scripts()
 {
     RegisterSpellScript(spell_rog_backstab);
@@ -1458,4 +1548,7 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_rog_echoing_reprimand);
     new spell_rog_deadly_poison_instant_damage();
     new spell_rog_fan_of_knives();
+    RegisterSpellScript(spell_rog_crimson_tempest);
+    new spell_rog_grappling_hook();
+    RegisterSpellScript(spell_rog_blade_rush);
 }
