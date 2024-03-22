@@ -88,6 +88,10 @@ enum RogueSpells
     SPELL_ROGUE_DEADLY_POISON_DOT                   = 2818,
     SPELL_ROGUE_DEADLY_POISON_INSTANT_DAMAGE        = 113780,
     SPELL_ROGUE_FAN_OF_KNIVES                       = 51723,
+    SPELL_ROGUE_GARROTE_DOT                         = 703,
+    SPELL_ROGUE_GARROTE_SILENCE                     = 1330,
+    SPELL_ROGUE_THUGGEE                             = 196861,
+    SPELL_ROGUE_GRAPPLING_HOOK_TRIGGER              = 230149,
 };
 
 /* Returns true if the spell is a finishing move.
