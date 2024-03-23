@@ -92,6 +92,8 @@ enum RogueSpells
     SPELL_ROGUE_GARROTE_SILENCE                     = 1330,
     SPELL_ROGUE_THUGGEE                             = 196861,
     SPELL_ROGUE_GRAPPLING_HOOK_TRIGGER              = 230149,
+    SPELL_ROGUE_SHADOW_DANCE                        = 185313,
+    SPELL_ROGUE_SHURIKEN_STORM                      = 197835,
 };
 
 /* Returns true if the spell is a finishing move.
@@ -1218,7 +1220,9 @@ class spell_rog_poisons : public SpellScript
 // 385616 - Echoing Reprimand
 class spell_rog_echoing_reprimand : public SpellScript
 {
-    void HandleDummy(SpellEffIndex /*effIndex*/)
+    PrepareSpellScript(spell_rog_echoing_reprimand);
+
+    void HandleOnHit()
     {
         Unit* caster = GetCaster();
 
@@ -1227,7 +1231,7 @@ class spell_rog_echoing_reprimand : public SpellScript
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_rog_echoing_reprimand::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+        OnHit += SpellHitFn(spell_rog_echoing_reprimand::HandleOnHit);
     }
 };
 
@@ -1333,7 +1337,6 @@ public:
 
     class spell_rog_garrote_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_rog_garrote_SpellScript);
 
     public:
         spell_rog_garrote_SpellScript()
@@ -1380,7 +1383,6 @@ public:
 
     class spell_rog_garrote_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_rog_garrote_AuraScript);
 
         bool Validate(SpellInfo const* /*spellInfo*/) override
         {
@@ -1420,37 +1422,6 @@ public:
     AuraScript* GetAuraScript() const override
     {
         return new spell_rog_garrote_AuraScript();
-    }
-};
-
-// Crimson Tempest - 121411
-class spell_rog_crimson_tempest : public AuraScript
-{
-    bool Load() override
-    {
-        Unit* caster = GetCaster();
-        return caster && caster->GetTypeId() == TYPEID_PLAYER;
-    }
-
-    void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
-    {
-        canBeRecalculated = false;
-
-        if (Unit* caster = GetCaster())
-        {
-            // 0.01 * $AP * cp
-            int32 cp = caster->GetPower(POWER_COMBO_POINTS);
-
-            AuraEffect const* auraEffIdolOfWorship = caster->GetAuraEffect(121411, EFFECT_0);
-            amount += cp * auraEffIdolOfWorship->GetAmount();
-
-            amount += int32(CalculatePct(caster->GetTotalAttackPowerValue(BASE_ATTACK), cp));
-        }
-    }
-
-    void Register() override
-    {
-        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_rog_crimson_tempest::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
     }
 };
 
@@ -1512,6 +1483,77 @@ class spell_rog_blade_rush : public SpellScript
     }
 };
 
+// Shuriken Storm - 197835
+class spell_rog_shuriken_storm : public SpellScriptLoader
+{
+public:
+    spell_rog_shuriken_storm() : SpellScriptLoader("spell_rog_shuriken_storm") {}
+
+    class spell_rog_shuriken_storm_SpellScript : public SpellScript
+    {
+    public:
+        spell_rog_shuriken_storm_SpellScript()
+        {
+            _stealthed = false;
+        }
+
+    private:
+
+        bool _stealthed;
+
+        bool Load() override
+        {
+            Unit* caster = GetCaster();
+            if (caster->HasAuraType(SPELL_AURA_MOD_STEALTH) || caster->HasAura(SPELL_ROGUE_SHADOW_DANCE))
+                _stealthed = true;
+            return true;
+        }
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo(
+                {
+                    SPELL_ROGUE_SHURIKEN_STORM
+                });
+        }
+
+        void RemoveKS()
+        {
+            Unit* target = GetHitUnit();
+            if (target->HasAura(51690)) //Killing spree debuff #1
+                target->RemoveAura(51690);
+            if (target->HasAura(61851)) //Killing spree debuff #2
+                target->RemoveAura(61851);
+        }
+
+        void AddComboPoint()
+        {
+            Unit* caster = GetCaster();
+            uint8 cp = caster->GetPower(POWER_COMBO_POINTS);
+            if (_stealthed)
+            {
+                int32 dmg = GetHitDamage();
+                SetHitDamage(dmg * 2); //Shuriken Storm deals 200% damage from stealth
+            }
+            if (cp < caster->GetMaxPower(POWER_COMBO_POINTS))
+            {
+                caster->SetPower(POWER_COMBO_POINTS, cp + 1);
+            }
+        }
+
+        void Register() override
+        {
+            OnHit += SpellHitFn(spell_rog_shuriken_storm_SpellScript::AddComboPoint); //add 1 combo points for each target (hook called for each target in map)
+            AfterHit += SpellHitFn(spell_rog_shuriken_storm_SpellScript::RemoveKS);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_rog_shuriken_storm_SpellScript();
+    }
+};
+
 
 void AddSC_rogue_spell_scripts()
 {
@@ -1551,8 +1593,9 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_rog_slice_and_dice);
     RegisterSpellScript(spell_rog_echoing_reprimand);
     new spell_rog_deadly_poison_instant_damage();
+    RegisterSpellScript(spell_rog_poisons);
     new spell_rog_fan_of_knives();
-    RegisterSpellScript(spell_rog_crimson_tempest);
     new spell_rog_grappling_hook();
     RegisterSpellScript(spell_rog_blade_rush);
+    new spell_rog_shuriken_storm();
 }
