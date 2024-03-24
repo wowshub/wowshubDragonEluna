@@ -43,6 +43,10 @@
 #include "Spell.h"
 #include "SpellPackets.h"
 #include "Unit.h"
+#include "Cell.h"
+#include "DB2Stores.h"
+#include "PetPackets.h"
+#include "TemporarySummon.h"
 
 enum WarriorSpells
 {
@@ -104,6 +108,7 @@ enum WarriorSpells
     SPELL_WARRIOR_SUDDEN_DEATH_PROC                 = 280776,
     SPELL_WARRIOR_BOUNDING_STRIDE                   = 202163,
     SPELL_WARRIOR_BOUNDING_STRIDE_SPEED             = 202164,
+    SPELL_WARRIOR_LAST_STAND_TRIGGERED              = 12976,
 };
 
 enum WarriorMisc
@@ -901,47 +906,72 @@ public:
     }
 };
 
-// Ravager - 152277
-// Ravager - 228920
-class spell_warr_ravager : public SpellScript
-{
-    PrepareSpellScript(spell_warr_ravager);
-
-    void HandleOnHit(SpellEffIndex /* effIndex */)
-    {
-        if (WorldLocation const* dest = GetExplTargetDest())
-            GetCaster()->CastSpell(dest->GetPosition(), SPELL_WARRIOR_RAVAGER_SUMMON, true);
-    }
-
-    void Register() override
-    {
-        OnEffectHit += SpellEffectFn(spell_warr_ravager::HandleOnHit, EFFECT_1, SPELL_EFFECT_DUMMY);
-    }
-};
-
-// Ravager - 152277
-// Ravager - 228920
+// Ravager - 152277 (aura)
+// Ravager - 228920 (aura)
 class aura_warr_ravager : public AuraScript
 {
-    PrepareAuraScript(aura_warr_ravager);
+public:
+    void SetVisualDummy(TempSummon* summon)
+    {
+        _visualDummy = summon->GetGUID();
+        _dest = summon->GetPosition();
+    }
 
+private:
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
-        if (Player* player = GetTarget()->ToPlayer())
+        if (Player* player = GetCaster()->ToPlayer())
             if (player->GetPrimarySpecialization() == ChrSpecialization::WarriorProtection)
                 player->CastSpell(player, SPELL_WARRIOR_RAVAGER_PARRY, true);
     }
 
-    void OnTick(AuraEffect const* /*aurEff*/)
+    void HandleEffectPeriodic(AuraEffect const* aurEff)
     {
-        if (Creature* creature = GetTarget()->GetSummonedCreatureByEntry(NPC_WARRIOR_RAVAGER))
-            GetTarget()->CastSpell(creature->GetPosition(), SPELL_WARRIOR_RAVAGER_DAMAGE, true);
+        GetTarget()->CastSpell(_dest, SPELL_WARRIOR_RAVAGER_DAMAGE, aurEff);
+    }
+
+    void HandleEffecRemoved(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Creature* summon = ObjectAccessor::GetCreature(*GetTarget(), _visualDummy))
+            summon->DespawnOrUnsummon();
     }
 
     void Register() override
     {
         OnEffectApply += AuraEffectApplyFn(aura_warr_ravager::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
-        OnEffectPeriodic += AuraEffectPeriodicFn(aura_warr_ravager::OnTick, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+        OnEffectRemove += AuraEffectRemoveFn(aura_warr_ravager::HandleEffecRemoved, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectPeriodic += AuraEffectPeriodicFn(aura_warr_ravager::HandleEffectPeriodic, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+    }
+
+    ObjectGuid _visualDummy;
+    Position _dest;
+};
+
+// Ravager - 152277
+// Ravager - 228920
+class spell_warr_ravager : public SpellScript
+{
+
+    void InitializeVisualStalker()
+    {
+        if (Aura* aura = GetHitAura())
+        {
+            if (WorldLocation const* dest = GetExplTargetDest())
+            {
+                Milliseconds duration = Milliseconds(GetSpellInfo()->CalcDuration(GetOriginalCaster()));
+                TempSummon* summon = GetCaster()->GetMap()->SummonCreature(NPC_WARRIOR_RAVAGER, *dest, nullptr, duration, GetOriginalCaster());
+                if (!summon)
+                    return;
+
+                if (aura_warr_ravager* script = aura->GetScript<aura_warr_ravager>())
+                    script->SetVisualDummy(summon);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        AfterHit += SpellHitFn(spell_warr_ravager::InitializeVisualStalker);
     }
 };
 
@@ -1108,24 +1138,21 @@ public:
 
         bool Validate(SpellInfo const* /*spellInfo*/) override
         {
-            if (!sSpellMgr->GetSpellInfo(SPELL_WARRIOR_LAST_STAND, DIFFICULTY_NONE))
-                return false;
-            return true;
+            return ValidateSpellInfo({ SPELL_WARRIOR_LAST_STAND_TRIGGERED });
         }
 
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             Unit* caster = GetCaster();
-            int32 healthModSpellBasePoints0 = int32(caster->CountPctFromMaxHealth(GetEffectValue()));
-
-            caster->CastSpell(caster, SPELL_WARRIOR_LAST_STAND, &healthModSpellBasePoints0);
+            CastSpellExtraArgs args(TRIGGERED_FULL_MASK);
+            args.AddSpellBP0(caster->CountPctFromMaxHealth(GetEffectValue()));
+            caster->CastSpell(caster, SPELL_WARRIOR_LAST_STAND_TRIGGERED, args);
         }
 
         void Register() override
         {
             // add dummy effect spell handler to Last Stand
-            OnEffectHit += SpellEffectFn(spell_warr_last_stand_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_APPLY_AURA);
-            OnEffectHit += SpellEffectFn(spell_warr_last_stand_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_HEAL_PCT);
+            OnEffectHit += SpellEffectFn(spell_warr_last_stand_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
         }
     };
 
@@ -1271,12 +1298,16 @@ class spell_warr_execute : public SpellScript
 
     void HandleAfterHit()
     {
-        if (Unit* target = GetHitUnit())
-            if (target->IsAlive())
-                GetCaster()->ModifyPower(POWER_RAGE, CalculatePct(m_powerTaken, GetEffectInfo(EFFECT_1).BasePoints));
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
 
-        GetCaster()->Variables.Remove("spell_warr_execute_damages::multiplier");
-        GetCaster()->RemoveAurasDueToSpell(SPELL_WARRIOR_SUDDEN_DEATH);
+        if (Unit* target = GetHitUnit())
+            if (target->IsAlive() && caster)
+                caster->ModifyPower(POWER_RAGE, CalculatePct(m_powerTaken, GetEffectInfo(EFFECT_1).BasePoints));
+
+        caster->Variables.Remove("spell_warr_execute_damages::multiplier");
+        caster->RemoveAurasDueToSpell(SPELL_WARRIOR_SUDDEN_DEATH);
     }
 
     void Register() override
