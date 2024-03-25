@@ -1198,3 +1198,4 @@ Difficulty AuraScript::GetCastDifficulty() const
 {
     return GetAura()->GetCastDifficulty();
 }
+z
