@@ -155,6 +155,9 @@ enum WarlockSpells
     SPELL_WARLOCK_FIRE_AND_BRIMSTONE                = 196408,
     SPELL_WARLOCK_AGONY                             = 980,
     SPELL_WARLOCK_FIREBOLT_BONUS                    = 231795,
+    SPELL_WARLOCK_DREADSTALKER_CHARGE               = 194247,
+    SPELL_WARLOCK_SHARPENED_DREADFANGS_BUFF         = 215111,
+    SPELL_WARLOCK_SHARPENED_DREADFANGS              = 211123,
 };
 
 enum MiscSpells
@@ -1729,6 +1732,48 @@ public:
     }
 };
 
+// Dreadstalker - 98035
+class npc_warlock_dreadstalker : public CreatureScript
+{
+public:
+    npc_warlock_dreadstalker() : CreatureScript("npc_warlock_dreadstalker") {}
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_warlock_dreadstalkerAI(creature);
+    }
+
+    struct npc_warlock_dreadstalkerAI : public ScriptedAI
+    {
+        npc_warlock_dreadstalkerAI(Creature* creature) : ScriptedAI(creature) {}
+
+        bool firstTick = true;
+
+        void UpdateAI(uint32 /*diff*/) override
+        {
+            if (firstTick)
+            {
+                Unit* owner = me->GetOwner();
+                if (!me->GetOwner() || !me->GetOwner()->ToPlayer())
+                    return;
+
+                me->SetMaxHealth(owner->CountPctFromMaxHealth(40));
+                me->SetHealth(me->GetMaxHealth());
+
+                if (Unit* target = owner->ToPlayer()->GetSelectedUnit())
+                    me->CastSpell(target, SPELL_WARLOCK_DREADSTALKER_CHARGE, true);
+
+                firstTick = false;
+
+                me->CastSpell(me, SPELL_WARLOCK_SHARPENED_DREADFANGS_BUFF, SPELLVALUE_BASE_POINT0);
+                owner->GetAuraEffectAmount(SPELL_WARLOCK_SHARPENED_DREADFANGS, EFFECT_0), me, true;
+            }
+
+            UpdateVictim();
+        }
+    };
+};
+
 // Eye Laser - 205231
 class spell_warl_eye_laser : public SpellScriptLoader
 {
@@ -2524,6 +2569,7 @@ void AddSC_warlock_spell_scripts()
     RegisterSpellScript(spell_warl_hand_of_guldan);
     new spell_warl_hand_of_guldan_damage();
     new spell_warlock_call_dreadstalkers();
+    new npc_warlock_dreadstalker();
     new spell_warl_eye_laser();
     new spell_warlock_demonbolt_new();
     new spell_warl_demonic_calling();
