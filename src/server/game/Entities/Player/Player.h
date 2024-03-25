@@ -2509,6 +2509,32 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         }
         void Recall() { TeleportTo(m_recall_location, TELE_TO_NONE, m_recall_instanceId); }
 
+        void SaveManualRecallPosition()
+        {
+            manual_recall_location.WorldRelocate(*this);
+            manual_recall_instanceId = GetInstanceId();
+        }
+
+        void ManualRecall()
+        {
+            if (IsManualRecallPositionValid())
+            {
+                TeleportTo(manual_recall_location, TELE_TO_NONE, manual_recall_instanceId);
+            }
+        }
+
+        void ClearManualRecallPosition()
+        {
+            manual_recall_location.WorldRelocate();
+            manual_recall_location.m_mapId = 4294967295;
+            manual_recall_instanceId = -1;
+        }
+
+        bool IsManualRecallPositionValid()
+        {
+            return manual_recall_location.IsPositionValid() && manual_recall_location.GetMapId() != 4294967295 && manual_recall_instanceId != -1;
+        }
+
         void SetHomebind(WorldLocation const& loc, uint32 areaId);
         void SendBindPointUpdate() const;
         void SendPlayerBound(ObjectGuid const& binderGuid, uint32 areaId) const;
@@ -3128,6 +3154,11 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         // Recall position
         WorldLocation m_recall_location;
         uint32 m_recall_instanceId;
+
+        // Reusable recall location in spells.
+        // m_recall_location gets reset all the time from teleporting, so can't reliably use this in spells
+        WorldLocation manual_recall_location;
+        uint32 manual_recall_instanceId = -1;
 
         std::unique_ptr<Runes> m_runes;
         EquipmentSetContainer _equipmentSets;

@@ -1097,20 +1097,12 @@ class aura_dk_defile : public AuraScript
 {
     PrepareAuraScript(aura_dk_defile);
 
-    void HandlePeriodic(AuraEffect const* aurEff)
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
     {
-        CastSpellExtraArgs args(aurEff);
-
         if (Unit* caster = GetCaster())
         {
             for (AreaTrigger* at : caster->GetAreaTriggers(GetId()))
             {
-                if (Unit* caster = GetCaster())
-                    args.AddSpellMod(SPELLVALUE_BASE_POINT0, aurEff->GetAmount());
-                caster->CastSpell(GetTarget(), SPELL_DK_DEFILE_DAMAGE, args);
-
-                caster->CastSpell(at->GetPosition(), SPELL_DK_DEFILE_DAMAGE, true);
-
                 if (at->GetInsideUnits().size())
                     caster->CastSpell(caster, SPELL_DK_DEFILE_MASTERY, true);
             }
@@ -1128,27 +1120,6 @@ class aura_dk_defile : public AuraScript
 struct at_dk_defile : AreaTriggerAI
 {
     at_dk_defile(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-    void OnUpdate(uint32 diff) override
-    {
-        Unit* caster = at->GetCaster();
-        if (!caster)
-            return;
-
-        int32 timer = at->Variables.GetValue<int32>("Spells.RainOfFireTimer") + diff;
-        if (timer < 1000)
-        {
-            at->Variables.Set("Spells.RainOfFireTimer", timer);
-            return;
-        }
-
-        for (ObjectGuid guid : at->GetInsideUnits())
-            if (Unit* unit = ObjectAccessor::GetUnit(*caster, guid))
-                if (caster->IsValidAttackTarget(unit))
-                    caster->CastSpell(unit, SPELL_DK_DEFILE_DAMAGE, true);
-
-        at->Variables.Set<int32>("Spells.RainOfFireTimer", int32(timer - 1000));
-    }
 
     void OnCreate(Spell const* /*creatingSpell*/) override
     {
