@@ -898,6 +898,7 @@ class TC_GAME_API Spell
     protected:
         void CallScriptObjectAreaTargetSelectHandlers(std::list<WorldObject*>& targets, SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType);
         void CallScriptObjectTargetSelectHandlers(WorldObject*& target, SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType);
+        void CallScriptOnSummonHandlers(Creature* creature);
         void CallScriptDestinationTargetSelectHandlers(SpellDestination& target, SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType);
         bool CheckScriptEffectImplicitTargets(uint32 effIndex, uint32 effIndexToCheck);
         std::vector<SpellScript*> m_loadedScripts;
@@ -919,7 +920,7 @@ class TC_GAME_API Spell
         HitTriggerSpellList m_hitTriggerSpells;
 
         // effect helpers
-        void SummonGuardian(SpellEffectInfo const* effect, uint32 entry, SummonPropertiesEntry const* properties, uint32 numSummons, ObjectGuid privateObjectOwner);
+        TempSummon* SummonGuardian(SpellEffectInfo const* effect, uint32 entry, SummonPropertiesEntry const* properties, uint32 numSummons, ObjectGuid privateObjectOwner);
         void CalculateJumpSpeeds(SpellEffectInfo const* effInfo, float dist, float& speedXY, float& speedZ);
 
         void UpdateSpellCastDataTargets(WorldPackets::Spells::SpellCastData& data);

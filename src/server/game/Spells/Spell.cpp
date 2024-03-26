@@ -8869,6 +8869,19 @@ void Spell::CallScriptObjectTargetSelectHandlers(WorldObject*& target, SpellEffI
     }
 }
 
+void Spell::CallScriptOnSummonHandlers(Creature* creature)
+{
+    for (auto scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_ON_SUMMON);
+        auto hookItrEnd = (*scritr)->OnEffectSummon.end(), hookItr = (*scritr)->OnEffectSummon.begin();
+        for (; hookItr != hookItrEnd; ++hookItr)
+            hookItr->Call(*scritr, creature);
+
+        (*scritr)->_FinishScriptCall();
+    }
+}
+
 void Spell::CallScriptDestinationTargetSelectHandlers(SpellDestination& target, SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType)
 {
     for (SpellScript* script : m_loadedScripts)
