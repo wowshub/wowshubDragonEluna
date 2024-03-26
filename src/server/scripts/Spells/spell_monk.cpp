@@ -105,6 +105,7 @@ enum MonkSpells
     SPELL_MONK_CHI_BURST_DAMAGE                         = 148135,
     SPELL_MONK_PURIFYING_BREW                           = 119582,
     MONK_NPC_JADE_SERPENT_STATUE                        = 60849,
+    MONK_NPC_TRANSCENDENCE_SPIRIT                       = 54569,
 };
 
 #define MONK_TRANSCENDENCE_GUID "MONK_TRANSCENDENCE_GUID"
@@ -960,137 +961,6 @@ public:
     }
 };
 
-// 101643
-class spell_monk_transcendence : public SpellScript
-{
-public:
-    PrepareSpellScript(spell_monk_transcendence);
-
-    void HandleSummon(Creature* creature)
-    {
-        DespawnSpirit(GetCaster());
-        GetCaster()->CastSpell(creature, SPELL_MONK_TRANSCENDENCE_CLONE_TARGET, true);
-        creature->CastSpell(creature, SPELL_MONK_TRANSCENDENCE_VISUAL, true);
-        creature->SetAIAnimKitId(2223); // Sniff Data
-        creature->SetDisableGravity(true);
-        creature->SetControlled(true, UNIT_STATE_ROOT);
-        GetCaster()->VariableStorage.Set(MONK_TRANSCENDENCE_GUID, creature->GetGUID());
-    }
-
-    static Creature* GetSpirit(Unit* caster)
-    {
-        ObjectGuid spiritGuid = caster->VariableStorage.GetValue<ObjectGuid>(MONK_TRANSCENDENCE_GUID, ObjectGuid());
-
-        if (spiritGuid.IsEmpty())
-            return nullptr;
-
-        return ObjectAccessor::GetCreature(*caster, spiritGuid);
-    }
-
-    static void DespawnSpirit(Unit* caster)
-    {
-        // Remove previous one if any
-        if (Creature* spirit = GetSpirit(caster))
-            spirit->DespawnOrUnsummon();
-
-        caster->VariableStorage.Remove(MONK_TRANSCENDENCE_GUID);
-    }
-
-    void Register() override
-    {
-        OnEffectHit += SpellEffectFn(spell_monk_transcendence::HandleSummon, EFFECT_0, SPELL_EFFECT_SUMMON);
-    }
-};
-
-// 101643
-class aura_monk_transcendence : public AuraScript
-{
-    PrepareAuraScript(aura_monk_transcendence);
-
-    void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        spell_monk_transcendence::DespawnSpirit(GetTarget());
-
-        if (GetTarget()->HasAura(SPELL_MONK_TRANSCENDENCE_RANGE_CHECK))
-        {
-            GetTarget()->RemoveAura(SPELL_MONK_TRANSCENDENCE_RANGE_CHECK);
-        }
-    }
-
-    void HandleDummyTick(AuraEffect const* /*aurEff*/)
-    {
-        SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(SPELL_MONK_TRANSCENDENCE_TRANSFER, GetCastDifficulty());
-
-        Unit* spirit = spell_monk_transcendence::GetSpirit(GetTarget());
-        if (spirit && GetTarget()->IsWithinDist(spirit, spellInfo->GetMaxRange(true)))
-        {
-            if (!GetTarget()->HasAura(SPELL_MONK_TRANSCENDENCE_RANGE_CHECK))
-            {
-                GetTarget()->CastSpell(GetTarget(), SPELL_MONK_TRANSCENDENCE_RANGE_CHECK, true);
-            }
-        }
-        else
-        {
-            if (GetTarget()->HasAura(SPELL_MONK_TRANSCENDENCE_RANGE_CHECK))
-            {
-                GetTarget()->RemoveAura(SPELL_MONK_TRANSCENDENCE_RANGE_CHECK);
-            }
-        }
-    }
-
-    void Register() override
-    {
-        OnEffectRemove += AuraEffectRemoveFn(aura_monk_transcendence::OnRemove, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        OnEffectPeriodic += AuraEffectPeriodicFn(aura_monk_transcendence::HandleDummyTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
-    }
-};
-
-// 119996 - Transcendence: Transfer
-class spell_monk_transcendence_transfer : public SpellScript
-{
-    PrepareSpellScript(spell_monk_transcendence_transfer);
-
-    SpellCastResult CheckCast()
-    {
-        Unit* caster = GetCaster();
-
-        if (!caster)
-            return SPELL_FAILED_ERROR;
-
-        Unit* spirit = spell_monk_transcendence::GetSpirit(caster);
-        if (!spirit)
-        {
-            SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_YOU_HAVE_NO_SPIRIT_ACTIVE);
-            return SPELL_FAILED_CUSTOM_ERROR;
-        }
-
-        if (!spirit->IsWithinDist(caster, GetSpellInfo()->GetMaxRange(true, caster, GetSpell())))
-            return SPELL_FAILED_OUT_OF_RANGE;
-
-        return SPELL_CAST_OK;
-    }
-
-    void HandleOnCast()
-    {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
-
-        Unit* spirit = spell_monk_transcendence::GetSpirit(caster);
-        if (!spirit)
-            return;
-
-        caster->NearTeleportTo(*spirit, true);
-        spirit->NearTeleportTo(*caster, true);
-    }
-
-    void Register() override
-    {
-        OnCheckCast += SpellCheckCastFn(spell_monk_transcendence_transfer::CheckCast);
-        OnCast += SpellCastFn(spell_monk_transcendence_transfer::HandleOnCast);
-    }
-};
-
 // Rising Sun Kick - 107428
 class spell_monk_rising_sun_kick : public SpellScript
 {
@@ -1734,9 +1604,6 @@ void AddSC_monk_spell_scripts()
     RegisterSpellScript(spell_monk_touch_of_death_passive);
     RegisterSpellAndAuraScriptPair(spell_monk_disable, aura_monk_disable);
     new spell_monk_spear_hand_strike();
-    RegisterSpellScript(spell_monk_transcendence);
-    RegisterSpellScript(aura_monk_transcendence);
-    RegisterSpellScript(spell_monk_transcendence_transfer);
     RegisterSpellScript(spell_monk_rising_sun_kick);
     new spell_monk_fortifying_brew();
     new spell_monk_purifying_brew();
