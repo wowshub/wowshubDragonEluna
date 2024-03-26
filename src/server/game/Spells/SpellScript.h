@@ -786,6 +786,33 @@ public:
         SafeWrapperType _safeWrapper;
     };
 
+    class OnSummonHandler final
+    {
+    public:
+        union SpellOnSummonFnType
+        {
+            void(SpellScript::* Member)(Creature* summon);
+            void(*Static)(Creature* summon);
+        };
+
+        using SafeWrapperType = void(*)(SpellScript* spellScript, Creature* summon);
+
+        template<typename ScriptFunc>
+        explicit OnSummonHandler(ScriptFunc handler)
+        {
+            //NYI
+        }
+
+        void Call(SpellScript* spellScript, Creature* creature) const
+        {
+            return _safeWrapper(spellScript, creature);
+        }
+
+    private:
+        SpellOnSummonFnType _onSummonHandlerScript;
+        SafeWrapperType _safeWrapper;
+    };
+
      // left for custom compatibility only, DO NOT USE
     #define PrepareSpellScript(CLASSNAME)
 

@@ -1198,4 +1198,13 @@ Difficulty AuraScript::GetCastDifficulty() const
 {
     return GetAura()->GetCastDifficulty();
 }
-z
+
+void SpellScript::OnSummonHandler::Call(SpellScript* spellScript, Creature* creature)
+{
+    (spellScript->*_onSummonHandlerScript)(creature);
+}
+
+SpellScript::OnSummonHandler::OnSummonHandler(SpellOnSummonFnType OnSummonHandlerScript)
+{
+    _onSummonHandlerScript = OnSummonHandlerScript;
+}
