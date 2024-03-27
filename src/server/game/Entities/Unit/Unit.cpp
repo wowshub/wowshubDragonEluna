@@ -5641,6 +5641,8 @@ Powers Unit::CalculateDisplayPowerType() const
                 {
                     if (pet->getPetType() == HUNTER_PET) // Hunter pets have focus
                         displayPower = POWER_FOCUS;
+                    else if (pet->IsWarlockPet()) // Warlock pets have energy
+                        displayPower = POWER_ENERGY;
                     else if (pet->IsPetGhoul() || pet->IsPetAbomination()) // DK pets have energy
                         displayPower = POWER_ENERGY;
                 }

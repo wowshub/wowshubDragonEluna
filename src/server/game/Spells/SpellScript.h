@@ -787,60 +787,6 @@ public:
         SafeWrapperType _safeWrapper;
     };
 
-    //class OnSummonHandler final
-    //{
-    //public:
-    //    union SpellOnSummonFnType
-    //    {
-    //        void(SpellScript::* Member)(Creature* summon);
-    //        void(*Static)(Creature* summon);
-    //    };
-
-    //    using SafeWrapperType = void(*)(SpellScript* spellScript, Creature* summon, SpellOnSummonFnType callImpl);
-
-    //    template<typename ScriptFunc>
-    //    explicit OnSummonHandler(ScriptFunc handler)
-    //    {
-    //        using ScriptClass = GetScriptClass_t<ScriptFunc>;
-
-    //        static_assert(sizeof(SpellOnSummonFnType) >= sizeof(ScriptFunc));
-    //        static_assert(alignof(SpellOnSummonFnType) >= alignof(ScriptFunc));
-
-    //        if constexpr (!std::is_void_v<ScriptClass>)
-    //        {
-    //            static_assert(std::is_invocable_r_v<void, ScriptFunc, ScriptClass, Creature*>,
-    //                "OnSummonHandler signature must be \"void OnSummonHandler(Creature* summon)\"");
-
-    //            _callImpl = { .Member = reinterpret_cast<decltype(SpellOnSummonFnType::Member)>(handler) };
-    //            _safeWrapper = [](SpellScript* spellScript, Creature* summon, SpellOnSummonFnType callImpl) -> void
-    //            {
-    //                return (static_cast<ScriptClass*>(spellScript)->*reinterpret_cast<ScriptFunc>(callImpl.Member))(summon);
-    //            };
-    //        }
-    //        else
-    //        {
-    //            static_assert(std::is_invocable_r_v<void, ScriptFunc, Creature*>,
-    //                "OnSummonHandler signature must be \"static void OnSummonHandler(Creature* summon)\"");
-
-    //            _callImpl = { .Static = reinterpret_cast<decltype(SpellOnSummonFnType::Static)>(handler) };
-    //            _safeWrapper = [](SpellScript* /*spellScript*/, Creature* summon, SpellOnSummonFnType callImpl) -> void
-    //            {
-    //                return reinterpret_cast<ScriptFunc>(callImpl.Static)(summon);
-    //            };
-    //        }
-
-    //    }
-
-    //    void Call(SpellScript* spellScript, Creature* summon) const
-    //    {
-    //        return _safeWrapper(spellScript, summon, _callImpl);
-    //    }
-
-    //private:
-    //    SpellOnSummonFnType _callImpl;
-    //    SafeWrapperType _safeWrapper;
-    //};
-
     class OnSummonHandler final
     {
     public:

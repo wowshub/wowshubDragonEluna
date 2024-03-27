@@ -1814,7 +1814,7 @@ void Spell::EffectProficiency()
 
 void Spell::EffectSummonType()
 {
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH)
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
     uint32 entry = effectInfo->MiscValue;
@@ -1892,7 +1892,7 @@ void Spell::EffectSummonType()
         {
             if (properties->GetFlags().HasFlag(SummonPropertiesFlags::JoinSummonerSpawnGroup))
             {
-                SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
+                summon = SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
                 break;
             }
 
@@ -1902,7 +1902,7 @@ void Spell::EffectSummonType()
                 case SummonTitle::Guardian:
                 case SummonTitle::Runeblade:
                 case SummonTitle::Minion:
-                    SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
+                    summon = SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
                     break;
                     // Summons a vehicle, but doesn't force anyone to enter it (see SUMMON_CATEGORY_VEHICLE)
                 case SummonTitle::Vehicle:
@@ -1980,7 +1980,7 @@ void Spell::EffectSummonType()
             break;
         }
         case SUMMON_CATEGORY_PET:
-            SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
+            summon = SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
             break;
         case SUMMON_CATEGORY_PUPPET:
         {
