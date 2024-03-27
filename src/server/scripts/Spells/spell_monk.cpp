@@ -107,6 +107,56 @@ enum MonkSpells
     MONK_NPC_JADE_SERPENT_STATUE                        = 60849,
     SPELL_MONK_SPIRIT_OF_THE_CRANE_MANA                 = 210803,
     SPELL_MONK_BLACKOUT_KICK_TRIGGERED                  = 228649,
+    SPELL_LIFECYCLES                                    = 197915,
+    SPELL_MONK_LIFECYCLES_ENVELOPING_MIST               = 197919,
+    SPELL_MONK_SOOTHING_MIST_VISUAL                     = 125955,
+    SPELL_MONK_SOOTHING_MIST_ENERGIZE                   = 116335,
+    SPELL_SERPENT_STATUE_SOOTHING_MIST                  = 248887,
+    SPELL_FOCUSED_THUNDER_TALENT                        = 197895,
+    SPELL_MONK_ZEN_PULSE_DAMAGE                         = 124081,
+    SPELL_MONK_ZEN_PULSE_HEAL                           = 198487,
+    SPELL_MONK_COUNTERACT_MAGIC                         = 202428,
+    SPELL_MONK_RENEWING_MIST                            = 115151,
+    SPELL_MONK_RENEWING_MIST_HOT                        = 119611,
+    SPELL_MONK_RENEWING_MIST_JUMP                       = 119607,
+    SPELL_MONK_VISUAL_RENEWING_MIST                     = 24599,
+    SPELL_MONK_ESSENCE_FONT_HEAL                        = 191840,
+    SPELL_MONK_MANA_TEA_REGEN                           = 115294,
+    SPELL_MONK_MANA_TEA_STACKS                          = 115867,
+    SPELL_MONK_LIFECYCLES_VIVIFY                        = 197916,
+    SPELL_MONK_TOUCH_OF_KARMA                           = 122470,
+    SPELL_MONK_TOUCH_OF_KARMA_BUFF                      = 125174,
+    SPELL_MONK_TOUCH_OF_KARMA_DAMAGE                    = 124280,
+    SPELL_GOOD_KARMA_TALENT                             = 195295,
+    SPELL_GOOD_KARMA_TALENT_HEAL                        = 285594,
+    SPELL_MONK_FISTS_OF_FURY_DAMAGE                     = 117418,
+    SPELL_MONK_XUEN_AURA                                = 123999,
+    SPELL_MONK_FISTS_OF_FURY                            = 113656,
+    SPELL_MONK_RISING_SUN_KICK                          = 107428,
+    SPELL_MONK_WHIRLING_DRAGON_PUNCH_CASTER_AURA        = 196742,
+    SPELL_MONK_WHIRLING_DRAGON_PUNCH_DAMAGE             = 158221,
+    SPELL_MONK_FLYING_SERPENT_KICK                      = 101545,
+    SPELL_MONK_FLYING_SERPENT_KICK_AOE                  = 123586,
+    SPELL_MONK_FLYING_SERPENT_KICK_NEW                  = 115057,
+    SPELL_MONK_ITEM_PVP_GLOVES_BONUS                    = 124489,
+};
+
+enum StormEarthAndFireSpells
+{
+    SPELL_MONK_SEF                                      = 137639,
+    SPELL_MONK_SEF_STORM_VISUAL                         = 138080,
+    SPELL_MONK_SEF_FIRE_VISUAL                          = 138081,
+    SPELL_MONK_SEF_EARTH_VISUAL                         = 138083,
+    SPELL_MONK_SEF_CHARGE                               = 138104,
+    SPELL_MONK_SEF_SUMMON_EARTH                         = 138121,
+    SPELL_MONK_SEF_SUMMON_FIRE                          = 138123,
+    SPELL_MONK_SEF_SUMMONS_STATS                        = 138130,
+    SPELL_MONK_SEF_CHARGE_TARGET                        = 196860,
+    SPELL_MONK_SEF_FIXATE                               = 221771,
+    SPELL_MONK_RING_OF_PEACE_AURA                       = 142895,
+
+    NPC_FIRE_SPIRIT                                     = 69791,
+    NPC_EARTH_SPIRIT                                    = 69792,
 };
 
 #define MONK_TRANSCENDENCE_GUID "MONK_TRANSCENDENCE_GUID"
@@ -1738,6 +1788,1071 @@ class spell_monk_transcendence_transfer : public SpellScript
     }
 };
 
+// 116670 - Vivify
+class spell_monk_vivify : public SpellScriptLoader
+{
+public:
+    spell_monk_vivify() : SpellScriptLoader("spell_monk_vivify") { }
+
+    class spell_monk_vivify_SpellScript : public SpellScript
+    {
+
+        void FilterRenewingMist(std::list<WorldObject*>& targets)
+        {
+            targets.remove_if(Trinity::UnitAuraCheck(false, SPELL_MONK_RENEWING_MIST_HOT, GetCaster()->GetGUID()));
+        }
+
+        void HandleOnPrepare()
+        {
+            if (GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == SPELL_MONK_SOOTHING_MIST)
+            {
+                GetSpell()->m_castFlagsEx = TRIGGERED_CAST_DIRECTLY;
+                SpellCastTargets targets = GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->m_targets;
+                GetSpell()->InitExplicitTargets(targets);
+            }
+        }
+
+        void LifeCycles()
+        {
+            Player* caster = GetCaster()->ToPlayer();
+            if (!caster)
+                return;
+
+            if (caster->HasAura(SPELL_LIFECYCLES))
+            {
+                caster->CastSpell(caster, SPELL_MONK_LIFECYCLES_ENVELOPING_MIST, true);
+            }
+        }
+
+        void Register() override
+        {
+            OnPrepare += SpellOnPrepareFn(spell_monk_vivify_SpellScript::HandleOnPrepare);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_vivify_SpellScript::FilterRenewingMist, EFFECT_1, TARGET_UNIT_DEST_AREA_ALLY);
+            AfterCast += SpellCastFn(spell_monk_vivify_SpellScript::LifeCycles);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_monk_vivify_SpellScript();
+    }
+};
+
+// Soothing Mist - 115175
+class spell_monk_soothing_mist : public SpellScriptLoader
+{
+public:
+    spell_monk_soothing_mist() : SpellScriptLoader("spell_monk_soothing_mist") { }
+
+    class spell_monk_soothing_mist_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_monk_soothing_mist_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (!GetCaster())
+                return;
+
+            if (Unit* target = GetTarget())
+                target->CastSpell(target, SPELL_MONK_SOOTHING_MIST_VISUAL, true);
+
+            if (Player* player = GetCaster()->ToPlayer())
+            {
+                if (Unit* target = GetTarget())
+                {
+                    std::list<Unit*> playerList;
+                    std::list<Creature*> tempList;
+                    std::list<Creature*> statueList;
+                    Creature* statue;
+
+                    player->GetPartyMembers(playerList);
+
+                    if (playerList.size() > 1)
+                    {
+                        playerList.remove(target);
+                        playerList.sort(Trinity::HealthPctOrderPred());
+                        playerList.resize(1);
+                    }
+
+                    player->GetCreatureListWithEntryInGrid(tempList, 60849, 100.0f);
+                    player->GetCreatureListWithEntryInGrid(statueList, 60849, 100.0f);
+
+                    for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
+                    {
+                        Unit* owner = (*i)->GetOwner();
+                        if (owner && owner == player && (*i)->IsSummon())
+                            continue;
+
+                        statueList.remove((*i));
+                    }
+
+                    for (auto itr : playerList)
+                    {
+                        if (statueList.size() == 1)
+                        {
+                            for (auto itrBis : statueList)
+                                statue = itrBis;
+
+                            if (statue->GetOwner() && statue->GetOwner()->GetGUID() == player->GetGUID())
+                            {
+                                if (statue->GetOwner() && statue->GetOwner()->GetGUID() == player->GetGUID())
+                                    statue->CastSpell(statue->GetOwner()->ToPlayer()->GetSelectedUnit(), SPELL_SERPENT_STATUE_SOOTHING_MIST, false);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+        {
+            if (Unit* caster = GetCaster())
+                if (GetTarget())
+                    // 25% to give 1 chi per tick
+                    if (roll_chance_i(25))
+                        caster->CastSpell(caster, SPELL_MONK_SOOTHING_MIST_ENERGIZE, true);
+        }
+
+        void OnRemove(AuraEffect const* /* aurEff */, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetCaster())
+                if (Unit* target = GetTarget())
+                    if (target->HasAura(SPELL_MONK_SOOTHING_MIST_VISUAL))
+                        target->RemoveAura(SPELL_MONK_SOOTHING_MIST_VISUAL);
+        }
+
+        void Register() override
+        {
+            AfterEffectApply += AuraEffectApplyFn(spell_monk_soothing_mist_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_soothing_mist_AuraScript::HandleEffectPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+            AfterEffectRemove += AuraEffectRemoveFn(spell_monk_soothing_mist_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_monk_soothing_mist_AuraScript();
+    }
+};
+
+// 116680 Thunder Focus Tea
+// 197895 Focused Thunder
+class spell_focused_thunder_talent_thunder_focus_tea : public SpellScriptLoader
+{
+public:
+    spell_focused_thunder_talent_thunder_focus_tea() : SpellScriptLoader("spell_focused_thunder_talent_thunder_focus_tea") { }
+
+    class spell_focused_thunder_talent_thunder_focus_tea_AuraScript : public AuraScript
+    {
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Unit* caster = GetCaster()->ToPlayer();
+            if (!caster)
+                return;
+
+            if (caster->HasAura(SPELL_FOCUSED_THUNDER_TALENT))
+            {
+                if (Aura* thunder = caster->GetAura(SPELL_MONK_THUNDER_FOCUS_TEA))
+                    thunder->SetStackAmount(2);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_focused_thunder_talent_thunder_focus_tea_AuraScript::OnApply, EFFECT_0, SPELL_AURA_ADD_FLAT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+        }
+
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_focused_thunder_talent_thunder_focus_tea_AuraScript();
+    }
+};
+
+// Zen Pulse - 124081
+class spell_monk_zen_pulse : public SpellScriptLoader
+{
+public:
+    spell_monk_zen_pulse() : SpellScriptLoader("spell_monk_zen_pulse") {}
+
+    class spell_monk_zen_pulse_SpellScript : public SpellScript
+    {
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            if (!sSpellMgr->GetSpellInfo(SPELL_MONK_ZEN_PULSE_DAMAGE, DIFFICULTY_NONE))
+                return false;
+            return true;
+        }
+
+        void OnHit(SpellEffIndex /*effIndex*/)
+        {
+            GetCaster()->CastSpell(GetCaster(), SPELL_MONK_ZEN_PULSE_HEAL, true);
+        }
+
+        void Register() override
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_monk_zen_pulse_SpellScript::OnHit, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_monk_zen_pulse_SpellScript();
+    }
+};
+
+// 115151 - Renewing Mist
+class spell_monk_renewing_mist : public SpellScript
+{
+    PrepareSpellScript(spell_monk_renewing_mist);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo(
+            {
+                SPELL_MONK_RENEWING_MIST_HOT
+            });
+    }
+
+    void HandleDummy(SpellEffIndex effIndex)
+    {
+        PreventHitDefaultEffect(effIndex);
+        if (Unit* target = GetExplTargetUnit())
+            GetCaster()->CastSpell(target, SPELL_MONK_RENEWING_MIST_HOT, true);
+    }
+
+    void Register() override
+    {
+        OnEffectLaunch += SpellEffectFn(spell_monk_renewing_mist::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+// 119611 - Renewing Mist (HoT)
+class spell_monk_renewing_mist_hot : public AuraScript
+{
+    PrepareAuraScript(spell_monk_renewing_mist_hot);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo(
+            {
+                SPELL_MONK_RENEWING_MIST_JUMP,
+                SPELL_MONK_RENEWING_MIST
+            });
+    }
+
+    void HandlePeriodicHeal(AuraEffect const* /*aurEff*/)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (GetTarget()->IsFullHealth())
+            caster->CastSpell(GetTarget(), SPELL_MONK_RENEWING_MIST_JUMP, true);
+    }
+
+    void CalcAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+    {
+        Unit* caster = GetCaster();
+        if (Aura* counteractAura = caster->GetAura(SPELL_MONK_COUNTERACT_MAGIC))
+        {
+            Unit::AuraApplicationMap& appliedAuras = GetUnitOwner()->GetAppliedAuras();
+            for (Unit::AuraApplicationMap::iterator iter = appliedAuras.begin(); iter != appliedAuras.end(); ++iter)
+            {
+                Aura* baseAura = iter->second->GetBase();
+
+                if (baseAura->GetSpellInfo()->IsPositive())
+                    continue;
+
+                if (!(baseAura->GetSpellInfo()->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC))
+                    continue;
+
+                if (!(baseAura->GetSpellInfo()->GetDispelMask() & 1 << DISPEL_MAGIC))
+                    continue;
+
+                if (baseAura->HasEffectType(SPELL_AURA_PERIODIC_DAMAGE) ||
+                    baseAura->HasEffectType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT))
+                {
+                    if (AuraEffect const* effInfo = counteractAura->GetEffect(EFFECT_0))
+                    {
+                        // TODO: Idk why this all is not increasing the amount
+                        AddPct(amount, effInfo->GetAmount());
+                    }
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_renewing_mist_hot::HandlePeriodicHeal, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+        //DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_monk_renewing_mist_hot::CalcAmount, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+    }
+};
+
+// 119607 - Renewing Mist Jump
+class spell_monk_renewing_mist_jump : public SpellScript
+{
+    PrepareSpellScript(spell_monk_renewing_mist_jump);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo(
+            {
+                SPELL_MONK_RENEWING_MIST_HOT
+            });
+    }
+
+    void HandleTargets(std::list<WorldObject*>& targets)
+    {
+        Unit* caster = GetCaster();
+        Unit* previousTarget = GetExplTargetUnit();
+
+        // Not remove full health targets now, dancing mists talent can jump on full health too
+        targets.remove_if([caster, previousTarget](WorldObject* a)
+        {
+            Unit* ally = a->ToUnit();
+            if (!ally || ally->HasAura(SPELL_MONK_RENEWING_MIST_HOT, caster->GetGUID()) || ally == previousTarget)
+                return true;
+
+            return false;
+        });
+
+        targets.remove_if([](WorldObject* a)
+        {
+            Unit* ally = a->ToUnit();
+            if (!ally || ally->IsFullHealth())
+                return true;
+
+            return false;
+        });
+
+        if (targets.size() > 1)
+        {
+            targets.sort(Trinity::HealthPctOrderPred());
+            targets.resize(1);
+        }
+
+        _previousTargetGuid = previousTarget->GetGUID();
+    }
+
+    void HandleHit(SpellEffIndex effIndex)
+    {
+        PreventHitDefaultEffect(effIndex);
+        Unit* caster = GetCaster();
+        Unit* previousTarget = ObjectAccessor::GetUnit(*caster, _previousTargetGuid);
+
+        if (previousTarget)
+        {
+            if (Aura* oldAura = previousTarget->GetAura(SPELL_MONK_RENEWING_MIST_HOT, GetCaster()->GetGUID()))
+            {
+                if (Aura* newAura = caster->AddAura(SPELL_MONK_RENEWING_MIST_HOT, GetHitUnit()))
+                {
+                    newAura->SetDuration(oldAura->GetDuration());
+                    previousTarget->SendPlaySpellVisual(GetHitUnit()->GetPosition(), previousTarget->GetOrientation(), SPELL_MONK_VISUAL_RENEWING_MIST, 0, 0, 50.f, false);
+                    oldAura->Remove();
+                }
+            }
+        }
+    }
+
+private:
+    ObjectGuid _previousTargetGuid;
+    ObjectGuid _additionalTargetGuid;
+
+    void Register() override
+    {
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_renewing_mist_jump::HandleTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ALLY);
+        OnEffectHitTarget += SpellEffectFn(spell_monk_renewing_mist_jump::HandleHit, EFFECT_1, SPELL_EFFECT_DUMMY);
+    }
+};
+
+//191837 - Essence Font
+class spell_monk_essence_font : public SpellScript
+{
+    PrepareSpellScript(spell_monk_essence_font);
+
+    void HandleOnCast()
+    {
+        if (Unit* caster = GetCaster())
+        {
+            caster->AddAura(SPELL_MONK_ESSENCE_FONT_PERIODIC_HEAL, nullptr);
+            std::list<Unit*> u_li;
+            uint8 targetLimit = 6;
+            Trinity::Containers::RandomResize(u_li, targetLimit);
+            caster->GetFriendlyUnitListInRange(u_li, 30.0f, false);
+            for (auto& targets : u_li)
+            {
+                caster->AddAura(SPELL_MONK_ESSENCE_FONT_PERIODIC_HEAL, targets);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnCast += SpellCastFn(spell_monk_essence_font::HandleOnCast);
+    }
+};
+
+//191840 - Essence Font (Heal)
+class spell_monk_essence_font_heal : public SpellScriptLoader
+{
+public:
+    spell_monk_essence_font_heal() : SpellScriptLoader("spell_monk_essence_font_heal") { }
+
+    class spell_monk_essence_font_heal_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_monk_essence_font_heal_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& p_Targets)
+        {
+            if (Unit* caster = GetCaster())
+            {
+                p_Targets.remove_if([caster](WorldObject* object) -> bool
+                {
+                    if (object == nullptr || object->ToUnit() == nullptr)
+                        return true;
+
+                    Unit* unit = object->ToUnit();
+
+                    if (unit == caster)
+                        return true;
+                    //If the target has the aura and the aura has more than 5 second duration (meaning it was cast less than 1 second ago) we dont keep it
+                    if (unit->HasAura(SPELL_MONK_ESSENCE_FONT_HEAL) && unit->GetAura(SPELL_MONK_ESSENCE_FONT_HEAL)->GetDuration() > 5 * IN_MILLISECONDS)
+                        return true;
+
+                    return false;
+                });
+
+                if (p_Targets.size() > 1)
+                {
+                    p_Targets.sort(Trinity::HealthPctOrderPred());
+                    p_Targets.resize(1);
+                }
+            }
+        }
+
+        void Register() override
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_essence_font_heal_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_essence_font_heal_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ALLY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_monk_essence_font_heal_SpellScript();
+    }
+};
+
+// 115294 - Mana Tea
+class spell_monk_mana_tea : public SpellScriptLoader
+{
+public:
+    spell_monk_mana_tea() : SpellScriptLoader("spell_monk_mana_tea") { }
+
+    class spell_monk_mana_tea_SpellScript : public SpellScript
+    {
+
+        SpellModifier* mod = nullptr;
+
+        void HandleBeforeCast()
+        {
+            if (Player* _player = GetCaster()->ToPlayer())
+            {
+                int32 stacks = 0;
+
+                if (Aura* manaTeaStacks = _player->GetAura(SPELL_MONK_MANA_TEA_STACKS))
+                {
+                    stacks = manaTeaStacks->GetStackAmount();
+
+                    int32 newDuration = stacks * IN_MILLISECONDS;
+
+
+                    SpellModifierByClassMask* mod = new SpellModifierByClassMask(manaTeaStacks);
+                    mod->op = SpellModOp::Duration;
+                    mod->type = SPELLMOD_FLAT;
+                    mod->spellId = SPELL_MONK_MANA_TEA_REGEN;
+                    static_cast<SpellModifierByClassMask*>(mod)->value = newDuration;
+                    mod->mask[1] = 0x200000;
+                    mod->mask[2] = 0x1;
+
+                    _player->AddSpellMod(mod, true);
+                }
+            }
+        }
+
+        void HandleAfterCast()
+        {
+            if (mod)
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->AddSpellMod(mod, false);
+        }
+
+        void Register() override
+        {
+            BeforeCast += SpellCastFn(spell_monk_mana_tea_SpellScript::HandleBeforeCast);
+            AfterCast += SpellCastFn(spell_monk_mana_tea_SpellScript::HandleAfterCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_monk_mana_tea_SpellScript();
+    }
+
+    class spell_monk_mana_tea_AuraScript : public AuraScript
+    {
+
+        void OnTick(const AuraEffect* /*aurEff*/)
+        {
+            if (GetCaster())
+            {
+                // remove one charge per tick instead of remove aura on cast
+                // "Cancelling the channel will not waste stacks"
+                if (Aura* manaTea = GetCaster()->GetAura(SPELL_MONK_MANA_TEA_STACKS))
+                {
+                    if (manaTea->GetStackAmount() > 1)
+                        manaTea->SetStackAmount(manaTea->GetStackAmount() - 1);
+                    else
+                        GetCaster()->RemoveAura(SPELL_MONK_MANA_TEA_STACKS);
+                }
+            }
+        }
+
+        void Register() override
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_mana_tea_AuraScript::OnTick, EFFECT_0, SPELL_AURA_MOD_POWER_COST_SCHOOL_PCT);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_monk_mana_tea_AuraScript();
+    }
+};
+
+// Enveloping Mist - 124682
+class spell_monk_enveloping_mist : public SpellScriptLoader
+{
+public:
+    spell_monk_enveloping_mist() : SpellScriptLoader("spell_monk_enveloping_mist") { }
+
+    class spell_monk_enveloping_mist_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_monk_enveloping_mist_SpellScript);
+
+        void HandleOnPrepare()
+        {
+            if (GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == SPELL_MONK_SOOTHING_MIST)
+            {
+                GetSpell()->m_castFlagsEx = TRIGGERED_CAST_DIRECTLY;
+                SpellCastTargets targets = GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->m_targets;
+                GetSpell()->InitExplicitTargets(targets);
+            }
+        }
+
+        void LifeCycles()
+        {
+            Player* caster = GetCaster()->ToPlayer();
+            if (!caster)
+                return;
+
+            if (caster->HasAura(SPELL_LIFECYCLES))
+            {
+                caster->CastSpell(caster, SPELL_MONK_LIFECYCLES_VIVIFY, true);
+            }
+        }
+
+        void Register() override
+        {
+            OnPrepare += SpellOnPrepareFn(spell_monk_enveloping_mist_SpellScript::HandleOnPrepare);
+            AfterCast += SpellCastFn(spell_monk_enveloping_mist_SpellScript::LifeCycles);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_monk_enveloping_mist_SpellScript();
+    }
+};
+
+//137639
+class spell_monk_storm_earth_and_fire : public AuraScript
+{
+    PrepareAuraScript(spell_monk_storm_earth_and_fire);
+
+    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* target = GetTarget();
+        target->CastSpell(target, SPELL_MONK_SEF_STORM_VISUAL, true);
+        target->CastSpell(target, SPELL_MONK_SEF_SUMMON_EARTH, true);
+        target->CastSpell(target, SPELL_MONK_SEF_SUMMON_FIRE, true);
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        GetTarget()->RemoveAurasDueToSpell(SPELL_MONK_SEF_STORM_VISUAL);
+
+        if (Creature* fireSpirit = GetTarget()->GetSummonedCreatureByEntry(NPC_FIRE_SPIRIT))
+            fireSpirit->ToTempSummon()->DespawnOrUnsummon();
+
+        if (Creature* earthSpirit = GetTarget()->GetSummonedCreatureByEntry(NPC_EARTH_SPIRIT))
+            earthSpirit->ToTempSummon()->DespawnOrUnsummon();
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_monk_storm_earth_and_fire::HandleApply, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_monk_storm_earth_and_fire::HandleRemove, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+// 69791 - 69792
+struct npc_monk_sef_spirit : public ScriptedAI
+{
+    npc_monk_sef_spirit(Creature* creature) : ScriptedAI(creature) { }
+
+    void IsSummonedBy(WorldObject* summoner)
+    {
+        me->SetLevel(summoner->ToUnit()->GetLevel());
+        me->SetMaxHealth(summoner->ToUnit()->GetMaxHealth() / 3);
+        me->SetFullHealth();
+        summoner->CastSpell(me, SPELL_MONK_TRANSCENDENCE_CLONE_TARGET, true);
+        me->CastSpell(me, me->GetEntry() == NPC_FIRE_SPIRIT ? SPELL_MONK_SEF_FIRE_VISUAL : SPELL_MONK_SEF_EARTH_VISUAL, true);
+        me->CastSpell(me, SPELL_MONK_SEF_SUMMONS_STATS, true);
+        int32 attackPower = summoner->ToUnit()->m_unitData->AttackPower / 100 * 45.0f;
+        int32 spellPower = summoner->ToUnit()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_NATURE) / 100 * 45.0f;
+
+        if (Unit* target = ObjectAccessor::GetUnit(*summoner, summoner->ToUnit()->GetTarget()))
+            me->CastSpell(target, SPELL_MONK_SEF_CHARGE, true);
+        else
+        {
+            if (me->GetEntry() == NPC_FIRE_SPIRIT)
+                me->GetMotionMaster()->MoveFollow(summoner->ToUnit(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+            else
+                me->GetMotionMaster()->MoveFollow(summoner->ToUnit(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE * 3);
+        }
+    }
+};
+
+class playerScript_monk_earth_fire_storm : public PlayerScript
+{
+public:
+    playerScript_monk_earth_fire_storm() : PlayerScript("playerScript_monk_earth_fire_storm") { }
+
+    void OnSuccessfulSpellCast(Player* player, Spell* spell) override
+    {
+        if (player->GetClass() != CLASS_MONK)
+            return;
+
+        SpellInfo const* spellInfo = spell->GetSpellInfo();
+        if (player->HasAura(SPELL_MONK_SEF) && !spellInfo->IsPositive())
+        {
+            if (Unit* target = ObjectAccessor::GetUnit(*player, player->GetTarget()))
+            {
+                if (Creature* fireSpirit = player->GetSummonedCreatureByEntry(NPC_FIRE_SPIRIT))
+                {
+                    fireSpirit->SetFacingToObject(target, true);
+                    fireSpirit->CastSpell(target, spellInfo->Id, true);
+                }
+                if (Creature* earthSpirit = player->GetSummonedCreatureByEntry(NPC_EARTH_SPIRIT))
+                {
+                    earthSpirit->SetFacingToObject(target, true);
+                    earthSpirit->CastSpell(target, spellInfo->Id, true);
+                }
+            }
+        }
+        if (player->HasAura(SPELL_MONK_SEF) && spellInfo->IsPositive())
+        {
+            if (Unit* GetTarget = player->GetSelectedUnit())
+            {
+                if (!GetTarget->IsFriendlyTo(player))
+                    return;
+
+                if (Creature* fireSpirit = player->GetSummonedCreatureByEntry(NPC_FIRE_SPIRIT))
+                {
+                    fireSpirit->SetFacingToObject(GetTarget, true);
+                    fireSpirit->CastSpell(GetTarget, spellInfo->Id, true);
+                }
+                if (Creature* earthSpirit = player->GetSummonedCreatureByEntry(NPC_EARTH_SPIRIT))
+                {
+                    earthSpirit->SetFacingToObject(GetTarget, true);
+                    earthSpirit->CastSpell(GetTarget, spellInfo->Id, true);
+                }
+            }
+        }
+    }
+};
+
+// 122470 - Touch of Karma
+class spell_monk_touch_of_karma : public SpellScriptLoader
+{
+public:
+    spell_monk_touch_of_karma() : SpellScriptLoader("spell_monk_touch_of_karma") { }
+
+    class spell_monk_touch_of_karma_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_monk_touch_of_karma_AuraScript);
+
+        void CalculateAmount(const AuraEffect* aurEff, int32& amount, bool& /*canBeRecalculated*/)
+        {
+            if (Unit* caster = GetCaster())
+                if (int32 effInfo = GetAura()->GetSpellInfo()->GetEffect(EFFECT_2).CalcValue())
+                {
+                    amount = int32(caster->CountPctFromMaxHealth(effInfo));
+                    const_cast<AuraEffect*>(aurEff)->SetAmount(amount);
+                }
+        }
+
+        void OnAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& /*absorbAmount*/)
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            for (AuraApplication* aurApp : caster->GetTargetAuraApplications(SPELL_MONK_TOUCH_OF_KARMA))
+                if (aurApp->GetTarget() != caster)
+                {
+                    int32 periodicDamage = int32(dmgInfo.GetDamage() / sSpellMgr->GetSpellInfo(SPELL_MONK_TOUCH_OF_KARMA_DAMAGE, DIFFICULTY_NONE)->GetMaxTicks());
+
+                    caster->CastSpell(aurApp->GetTarget(), SPELL_MONK_TOUCH_OF_KARMA_DAMAGE, CastSpellExtraArgs(TRIGGERED_FULL_MASK).AddSpellBP0(periodicDamage).SetTriggeringAura(aurEff));
+                    if (caster->HasAura(SPELL_GOOD_KARMA_TALENT))
+                    {
+                        caster->CastSpell(caster, SPELL_GOOD_KARMA_TALENT_HEAL, CastSpellExtraArgs(TRIGGERED_FULL_MASK).AddSpellBP0(periodicDamage).SetTriggeringAura(aurEff));
+                    }
+                }
+        }
+
+        void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            GetCaster()->CastSpell(GetCaster(), SPELL_MONK_TOUCH_OF_KARMA_BUFF, true);
+        }
+
+        void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            caster->RemoveAura(SPELL_MONK_TOUCH_OF_KARMA_BUFF);
+            for (AuraApplication* aurApp : caster->GetTargetAuraApplications(SPELL_MONK_TOUCH_OF_KARMA))
+                if (Aura* targetAura = aurApp->GetBase())
+                    targetAura->Remove();
+        }
+
+        void Register() override
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_monk_touch_of_karma_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_monk_touch_of_karma_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
+            OnEffectAbsorb += AuraEffectAbsorbFn(spell_monk_touch_of_karma_AuraScript::OnAbsorb, EFFECT_1);
+            OnEffectRemove += AuraEffectRemoveFn(spell_monk_touch_of_karma_AuraScript::HandleRemove, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_monk_touch_of_karma_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_monk_touch_of_karma_AuraScript();
+    }
+};
+
+// 125174 - Touch of Karma Buff
+class spell_monk_touch_of_karma_buff : public AuraScript
+{
+    PrepareAuraScript(spell_monk_touch_of_karma_buff);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo(
+            {
+                SPELL_MONK_TOUCH_OF_KARMA
+            });
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        for (AuraApplication* aurApp : caster->GetTargetAuraApplications(SPELL_MONK_TOUCH_OF_KARMA))
+            if (Aura* targetAura = aurApp->GetBase())
+                targetAura->Remove();
+    }
+
+    void Register() override
+    {
+        OnEffectRemove += AuraEffectRemoveFn(spell_monk_touch_of_karma_buff::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+// Fists of Fury (stun effect) - 120086
+class spell_monk_fists_of_fury_stun : public SpellScriptLoader
+{
+public:
+    spell_monk_fists_of_fury_stun() : SpellScriptLoader("spell_monk_fists_of_fury_stun") { }
+
+    class spell_monk_fists_of_fury_stun_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_monk_fists_of_fury_stun_SpellScript);
+
+        void RemoveInvalidTargets(std::list<WorldObject*>& targets)
+        {
+            targets.remove_if(Trinity::UnitAuraCheck(true, GetSpellInfo()->Id));
+        }
+
+        void Register() override
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_fists_of_fury_stun_SpellScript::RemoveInvalidTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_24);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_monk_fists_of_fury_stun_SpellScript();
+    }
+};
+
+class spell_monk_fists_of_fury_visual_filter : public SpellScriptLoader
+{
+public:
+    spell_monk_fists_of_fury_visual_filter() : SpellScriptLoader("spell_monk_fists_of_fury_visual_filter") { }
+
+    class spell_monk_fists_of_fury_visual_filter_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_monk_fists_of_fury_visual_filter_SpellScript);
+
+        void RemoveInvalidTargets(std::list<WorldObject*>& targets)
+        {
+            targets.remove_if(Trinity::UnitAuraCheck(true, 123154, GetCaster()->GetGUID()));
+        }
+
+        void Register() override
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_fists_of_fury_visual_filter_SpellScript::RemoveInvalidTargets, EFFECT_1, TARGET_UNIT_CONE_ENEMY_24);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_monk_fists_of_fury_visual_filter_SpellScript();
+    }
+};
+
+class spell_monk_fists_of_fury_visual : public SpellScriptLoader
+{
+public:
+    spell_monk_fists_of_fury_visual() : SpellScriptLoader("spell_monk_fists_of_fury_visual") { }
+
+    class spell_monk_fists_of_fury_visual_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_monk_fists_of_fury_visual_AuraScript);
+
+        void OnApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            SetMaxDuration(1000); //The spell doesn't have a duration on WoWHead and never ends if we don't give it one, so one sec should be good
+            SetDuration(1000);    //Same as above
+        }
+
+        void Register() override
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_monk_fists_of_fury_visual_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_monk_fists_of_fury_visual_AuraScript();
+    }
+};
+
+class spell_monk_fists_of_fury : public SpellScriptLoader
+{
+public:
+    spell_monk_fists_of_fury() : SpellScriptLoader("spell_monk_fists_of_fury") { }
+
+    class spell_monk_fists_of_fury_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_monk_fists_of_fury_AuraScript);
+
+        void HandlePeriodic(AuraEffect const* aurEff)
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            if (aurEff->GetTickNumber() % 6 == 0)
+                caster->CastSpell(GetTarget(), SPELL_MONK_FISTS_OF_FURY_DAMAGE, true);
+        }
+
+        void Register() override
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_fists_of_fury_AuraScript::HandlePeriodic, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_monk_fists_of_fury_AuraScript();
+    }
+};
+
+class spell_monk_fists_of_fury_damage : public SpellScriptLoader
+{
+public:
+    spell_monk_fists_of_fury_damage() : SpellScriptLoader("spell_monk_fists_of_fury_damage") { }
+
+    class spell_monk_fists_of_fury_damage_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_monk_fists_of_fury_damage_SpellScript);
+
+        void HandleDamage(SpellEffIndex /*effIndex*/)
+        {
+            if (!GetCaster())
+                return;
+
+            Unit* l_Target = GetHitUnit();
+            Player* l_Player = GetCaster()->ToPlayer();
+
+            if (l_Target == nullptr || l_Player == nullptr)
+                return;
+
+            int32 l_Damage = l_Player->GetTotalAttackPowerValue(BASE_ATTACK) * 5.25f;
+            l_Damage = l_Player->SpellDamageBonusDone(l_Target, GetSpellInfo(), l_Damage, SPELL_DIRECT_DAMAGE, GetSpellInfo()->GetEffect(EFFECT_0));
+            l_Damage = l_Target->SpellDamageBonusTaken(l_Player, GetSpellInfo(), l_Damage, SPELL_DIRECT_DAMAGE);
+
+            SetHitDamage(l_Damage);
+        }
+
+        void Register() override
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_monk_fists_of_fury_damage_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_monk_fists_of_fury_damage_SpellScript();
+    }
+};
+
+// 63508
+struct npc_monk_xuen : public ScriptedAI
+{
+    npc_monk_xuen(Creature* creature) : ScriptedAI(creature) { }
+
+    void IsSummonedBy(WorldObject* /*summoner*/)
+    {
+        me->CastSpell(me, SPELL_MONK_XUEN_AURA, true);
+    }
+};
+
+// Whirling Dragon Punch - 152175
+class playerScript_monk_whirling_dragon_punch : public PlayerScript
+{
+public:
+    playerScript_monk_whirling_dragon_punch() : PlayerScript("playerScript_monk_whirling_dragon_punch") {}
+
+    void OnCooldownStart(Player* player, SpellInfo const* spellInfo, uint32 /*itemId*/, int32& cooldown, uint32& /*categoryId*/, int32& /*categoryCooldown*/) override
+    {
+        if (spellInfo->Id == SPELL_MONK_FISTS_OF_FURY)
+        {
+            SpellInfo const* risingSunKickInfo = sSpellMgr->GetSpellInfo(SPELL_MONK_RISING_SUN_KICK, DIFFICULTY_NONE);
+            ApplyCasterAura(player, cooldown, player->GetSpellHistory()->GetChargeRecoveryTime(risingSunKickInfo->ChargeCategoryId));
+        }
+    }
+
+    void OnChargeRecoveryTimeStart(Player* player, uint32 chargeCategoryId, int32& chargeRecoveryTime) override
+    {
+        SpellInfo const* risingSunKickInfo = sSpellMgr->GetSpellInfo(SPELL_MONK_RISING_SUN_KICK, DIFFICULTY_NONE);
+        if (risingSunKickInfo->ChargeCategoryId == chargeCategoryId)
+        {
+            SpellInfo const* fistsOfFuryInfo = sSpellMgr->GetSpellInfo(SPELL_MONK_RISING_SUN_KICK, DIFFICULTY_NONE);
+            // REWRITE   ApplyCasterAura(player, chargeRecoveryTime, player->GetSpellHistory()->GetRemainingCooldown(fistsOfFuryInfo, Milliseconds ));
+        }
+    }
+
+private:
+    void ApplyCasterAura(Player* player, int32 cooldown1, int32 cooldown2)
+    {
+        if (cooldown1 > 0 && cooldown2 > 0)
+        {
+            uint32 whirlingDragonPunchAuraDuration = std::min(cooldown1, cooldown2);
+            player->CastSpell(player, SPELL_MONK_WHIRLING_DRAGON_PUNCH_CASTER_AURA, true);
+
+            if (Aura* aura = player->GetAura(SPELL_MONK_WHIRLING_DRAGON_PUNCH_CASTER_AURA))
+                aura->SetDuration(whirlingDragonPunchAuraDuration);
+        }
+    }
+};
+
+// Whirling Dragon Punch - 152175
+class spell_monk_whirling_dragon_punch : public AuraScript
+{
+    PrepareAuraScript(spell_monk_whirling_dragon_punch);
+
+    void OnTick(AuraEffect const* /*aurEff*/)
+    {
+        if (GetCaster())
+            GetCaster()->CastSpell(GetCaster(), SPELL_MONK_WHIRLING_DRAGON_PUNCH_DAMAGE, true);
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_whirling_dragon_punch::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
+// Flying Serpent Kick - 115057
+class spell_monk_flying_serpent_kick : public SpellScriptLoader
+{
+public:
+    spell_monk_flying_serpent_kick() : SpellScriptLoader("spell_monk_flying_serpent_kick") { }
+
+    class spell_monk_flying_serpent_kick_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_monk_flying_serpent_kick_SpellScript);
+
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            if (!sSpellMgr->GetSpellInfo(SPELL_MONK_FLYING_SERPENT_KICK_NEW, DIFFICULTY_NONE))
+                return false;
+            return true;
+        }
+
+        void HandleOnCast()
+        {
+            if (Unit* caster = GetCaster())
+            {
+                if (Player* _player = caster->ToPlayer())
+                {
+                    if (_player->HasAura(SPELL_MONK_FLYING_SERPENT_KICK))
+                        _player->RemoveAura(SPELL_MONK_FLYING_SERPENT_KICK);
+
+                    if (caster->HasAura(SPELL_MONK_ITEM_PVP_GLOVES_BONUS))
+                        caster->RemoveAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
+
+                    _player->CastSpell(_player, SPELL_MONK_FLYING_SERPENT_KICK_AOE, true);
+                }
+            }
+        }
+
+        void Register() override
+        {
+            OnCast += SpellCastFn(spell_monk_flying_serpent_kick_SpellScript::HandleOnCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_monk_flying_serpent_kick_SpellScript();
+    }
+};
+
 // 227291 Niuzao's
 
 
@@ -1788,4 +2903,30 @@ void AddSC_monk_spell_scripts()
     RegisterSpellScript(spell_monk_transcendence);
     RegisterSpellScript(aura_monk_transcendence);
     RegisterSpellScript(spell_monk_transcendence_transfer);
+    new spell_monk_vivify();
+    new spell_monk_soothing_mist();
+    new spell_focused_thunder_talent_thunder_focus_tea();
+    new spell_monk_zen_pulse();
+    RegisterSpellScript(spell_monk_renewing_mist);
+    RegisterSpellScript(spell_monk_renewing_mist_hot);
+    RegisterSpellScript(spell_monk_renewing_mist_jump);
+    RegisterSpellScript(spell_monk_essence_font);
+    new spell_monk_essence_font_heal();
+    new spell_monk_mana_tea();
+    new spell_monk_enveloping_mist();
+    RegisterSpellScript(spell_monk_storm_earth_and_fire);
+    RegisterCreatureAI(npc_monk_sef_spirit);
+    new playerScript_monk_earth_fire_storm;
+    new spell_monk_touch_of_karma();
+    RegisterSpellScript(spell_monk_touch_of_karma_buff);
+    new spell_monk_fists_of_fury();
+    new spell_monk_fists_of_fury_damage();
+    new spell_monk_fists_of_fury_stun();
+    new spell_monk_fists_of_fury_visual();
+    new spell_monk_fists_of_fury_visual_filter();
+    RegisterCreatureAI(npc_monk_xuen);
+    new playerScript_monk_whirling_dragon_punch();
+    RegisterSpellScript(spell_monk_whirling_dragon_punch);
+    new spell_monk_flying_serpent_kick();
+
 }

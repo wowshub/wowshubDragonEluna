@@ -821,6 +821,40 @@ public:
         SafeWrapperType _safeWrapper;
     };
 
+    class OnPrepareHandler final
+    {
+    public:
+        using SpellOnPrepareFnType = void(SpellScript::*)();
+
+        using SafeWrapperType = void(*)(SpellScript* spellScript, SpellOnPrepareFnType callImpl);
+
+        template<typename ScriptFunc>
+        explicit OnPrepareHandler(ScriptFunc handler)
+        {
+            using ScriptClass = GetScriptClass_t<ScriptFunc>;
+
+            static_assert(sizeof(SpellOnPrepareFnType) >= sizeof(ScriptFunc));
+            static_assert(alignof(SpellOnPrepareFnType) >= alignof(ScriptFunc));
+
+            static_assert(std::is_invocable_r_v<void, ScriptFunc, ScriptClass>,
+                "OnPrepareHandler signature must be \"void OnPrepareHandler()\"");
+
+            _callImpl = reinterpret_cast<SpellOnPrepareFnType>(handler);
+            _safeWrapper = [](SpellScript* spellScript, SpellOnPrepareFnType callImpl) -> void
+            {
+                return (static_cast<ScriptClass*>(spellScript)->*reinterpret_cast<ScriptFunc>(callImpl))();
+            };
+        }
+
+        void Call(SpellScript* spellScript) const
+        {
+            return _safeWrapper(spellScript, _callImpl);
+        }
+    private:
+        SpellOnPrepareFnType _callImpl;
+        SafeWrapperType _safeWrapper;
+    };
+
      // left for custom compatibility only, DO NOT USE
     #define PrepareSpellScript(CLASSNAME)
 
@@ -927,7 +961,12 @@ public:
     // example: OnSummonHandler += SpellOnEffectSummonFn(class::function);
     // where function is void function(Creature* summon)
     HookList<OnSummonHandler> OnEffectSummon;
-#   define SpellOnEffectSummonFn(F) OnSummonHandler(&F)
+    #define SpellOnEffectSummonFn(F) OnSummonHandler(&F)
+
+    // example: OnPrepare += SpellOnPrepareFn();
+    // where function is void function()
+    HookList<OnPrepareHandler> OnPrepare;
+    #define SpellOnPrepareFn(F) OnPrepareHandler(&F)
 
     // hooks are executed in following order, at specified event of spell:
     // 1. OnPrecast - executed during spell preparation (before cast bar starts)

@@ -2033,6 +2033,12 @@ class TC_GAME_API Unit : public WorldObject
     public:
         TaskScheduler _scheduler;
         TaskScheduler& GetScheduler() { return _scheduler; }
+
+    public:
+        typedef std::unordered_multimap<uint32 /*spellId*/, ObjectGuid /*targetGuid*/> TargetAuraContainer;
+        TargetAuraContainer m_targetAuras;
+        typedef std::vector<AuraApplication*> AuraApplicationVector;
+        Unit::AuraApplicationVector GetTargetAuraApplications(uint32 spellId) const;
 };
 
 #endif
