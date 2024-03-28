@@ -7073,10 +7073,8 @@ void Player::SendCurrencies() const
             continue;
 
         // Check award condition
-        if (currency->AwardConditionID)
-            if (PlayerConditionEntry const* playerCondition = sPlayerConditionStore.LookupEntry(currency->AwardConditionID))
-                if (!ConditionMgr::IsPlayerMeetingCondition(this, playerCondition))
-                    continue;
+        if (!ConditionMgr::IsPlayerMeetingCondition(this, currency->AwardConditionID))
+            continue;
 
         WorldPackets::Misc::SetupCurrency::Record record;
         record.Type = currency->ID;
@@ -7142,10 +7140,8 @@ void Player::ModifyCurrency(uint32 id, int32 amount, CurrencyGainSource gainSour
         return;
 
     // Check award condition
-    if (currency->AwardConditionID)
-        if (PlayerConditionEntry const* playerCondition = sPlayerConditionStore.LookupEntry(currency->AwardConditionID))
-            if (!ConditionMgr::IsPlayerMeetingCondition(this, playerCondition))
-                return;
+    if (!ConditionMgr::IsPlayerMeetingCondition(this, currency->AwardConditionID))
+        return;
 
     bool isGainOnRefund = [&]() -> bool
     {
@@ -15417,9 +15413,8 @@ void Player::RewardQuest(Quest const* quest, LootItemType rewardType, uint32 rew
     {
         for (QuestRewardDisplaySpell displaySpell : quest->RewardDisplaySpell)
         {
-            if (PlayerConditionEntry const* playerCondition = sPlayerConditionStore.LookupEntry(displaySpell.PlayerConditionId))
-                if (!ConditionMgr::IsPlayerMeetingCondition(this, playerCondition))
-                    continue;
+            if (!ConditionMgr::IsPlayerMeetingCondition(this, displaySpell.PlayerConditionId))
+                continue;
 
             SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(displaySpell.SpellId, GetMap()->GetDifficultyID());
             Unit* caster = this;
@@ -18576,9 +18571,8 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
         if (GetSession()->GetCollectionMgr()->HasTransmogIllusion(transmogIllusion->ID))
             continue;
 
-        if (PlayerConditionEntry const* playerCondition = sPlayerConditionStore.LookupEntry(transmogIllusion->UnlockConditionID))
-            if (!ConditionMgr::IsPlayerMeetingCondition(this, playerCondition))
-                continue;
+        if (!ConditionMgr::IsPlayerMeetingCondition(this, transmogIllusion->UnlockConditionID))
+            continue;
 
         GetSession()->GetCollectionMgr()->AddTransmogIllusion(transmogIllusion->ID);
     }
@@ -19806,7 +19800,7 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, TransferAbo
             {
                 for (auto&& itr : *mapDifficultyConditions)
                 {
-                    if (!ConditionMgr::IsPlayerMeetingCondition(this, itr.second))
+                    if (!ConditionMgr::IsPlayerMeetingCondition(this, itr.second->ID))
                     {
                         failedMapDifficultyXCondition = itr.first;
                         break;
@@ -23267,13 +23261,10 @@ bool Player::BuyItemFromVendorSlot(ObjectGuid vendorguid, uint32 vendorslot, uin
         return false;
     }
 
-    if (PlayerConditionEntry const* playerCondition = sPlayerConditionStore.LookupEntry(crItem->PlayerConditionId))
+    if (!ConditionMgr::IsPlayerMeetingCondition(this, crItem->PlayerConditionId))
     {
-        if (!ConditionMgr::IsPlayerMeetingCondition(this, playerCondition))
-        {
-            SendEquipError(EQUIP_ERR_ITEM_LOCKED, nullptr, nullptr);
-            return false;
-        }
+        SendEquipError(EQUIP_ERR_ITEM_LOCKED, nullptr, nullptr);
+        return false;
     }
 
     // check current item amount if it limited
@@ -27150,9 +27141,8 @@ TalentLearnResult Player::LearnPvpTalent(uint32 talentID, uint8 slot, int32* spe
     if (HasPvpTalent(talentID, GetActiveTalentGroup()))
         return TALENT_FAILED_UNKNOWN;
 
-    if (PlayerConditionEntry const* playerCondition = sPlayerConditionStore.LookupEntry(talentInfo->PlayerConditionID))
-        if (!ConditionMgr::IsPlayerMeetingCondition(this, playerCondition))
-            return TALENT_FAILED_CANT_DO_THAT_RIGHT_NOW;
+    if (!ConditionMgr::IsPlayerMeetingCondition(this, talentInfo->PlayerConditionID))
+        return TALENT_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
     if (PvpTalentEntry const* talent = sPvpTalentStore.LookupEntry(GetPvpTalentMap(GetActiveTalentGroup())[slot]))
     {
@@ -29611,11 +29601,7 @@ void Player::SendPlayerChoice(ObjectGuid sender, int32 choiceId)
 
 bool Player::MeetPlayerCondition(uint32 conditionId) const
 {
-    if (PlayerConditionEntry const* playerCondition = sPlayerConditionStore.LookupEntry(conditionId))
-        if (!ConditionMgr::IsPlayerMeetingCondition(this, playerCondition))
-            return false;
-
-    return true;
+    return ConditionMgr::IsPlayerMeetingCondition(this, conditionId);
 }
 
 bool Player::IsInFriendlyArea() const
@@ -30118,8 +30104,7 @@ uint8 Player::GetItemLimitCategoryQuantity(ItemLimitCategoryEntry const* limitEn
     {
         for (ItemLimitCategoryConditionEntry const* limitCondition : *limitConditions)
         {
-            PlayerConditionEntry const* playerCondition = sPlayerConditionStore.LookupEntry(limitCondition->PlayerConditionID);
-            if (!playerCondition || ConditionMgr::IsPlayerMeetingCondition(this, playerCondition))
+            if (ConditionMgr::IsPlayerMeetingCondition(this, limitCondition->PlayerConditionID))
                 limit += limitCondition->AddQuantity;
         }
     }

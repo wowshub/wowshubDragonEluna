@@ -4602,6 +4602,34 @@ void SpellMgr::LoadSpellInfoCorrections()
     });
 
     //
+    // MONK SPELLS
+    //
+
+    // Transcendence (for Transcendence: Transfer)
+    ApplySpellFix({ 101643 }, [](SpellInfo* spellInfo)
+    {
+        ApplySpellEffectFix(spellInfo, EFFECT_1, [](SpellEffectInfo* spellEffectInfo)
+        {
+            spellEffectInfo->ApplyAuraName = SPELL_AURA_PERIODIC_DUMMY;
+            spellEffectInfo->ApplyAuraPeriod = 500;
+        });
+    });
+
+    // Zen Pilgrimage
+    ApplySpellFix({ 126892 }, [](SpellInfo* spellInfo)
+    {
+        ApplySpellEffectFix(spellInfo, EFFECT_3, [](SpellEffectInfo* spellEffectInfo)
+        {
+            // Override spell trying to replace with unrelated version
+            spellEffectInfo->Effect = SPELL_EFFECT_NONE;
+            spellEffectInfo->BasePoints = 0;
+            spellEffectInfo->MiscValue = 0;
+        });
+    });
+
+    // END OF MONK SPELLS
+
+    //
     // FIRELANDS SPELLS
     //
     // Torment Searcher

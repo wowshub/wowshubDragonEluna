@@ -234,6 +234,7 @@ enum SpellScriptHookType
     SPELL_SCRIPT_HOOK_ON_RESIST_ABSORB_CALCULATION,
     SPELL_SCRIPT_HOOK_AFTER_CAST,
     SPELL_SCRIPT_HOOK_TAKE_POWER,
+    SPELL_SCRIPT_HOOK_ON_SUMMON,
     SPELL_SCRIPT_HOOK_CALC_CRIT_CHANCE,
     SPELL_SCRIPT_HOOK_CALC_DAMAGE,
     SPELL_SCRIPT_HOOK_CALC_HEALING,
@@ -789,27 +790,68 @@ public:
     class OnSummonHandler final
     {
     public:
-        union SpellOnSummonFnType
-        {
-            void(SpellScript::* Member)(Creature* summon);
-            void(*Static)(Creature* summon);
-        };
+        using SpellOnSummonFnType = void(SpellScript::*)(Creature* summon);
 
-        using SafeWrapperType = void(*)(SpellScript* spellScript, Creature* summon);
+        using SafeWrapperType = void(*)(SpellScript* spellScript, Creature* summon, SpellOnSummonFnType callImpl);
 
         template<typename ScriptFunc>
         explicit OnSummonHandler(ScriptFunc handler)
         {
-            //NYI
+            using ScriptClass = GetScriptClass_t<ScriptFunc>;
+
+            static_assert(sizeof(SpellOnSummonFnType) >= sizeof(ScriptFunc));
+            static_assert(alignof(SpellOnSummonFnType) >= alignof(ScriptFunc));
+
+            static_assert(std::is_invocable_r_v<void, ScriptFunc, ScriptClass, Creature*>,
+                "OnSummonHandler signature must be \"void OnSummonHandler(Creature* summon)\"");
+
+            _callImpl = reinterpret_cast<SpellOnSummonFnType>(handler);
+            _safeWrapper = [](SpellScript* spellScript, Creature* summon, SpellOnSummonFnType callImpl) -> void
+            {
+                return (static_cast<ScriptClass*>(spellScript)->*reinterpret_cast<ScriptFunc>(callImpl))(summon);
+            };
         }
 
-        void Call(SpellScript* spellScript, Creature* creature) const
+        void Call(SpellScript* spellScript, Creature* summon) const
         {
-            return _safeWrapper(spellScript, creature);
+            return _safeWrapper(spellScript, summon, _callImpl);
+        }
+    private:
+        SpellOnSummonFnType _callImpl;
+        SafeWrapperType _safeWrapper;
+    };
+
+    class OnPrepareHandler final
+    {
+    public:
+        using SpellOnPrepareFnType = void(SpellScript::*)();
+
+        using SafeWrapperType = void(*)(SpellScript* spellScript, SpellOnPrepareFnType callImpl);
+
+        template<typename ScriptFunc>
+        explicit OnPrepareHandler(ScriptFunc handler)
+        {
+            using ScriptClass = GetScriptClass_t<ScriptFunc>;
+
+            static_assert(sizeof(SpellOnPrepareFnType) >= sizeof(ScriptFunc));
+            static_assert(alignof(SpellOnPrepareFnType) >= alignof(ScriptFunc));
+
+            static_assert(std::is_invocable_r_v<void, ScriptFunc, ScriptClass>,
+                "OnPrepareHandler signature must be \"void OnPrepareHandler()\"");
+
+            _callImpl = reinterpret_cast<SpellOnPrepareFnType>(handler);
+            _safeWrapper = [](SpellScript* spellScript, SpellOnPrepareFnType callImpl) -> void
+            {
+                return (static_cast<ScriptClass*>(spellScript)->*reinterpret_cast<ScriptFunc>(callImpl))();
+            };
         }
 
+        void Call(SpellScript* spellScript) const
+        {
+            return _safeWrapper(spellScript, _callImpl);
+        }
     private:
-        SpellOnSummonFnType _onSummonHandlerScript;
+        SpellOnPrepareFnType _callImpl;
         SafeWrapperType _safeWrapper;
     };
 
@@ -915,6 +957,16 @@ public:
     // where function is void function(DamageInfo const& damageInfo, uint32& resistAmount, int32& absorbAmount)
     HookList<OnCalculateResistAbsorbHandler> OnCalculateResistAbsorb;
     #define SpellOnResistAbsorbCalculateFn(F) OnCalculateResistAbsorbHandler(&F)
+
+    // example: OnSummonHandler += SpellOnEffectSummonFn(class::function);
+    // where function is void function(Creature* summon)
+    HookList<OnSummonHandler> OnEffectSummon;
+    #define SpellOnEffectSummonFn(F) OnSummonHandler(&F)
+
+    // example: OnPrepare += SpellOnPrepareFn();
+    // where function is void function()
+    HookList<OnPrepareHandler> OnPrepare;
+    #define SpellOnPrepareFn(F) OnPrepareHandler(&F)
 
     // hooks are executed in following order, at specified event of spell:
     // 1. OnPrecast - executed during spell preparation (before cast bar starts)
@@ -1995,6 +2047,58 @@ public:
         SafeWrapperType _safeWrapper;
     };
 
+    class AuraUpdateHandler final
+    {
+    public:
+        union AuraUpdateFnType
+        {
+            void(AuraScript::* Member)(uint32 diff);
+            void(*Static)(uint32 diff);
+        };
+
+        using SafeWrapperType = void(*)(AuraScript* auraScript, uint32 diff, AuraUpdateFnType callImpl);
+
+        template<typename ScriptFunc>
+        explicit AuraUpdateHandler(ScriptFunc handler)
+        {
+            using ScriptClass = GetScriptClass_t<ScriptFunc>;
+
+            static_assert(sizeof(AuraUpdateFnType) >= sizeof(ScriptFunc));
+            static_assert(alignof(AuraUpdateFnType) >= alignof(ScriptFunc));
+
+            if constexpr (!std::is_void_v<ScriptClass>)
+            {
+                static_assert(std::is_invocable_r_v<void, ScriptFunc, ScriptClass, uint32>,
+                    "AuraUpdateHandler signature must be \"void HandleProc(uint32 diff)\"");
+
+                _callImpl = { .Member = reinterpret_cast<decltype(AuraUpdateFnType::Member)>(handler) };
+                _safeWrapper = [](AuraScript* auraScript, uint32 diff, AuraUpdateFnType callImpl) -> void
+                    {
+                        return (static_cast<ScriptClass*>(auraScript)->*reinterpret_cast<ScriptFunc>(callImpl.Member))(diff);
+                    };
+            }
+            else
+            {
+                static_assert(std::is_invocable_r_v<void, ScriptFunc, uint32>,
+                    "AuraUpdateHandler signature must be \"static void HandleProc(uint32 diff)\"");
+
+                _callImpl = { .Member = reinterpret_cast<decltype(AuraUpdateFnType::Member)>(handler) };
+                _safeWrapper = [](AuraScript* /*auraScript*/, uint32 diff, AuraUpdateFnType callImpl) -> void
+                    {
+                        return reinterpret_cast<ScriptFunc>(callImpl.Member)(diff);
+                    };
+            }
+        }
+
+        void Call(AuraScript* auraScript, uint32 diff) const
+        {
+            return _safeWrapper(auraScript, diff, _callImpl);
+        }
+    private:
+        AuraUpdateFnType _callImpl;
+        SafeWrapperType _safeWrapper;
+    };
+
      // left for custom compatibility only, DO NOT USE
     #define PrepareAuraScript(CLASSNAME)
 
@@ -2279,6 +2383,13 @@ public:
 
     // returns desired cast difficulty for triggered spells
     Difficulty GetCastDifficulty() const;
+
+    // executed when aura is updated
+    // example: OnAuraUpdate += AuraUpdateFn(class::function);
+    // where function is: void function (const uint32 diff);
+    HookList<AuraUpdateHandler> OnAuraUpdate;
+    #define AuraUpdateFn(F) AuraUpdateHandler(&F)
+    // < DekkCore
 };
 
 //

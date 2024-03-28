@@ -1814,7 +1814,7 @@ void Spell::EffectProficiency()
 
 void Spell::EffectSummonType()
 {
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH)
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
     uint32 entry = effectInfo->MiscValue;
@@ -1892,7 +1892,7 @@ void Spell::EffectSummonType()
         {
             if (properties->GetFlags().HasFlag(SummonPropertiesFlags::JoinSummonerSpawnGroup))
             {
-                SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
+                summon = SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
                 break;
             }
 
@@ -1902,7 +1902,7 @@ void Spell::EffectSummonType()
                 case SummonTitle::Guardian:
                 case SummonTitle::Runeblade:
                 case SummonTitle::Minion:
-                    SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
+                    summon = SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
                     break;
                     // Summons a vehicle, but doesn't force anyone to enter it (see SUMMON_CATEGORY_VEHICLE)
                 case SummonTitle::Vehicle:
@@ -1980,7 +1980,7 @@ void Spell::EffectSummonType()
             break;
         }
         case SUMMON_CATEGORY_PET:
-            SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
+            summon = SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
             break;
         case SUMMON_CATEGORY_PUPPET:
         {
@@ -2027,6 +2027,7 @@ void Spell::EffectSummonType()
     {
         summon->SetCreatorGUID(caster->GetGUID());
         ExecuteLogEffectSummonObject(SpellEffectName(effectInfo->Effect), summon);
+        CallScriptOnSummonHandlers(summon);
     }
 }
 
@@ -4898,11 +4899,11 @@ void Spell::EffectGameObjectSetDestructionState()
     gameObjTarget->SetDestructibleState(GameObjectDestructibleState(effectInfo->MiscValue), m_caster, true);
 }
 
-void Spell::SummonGuardian(SpellEffectInfo const* effect, uint32 entry, SummonPropertiesEntry const* properties, uint32 numGuardians, ObjectGuid privateObjectOwner)
+TempSummon* Spell::SummonGuardian(SpellEffectInfo const* effect, uint32 entry, SummonPropertiesEntry const* properties, uint32 numGuardians, ObjectGuid privateObjectOwner)
 {
     Unit* unitCaster = GetUnitCasterForEffectHandlers();
     if (!unitCaster)
-        return;
+        return nullptr;
 
     if (unitCaster->IsTotem())
         unitCaster = unitCaster->ToTotem()->GetOwner();
@@ -4910,6 +4911,8 @@ void Spell::SummonGuardian(SpellEffectInfo const* effect, uint32 entry, SummonPr
     // in another case summon new
     float radius = 5.0f;
     Milliseconds duration = Milliseconds(m_spellInfo->CalcDuration(m_originalCaster));
+
+    TempSummon* OutSummon = nullptr;
 
     //TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
     Map* map = unitCaster->GetMap();
@@ -4924,7 +4927,7 @@ void Spell::SummonGuardian(SpellEffectInfo const* effect, uint32 entry, SummonPr
 
         TempSummon* summon = map->SummonCreature(entry, pos, properties, duration, unitCaster, m_spellInfo->Id, 0, privateObjectOwner);
         if (!summon)
-            return;
+            return nullptr;
 
         if (summon->IsGuardian())
         {
@@ -4951,8 +4954,15 @@ void Spell::SummonGuardian(SpellEffectInfo const* effect, uint32 entry, SummonPr
                 summon->SetDisplayId(1126); // modelid1
         }
 
+        // In case we have one creature, we can run the OnSummon hook
+        // Otherwise it doesn't really matter anyway
+        // Used for things like Monk Transcendence
+        OutSummon = summon;
+
         ExecuteLogEffectSummonObject(SpellEffectName(effect->Effect), summon);
     }
+
+    return OutSummon;
 }
 
 void Spell::EffectRenamePet()

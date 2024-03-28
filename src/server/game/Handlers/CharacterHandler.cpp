@@ -1790,6 +1790,7 @@ void WorldSession::HandleAlterAppearance(WorldPackets::Character::AlterApperance
 
         _player->UpdateCriteria(CriteriaType::GotHaircut, 1);
 
+
         _player->SetStandState(UNIT_STAND_STATE_STAND);
 
         _player->_justPassedBarberChecks = true;
@@ -2020,9 +2021,8 @@ void WorldSession::HandleEquipmentSetSave(WorldPackets::EquipmentSet::SaveEquipm
             if (!illusion->ItemVisual || !illusion->GetFlags().HasFlag(SpellItemEnchantmentFlags::AllowTransmog))
                 return false;
 
-            if (PlayerConditionEntry const* condition = sPlayerConditionStore.LookupEntry(illusion->TransmogUseConditionID))
-                if (!sConditionMgr->IsPlayerMeetingCondition(_player, condition))
-                    return false;
+            if (!ConditionMgr::IsPlayerMeetingCondition(_player, illusion->TransmogUseConditionID))
+                return false;
 
             if (illusion->ScalingClassRestricted > 0 && uint8(illusion->ScalingClassRestricted) != _player->GetClass())
                 return false;
