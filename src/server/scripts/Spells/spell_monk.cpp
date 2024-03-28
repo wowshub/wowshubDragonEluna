@@ -1272,6 +1272,44 @@ public:
     }
 };
 
+class spell_monk_ring_of_peace : public SpellScriptLoader
+{
+public:
+    spell_monk_ring_of_peace() : SpellScriptLoader("spell_monk_ring_of_peace") { }
+
+    class spell_monk_ring_of_peace_AuraScript : public AuraScript
+    {
+
+        void OnUpdate(uint32 /*diff*/)
+        {
+            if (Unit* caster = GetCaster())
+            {
+                if (Unit* target = GetUnitOwner())
+                {
+                    std::list<Unit*> targetList;
+                    float radius = 8.0f;
+
+                    Trinity::NearestAttackableUnitInObjectRangeCheck u_check(target, caster, radius);
+                    Trinity::UnitListSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck> searcher(target, targetList, u_check);
+
+                    for (auto itr : targetList)
+                        caster->CastSpell(itr, SPELL_MONK_RING_OF_PEACE_AURA, true);
+                }
+            }
+        }
+
+        void Register() override
+        {
+            OnAuraUpdate += AuraUpdateFn(spell_monk_ring_of_peace_AuraScript::OnUpdate);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_monk_ring_of_peace_AuraScript();
+    }
+};
+
 class spell_monk_ring_of_peace_dummy : public SpellScriptLoader
 {
 public:
@@ -2888,6 +2926,7 @@ void AddSC_monk_spell_scripts()
     new spell_monk_dampen_harm();
     RegisterSpellScript(spell_monk_clash);
     new spell_monk_healing_elixirs_aura();
+    new spell_monk_ring_of_peace();
     new spell_monk_ring_of_peace_dummy();
     RegisterAreaTriggerAI(at_monk_ring_of_peace);
     RegisterAreaTriggerAI(at_monk_song_of_chi_ji);
