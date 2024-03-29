@@ -76,7 +76,7 @@ enum MonkSpells
     SPELL_MONK_RING_OF_PEACE_DISARM                     = 137461,
     SPELL_MONK_RING_OF_PEACE_SILENCE                    = 137460,
     SPELL_MONK_RING_OF_PEACE_KNOCKBACK                  = 142895,
-    SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE                = 116709,
+    SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE                = 173320,
     SPELL_MONK_TRANSCENDENCE_CLONE_TARGET               = 119051,
     SPELL_MONK_TRANSCENDENCE_VISUAL                     = 119053,
     SPELL_MONK_TRANSCENDENCE_TRANSFER                   = 119996,
@@ -117,7 +117,6 @@ enum MonkSpells
     SPELL_MONK_ZEN_PULSE_HEAL                           = 198487,
     SPELL_MONK_COUNTERACT_MAGIC                         = 202428,
     SPELL_MONK_RENEWING_MIST                            = 115151,
-    SPELL_MONK_RENEWING_MIST_HOT                        = 119611,
     SPELL_MONK_RENEWING_MIST_JUMP                       = 119607,
     SPELL_MONK_VISUAL_RENEWING_MIST                     = 24599,
     SPELL_MONK_ESSENCE_FONT_HEAL                        = 191840,
@@ -2914,9 +2913,9 @@ void AddSC_monk_spell_scripts()
     new spell_monk_zen_pilgrimage_return();
     RegisterSpellScript(spell_monk_tiger_palm);
     new spell_monk_zen_flight_check();
-    RegisterSpellScript(spell_monk_touch_of_death);
-    RegisterSpellScript(spell_monk_touch_of_death_amplifier);
-    RegisterSpellScript(spell_monk_touch_of_death_passive);
+    RegisterSpellScript(spell_monk_touch_of_death); //NW
+    RegisterSpellScript(spell_monk_touch_of_death_amplifier); //NW
+    RegisterSpellScript(spell_monk_touch_of_death_passive); //NW
     RegisterSpellAndAuraScriptPair(spell_monk_disable, aura_monk_disable);
     new spell_monk_spear_hand_strike();
     RegisterSpellScript(spell_monk_rising_sun_kick);
@@ -2924,38 +2923,38 @@ void AddSC_monk_spell_scripts()
     new spell_monk_purifying_brew();
     new spell_monk_breath_of_fire();
     new spell_monk_dampen_harm();
-    RegisterSpellScript(spell_monk_clash);
+    RegisterSpellScript(spell_monk_clash); //Dont have damage
     new spell_monk_healing_elixirs_aura();
-    new spell_monk_ring_of_peace();
-    new spell_monk_ring_of_peace_dummy();
-    RegisterAreaTriggerAI(at_monk_ring_of_peace);
-    RegisterAreaTriggerAI(at_monk_song_of_chi_ji);
+    new spell_monk_ring_of_peace(); //Dont have damage
+    new spell_monk_ring_of_peace_dummy(); //Dont have damage
+    RegisterAreaTriggerAI(at_monk_ring_of_peace); //Dont have damage
+    RegisterAreaTriggerAI(at_monk_song_of_chi_ji); //Dont have damage
     new spell_monk_chi_wave();
     new spell_monk_chi_wave_damage_missile();
     new spell_monk_chi_wave_heal_missile();
     new spell_monk_chi_wave_healing_bolt();
-    RegisterAreaTriggerAI(at_monk_chi_burst);
+    RegisterAreaTriggerAI(at_monk_chi_burst); //Dont have damage
     new spell_monk_chi_burst_heal();
-    new spell_monk_black_ox_brew();
-    new spell_monk_jade_serpent_statue();
-    RegisterCreatureAI(npc_monk_jade_serpent_statue);
+    new spell_monk_black_ox_brew(); // ??
+    new spell_monk_jade_serpent_statue(); //Statue gone on 1 sec
+    RegisterCreatureAI(npc_monk_jade_serpent_statue); //Statue gone on 1 sec
     RegisterSpellScript(spell_monk_transcendence);
     RegisterSpellScript(aura_monk_transcendence);
     RegisterSpellScript(spell_monk_transcendence_transfer);
     new spell_monk_vivify();
     new spell_monk_soothing_mist();
     new spell_focused_thunder_talent_thunder_focus_tea();
-    new spell_monk_zen_pulse();
+    new spell_monk_zen_pulse(); //NW
     RegisterSpellScript(spell_monk_renewing_mist);
     RegisterSpellScript(spell_monk_renewing_mist_hot);
     RegisterSpellScript(spell_monk_renewing_mist_jump);
     RegisterSpellScript(spell_monk_essence_font);
     new spell_monk_essence_font_heal();
-    new spell_monk_mana_tea();
+    new spell_monk_mana_tea(); // test
     new spell_monk_enveloping_mist();
-    RegisterSpellScript(spell_monk_storm_earth_and_fire);
-    RegisterCreatureAI(npc_monk_sef_spirit);
-    new playerScript_monk_earth_fire_storm;
+    RegisterSpellScript(spell_monk_storm_earth_and_fire); //npc not work and not despawn
+    RegisterCreatureAI(npc_monk_sef_spirit); //npc not work and not despawn
+    new playerScript_monk_earth_fire_storm; //npc not work and not despawn
     new spell_monk_touch_of_karma();
     RegisterSpellScript(spell_monk_touch_of_karma_buff);
     new spell_monk_fists_of_fury();
@@ -2964,8 +2963,8 @@ void AddSC_monk_spell_scripts()
     new spell_monk_fists_of_fury_visual();
     new spell_monk_fists_of_fury_visual_filter();
     RegisterCreatureAI(npc_monk_xuen);
-    new playerScript_monk_whirling_dragon_punch();
-    RegisterSpellScript(spell_monk_whirling_dragon_punch);
+    new playerScript_monk_whirling_dragon_punch(); //not check
+    RegisterSpellScript(spell_monk_whirling_dragon_punch); //not check
     new spell_monk_flying_serpent_kick();
 
 }
