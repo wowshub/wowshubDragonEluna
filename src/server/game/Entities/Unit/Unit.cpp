@@ -3137,6 +3137,36 @@ bool Unit::IsMovementPreventedByCasting() const
     return true;
 }
 
+void Unit::AddSummonedCreature(ObjectGuid guid, uint32 entry)
+{
+    m_SummonedCreatures[guid] = entry;
+}
+
+void Unit::RemoveSummonedCreature(ObjectGuid guid)
+{
+    m_SummonedCreatures.erase(guid);
+}
+
+Creature* Unit::GetSummonedCreatureByEntry(uint32 entry)
+{
+    auto itr = std::find_if(m_SummonedCreatures.begin(), m_SummonedCreatures.end(), [entry](auto& p)
+    {
+        return p.second == entry;
+    });
+
+    if (itr == m_SummonedCreatures.end())
+        return nullptr;
+
+    return ObjectAccessor::GetCreature(*this, itr->first);
+}
+
+void Unit::UnsummonCreatureByEntry(uint32 entry, uint32 ms/* = 0*/)
+{
+    if (Creature* creature = GetSummonedCreatureByEntry(entry))
+        if (TempSummon* tempSummon = creature->ToTempSummon())
+            tempSummon->UnSummon(ms);
+}
+
 bool Unit::CanCastSpellWhileMoving(SpellInfo const* spellInfo) const
 {
     if (HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, spellInfo))
@@ -11950,7 +11980,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form, uint32 spellId) const
                     if (ShapeshiftForm(artifactAppearance->OverrideShapeshiftFormID) == form)
                         return artifactAppearance->OverrideShapeshiftDisplayID;
 
-        if (ShapeshiftFormModelData const* formModelData = sDB2Manager.GetShapeshiftFormModelData(GetRace(), player->GetNativeGender(), form))
+        if (ShapeshiftFormModelData const* formModelData = sDB2Manager.GetShapeshiftFormModelData(GetRace(), form))
         {
             bool useRandom = false;
             switch (form)
@@ -13758,20 +13788,34 @@ float Unit::GetCollisionHeight() const
         {
             if (CreatureModelDataEntry const* mountModelData = sCreatureModelDataStore.LookupEntry(mountDisplayInfo->ModelID))
             {
-                CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.AssertEntry(GetNativeDisplayId());
+                if (CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStoreRaw.LookupEntry(GetNativeDisplayId()))
+                {
+                    if (CreatureModelDataEntry const* modelData = sCreatureModelDataStore.LookupEntry(displayInfo->ModelID))
+                    {
+                        float const collisionHeight = scaleMod * (mountModelData->MountHeight + modelData->CollisionHeight * modelData->ModelScale * displayInfo->CreatureModelScale * 0.5f);
+                        return collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : collisionHeight;
+                    }
+                }
+            }
+        }
+    }
+
+                /*CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.AssertEntry(GetNativeDisplayId());
                 CreatureModelDataEntry const* modelData = sCreatureModelDataStore.AssertEntry(displayInfo->ModelID);
                 float const collisionHeight = scaleMod * ((mountModelData->MountHeight * mountDisplayInfo->CreatureModelScale) + (modelData->CollisionHeight * modelData->ModelScale * displayInfo->CreatureModelScale * 0.5f));
                 return collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : collisionHeight;
             }
         }
-    }
+    }*/
 
     //! Dismounting case - use basic default model data
-    CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.AssertEntry(GetNativeDisplayId());
-    CreatureModelDataEntry const* modelData = sCreatureModelDataStore.AssertEntry(displayInfo->ModelID);
+    //CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.AssertEntry(GetNativeDisplayId());
+    //CreatureModelDataEntry const* modelData = sCreatureModelDataStore.AssertEntry(displayInfo->ModelID);
 
-    float const collisionHeight = scaleMod * modelData->CollisionHeight * modelData->ModelScale * displayInfo->CreatureModelScale;
-    return collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : collisionHeight;
+    //float const collisionHeight = scaleMod * modelData->CollisionHeight * modelData->ModelScale * displayInfo->CreatureModelScale;
+    //return collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : collisionHeight;
+
+    return DEFAULT_COLLISION_HEIGHT;
 }
 
 void Unit::SetVignette(uint32 vignetteId)
@@ -13817,4 +13861,75 @@ DeclinedName::DeclinedName(UF::DeclinedNames const& uf)
 {
     for (std::size_t i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
         name[i] = uf.Name[i];
+}
+
+void Unit::GetFriendlyUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange, bool exceptSelf /*= false*/) const
+{
+    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
+    Cell cell(p);
+    cell.SetNoCreate();
+
+    Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(this, this, fMaxSearchRange, false, exceptSelf);
+    Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(this, list, u_check);
+
+    TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+    TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+
+    cell.Visit(p, world_unit_searcher, *GetMap(), *this, fMaxSearchRange);
+    cell.Visit(p, grid_unit_searcher, *GetMap(), *this, fMaxSearchRange);
+}
+
+void Unit::GetAttackableUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange) const
+{
+    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
+    Cell cell(p);
+    cell.SetNoCreate();
+
+    Trinity::AttackableUnitInObjectRangeCheck u_check(this, fMaxSearchRange);
+    Trinity::UnitListSearcher<Trinity::AttackableUnitInObjectRangeCheck> searcher(this, list, u_check);
+
+    TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AttackableUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+    TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AttackableUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+
+    cell.Visit(p, world_unit_searcher, *GetMap(), *this, fMaxSearchRange);
+    cell.Visit(p, grid_unit_searcher, *GetMap(), *this, fMaxSearchRange);
+}
+
+int32 Unit::GetAuraEffectAmount(AuraType auraType, SpellFamilyNames spellFamilyName, uint32 /*IconFileDataId*/, uint8 /*effIndex*/) const
+{
+    if (AuraEffect* aurEff = GetAuraEffect(auraType, spellFamilyName))
+        return aurEff->GetAmount();
+
+    return 0;
+}
+
+int32 Unit::GetAuraEffectAmount(uint32 spellId, uint8 effIndex, ObjectGuid casterGuid) const
+{
+    if (AuraEffect* aurEff = GetAuraEffect(spellId, effIndex, casterGuid))
+        return aurEff->GetAmount();
+
+    return 0;
+}
+
+void Unit::RemoveAllAreaObjects()
+{
+    while (!m_AreaObj.empty())
+    {
+        m_AreaObj.front()->Remove();
+    }
+}
+
+Unit::AuraApplicationVector Unit::GetTargetAuraApplications(uint32 spellId) const
+{
+    AuraApplicationVector aurApps;
+
+    auto bounds = m_targetAuras.equal_range(spellId);
+    for (auto itr = bounds.first; itr != bounds.second; ++itr)
+    {
+        if (Unit* target = ObjectAccessor::GetUnit(*this, itr->second))
+            if (AuraApplication* aurApp = target->GetAuraApplication(itr->first, GetGUID()))
+                aurApps.push_back(aurApp);
+    }
+
+    return aurApps;
 }
