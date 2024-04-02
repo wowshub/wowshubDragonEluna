@@ -2050,11 +2050,7 @@ public:
     class AuraUpdateHandler final
     {
     public:
-        union AuraUpdateFnType
-        {
-            void(AuraScript::* Member)(uint32 diff);
-            void(*Static)(uint32 diff);
-        };
+        using AuraUpdateFnType = void(AuraScript::*)(uint32 diff);
 
         using SafeWrapperType = void(*)(AuraScript* auraScript, uint32 diff, AuraUpdateFnType callImpl);
 
@@ -2066,28 +2062,14 @@ public:
             static_assert(sizeof(AuraUpdateFnType) >= sizeof(ScriptFunc));
             static_assert(alignof(AuraUpdateFnType) >= alignof(ScriptFunc));
 
-            if constexpr (!std::is_void_v<ScriptClass>)
-            {
-                static_assert(std::is_invocable_r_v<void, ScriptFunc, ScriptClass, uint32>,
-                    "AuraUpdateHandler signature must be \"void HandleProc(uint32 diff)\"");
+            static_assert(std::is_invocable_r_v<void, ScriptFunc, ScriptClass, bool>,
+                "AuraUpdateHandler signature must be \"void OnAuraUpdate(uint32 diff)\"");
 
-                _callImpl = { .Member = reinterpret_cast<decltype(AuraUpdateFnType::Member)>(handler) };
-                _safeWrapper = [](AuraScript* auraScript, uint32 diff, AuraUpdateFnType callImpl) -> void
-                    {
-                        return (static_cast<ScriptClass*>(auraScript)->*reinterpret_cast<ScriptFunc>(callImpl.Member))(diff);
-                    };
-            }
-            else
-            {
-                static_assert(std::is_invocable_r_v<void, ScriptFunc, uint32>,
-                    "AuraUpdateHandler signature must be \"static void HandleProc(uint32 diff)\"");
-
-                _callImpl = { .Member = reinterpret_cast<decltype(AuraUpdateFnType::Member)>(handler) };
-                _safeWrapper = [](AuraScript* /*auraScript*/, uint32 diff, AuraUpdateFnType callImpl) -> void
-                    {
-                        return reinterpret_cast<ScriptFunc>(callImpl.Member)(diff);
-                    };
-            }
+            _callImpl = reinterpret_cast<AuraUpdateFnType>(handler);
+            _safeWrapper = [](AuraScript* auraScript, uint32 diff, AuraUpdateFnType callImpl) -> void
+                {
+                    return (static_cast<ScriptClass*>(auraScript)->*reinterpret_cast<ScriptFunc>(callImpl))(diff);
+                };
         }
 
         void Call(AuraScript* auraScript, uint32 diff) const
@@ -2297,6 +2279,12 @@ public:
     HookList<EnterLeaveCombatHandler> OnEnterLeaveCombat;
     #define AuraEnterLeaveCombatFn(F) EnterLeaveCombatHandler(&F)
 
+    // executed when aura is updated
+    // example: OnAuraUpdate += AuraUpdateFn(class::function);
+    // where function is: void function (const uint32 diff);
+    HookList<AuraUpdateHandler> OnAuraUpdate;
+    #define AuraUpdateFn(F) AuraUpdateHandler(&F)
+
     // AuraScript interface - hook/effect execution manipulators
 
     // prevents default action of a hook from being executed (works only while called in a hook which default action can be prevented)
@@ -2383,13 +2371,6 @@ public:
 
     // returns desired cast difficulty for triggered spells
     Difficulty GetCastDifficulty() const;
-
-    // executed when aura is updated
-    // example: OnAuraUpdate += AuraUpdateFn(class::function);
-    // where function is: void function (const uint32 diff);
-    HookList<AuraUpdateHandler> OnAuraUpdate;
-    #define AuraUpdateFn(F) AuraUpdateHandler(&F)
-    // < DekkCore
 };
 
 //
