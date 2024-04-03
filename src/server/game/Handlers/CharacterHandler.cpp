@@ -578,10 +578,9 @@ bool WorldSession::ValidateAppearance(Races race, Classes playerClass, Gender ge
                 if (!MeetsChrCustomizationReq(req, race, playerClass, false, customizations))
                     return false;
 
-            if (PlayerConditionEntry const* condition = sPlayerConditionStore.LookupEntry(conditionalChrModel->PlayerConditionID))
-                // This check is not safe to run at character selection screen
-                if (_player && !ConditionMgr::IsPlayerMeetingCondition(_player, condition))
-                    return false;
+            // This check is not safe to run at character selection screen
+            if (_player && !ConditionMgr::IsPlayerMeetingCondition(_player, conditionalChrModel->PlayerConditionID))
+                return false;
         }
         // player model checks extracted from race and gender
         else
@@ -599,9 +598,9 @@ bool WorldSession::ValidateAppearance(Races race, Classes playerClass, Gender ge
 
             // check if we can use this option
             auto customizationOptionDataItr = std::find_if(options->begin(), options->end(), [&](ChrCustomizationOptionEntry const* option)
-            {
-                return option->ID == playerChoice.ChrCustomizationOptionID;
-            });
+                {
+                    return option->ID == playerChoice.ChrCustomizationOptionID;
+                });
 
             // option not found for race/gender combination
             if (customizationOptionDataItr == options->end())
@@ -616,9 +615,9 @@ bool WorldSession::ValidateAppearance(Races race, Classes playerClass, Gender ge
                 return false;
 
             auto customizationChoiceDataItr = std::find_if(choicesForOption->begin(), choicesForOption->end(), [&](ChrCustomizationChoiceEntry const* choice)
-            {
-                return choice->ID == playerChoice.ChrCustomizationChoiceID;
-            });
+                {
+                    return choice->ID == playerChoice.ChrCustomizationChoiceID;
+                });
 
             // choice not found for option
             if (customizationChoiceDataItr == choicesForOption->end())
@@ -1772,7 +1771,7 @@ void WorldSession::HandleAlterAppearance(WorldPackets::Character::AlterApperance
 
     if (!_player->_justPassedBarberChecks)
     {
-        GameObject* go = _player->FindNearestGameObjectOfType(GAMEOBJECT_TYPE_BARBER_CHAIR, 5.0f);
+        /*GameObject* go = _player->FindNearestGameObjectOfType(GAMEOBJECT_TYPE_BARBER_CHAIR, 5.0f);
         if (!go)
         {
             SendPacket(WorldPackets::Character::BarberShopResult(WorldPackets::Character::BarberShopResult::ResultEnum::NotOnChair).Write());
@@ -1783,7 +1782,7 @@ void WorldSession::HandleAlterAppearance(WorldPackets::Character::AlterApperance
         {
             SendPacket(WorldPackets::Character::BarberShopResult(WorldPackets::Character::BarberShopResult::ResultEnum::NotOnChair).Write());
             return;
-        }
+        }*/
 
         SendPacket(WorldPackets::Character::BarberShopResult(WorldPackets::Character::BarberShopResult::ResultEnum::Success).Write());
 
@@ -1797,7 +1796,7 @@ void WorldSession::HandleAlterAppearance(WorldPackets::Character::AlterApperance
     if (packet.CustomizedChrModelID)
     {
         _player->ClearPreviousModelCustomizations(packet.CustomizedChrModelID);
-        _player->SetCustomizations(Trinity::Containers::MakeIteratorPair(packet.Customizations.begin(), packet.Customizations.end()), packet.CustomizedChrModelID);
+        _player->SetCustomizations(Trinity::Containers::MakeIteratorPair(packet.Customizations.begin(), packet.Customizations.end()));
     }
     else
     {
@@ -1810,7 +1809,7 @@ void WorldSession::HandleAlterAppearance(WorldPackets::Character::AlterApperance
             _player->RestoreDisplayId(false);
         }
 
-        _player->SetCustomizations(Trinity::Containers::MakeIteratorPair(packet.Customizations.begin(), packet.Customizations.end()), packet.CustomizedChrModelID);
+        _player->SetCustomizations(Trinity::Containers::MakeIteratorPair(packet.Customizations.begin(), packet.Customizations.end()));
 
         sCharacterCache->UpdateCharacterGender(_player->GetGUID(), packet.NewSex);
     }
