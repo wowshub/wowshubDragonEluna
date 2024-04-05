@@ -55,6 +55,9 @@
 #include "World.h"
 #include "WorldSocket.h"
 #include "WorldSocketMgr.h"
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
 #include "Util.h"
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
@@ -346,6 +349,11 @@ extern int main(int argc, char** argv)
         sBattlegroundMgr->DeleteAllBattlegrounds();
 
         sMapMgr->UnloadAll();                     // unload all grids (including locked in memory)
+
+#ifdef ELUNA
+        Eluna::Uninitialize();
+#endif
+
         sOutdoorPvPMgr->Die();
         sTerrainMgr.UnloadAll();
         sInstanceLockMgr.Unload();
@@ -649,7 +657,8 @@ bool StartDB()
         .AddDatabase(LoginDatabase, "Login")
         .AddDatabase(CharacterDatabase, "Character")
         .AddDatabase(WorldDatabase, "World")
-        .AddDatabase(HotfixDatabase, "Hotfix");
+        .AddDatabase(HotfixDatabase, "Hotfix")
+        .AddDatabase(RoleplayDatabase, "Roleplay");
 
     if (!loader.Load())
         return false;
@@ -678,7 +687,7 @@ bool StartDB()
 
 void StopDB()
 {
-    HotfixDatabase.Close();
+    //HotfixDatabase.Close();
     WorldDatabase.Close();
     CharacterDatabase.Close();
     LoginDatabase.Close();
