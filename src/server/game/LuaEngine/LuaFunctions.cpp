@@ -770,7 +770,7 @@ ElunaRegister<GameObject> GameObjectMethods[] =
 
     // Boolean
     { "IsTransport", &LuaGameObject::IsTransport },
-    // {"IsDestructible", &LuaGameObject::IsDestructible},    // :IsDestructible() - UNDOCUMENTED
+    { "IsDestructible", &LuaGameObject::IsDestructible },
     { "IsActive", &LuaGameObject::IsActive },
     { "HasQuest", &LuaGameObject::HasQuest },
     { "IsSpawned", &LuaGameObject::IsSpawned },
