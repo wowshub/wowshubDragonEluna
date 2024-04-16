@@ -1771,33 +1771,6 @@ namespace LuaPlayer
     }
 
     /**
-     * Rewards the given quest entry for the [Player] if he has completed it.
-     *
-     * @param uint32 entry : quest entry
-     * @param [LootItemType] type : Item = 0, Currency = 1
-     * @param uint32 rewardId : quest reward Id
-     * @param [Object] questgiver : questgiver Id
-     * @param bool : announce
-     */
-    int RewardQuest(lua_State* L, Player* player)
-    {
-        uint32 entry = Eluna::CHECKVAL<uint32>(L, 2);
-        LootItemType type = Eluna::CHECKVAL<LootItemType>(L, 3);
-        uint32 rewardId = Eluna::CHECKVAL<uint32>(L, 4);
-        Object* questgiver = Eluna::CHECKOBJ<Object>(L, 5);
-        bool announce = Eluna::CHECKVAL<bool>(L, 6, true);
-
-        Quest const* quest = eObjectMgr->GetQuestTemplate(entry);
-
-        // If player doesn't have the quest
-        if (!quest || player->GetQuestStatus(entry) != QUEST_STATUS_COMPLETE)
-            return 0;
-
-        player->RewardQuest(quest, type, rewardId, questgiver, announce);
-        return 0;
-    }
-
-    /**
      * Sends an auction house window to the [Player] from the [Unit] specified
      *
      * @param [Unit] sender
@@ -1829,22 +1802,6 @@ namespace LuaPlayer
     int SendSpiritResurrect(lua_State* /*L*/, Player* player)
     {
         player->GetSession()->SendSpiritResurrect();
-        return 0;
-    }
-
-    /**
-     * Sends a tabard vendor window to the [Player] from the [WorldObject] specified
-     *
-     * @param [WorldObject] sender
-     * @param [TabardVendorType] type (Guild = 0, Personal = 1)
-     * Need more arg (maybe fix later)
-     */
-    int SendTabardVendorActivate(lua_State* L, Player* player)
-    {
-        WorldObject* obj = Eluna::CHECKOBJ<WorldObject>(L, 2);
-        TabardVendorType* type = Eluna::CHECKOBJ<TabardVendorType>(L, 3);
-
-        player->GetSession()->SendTabardVendorActivate(obj->GET_GUID(), type);
         return 0;
     }
 
@@ -3280,7 +3237,9 @@ namespace LuaPlayer
 
     int KilledPlayerCredit(lua_State* L, Player* player)
     {
-        player->KilledPlayerCredit();
+        ObjectGuid victimguid = Eluna::CHECKVAL<ObjectGuid>(L, 2);
+
+        player->KilledPlayerCredit(victimguid);
         return 0;
     }
 
