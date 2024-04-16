@@ -3764,7 +3764,7 @@ void Guild::AddGuildNews(uint8 type, ObjectGuid guid, uint32 flags, uint32 value
     NewsLogEntry& news = m_newsLog.AddEvent(trans, m_id, m_newsLog.GetNextGUID(), GuildNews(type), guid, flags, value);
     CharacterDatabase.CommitTransaction(trans);
 
-    auto packetBuilder = [&](Player const* receiver)
+    BroadcastWorker([&](Player const* receiver)
     {
         WorldPackets::Guild::GuildNews newsPacket;
         newsPacket.NewsEvents.reserve(1);
@@ -3772,8 +3772,7 @@ void Guild::AddGuildNews(uint8 type, ObjectGuid guid, uint32 flags, uint32 value
         newsPacket.NewsEvents.back().CompletedDate += receiver->GetSession()->GetTimezoneOffset();
 
         receiver->SendDirectMessage(newsPacket.Write());
-    };
-    BroadcastWorker(packetBuilder);
+    });
 }
 
 bool Guild::HasAchieved(uint32 achievementId) const
