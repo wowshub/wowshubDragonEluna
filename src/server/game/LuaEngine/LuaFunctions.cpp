@@ -670,6 +670,7 @@ ElunaRegister<Creature> CreatureMethods[] =
     { "GetAggroRange", &LuaCreature::GetAggroRange },
     { "GetDefaultMovementType", &LuaCreature::GetDefaultMovementType },
     { "GetRespawnDelay", &LuaCreature::GetRespawnDelay },
+    { "GetWanderRadius", &LuaCreature::GetWanderRadius },
     { "GetWanderDistance", &LuaCreature::GetWanderDistance },
     { "GetCurrentWaypointId", &LuaCreature::GetCurrentWaypointId },
     { "GetWaypointPath", &LuaCreature::GetWaypointPath },
@@ -677,8 +678,11 @@ ElunaRegister<Creature> CreatureMethods[] =
     { "GetNPCFlags", &LuaCreature::GetNPCFlags },
     { "GetDBTableGUIDLow", &LuaCreature::GetDBTableGUIDLow },
     { "GetCreatureFamily", &LuaCreature::GetCreatureFamily },
+    { "GetExtraFlags", &LuaCreature::GetExtraFlags },
+    { "GetThreat", &LuaCreature::GetThreat },
 
     // Setters
+    { "SetRegeneratingHealth", &LuaCreature::SetRegeneratingHealth },
     { "SetHover", &LuaCreature::SetHover },
     { "SetDisableGravity", &LuaCreature::SetDisableGravity },
     { "SetAggroEnabled", &LuaCreature::SetAggroEnabled },
@@ -686,7 +690,7 @@ ElunaRegister<Creature> CreatureMethods[] =
     { "SetNoSearchAssistance", &LuaCreature::SetNoSearchAssistance },
     { "SetDefaultMovementType", &LuaCreature::SetDefaultMovementType },
     { "SetRespawnDelay", &LuaCreature::SetRespawnDelay },
-    { "SetWanderDistance", &LuaCreature::SetWanderDistance },
+    { "SetWanderRadius", &LuaCreature::SetWanderRadius },
     { "SetInCombatWithZone", &LuaCreature::SetInCombatWithZone },
     { "SetDisableReputationGain", &LuaCreature::SetDisableReputationGain },
     { "SetLootMode", &LuaCreature::SetLootMode },
@@ -699,6 +703,7 @@ ElunaRegister<Creature> CreatureMethods[] =
 
     // Boolean
     { "IsRegeneratingHealth", &LuaCreature::IsRegeneratingHealth },
+    { "IsDungeonBoss", &LuaCreature::IsDungeonBoss },
     { "IsWorldBoss", &LuaCreature::IsWorldBoss },
     { "IsRacialLeader", &LuaCreature::IsRacialLeader },
     { "IsCivilian", &LuaCreature::IsCivilian },
@@ -739,6 +744,13 @@ ElunaRegister<Creature> CreatureMethods[] =
     { "SelectVictim", &LuaCreature::SelectVictim },
     { "MoveWaypoint", &LuaCreature::MoveWaypoint },
     { "UpdateEntry", &LuaCreature::UpdateEntry },
+    { "AddThreat", &LuaCreature::AddThreat },
+    { "ClearThreat", &LuaCreature::ClearThreat },
+    { "ClearThreatList", &LuaCreature::ClearThreatList },
+    { "ResetAllThreat", &LuaCreature::ResetAllThreat },
+    { "FixateTarget", &LuaCreature::FixateTarget },
+    { "ClearFixate", &LuaCreature::ClearFixate },
+    { "RemoveFromWorld", &LuaCreature::RemoveFromWorld },
 
     { NULL, NULL }
 };
