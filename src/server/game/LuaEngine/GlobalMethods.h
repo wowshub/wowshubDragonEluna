@@ -2317,6 +2317,7 @@ namespace LuaGlobalFunctions
             nodeEntry->Pos.Z = entry.Loc.Z;
             nodeEntry->MountCreatureID[0] = mountH;
             nodeEntry->MountCreatureID[1] = mountA;
+            sTaxiNodesStore.SetEntry(nodeId++, nodeEntry);
             sTaxiPathNodesByPath[pathId][index++] = new TaxiPathNodeEntry(entry);
         }
 
@@ -2329,7 +2330,7 @@ namespace LuaGlobalFunctions
         pathEntry->Cost = price;
         pathEntry->ID = pathId;
 
-        //sTaxiPathStore.SetEntry(pathId, pathEntry);
+        sTaxiPathStore.SetEntry(pathId, pathEntry);
 
         Eluna::Push(L, pathId);
         return 1;

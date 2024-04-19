@@ -3163,7 +3163,7 @@ void World::SendMapText(uint32 mapid, uint32 string_id, ...)
     for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
     {
         // Session should have permissions to receive global gm messages
-        WorldSession* session = itr->second;
+        //WorldSession* session = itr->second;
         WorldSession* self;
 
 
