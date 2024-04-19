@@ -1903,13 +1903,14 @@ namespace LuaPlayer
      * Sends a tabard vendor window to the [Player] from the [WorldObject] specified
      *
      * @param [WorldObject] sender
+     * @param int16 vendor type : Guild = 0,Personal = 1,
      */
     int SendTabardVendorActivate(Eluna* E, Player* player)
     {
         WorldObject* obj = E->CHECKOBJ<WorldObject>(2);
-        TabardVendorType VendorType = E->CHECKVAL<TabardVendorType>(3);
+        int16 VendorType = E->CHECKVAL<int16>(3);
 
-        player->GetSession()->SendTabardVendorActivate(obj->GET_GUID(), VendorType);
+        player->GetSession()->SendTabardVendorActivate(obj->GET_GUID(), TabardVendorType(VendorType));
         return 0;
     }
 
