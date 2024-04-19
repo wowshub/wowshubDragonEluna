@@ -243,7 +243,6 @@ public:
     void Push(WorldObject const* obj);
     void Push(Unit const* unit);
     void Push(Pet const* pet);
-    void Push(Trinity::RaceMask<int64> racemask);
     void Push(TempSummon const* summon);
     void Push(ObjectGuid const guid);
     template<typename T>

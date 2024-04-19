@@ -451,10 +451,6 @@ void Eluna::Push(Pet const* pet)
 {
     Push<Creature>(pet);
 }
-void Eluna::Push(Trinity::RaceMask<int64> mask)
-{
-    Push<Trinity::RaceMask<int64>>(mask);
-}
 void Eluna::Push(TempSummon const* summon)
 {
     Push<Creature>(summon);

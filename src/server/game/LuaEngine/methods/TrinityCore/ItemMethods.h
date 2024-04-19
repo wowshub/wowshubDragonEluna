@@ -485,17 +485,6 @@ namespace LuaItem
     }
 
     /**
-     * Returns the [Player] races allowed to use this [Item]
-     *
-     * @return uint32 allowableRace
-    */
-    int GetAllowableRace(Eluna* E, Item* item)
-    {
-        E->Push(item->GetTemplate()->GetAllowableRace());
-        return 1;
-    }
-
-    /**
      * Returns the [Item]s level
      *
      * @return uint32 itemLevel
@@ -681,7 +670,6 @@ namespace LuaItem
         { "GetSellPrice", &LuaItem::GetSellPrice },
         { "GetInventoryType", &LuaItem::GetInventoryType },
         { "GetAllowableClass", &LuaItem::GetAllowableClass },
-        { "GetAllowableRace", &LuaItem::GetAllowableRace },
         { "GetItemLevel", &LuaItem::GetItemLevel },
         { "GetRequiredLevel", &LuaItem::GetRequiredLevel },
         { "GetItemSet", &LuaItem::GetItemSet },
