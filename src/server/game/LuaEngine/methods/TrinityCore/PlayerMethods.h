@@ -1392,12 +1392,6 @@ namespace LuaPlayer
         return 1;
     }
 
-    int GetSelectedUnit(Eluna* E, Player* player)
-    {
-        E->Push(player->GetSelectedUnit());
-        return 1;
-    }
-
     int GetNearbyGameObject(Eluna* E, Player* player)
     {
         E->Push(ChatHandler(player->GetSession()).GetNearbyGameObject());
@@ -1768,6 +1762,17 @@ namespace LuaPlayer
     }
 
     /**
+     * Returns 'true' if the [Player] is currently rested, 'false' otherwise.
+     *
+     * @return bool isRested
+     */
+    int IsRested(Eluna* E, Player* player)
+    {
+        E->Push(!player->HasPlayerFlag(PlayerFlags::PLAYER_FLAGS_RESTING));
+        return 1;
+    }
+
+    /**
      * Toggle the [Player]s FFA flag
      *
      * @param bool applyFFA = true
@@ -1849,10 +1854,12 @@ namespace LuaPlayer
      * Rewards the given quest entry for the [Player] if he has completed it.
      *
      * @param uint32 entry : quest entry
+     * @param int8 itemtype : Item = 0, Currency = 1
      */
     int RewardQuest(Eluna* E, Player* player)
     {
         uint32 entry = E->CHECKVAL<uint32>(2);
+        int8 itemtype = E->CHECKVAL<int8>(3);
 
         Quest const* quest = eObjectMgr->GetQuestTemplate(entry);
 
@@ -1860,7 +1867,7 @@ namespace LuaPlayer
         if (!quest || player->GetQuestStatus(entry) != QUEST_STATUS_COMPLETE)
             return 0;
 
-        player->RewardQuest(quest, LootItemType::Item, 0, nullptr);
+        player->RewardQuest(quest, LootItemType(itemtype), 0, nullptr);
         return 0;
     }
 
@@ -3431,6 +3438,8 @@ namespace LuaPlayer
         { "GetChampioningFaction", &LuaPlayer::GetChampioningFaction },
         { "GetLatency", &LuaPlayer::GetLatency },
         { "GetRecruiterId", &LuaPlayer::GetRecruiterId },
+        { "GetSelectedPlayer", &LuaPlayer::GetSelectedPlayer},
+        { "GetNearbyGameObject", & LuaPlayer::GetNearbyGameObject},
         { "GetDbLocaleIndex", &LuaPlayer::GetDbLocaleIndex },
         { "GetDbcLocale", &LuaPlayer::GetDbcLocale },
         { "GetCorpse", &LuaPlayer::GetCorpse },
@@ -3498,6 +3507,7 @@ namespace LuaPlayer
         { "HasPendingBind", &LuaPlayer::HasPendingBind },
         { "HasAchieved", &LuaPlayer::HasAchieved },
         { "SetAchievement", &LuaPlayer::SetAchievement },
+        { "IsRested", &LuaPlayer::IsRested },
         { "IsNeverVisible", &LuaPlayer::IsNeverVisible },
         { "IsVisibleForPlayer", &LuaPlayer::IsVisibleForPlayer },
         { "IsUsingLfg", &LuaPlayer::IsUsingLfg },

@@ -8,6 +8,7 @@
 #define WORLDOBJECTMETHODS_H
 
 #include "LuaValue.h"
+#include "PhasingHandler.h"
 
 /***
  * Inherits all methods from: [Object]
@@ -34,6 +35,63 @@ namespace LuaWorldObject
     {
         E->Push(obj->GetMap());
         return 1;
+    }
+
+    /**
+     * Returns the [ObjectGuid] for worldobject
+     *
+     * @return [ObjectGuid] Guid
+     */
+    int GetObjectGuid(Eluna* E, WorldObject* obj)
+    {
+        E->Push(obj->GET_GUID());
+        return 1;
+    }
+
+    /**
+    * Sets the [WorldObject]'s phase Id.
+    *
+    * @param [Player] player = nil : [Player] set phase
+    * @param uint32 phaseId
+    * @param bool update = true : update visibility to nearby objects
+    */
+    int SetPhaseId(Eluna* E, WorldObject* /*obj*/)
+    {
+        Player* player = E->CHECKOBJ<Player>(2, false);
+        uint32 phaseId = E->CHECKVAL<uint32>(3);
+        bool update = E->CHECKVAL<bool>(4, true);
+
+        PhasingHandler::AddPhase(player, phaseId, update);
+        return 0;
+    }
+
+    /**
+    * Remove the [WorldObject]'s all phase.
+    *
+    * @return remove phase
+    *
+    */
+    int RemoveAllPhase(Eluna* /*E*/, WorldObject* obj)
+    {
+        obj->GetPhaseShift().ClearPhases();
+        return 1;
+    }
+
+    /**
+    * Remove the [WorldObject]'s phase Id.
+    *
+    * @param [Player] player = nil : [Player] set phase
+    * @param uint32 phaseId
+    * @param bool update = true : update visibility to nearby objects
+    */
+    int RemovePhaseId(Eluna* E, WorldObject* /*obj*/)
+    {
+        Player* player = E->CHECKOBJ<Player>(2, false);
+        uint32 phaseId = E->CHECKVAL<uint32>(3);
+        bool update = E->CHECKVAL<bool>(4, true);
+
+        PhasingHandler::RemovePhase(player, phaseId, update);
+        return 0;
     }
 
     /**
@@ -1148,6 +1206,9 @@ namespace LuaWorldObject
         // Getters
         { "GetName", &LuaWorldObject::GetName },
         { "GetMap", &LuaWorldObject::GetMap },
+        { "SetPhaseId", &LuaWorldObject::SetPhaseId },
+        { "RemoveAllPhase", &LuaWorldObject::RemoveAllPhase },
+        { "RemovePhaseId", &LuaWorldObject::RemovePhaseId },
         { "GetPhaseMask", &LuaWorldObject::GetPhaseMask },
         { "SetPhaseMask", &LuaWorldObject::SetPhaseMask },
         { "GetInstanceId", &LuaWorldObject::GetInstanceId },
@@ -1173,6 +1234,7 @@ namespace LuaWorldObject
         { "GetExactDistance2d", &LuaWorldObject::GetExactDistance2d },
         { "GetRelativePoint", &LuaWorldObject::GetRelativePoint },
         { "GetAngle", &LuaWorldObject::GetAngle },
+        { "GetObjectGuid", &LuaWorldObject::GetObjectGuid },
 
         // Boolean
         { "IsWithinLoS", &LuaWorldObject::IsWithinLoS },

@@ -1742,6 +1742,19 @@ namespace LuaUnit
         return 0;
     }
 
+    /**
+    * Sets the [Unit]'s SetCanTransitionBetweenSwimAndFly on or off.
+    *
+    * @param bool apply = true : true if set on, false if off
+    */
+    int SetCanTransitionBetweenSwimAndFly(Eluna* E, Unit* unit)
+    {
+        bool apply = E->CHECKVAL<bool>(2, true);
+
+        unit->SetCanTransitionBetweenSwimAndFly(apply);
+        return 0;
+    }
+
     int SetVisible(Eluna* E, Unit* unit)
     {
         bool x = E->CHECKVAL<bool>(2, true);
@@ -1774,6 +1787,25 @@ namespace LuaUnit
             unit->RemoveAurasByType(SPELL_AURA_MOUNTED);
         }
 
+        return 0;
+    }
+
+    /**
+     * Makes the [Unit] perform the given emote text on chat.
+     *
+     * @param const char msg : message for emote
+     * @param Unit reciever :
+     * @param bool bossEmote : true of false
+     * 
+     */
+    int UnitEmote(Eluna* E, Unit* unit)
+    {
+        const char* msg = E->CHECKVAL<const char*>(2);
+        Unit* receiver = E->CHECKOBJ<Unit>(3, false);
+        bool bossEmote = E->CHECKVAL<bool>(4, false);
+
+        if (std::string(msg).length() > 0)
+            unit->TextEmote(msg, receiver, bossEmote);
         return 0;
     }
 
@@ -2566,6 +2598,7 @@ namespace LuaUnit
         { "SetFFA", &LuaUnit::SetFFA },
         { "SetSanctuary", &LuaUnit::SetSanctuary },
         { "SetCanFly", &LuaUnit::SetCanFly },
+        { "SetCanTransitionBetweenSwimAndFly", &LuaUnit::SetCanTransitionBetweenSwimAndFly},
         { "SetVisible", &LuaUnit::SetVisible },
         { "SetOwnerGUID", &LuaUnit::SetOwnerGUID },
         { "SetName", &LuaUnit::SetName },
@@ -2642,6 +2675,7 @@ namespace LuaUnit
         { "StopSpellCast", &LuaUnit::StopSpellCast },
         { "InterruptSpell", &LuaUnit::InterruptSpell },
         { "SendChatMessageToPlayer", &LuaUnit::SendChatMessageToPlayer },
+        { "ChatEmote", &LuaUnit::UnitEmote },
         { "PerformEmote", &LuaUnit::PerformEmote },
         { "EmoteState", &LuaUnit::EmoteState },
         { "CountPctFromCurHealth", &LuaUnit::CountPctFromCurHealth },

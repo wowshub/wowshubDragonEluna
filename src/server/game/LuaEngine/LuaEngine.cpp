@@ -16,6 +16,7 @@
 #include "ElunaUtility.h"
 #include "ElunaCreatureAI.h"
 #include "ElunaInstanceAI.h"
+#include "ItemTemplate.h"
 #include <sstream>
 
 
@@ -449,6 +450,10 @@ void Eluna::Push(const char* str)
 void Eluna::Push(Pet const* pet)
 {
     Push<Creature>(pet);
+}
+void Eluna::Push(Trinity::RaceMask<int64> mask)
+{
+    Push<Trinity::RaceMask<int64>>(mask);
 }
 void Eluna::Push(TempSummon const* summon)
 {

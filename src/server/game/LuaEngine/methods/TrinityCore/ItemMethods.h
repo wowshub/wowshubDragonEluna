@@ -397,6 +397,17 @@ namespace LuaItem
     }
 
     /**
+     * Returns the display ID of the [Item]
+     *
+     * @return uint32 displayId
+     */
+    int GetDisplayId(Eluna* E, Item* item)
+    {
+        E->Push(item->GetTemplate()->ExtendedData->Display.Str[(LocaleConstant)0]);
+        return 1;
+    }
+
+    /**
      * Returns the quality of the [Item]
      *
      * @return uint32 quality
@@ -470,6 +481,17 @@ namespace LuaItem
     int GetAllowableClass(Eluna* E, Item* item)
     {
         E->Push(item->GetTemplate()->GetAllowableClass());
+        return 1;
+    }
+
+    /**
+     * Returns the [Player] races allowed to use this [Item]
+     *
+     * @return uint32 allowableRace
+    */
+    int GetAllowableRace(Eluna* E, Item* item)
+    {
+        E->Push(item->GetTemplate()->GetAllowableRace());
         return 1;
     }
 
@@ -651,6 +673,7 @@ namespace LuaItem
         { "GetSubClass", &LuaItem::GetSubClass },
         { "GetItemId", &LuaItem::GetItemId },
         { "GetName", &LuaItem::GetName },
+        { "GetDisplayId", &LuaItem::GetDisplayId },
         { "GetQuality", &LuaItem::GetQuality },
         { "GetExtraFlags", &LuaItem::GetExtraFlags },		
         { "GetBuyCount", &LuaItem::GetBuyCount },
@@ -658,6 +681,7 @@ namespace LuaItem
         { "GetSellPrice", &LuaItem::GetSellPrice },
         { "GetInventoryType", &LuaItem::GetInventoryType },
         { "GetAllowableClass", &LuaItem::GetAllowableClass },
+        { "GetAllowableRace", &LuaItem::GetAllowableRace },
         { "GetItemLevel", &LuaItem::GetItemLevel },
         { "GetRequiredLevel", &LuaItem::GetRequiredLevel },
         { "GetItemSet", &LuaItem::GetItemSet },

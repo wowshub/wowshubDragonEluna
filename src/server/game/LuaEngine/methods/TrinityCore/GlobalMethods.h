@@ -8,6 +8,7 @@
 #define GLOBALMETHODS_H
 
 #include "BindingMap.h"
+#include "Containers.h"
 
 /***
  * These functions can be used anywhere at any time, including at start-up.
@@ -562,6 +563,29 @@ namespace LuaGlobalFunctions
         }
 
         lua_settop(E->L, tbl);
+        return 1;
+    }
+
+    int GetMountDisplay(Eluna* E)
+    {
+        uint32 spellId = E->CHECKVAL<uint32>(1);
+
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId, DIFFICULTY_NONE);
+
+        for (SpellEffectInfo const& effect : spellInfo->GetEffects())
+            if (!spellInfo || spellInfo->GetEffectMechanic(effect.EffectIndex) != MECHANIC_MOUNT)
+                return 1;
+
+        MountEntry const* mountEntry = sDB2Manager.GetMount(spellId);
+        uint32 displayId = 0;
+        if (!mountEntry->IsSelfMount())
+        {
+            DB2Manager::MountXDisplayContainer const* mountDisplays = sDB2Manager.GetMountDisplays(mountEntry->ID);
+            DB2Manager::MountXDisplayContainer usableDisplays;
+            std::copy(mountDisplays->begin(), mountDisplays->end(), std::back_inserter(usableDisplays));
+            displayId = Trinity::Containers::SelectRandomContainerElement(usableDisplays)->CreatureDisplayInfoID;
+        }
+        E->Push(displayId);
         return 1;
     }
 
@@ -3114,6 +3138,33 @@ namespace LuaGlobalFunctions
         return 0;
     }
 
+    /**
+     * Reloads creature_template table.
+     */
+    int ReloadCreatureTemplate(Eluna* /*E*/)
+    {
+        TC_LOG_INFO("misc", "Reloading creature template...");
+        sObjectMgr->LoadCreatureTemplates();
+        TC_LOG_INFO("server.loading", "Initialize query data...");
+        sObjectMgr->InitializeQueriesData(QUERY_DATA_CREATURES);
+        return 0;
+    }
+
+    /**
+     * Restart server.
+     *
+     * @param uint32 delay : 30 sec example
+     * @param string reason : restart reason message
+     */
+    int RestartServer(Eluna* E)
+    {
+        uint32 delay = E->CHECKVAL<uint32>(1, 30);
+        std::string reason = E->CHECKVAL<std::string>(2, "Restart started from lua script.");
+
+        sWorld->ShutdownServ(delay, SHUTDOWN_MASK_FORCE | SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE, reason);
+        return 0;
+    }
+
     ElunaGlobal::ElunaRegister GlobalMethods[] =
     {
         // Hooks
@@ -3192,6 +3243,7 @@ namespace LuaGlobalFunctions
         { "PrintError", &LuaGlobalFunctions::PrintError },
         { "PrintDebug", &LuaGlobalFunctions::PrintDebug },
         { "GetActiveGameEvents", &LuaGlobalFunctions::GetActiveGameEvents },
+        { "GetMountDisplay", &LuaGlobalFunctions::GetMountDisplay },
 
         // Boolean
         { "IsCompatibilityMode", &LuaGlobalFunctions::IsCompatibilityMode },
@@ -3204,6 +3256,7 @@ namespace LuaGlobalFunctions
         // Other
         { "ReloadEluna", &LuaGlobalFunctions::ReloadEluna },
         { "RunCommand", &LuaGlobalFunctions::RunCommand },
+        { "ReloadCreatureTemplate", &LuaGlobalFunctions::ReloadCreatureTemplate },
         { "SendWorldMessage", &LuaGlobalFunctions::SendWorldMessage },
         { "WorldDBQuery", &LuaGlobalFunctions::WorldDBQuery },
         { "WorldDBExecute", &LuaGlobalFunctions::WorldDBExecute },
@@ -3231,6 +3284,7 @@ namespace LuaGlobalFunctions
         { "CreateUint64", &LuaGlobalFunctions::CreateULongLong },
         { "StartGameEvent", &LuaGlobalFunctions::StartGameEvent },
         { "StopGameEvent", &LuaGlobalFunctions::StopGameEvent },
+        { "RestartServer", &LuaGlobalFunctions::RestartServer },
 
         { NULL, NULL, METHOD_REG_NONE }
     };

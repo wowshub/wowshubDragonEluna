@@ -289,6 +289,60 @@ namespace LuaGameObject
         return 0;
     }
 
+    /**
+     * Change position for the gameobject.
+     *
+     * @param float x
+     * @param float y
+     * @param float z
+     * @param float i
+     */
+    int ChangePosition(Eluna* E, GameObject* go)
+    {
+        float x = E->CHECKVAL<float>(2);
+        float y = E->CHECKVAL<float>(3);
+        float z = E->CHECKVAL<float>(4);
+        float o = E->CHECKVAL<float>(5, go->GetOrientation());
+
+        Map* map = go->GetMap();
+        ObjectGuid::LowType guid = go->GetSpawnId();
+
+        go->DestroyForNearbyPlayers();
+        go->RelocateStationaryPosition(x, y, z, o);
+        go->GetMap()->GameObjectRelocation(go, x, y, z, o);
+        go->SaveToDB();
+        go->Delete();
+        go = GameObject::CreateGameObjectFromDB(guid, map);
+        return 0;
+    }
+
+    /**
+     * Change turn for the gameobject.
+     *
+     * @param float oz
+     * @param float oy
+     * @param float ox
+     */
+    int Turn(Eluna* E, GameObject* go)
+    {
+        float oz = E->CHECKVAL<float>(2);
+        float oy = E->CHECKVAL<float>(3, 0.0f);
+        float ox = E->CHECKVAL<float>(4, 0.0f);
+
+        Map* map = go->GetMap();
+        ObjectGuid::LowType guid = go->GetSpawnId();
+
+        go->Relocate(go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), oz);
+        go->RelocateStationaryPosition(go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), go->GetOrientation());
+        go->SetLocalRotationAngles(oz, oy, ox);
+        go->DestroyForNearbyPlayers();
+        go->UpdateObjectVisibility();
+        go->SaveToDB();
+        go->Delete();
+        go = GameObject::CreateGameObjectFromDB(guid, map);
+        return 0;
+    }
+
     ElunaRegister<GameObject> GameObjectMethods[] =
     {
         // Getters
@@ -315,6 +369,8 @@ namespace LuaGameObject
         { "Despawn", &LuaGameObject::Despawn },
         { "Respawn", &LuaGameObject::Respawn },
         { "SaveToDB", &LuaGameObject::SaveToDB },
+        { "ChangePosition", &LuaGameObject::ChangePosition },
+        { "Turn", &LuaGameObject::Turn },
 
         { NULL, NULL, METHOD_REG_NONE }
     };
