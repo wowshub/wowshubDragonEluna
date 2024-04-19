@@ -5373,7 +5373,8 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster) 
 #ifdef ELUNA
             Creature* c = target->ToCreature();
             if (c && caster)
-                sEluna->OnDummyEffect(triggerCaster, GetId(), SpellEffIndex(GetEffIndex()), c);
+                if (Eluna* e = caster->GetEluna())
+                    e->OnDummyEffect(triggerCaster, GetId(), SpellEffIndex(GetEffIndex()), c);
 #endif
 			
             triggerCaster->CastSpell(target, triggerSpellId, this);
