@@ -3164,7 +3164,7 @@ void World::SendMapText(uint32 mapid, uint32 string_id, ...)
     {
         // Session should have permissions to receive global gm messages
         //WorldSession* session = itr->second;
-        WorldSession* self;
+        WorldSession* self = nullptr;
 
 
         if (itr->second &&
