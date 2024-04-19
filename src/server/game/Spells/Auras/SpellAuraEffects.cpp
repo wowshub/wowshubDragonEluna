@@ -6377,7 +6377,7 @@ void AuraEffect::HandleForceBreathBar(AuraApplication const* aurApp, uint8 mode,
     playerTarget->UpdatePositionData();
 }
 
-void AuraEffect::HandleAuraTrackResources(AuraApplication const* aurApp, uint8 mode, bool apply) const
+void AuraEffect::HandleAuraTrackResources(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const
 {
     if (!(mode & AURA_EFFECT_HANDLE_SEND_FOR_CLIENT_MASK))
         return;
@@ -6388,7 +6388,7 @@ void AuraEffect::HandleAuraTrackResources(AuraApplication const* aurApp, uint8 m
         return;
 }
 
-void AuraEffect::HandleCancelEquipmentStats(AuraApplication const* aurApp, uint8 mode, bool apply) const
+void AuraEffect::HandleCancelEquipmentStats(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const
 {
     if (!(mode & AURA_EFFECT_HANDLE_REAL))
         return;
@@ -6412,7 +6412,7 @@ void AuraEffect::HandleCancelEquipmentStats(AuraApplication const* aurApp, uint8
     playerTarget->UpdateItemSetAuras(false);
 }
 
-void AuraEffect::HandleSwitchTeam(AuraApplication const* aurApp, uint8 mode, bool apply) const
+void AuraEffect::HandleSwitchTeam(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const
 {
     if (!(mode & AURA_EFFECT_HANDLE_REAL))
         return;
