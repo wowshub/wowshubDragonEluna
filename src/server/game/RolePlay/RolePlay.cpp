@@ -743,7 +743,6 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
     }
 
     co->id = outfitId;
-    co->npcsoundsid = 0;
     co->race = player->GetRace();
     co->Class = player->GetClass();
 
@@ -1314,7 +1313,6 @@ void Roleplay::EnsureNpcOutfitExists(uint32 templateId, uint8 variationId, float
             uint32 outfitId = maxOutfitId + ++created;
             TC_LOG_DEBUG("roleplay", "ROLEPLAY: Adding outfit '%u' to create variation '%u' for template '%u'.", outfitId, variation, templateId);
             outfit->id = outfitId;
-            outfit->npcsoundsid = 0;
             outfit->race = lastOutfit->race;
             outfit->Class = lastOutfit->Class;
             outfit->gender = lastOutfit->gender;

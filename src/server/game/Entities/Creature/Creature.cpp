@@ -386,7 +386,7 @@ void Creature::RemoveFromWorld()
     }
 }
 
-void Creature::SetOutfit(std::shared_ptr<CreatureOutfit> const& outfit, float scale)
+void Creature::SetOutfit(std::shared_ptr<CreatureOutfit> const& outfit)
 {
     // Set new outfit
     if (m_outfit)
@@ -394,14 +394,14 @@ void Creature::SetOutfit(std::shared_ptr<CreatureOutfit> const& outfit, float sc
         // if had old outfit
         // then delay displayid setting to allow equipment
         // to change by using invisible model in between
-        SetDisplayId(CreatureOutfit::invisible_model, scale);
+        SetDisplayId(CreatureOutfit::invisible_model);
         m_outfit = outfit;
     }
     else
     {
         // else set new outfit directly since we change from non-outfit->outfit
         m_outfit = outfit;
-        SetDisplayId(outfit->GetDisplayId(), scale);
+        SetDisplayId(outfit->GetDisplayId());
     }
 }
 
@@ -3498,7 +3498,7 @@ void Creature::SetDisplayId(uint32 modelId, bool setNative /*= false*/)
 {
     if (auto const& outfit = sObjectMgr->GetOutfit(modelId))
     {
-        SetOutfit(outfit, true);
+        SetOutfit(outfit);
         return;
     }
     else
@@ -3522,7 +3522,7 @@ void Creature::SetDisplayId(uint32 modelId, bool setNative /*= false*/)
         }
     }
 
-    SetDisplayIdRaw(modelId, true);
+    SetDisplayIdRaw(modelId, setNative);
 }
 
 void Creature::SetDisplayIdRaw(uint32 displayId, bool setNative /*= false*/)

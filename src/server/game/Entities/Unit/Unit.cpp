@@ -580,7 +580,7 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
 
             WorldPackets::Movement::FlightSplineSync flightSplineSync;
             flightSplineSync.Guid = GetGUID();
-            flightSplineSync.SplineDist = movespline->timePassed() / movespline->Duration();
+            flightSplineSync.SplineDist = float(movespline->timePassed()) / movespline->Duration();
             SendMessageToSet(flightSplineSync.Write(), true);
         }
     }
@@ -13823,6 +13823,15 @@ float Unit::GetCollisionHeight() const
 
     //float const collisionHeight = scaleMod * modelData->CollisionHeight * modelData->ModelScale * displayInfo->CreatureModelScale;
     //return collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : collisionHeight;
+
+    if (CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStoreRaw.LookupEntry(GetNativeDisplayId()))
+    {
+        if (CreatureModelDataEntry const* modelData = sCreatureModelDataStore.LookupEntry(displayInfo->ModelID))
+        {
+            float const collisionHeight = scaleMod * modelData->CollisionHeight * modelData->ModelScale * displayInfo->CreatureModelScale;
+            return collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : collisionHeight;
+        }
+    }
 
     return DEFAULT_COLLISION_HEIGHT;
 }
