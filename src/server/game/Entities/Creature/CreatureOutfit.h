@@ -38,7 +38,6 @@ public:
     CreatureOutfit(uint8 race, Gender gender);
 
     uint32 outfitdisplays[EQUIPMENT_SLOT_END] = { 0 };
-    uint32 npcsoundsid = 0;
     uint64 guild = 0;
     int32 SpellVisualKitID = 0;
     uint8 Class = 1;

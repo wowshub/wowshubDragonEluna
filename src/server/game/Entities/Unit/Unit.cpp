@@ -13824,6 +13824,15 @@ float Unit::GetCollisionHeight() const
     //float const collisionHeight = scaleMod * modelData->CollisionHeight * modelData->ModelScale * displayInfo->CreatureModelScale;
     //return collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : collisionHeight;
 
+    if (CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStoreRaw.LookupEntry(GetNativeDisplayId()))
+    {
+        if (CreatureModelDataEntry const* modelData = sCreatureModelDataStore.LookupEntry(displayInfo->ModelID))
+        {
+            float const collisionHeight = scaleMod * modelData->CollisionHeight * modelData->ModelScale * displayInfo->CreatureModelScale;
+            return collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : collisionHeight;
+        }
+    }
+
     return DEFAULT_COLLISION_HEIGHT;
 }
 
