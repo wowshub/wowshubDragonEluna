@@ -2205,6 +2205,21 @@ namespace LuaPlayer
     }
 
     /**
+     * Adds combo points to the [Player]
+     *
+     * @param [Unit] target
+     * @param int8 count
+     */
+    int AddComboPoints(Eluna* E, Player* player)
+    {
+        Unit* target = E->CHECKOBJ<Unit>(2);
+        int8 count = E->CHECKVAL<int8>(3);
+
+        target->SetPower(POWER_COMBO_POINTS, count);
+        return 0;
+    }
+
+    /**
      * Gives [Quest] monster talked to credit
      *
      * @param uint32 entry : entry of a [Creature]
@@ -3580,6 +3595,7 @@ namespace LuaPlayer
         { "KillGOCredit", &LuaPlayer::KillGOCredit },
         { "TalkedToCreature", &LuaPlayer::TalkedToCreature },
         { "ClearComboPoints", &LuaPlayer::ClearComboPoints },
+        { "AddComboPoints", &LuaPlayer::AddComboPoints },
         { "RemoveSpell", &LuaPlayer::RemoveSpell },
         { "ResetTalents", &LuaPlayer::ResetTalents },
         { "ResetTalentsCost", &LuaPlayer::ResetTalentsCost },
