@@ -55,7 +55,7 @@ void ElunaLoader::LoadScripts()
     lua_scripts.clear();
     lua_extensions.clear();
     combined_scripts.clear();
-    ELUNA_LOG_INFO("[Eluna]: Searching for scripts in `%s`", lua_folderpath.c_str());
+    ELUNA_LOG_INFO("[Eluna]: Searching for scripts in `{}`", lua_folderpath.c_str());
     lua_requirepath.clear();
     lua_requirecpath.clear();
 
@@ -86,7 +86,7 @@ void ElunaLoader::LoadScripts()
     if (!lua_requirecpath.empty())
         lua_requirecpath.erase(lua_requirecpath.end() - 1);
 
-    ELUNA_LOG_INFO("[Eluna]: Loaded and precompiled %u scripts in %u ms", uint32(combined_scripts.size()), ElunaUtil::GetTimeDiff(oldMSTime));
+    ELUNA_LOG_INFO("[Eluna]: Loaded and precompiled {} scripts in {} ms", uint32(combined_scripts.size()), ElunaUtil::GetTimeDiff(oldMSTime));
     requiredMaps.clear();
     std::istringstream maps(sElunaConfig->GetConfig(CONFIG_ELUNA_ONLY_ON_MAPS));
     while (maps.good())
@@ -100,7 +100,7 @@ void ElunaLoader::LoadScripts()
             requiredMaps.emplace_back(mapId);
         }
         catch (std::exception&) {
-            ELUNA_LOG_ERROR("[Eluna]: Error tokenizing Eluna.OnlyOnMaps, invalid config value '%s'", mapIdStr.c_str());
+            ELUNA_LOG_ERROR("[Eluna]: Error tokenizing Eluna.OnlyOnMaps, invalid config value '{}'", mapIdStr.c_str());
         }
     }
 }
@@ -116,7 +116,7 @@ int ElunaLoader::LoadBytecodeChunk(lua_State* /*L*/, uint8* bytes, size_t len, B
 // Finds lua script files from given path (including subdirectories) and pushes them to scripts
 void ElunaLoader::ReadFiles(lua_State* L, std::string path)
 {
-    ELUNA_LOG_DEBUG("[Eluna]: ReadFiles from path `%s`", path.c_str());
+    ELUNA_LOG_DEBUG("[Eluna]: ReadFiles from path `{}`", path.c_str());
 
     fs::path someDir(path);
     fs::directory_iterator end_iter;
@@ -198,21 +198,21 @@ bool ElunaLoader::CompileScript(lua_State* L, LuaScript& script)
     // If something bad happened, try to find an error.
     if (err != 0)
     {
-        ELUNA_LOG_ERROR("[Eluna]: CompileScript failed to load the Lua script `%s`.", script.filename.c_str());
+        ELUNA_LOG_ERROR("[Eluna]: CompileScript failed to load the Lua script `{}`.", script.filename.c_str());
         Eluna::Report(L);
         return false;
     }
-    ELUNA_LOG_DEBUG("[Eluna]: CompileScript loaded Lua script `%s`", script.filename.c_str());
+    ELUNA_LOG_DEBUG("[Eluna]: CompileScript loaded Lua script `{}`", script.filename.c_str());
 
     // Everything's OK so far, the script has been loaded, now we need to start dumping it to bytecode.
     err = lua_dump(L, (lua_Writer)LoadBytecodeChunk, &script.bytecode);
     if (err || script.bytecode.empty())
     {
-        ELUNA_LOG_ERROR("[Eluna]: CompileScript failed to dump the Lua script `%s` to bytecode.", script.filename.c_str());
+        ELUNA_LOG_ERROR("[Eluna]: CompileScript failed to dump the Lua script `{}` to bytecode.", script.filename.c_str());
         Eluna::Report(L);
         return false;
     }
-    ELUNA_LOG_DEBUG("[Eluna]: CompileScript dumped Lua script `%s` to bytecode.", script.filename.c_str());
+    ELUNA_LOG_DEBUG("[Eluna]: CompileScript dumped Lua script `{}` to bytecode.", script.filename.c_str());
 
     // pop the loaded function from the stack
     lua_pop(L, 1);
@@ -221,7 +221,7 @@ bool ElunaLoader::CompileScript(lua_State* L, LuaScript& script)
 
 void ElunaLoader::ProcessScript(lua_State* L, std::string filename, const std::string& fullpath, int32 mapId)
 {
-    ELUNA_LOG_DEBUG("[Eluna]: ProcessScript checking file `%s`", fullpath.c_str());
+    ELUNA_LOG_DEBUG("[Eluna]: ProcessScript checking file `{}`", fullpath.c_str());
 
     // split file name
     std::size_t extDot = filename.find_last_of('.');
@@ -250,7 +250,7 @@ void ElunaLoader::ProcessScript(lua_State* L, std::string filename, const std::s
         lua_extensions.push_back(script);
     else
         lua_scripts.push_back(script);
-    ELUNA_LOG_DEBUG("[Eluna]: ProcessScript processed `%s` successfully", fullpath.c_str());
+    ELUNA_LOG_DEBUG("[Eluna]: ProcessScript processed `{}` successfully", fullpath.c_str());
 }
 
 static bool ScriptPathComparator(const LuaScript& first, const LuaScript& second)

@@ -114,7 +114,7 @@ static int PrecompiledLoader(lua_State* L)
         return 0;
     auto it = std::find_if(sElunaLoader->combined_scripts.begin(), sElunaLoader->combined_scripts.end(), [modname](const LuaScript& script) { return script.filename == modname; });
     if (it == sElunaLoader->combined_scripts.end()) {
-        lua_pushfstring(L, "\n\tno precompiled script '%s' found", modname);
+        lua_pushfstring(L, "\n\tno precompiled script '{}' found", modname);
         return 1;
     }
     if (luaL_loadbuffer(L, reinterpret_cast<const char*>(&it->bytecode[0]), it->bytecode.size(), it->filename.c_str()))
@@ -248,7 +248,7 @@ void Eluna::RunScripts()
 {
     int32 const boundMapId = GetBoundMapId();
     uint32 const boundInstanceId = GetBoundInstanceId();
-    ELUNA_LOG_DEBUG("[Eluna]: Running scripts for state: %i, instance: %u", boundMapId, boundInstanceId);
+    ELUNA_LOG_DEBUG("[Eluna]: Running scripts for state: {}, instance: {}", boundMapId, boundInstanceId);
 
     uint32 oldMSTime = ElunaUtil::GetCurrTime();
     uint32 count = 0;
@@ -266,7 +266,7 @@ void Eluna::RunScripts()
             // check that the script file is either global or meant to be loaded for this map
             if (it->mapId != -1 && it->mapId != boundMapId)
             {
-                ELUNA_LOG_DEBUG("[Eluna]: `%s` is tagged %i and will not load for map: %i", it->filename.c_str(), it->mapId, boundMapId);
+                ELUNA_LOG_DEBUG("[Eluna]: `{}` is tagged {} and will not load for map: {}", it->filename.c_str(), it->mapId, boundMapId);
                 continue;
             }
         }
@@ -274,7 +274,7 @@ void Eluna::RunScripts()
         // Check that no duplicate names exist
         if (loaded.find(it->filename) != loaded.end())
         {
-            ELUNA_LOG_ERROR("[Eluna]: Error loading `%s`. File with same name already loaded from `%s`, rename either file", it->filepath.c_str(), loaded[it->filename].c_str());
+            ELUNA_LOG_ERROR("[Eluna]: Error loading `{}`. File with same name already loaded from `{}`, rename either file", it->filepath.c_str(), loaded[it->filename].c_str());
             continue;
         }
         loaded[it->filename] = it->filepath;
@@ -287,7 +287,7 @@ void Eluna::RunScripts()
         if (ExecuteCall(1, 0))
         {
             // Successfully called require on the script
-            ELUNA_LOG_DEBUG("[Eluna]: Successfully loaded `%s`", it->filepath.c_str());
+            ELUNA_LOG_DEBUG("[Eluna]: Successfully loaded `{}`", it->filepath.c_str());
             ++count;
             continue;
         }
@@ -295,7 +295,7 @@ void Eluna::RunScripts()
     }
     // Stack: require
     lua_pop(L, 1);
-    ELUNA_LOG_INFO("[Eluna]: Executed %u Lua scripts in %u ms for map: %i, instance: %u", count, ElunaUtil::GetTimeDiff(oldMSTime), boundMapId, boundInstanceId);
+    ELUNA_LOG_INFO("[Eluna]: Executed {} Lua scripts in {} ms for map: {}, instance: {}", count, ElunaUtil::GetTimeDiff(oldMSTime), boundMapId, boundInstanceId);
 
     OnLuaStateOpen();
 }
@@ -309,7 +309,7 @@ void Eluna::InvalidateObjects()
 void Eluna::Report(lua_State* _L)
 {
     const char* msg = lua_tostring(_L, -1);
-    ELUNA_LOG_ERROR("%s", msg);
+    ELUNA_LOG_ERROR("{}", msg);
     lua_pop(_L, 1);
 }
 
@@ -354,14 +354,14 @@ bool Eluna::ExecuteCall(int params, int res)
     // Check function type
     if (!lua_isfunction(L, base))
     {
-        ELUNA_LOG_ERROR("[Eluna]: Cannot execute call: registered value is %s, not a function.", luaL_tolstring(L, base, NULL));
+        ELUNA_LOG_ERROR("[Eluna]: Cannot execute call: registered value is {}, not a function.", luaL_tolstring(L, base, NULL));
         ASSERT(false); // stack probably corrupt
     }
 
     bool usetrace = sElunaConfig->GetConfig(CONFIG_ELUNA_TRACEBACK);
     if (usetrace && !lua_iscfunction(L, stacktraceFunctionStackIndex))
     {
-        ELUNA_LOG_ERROR("[Eluna]: Cannot execute call: registered value is %s, not a c-function.", luaL_tolstring(L, stacktraceFunctionStackIndex, NULL));
+        ELUNA_LOG_ERROR("[Eluna]: Cannot execute call: registered value is {}, not a c-function.", luaL_tolstring(L, stacktraceFunctionStackIndex, NULL));
         ASSERT(false); // stack probably corrupt
     }
 
@@ -537,13 +537,13 @@ static int CheckIntegerRange(lua_State* luastate, int narg, int min, int max)
 
     if (value > max)
     {
-        snprintf(error_buffer, 64, "value must be less than or equal to %i", max);
+        snprintf(error_buffer, 64, "value must be less than or equal to {}", max);
         return luaL_argerror(luastate, narg, error_buffer);
     }
 
     if (value < min)
     {
-        snprintf(error_buffer, 64, "value must be greater than or equal to %i", min);
+        snprintf(error_buffer, 64, "value must be greater than or equal to {}", min);
         return luaL_argerror(luastate, narg, error_buffer);
     }
 
@@ -560,7 +560,7 @@ static unsigned int CheckUnsignedRange(lua_State* luastate, int narg, unsigned i
     if (value > max)
     {
         char error_buffer[64];
-        snprintf(error_buffer, 64, "value must be less than or equal to %u", max);
+        snprintf(error_buffer, 64, "value must be less than or equal to {}", max);
         return luaL_argerror(luastate, narg, error_buffer);
     }
 
@@ -688,7 +688,7 @@ ElunaObject* Eluna::CHECKTYPE(int narg, const char* tname, bool error)
         if (error)
         {
             char buff[256];
-            snprintf(buff, 256, "bad argument : %s expected, got %s", tname ? tname : "ElunaObject", elunaObject ? elunaObject->GetTypeName() : luaL_typename(L, narg));
+            snprintf(buff, 256, "bad argument : {} expected, got {}", tname ? tname : "ElunaObject", elunaObject ? elunaObject->GetTypeName() : luaL_typename(L, narg));
             luaL_argerror(L, narg, buff);
         }
         return NULL;
@@ -795,7 +795,7 @@ int Eluna::Register(uint8 regtype, uint32 entry, ObjectGuid guid, uint32 instanc
                 if (entry >= OpcodeMisc::MAX_OPCODE)
                 {
                     luaL_unref(L, LUA_REGISTRYINDEX, functionRef);
-                    luaL_error(L, "Couldn't find a creature with (ID: %d)!", entry);
+                    luaL_error(L, "Couldn't find a creature with (ID: {})!", entry);
                     return 0; // Stack: (empty)
                 }
 
@@ -814,7 +814,7 @@ int Eluna::Register(uint8 regtype, uint32 entry, ObjectGuid guid, uint32 instanc
                     if (!eObjectMgr->GetCreatureTemplate(entry))
                     {
                         luaL_unref(L, LUA_REGISTRYINDEX, functionRef);
-                        luaL_error(L, "Couldn't find a creature with (ID: %d)!", entry);
+                        luaL_error(L, "Couldn't find a creature with (ID: {})!", entry);
                         return 0; // Stack: (empty)
                     }
 
@@ -845,7 +845,7 @@ int Eluna::Register(uint8 regtype, uint32 entry, ObjectGuid guid, uint32 instanc
                 if (!eObjectMgr->GetCreatureTemplate(entry))
                 {
                     luaL_unref(L, LUA_REGISTRYINDEX, functionRef);
-                    luaL_error(L, "Couldn't find a creature with (ID: %d)!", entry);
+                    luaL_error(L, "Couldn't find a creature with (ID: {})!", entry);
                     return 0; // Stack: (empty)
                 }
 
@@ -862,7 +862,7 @@ int Eluna::Register(uint8 regtype, uint32 entry, ObjectGuid guid, uint32 instanc
                 if (!eObjectMgr->GetGameObjectTemplate(entry))
                 {
                     luaL_unref(L, LUA_REGISTRYINDEX, functionRef);
-                    luaL_error(L, "Couldn't find a gameobject with (ID: %d)!", entry);
+                    luaL_error(L, "Couldn't find a gameobject with (ID: {})!", entry);
                     return 0; // Stack: (empty)
                 }
 
@@ -879,7 +879,7 @@ int Eluna::Register(uint8 regtype, uint32 entry, ObjectGuid guid, uint32 instanc
                 if (!eObjectMgr->GetGameObjectTemplate(entry))
                 {
                     luaL_unref(L, LUA_REGISTRYINDEX, functionRef);
-                    luaL_error(L, "Couldn't find a gameobject with (ID: %d)!", entry);
+                    luaL_error(L, "Couldn't find a gameobject with (ID: {})!", entry);
                     return 0; // Stack: (empty)
                 }
 
@@ -906,7 +906,7 @@ int Eluna::Register(uint8 regtype, uint32 entry, ObjectGuid guid, uint32 instanc
                 if (!eObjectMgr->GetItemTemplate(entry))
                 {
                     luaL_unref(L, LUA_REGISTRYINDEX, functionRef);
-                    luaL_error(L, "Couldn't find a item with (ID: %d)!", entry);
+                    luaL_error(L, "Couldn't find a item with (ID: {})!", entry);
                     return 0; // Stack: (empty)
                 }
 
@@ -923,7 +923,7 @@ int Eluna::Register(uint8 regtype, uint32 entry, ObjectGuid guid, uint32 instanc
                 if (!eObjectMgr->GetItemTemplate(entry))
                 {
                     luaL_unref(L, LUA_REGISTRYINDEX, functionRef);
-                    luaL_error(L, "Couldn't find a item with (ID: %d)!", entry);
+                    luaL_error(L, "Couldn't find a item with (ID: {})!", entry);
                     return 0; // Stack: (empty)
                 }
 
@@ -965,7 +965,7 @@ int Eluna::Register(uint8 regtype, uint32 entry, ObjectGuid guid, uint32 instanc
     luaL_unref(L, LUA_REGISTRYINDEX, functionRef);
     std::ostringstream oss;
     oss << "regtype " << static_cast<uint32>(regtype) << ", event " << event_id << ", entry " << entry << ", instance " << instanceId;
-    luaL_error(L, "Unknown event type (%s)", oss.str().c_str());
+    luaL_error(L, "Unknown event type ({})", oss.str().c_str());
     return 0;
 }
 

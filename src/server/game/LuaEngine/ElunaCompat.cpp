@@ -28,7 +28,7 @@ const char* luaL_tolstring(lua_State* L, int idx, size_t* len) {
         default:
             tt = luaL_getmetafield(L, idx, "__name");
             name = (tt == LUA_TSTRING) ? lua_tostring(L, -1) : lua_typename(L, t);
-            lua_pushfstring(L, "%s: %p", name, lua_topointer(L, idx));
+            lua_pushfstring(L, "{}: {}", name, lua_topointer(L, idx));
             if (tt != LUA_TNIL)
                 lua_replace(L, -2);
             break;

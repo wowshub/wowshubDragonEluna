@@ -37,7 +37,7 @@ public:
         int args = lua_gettop(L) - top;
         if (args < 0 || args > expected)
         {
-            ELUNA_LOG_ERROR("[Eluna]: %s returned unexpected amount of arguments %i out of %i. Report to devs", l->name, args, expected);
+            ELUNA_LOG_ERROR("[Eluna]: {} returned unexpected amount of arguments {} out of {}. Report to devs", l->name, args, expected);
             ASSERT(false);
         }
         lua_settop(L, top + expected);
@@ -88,7 +88,7 @@ public:
         lua_remove(E->L, -1);
     }
 
-    static int MethodWrongState(lua_State* L) { luaL_error(L, "attempt to call a method that does not exist for state: %d", Eluna::GetEluna(L)->GetBoundMapId()); return 0; }
+    static int MethodWrongState(lua_State* L) { luaL_error(L, "attempt to call a method that does not exist for state: {}", Eluna::GetEluna(L)->GetBoundMapId()); return 0; }
     static int MethodUnimpl(lua_State* L) { luaL_error(L, "attempt to call a method that is not implemented for this emulator"); return 0; }
 };
 
@@ -343,7 +343,7 @@ public:
         ElunaObjectType* elunaObject = static_cast<ElunaObjectType*>(lua_newuserdata(L, sizeof(ElunaObjectType)));
         if (!elunaObject)
         {
-            ELUNA_LOG_ERROR("%s could not create new userdata", tname);
+            ELUNA_LOG_ERROR("{} could not create new userdata", tname);
             lua_pushnil(L);
             return 1;
         }
@@ -354,7 +354,7 @@ public:
         lua_rawget(L, LUA_REGISTRYINDEX);
         if (!lua_istable(L, -1))
         {
-            ELUNA_LOG_ERROR("%s missing metatable", tname);
+            ELUNA_LOG_ERROR("{} missing metatable", tname);
             lua_pop(L, 2);
             lua_pushnil(L);
             return 1;
@@ -381,7 +381,7 @@ public:
             }
             else
             {
-                ELUNA_LOG_ERROR("%s", buff);
+                ELUNA_LOG_ERROR("{}", buff);
             }
             return NULL;
         }
@@ -408,7 +408,7 @@ public:
         int args = lua_gettop(L) - top;
         if (args < 0 || args > expected)
         {
-            ELUNA_LOG_ERROR("[Eluna]: %s returned unexpected amount of arguments %i out of %i. Report to devs", l->name, args, expected);
+            ELUNA_LOG_ERROR("[Eluna]: {} returned unexpected amount of arguments {} out of {}. Report to devs", l->name, args, expected);
             ASSERT(false);
         }
         lua_settop(L, top + expected);
@@ -433,12 +433,12 @@ public:
         Eluna* E = Eluna::GetEluna(L);
 
         T* obj = E->CHECKOBJ<T>(1, true); // get self
-        lua_pushfstring(L, "%s: %p", tname, obj);
+        lua_pushfstring(L, "{}: {}", tname, obj);
         return 1;
     }
 
-    static int ArithmeticError(lua_State* L) { return luaL_error(L, "attempt to perform arithmetic on a %s value", tname); }
-    static int CompareError(lua_State* L) { return luaL_error(L, "attempt to compare %s", tname); }
+    static int ArithmeticError(lua_State* L) { return luaL_error(L, "attempt to perform arithmetic on a {} value", tname); }
+    static int CompareError(lua_State* L) { return luaL_error(L, "attempt to compare {}", tname); }
     static int Add(lua_State* L) { return ArithmeticError(L); }
     static int Substract(lua_State* L) { return ArithmeticError(L); }
     static int Multiply(lua_State* L) { return ArithmeticError(L); }
@@ -446,14 +446,14 @@ public:
     static int Mod(lua_State* L) { return ArithmeticError(L); }
     static int Pow(lua_State* L) { return ArithmeticError(L); }
     static int UnaryMinus(lua_State* L) { return ArithmeticError(L); }
-    static int Concat(lua_State* L) { return luaL_error(L, "attempt to concatenate a %s value", tname); }
-    static int Length(lua_State* L) { return luaL_error(L, "attempt to get length of a %s value", tname); }
+    static int Concat(lua_State* L) { return luaL_error(L, "attempt to concatenate a {} value", tname); }
+    static int Length(lua_State* L) { return luaL_error(L, "attempt to get length of a {} value", tname); }
     static int Equal(lua_State* L) { Eluna* E = Eluna::GetEluna(L); E->Push(E->CHECKOBJ<T>(1) == E->CHECKOBJ<T>(2)); return 1; }
     static int Less(lua_State* L) { return CompareError(L); }
     static int LessOrEqual(lua_State* L) { return CompareError(L); }
-    static int Call(lua_State* L) { return luaL_error(L, "attempt to call a %s value", tname); }
+    static int Call(lua_State* L) { return luaL_error(L, "attempt to call a {} value", tname); }
 
-    static int MethodWrongState(lua_State* L) { luaL_error(L, "attempt to call a method that does not exist for state: %d", Eluna::GetEluna(L)->GetBoundMapId()); return 0; }
+    static int MethodWrongState(lua_State* L) { luaL_error(L, "attempt to call a method that does not exist for state: {}", Eluna::GetEluna(L)->GetBoundMapId()); return 0; }
     static int MethodUnimpl(lua_State* L) { luaL_error(L, "attempt to call a method that is not implemented for this emulator"); return 0; }
 };
 
