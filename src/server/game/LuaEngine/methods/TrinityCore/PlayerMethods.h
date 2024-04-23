@@ -2928,9 +2928,9 @@ namespace LuaPlayer
         Player* receiver = E->CHECKOBJ<Player>(4);
         std::string fullmsg = prefix + "\t" + message;
 
-        ELUNA_LOG_INFO("AIO server->client SendAddonMessage:\nsender: {}\nprefix: {}\nmsg: {}\nfullmsg: {}\nreceiver: {}", player->GetName().c_str(), prefix.c_str(), message.c_str(), fullmsg.c_str(), receiver->GetName().c_str());
+        ELUNA_LOG_INFO("AIO server->client SendAddonMessage:\nsender: {}\nprefix: {}\nmsg: {}\nfullmsg(d): {}\nreceiver: {}", player->GetName().c_str(), prefix.c_str(), message.c_str(), fullmsg.c_str(), receiver->GetName().c_str());
 
-        player->WhisperAddon(fullmsg, prefix, false, receiver);
+        player->WhisperAddon(message, prefix, false, receiver);
 
 
         return 0;
