@@ -2104,12 +2104,12 @@ namespace LuaGlobalFunctions
             ItemTemplate const* item_proto = eObjectMgr->GetItemTemplate(entry);
             if (!item_proto)
             {
-                luaL_error(E->L, "Item entry %d does not exist", entry);
+                luaL_error(E->L, "Item entry {} does not exist", entry);
                 continue;
             }
             if (amount < 1 || (item_proto->ExtendedData->MaxCount > 0 && amount > uint32(item_proto->ExtendedData->MaxCount)))
             {
-                luaL_error(E->L, "Item entry %d has invalid amount %d", entry, amount);
+                luaL_error(E->L, "Item entry {} has invalid amount {}", entry, amount);
                 continue;
             }
             if (Item* item = Item::CreateItem(entry, amount, ItemContext::NONE))
@@ -2505,7 +2505,7 @@ namespace LuaGlobalFunctions
      */
     int PrintInfo(Eluna* E)
     {
-        ELUNA_LOG_INFO("%s", GetStackAsString(E).c_str());
+        ELUNA_LOG_INFO("{}", GetStackAsString(E).c_str());
         return 0;
     }
 
@@ -2516,7 +2516,7 @@ namespace LuaGlobalFunctions
      */
     int PrintError(Eluna* E)
     {
-        ELUNA_LOG_ERROR("%s", GetStackAsString(E).c_str());
+        ELUNA_LOG_ERROR("{}", GetStackAsString(E).c_str());
         return 0;
     }
 
@@ -2527,7 +2527,7 @@ namespace LuaGlobalFunctions
      */
     int PrintDebug(Eluna* E)
     {
-        ELUNA_LOG_DEBUG("%s", GetStackAsString(E).c_str());
+        ELUNA_LOG_DEBUG("{}", GetStackAsString(E).c_str());
         return 0;
     }
 

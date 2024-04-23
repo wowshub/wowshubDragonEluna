@@ -211,7 +211,7 @@ static void mar_encode_value(lua_State *L, mar_Buffer *buf, int val, size_t *idx
             lua_pushvalue(L, -1);
             lua_getinfo(L, ">nuS", &ar);
             if (ar.what[0] != 'L') {
-                luaL_error(L, "attempt to persist a C function '%s'", ar.name);
+                luaL_error(L, "attempt to persist a C function '{}'", ar.name);
             }
             tag = MAR_TVAL;
             lua_pushvalue(L, -1);
@@ -305,7 +305,7 @@ static void mar_encode_value(lua_State *L, mar_Buffer *buf, int val, size_t *idx
     }
     case LUA_TNIL: break;
     default:
-        luaL_error(L, "invalid value type (%s)", lua_typename(L, val_type));
+        luaL_error(L, "invalid value type ({})", lua_typename(L, val_type));
     }
     lua_pop(L, 1);
 }

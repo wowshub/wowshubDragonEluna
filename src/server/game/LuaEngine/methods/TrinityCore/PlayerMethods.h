@@ -1846,7 +1846,7 @@ namespace LuaPlayer
         player->GetSession()->m_muteTime = muteTime;
         std::ostringstream oss;
         oss << "UPDATE account SET mutetime = " << muteTime << " WHERE id = " << player->GetSession()->GetAccountId();
-        LoginDatabase.PExecute("%s", oss.str().c_str());
+        LoginDatabase.PExecute("{}", oss.str().c_str());
         return 0;
     }
 
@@ -2880,7 +2880,7 @@ namespace LuaPlayer
     {
         std::string msg = E->CHECKVAL<std::string>(2);
         if (msg.length() > 0)
-            player->GetSession()->SendNotification("%s", msg.c_str());
+            player->GetSession()->SendNotification("{}", msg.c_str());
         return 0;
     }
 
@@ -2908,22 +2908,30 @@ namespace LuaPlayer
      *
      * @param string prefix
      * @param string message
-     * @param [ChatMsg] channel
      * @param [Player] receiver
      *
      */
     int SendAddonMessage(Eluna* E, Player* player)
     {
+        //std::string prefix = E->CHECKVAL<std::string>(2);
+        //std::string message = E->CHECKVAL<std::string>(3);
+        //ChatMsg channel = ChatMsg(E->CHECKVAL<uint8>(4));
+        //
+
+        //WorldPackets::Chat::Chat packet;
+        //packet.Initialize((ChatMsg)channel, LANG_ADDON, player, receiver, fullmsg);
+
+        //receiver->GetSession()->SendPacket(packet.Write());
+
         std::string prefix = E->CHECKVAL<std::string>(2);
         std::string message = E->CHECKVAL<std::string>(3);
-        ChatMsg channel = ChatMsg(E->CHECKVAL<uint8>(4));
-        Player* receiver = E->CHECKOBJ<Player>(5);
+        Player* receiver = E->CHECKOBJ<Player>(4);
         std::string fullmsg = prefix + "\t" + message;
 
-        WorldPackets::Chat::Chat packet;
-        packet.Initialize((ChatMsg)channel, LANG_ADDON, player, receiver, fullmsg);
+        ELUNA_LOG_INFO("AIO server->client SendAddonMessage:\nsender: {}\nprefix: {}\nmsg: {}\nfullmsg: {}\nreceiver: {}", player->GetName().c_str(), prefix.c_str(), message.c_str(), fullmsg.c_str(), receiver->GetName().c_str());
 
-        receiver->GetSession()->SendPacket(packet.Write());
+        player->WhisperAddon(fullmsg, prefix, false, receiver);
+
 
         return 0;
     }
