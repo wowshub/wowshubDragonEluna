@@ -2915,13 +2915,16 @@ namespace LuaPlayer
     {
         std::string prefix = E->CHECKVAL<std::string>(2);
         std::string message = E->CHECKVAL<std::string>(3);
-        Player* receiver = E->CHECKOBJ<Player>(4);
+        ChatMsg channel = ChatMsg(E->CHECKVAL<uint8>(4));
+        Player* receiver = E->CHECKOBJ<Player>(5);
         std::string fullmsg = prefix + "\t" + message;
 
-        ELUNA_LOG_INFO("AIO server->client SendAddonMessage:\nsender: {}\nprefix: {}\nmessage: {}\nfullmsg(d): {}\nreceiver: {}", player->GetName().c_str(), prefix.c_str(), message.c_str(), fullmsg.c_str(), receiver->GetName().c_str());
+        WorldPackets::Chat::Chat chat;
+        chat.Initialize(channel, LANG_ADDON, player, receiver, fullmsg, 0, "", DEFAULT_LOCALE, prefix);
+        receiver->GetSession()->SendPacket(chat.Write());
 
-        player->WhisperAddon(fullmsg, prefix, false, receiver);
-
+        //ELUNA_LOG_INFO("AIO server->client SendAddonMessage:\nsender: {}\nprefix: {}\nchannel: {}\nfullmsg(d): {}\nreceiver: {}", player->GetName().c_str(), prefix.c_str(), ChatMsg(channel), fullmsg.c_str(), receiver->GetName().c_str());
+        //ELUNA_LOG_INFO("AIO server->client SendAddonMessage(Packet):\nchannel: {}\nlang: {}\nplayer: {}\nreceiver: {}\nfullmsg: {}\nachieve: {}\nchannelName: {}\nlocale: {}\nprefix: {}", ChatMsg(channel), "LANG_ADDON", player->GetName().c_str(), receiver->GetName().c_str(), fullmsg.c_str(), "0", "empty", DEFAULT_LOCALE, prefix.c_str());
 
         return 0;
     }

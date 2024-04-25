@@ -32,10 +32,18 @@ bool Eluna::OnAddonMessage(Player* sender, uint32 type, std::string& msg, Player
     HookPush(type);
 
     auto delimeter_position = msg.find('\t');
-    std::string prefix = msg.substr(0, delimeter_position);
-    std::string content = msg.substr(delimeter_position + 1, std::string::npos);
-    HookPush(prefix);
-    HookPush(content);
+    if (delimeter_position == std::string::npos)
+    {
+        HookPush(msg); // prefix
+        HookPush(); // msg
+    }
+    else
+    {
+        std::string prefix = msg.substr(0, delimeter_position);
+        std::string content = msg.substr(delimeter_position + 1, std::string::npos);
+        HookPush(prefix);
+        HookPush(content);
+    }
 
     if (receiver)
         HookPush(receiver);
