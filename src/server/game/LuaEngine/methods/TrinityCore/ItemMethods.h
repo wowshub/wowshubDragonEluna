@@ -532,6 +532,28 @@ namespace LuaItem
     }
 
     /**
+     * Returns the [Item] modified appearance
+     *
+     * @return uint32 item modified appearance 
+     */
+    int GetItemModifiedAppearance(Eluna* E, Item* item)
+    {
+        E->Push(item->GetItemModifiedAppearance());
+        return 1;
+    }
+
+    /**
+     * Returns the [Item] modified appearance id
+     *
+     * @return uint32 item modified appearance id
+     */
+    int GetItemModifiedAppearanceId(Eluna* E, Item* item)
+    {
+        E->Push(item->GetItemModifiedAppearance()->ID);
+        return 1;
+    }
+
+    /**
      * Sets the [Player] specified as the owner of the [Item]
      *
      * @param [Player] player : the [Player] specified
@@ -568,6 +590,40 @@ namespace LuaItem
     {
         uint32 count = E->CHECKVAL<uint32>(2);
         item->SetCount(count);
+        return 0;
+    }
+
+    /**
+     * Sets modifier for [Item] on [Player]
+     *
+     * @param ItemModifier itemmodifier
+     * @param uint32 value
+     * 
+     */
+    int SetModified(Eluna* E, Item* item)
+    {
+        ItemModifier itemmodifier = (ItemModifier)E->CHECKVAL<uint16>(2);
+        uint32 value = E->CHECKVAL<uint32>(3);
+
+        item->SetModifier(itemmodifier, value);
+
+        return 0;
+    }
+
+    /**
+     * Sets state for [Item] on [Player]
+     *
+     * @param ItemUpdateState itemstate
+     * @param [Player] player : the [Player] specified
+     *
+     */
+    int SetState(Eluna* E, Item* item)
+    {
+        ItemUpdateState itemstate = (ItemUpdateState)E->CHECKVAL<uint8>(2);
+        Player* player = E->CHECKOBJ<Player>(3);
+
+        item->SetState(itemstate, player);
+
         return 0;
     }
 
@@ -674,11 +730,15 @@ namespace LuaItem
         { "GetRequiredLevel", &LuaItem::GetRequiredLevel },
         { "GetItemSet", &LuaItem::GetItemSet },
         { "GetBagSize", &LuaItem::GetBagSize },
+        { "GetItemModifiedAppearance", &LuaItem::GetItemModifiedAppearance },
+        { "GetItemModifiedAppearanceId", &LuaItem::GetItemModifiedAppearanceId },
 
         // Setters
         { "SetOwner", &LuaItem::SetOwner },
         { "SetBinding", &LuaItem::SetBinding },
         { "SetCount", &LuaItem::SetCount },
+        { "SetModified", &LuaItem::SetModified },
+        { "SetState", &LuaItem::SetState },
 
         // Boolean
         { "IsSoulBound", &LuaItem::IsSoulBound },

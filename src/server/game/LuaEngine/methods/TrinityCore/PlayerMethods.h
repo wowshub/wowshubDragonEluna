@@ -1071,6 +1071,20 @@ namespace LuaPlayer
     }
 
     /**
+     * Returns a [Player]s [Item] object by slot specified
+     *
+     * @param uint8 slot
+     */
+    int GetEquippedItem(Eluna* E, Player* player)
+    {
+        EquipmentSlots slotid = (EquipmentSlots)E->CHECKVAL<uint8>(2);
+
+        Item* item = player->GetEquippedItem(slotid);
+        E->Push(item);
+        return 1;
+    }
+
+    /**
      * Returns the [Player]s current resting bonus
      *
      * @return float restBonus
@@ -1785,6 +1799,24 @@ namespace LuaPlayer
             player->SetPvpFlag(UNIT_BYTE2_FLAG_FFA_PVP);
         else
             player->RemovePvpFlag(UNIT_BYTE2_FLAG_FFA_PVP);
+        return 0;
+    }
+
+    /**
+     * Sets visible for [Item] on slot on [Player]
+     *
+     * @param EquipmentSlots slotid
+     * @param Item itemid
+     *
+     */
+    int SetVisibleItemSlot(Eluna* E, Player* player)
+    {
+        EquipmentSlots slotid = (EquipmentSlots)E->CHECKVAL<uint8>(2);
+        Item* itemid = E->CHECKOBJ<Item>(3);
+
+
+        player->SetVisibleItemSlot(slotid, itemid);
+
         return 0;
     }
 
@@ -3422,6 +3454,7 @@ namespace LuaPlayer
         { "GetMailItem", &LuaPlayer::GetMailItem },
         { "GetReputation", &LuaPlayer::GetReputation },
         { "GetEquippedItemBySlot", &LuaPlayer::GetEquippedItemBySlot },
+        { "GetEquippedItem", &LuaPlayer::GetEquippedItem },
         { "GetQuestLevel", &LuaPlayer::GetQuestLevel },
         { "GetChatTag", &LuaPlayer::GetChatTag },
         { "GetRestBonus", &LuaPlayer::GetRestBonus },
@@ -3490,6 +3523,7 @@ namespace LuaPlayer
         { "SetGender", &LuaPlayer::SetGender },
         { "SetSheath", &LuaPlayer::SetSheath },
         { "SetFFA", &LuaPlayer::SetFFA },
+        { "SetVisibleItemSlot", &LuaPlayer::SetVisibleItemSlot },
 
         // Boolean
         { "IsInGroup", &LuaPlayer::IsInGroup },
