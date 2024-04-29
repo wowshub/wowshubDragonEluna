@@ -1071,6 +1071,20 @@ namespace LuaPlayer
     }
 
     /**
+     * Returns a [Player]s [Item] object by slot specified
+     *
+     * @param uint8 slot
+     */
+    int GetEquippedItem(Eluna* E, Player* player)
+    {
+        EquipmentSlots slotid = (EquipmentSlots)E->CHECKVAL<uint8>(2);
+
+        Item* item = player->GetEquippedItem(slotid);
+        E->Push(item);
+        return 1;
+    }
+
+    /**
      * Returns the [Player]s current resting bonus
      *
      * @return float restBonus
@@ -1785,6 +1799,24 @@ namespace LuaPlayer
             player->SetPvpFlag(UNIT_BYTE2_FLAG_FFA_PVP);
         else
             player->RemovePvpFlag(UNIT_BYTE2_FLAG_FFA_PVP);
+        return 0;
+    }
+
+    /**
+     * Sets visible for [Item] on slot on [Player]
+     *
+     * @param EquipmentSlots slotid
+     * @param Item itemid
+     *
+     */
+    int SetVisibleItemSlot(Eluna* E, Player* player)
+    {
+        EquipmentSlots slotid = (EquipmentSlots)E->CHECKVAL<uint8>(2);
+        Item* itemid = E->CHECKOBJ<Item>(3);
+
+
+        player->SetVisibleItemSlot(slotid, itemid);
+
         return 0;
     }
 
@@ -2915,13 +2947,16 @@ namespace LuaPlayer
     {
         std::string prefix = E->CHECKVAL<std::string>(2);
         std::string message = E->CHECKVAL<std::string>(3);
-        Player* receiver = E->CHECKOBJ<Player>(4);
+        ChatMsg channel = ChatMsg(E->CHECKVAL<uint8>(4));
+        Player* receiver = E->CHECKOBJ<Player>(5);
         std::string fullmsg = prefix + "\t" + message;
 
-        ELUNA_LOG_INFO("AIO server->client SendAddonMessage:\nsender: {}\nprefix: {}\nmessage: {}\nfullmsg(d): {}\nreceiver: {}", player->GetName().c_str(), prefix.c_str(), message.c_str(), fullmsg.c_str(), receiver->GetName().c_str());
+        WorldPackets::Chat::Chat chat;
+        chat.Initialize(channel, LANG_ADDON, player, receiver, fullmsg, 0, "", DEFAULT_LOCALE, prefix);
+        receiver->GetSession()->SendPacket(chat.Write());
 
-        player->WhisperAddon(fullmsg, prefix, false, receiver);
-
+        //ELUNA_LOG_INFO("AIO server->client SendAddonMessage:\nsender: {}\nprefix: {}\nchannel: {}\nfullmsg(d): {}\nreceiver: {}", player->GetName().c_str(), prefix.c_str(), ChatMsg(channel), fullmsg.c_str(), receiver->GetName().c_str());
+        //ELUNA_LOG_INFO("AIO server->client SendAddonMessage(Packet):\nchannel: {}\nlang: {}\nplayer: {}\nreceiver: {}\nfullmsg: {}\nachieve: {}\nchannelName: {}\nlocale: {}\nprefix: {}", ChatMsg(channel), "LANG_ADDON", player->GetName().c_str(), receiver->GetName().c_str(), fullmsg.c_str(), "0", "empty", DEFAULT_LOCALE, prefix.c_str());
 
         return 0;
     }
@@ -3419,6 +3454,7 @@ namespace LuaPlayer
         { "GetMailItem", &LuaPlayer::GetMailItem },
         { "GetReputation", &LuaPlayer::GetReputation },
         { "GetEquippedItemBySlot", &LuaPlayer::GetEquippedItemBySlot },
+        { "GetEquippedItem", &LuaPlayer::GetEquippedItem },
         { "GetQuestLevel", &LuaPlayer::GetQuestLevel },
         { "GetChatTag", &LuaPlayer::GetChatTag },
         { "GetRestBonus", &LuaPlayer::GetRestBonus },
@@ -3487,6 +3523,7 @@ namespace LuaPlayer
         { "SetGender", &LuaPlayer::SetGender },
         { "SetSheath", &LuaPlayer::SetSheath },
         { "SetFFA", &LuaPlayer::SetFFA },
+        { "SetVisibleItemSlot", &LuaPlayer::SetVisibleItemSlot },
 
         // Boolean
         { "IsInGroup", &LuaPlayer::IsInGroup },

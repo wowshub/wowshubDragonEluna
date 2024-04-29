@@ -888,7 +888,7 @@ elunaEvents(NULL),
 #endif
 m_movementInfo(), m_name(), m_isActive(false), m_isFarVisible(false), m_isStoredInWorldObjectGridContainer(isWorldObject), m_zoneScript(nullptr),
 m_transport(nullptr), m_zoneId(0), m_areaId(0), m_staticFloorZ(VMAP_INVALID_HEIGHT), m_outdoors(false), m_liquidStatus(LIQUID_MAP_NO_WATER),
-m_currMap(nullptr), m_InstanceId(0), _dbPhase(0), m_notifyflags(0)
+m_currMap(nullptr), m_InstanceId(0), _dbPhase(0), m_notifyflags(0), _heartbeatTimer(HEARTBEAT_INTERVAL)
 {
     m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE | GHOST_VISIBILITY_GHOST);
     m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
@@ -922,6 +922,13 @@ void WorldObject::Update(uint32 diff)
     if (elunaEvents) // can be null on maps without eluna
         elunaEvents->Update(diff);
 #endif
+
+    _heartbeatTimer -= Milliseconds(diff);
+    while (_heartbeatTimer <= 0ms)
+    {
+        _heartbeatTimer += HEARTBEAT_INTERVAL;
+        Heartbeat();
+    }
 }
 
 void WorldObject::SetIsStoredInWorldObjectGridContainer(bool on)
@@ -1852,7 +1859,6 @@ void WorldObject::ResetMap()
     if (IsStoredInWorldObjectGridContainer())
         m_currMap->RemoveWorldObject(this);
     m_currMap = nullptr;
-
     //maybe not for corpse
     //m_mapId = 0;
     //m_InstanceId = 0;
@@ -3932,12 +3938,12 @@ std::list<AreaTrigger*> WorldObject::SelectNearestAreaTriggers(uint32 spellId, f
     Cell::VisitGridObjects(this, searcher, range);
 
     atList.remove_if([spellId](AreaTrigger* p_AreaTrigger)
-    {
-        if (p_AreaTrigger == nullptr || p_AreaTrigger->GetSpellId() != spellId)
-            return true;
+        {
+            if (p_AreaTrigger == nullptr || p_AreaTrigger->GetSpellId() != spellId)
+                return true;
 
-        return false;
-    });
+            return false;
+        });
 
     return atList;
 }
