@@ -3080,7 +3080,7 @@ void Unit::FinishSpell(CurrentSpellTypes spellType, SpellCastResult result /*= S
         return;
 
     if (spellType == CURRENT_CHANNELED_SPELL)
-        spell->SendChannelUpdate(0);
+        spell->SendChannelUpdate(0, result);
 
     spell->finish(result);
 }

@@ -233,13 +233,13 @@ enum SpellScriptHookType
     SPELL_SCRIPT_HOOK_ON_CAST,
     SPELL_SCRIPT_HOOK_ON_RESIST_ABSORB_CALCULATION,
     SPELL_SCRIPT_HOOK_AFTER_CAST,
-    SPELL_SCRIPT_HOOK_TAKE_POWER,
-    SPELL_SCRIPT_HOOK_ON_SUMMON,
     SPELL_SCRIPT_HOOK_CALC_CRIT_CHANCE,
     SPELL_SCRIPT_HOOK_CALC_DAMAGE,
     SPELL_SCRIPT_HOOK_CALC_HEALING,
     SPELL_SCRIPT_HOOK_ON_PRECAST,
     SPELL_SCRIPT_HOOK_CALC_CAST_TIME,
+    SPELL_SCRIPT_HOOK_EMPOWER_STAGE_COMPLETED,
+    SPELL_SCRIPT_HOOK_EMPOWER_COMPLETED,
 };
 
 #define HOOK_SPELL_HIT_START SPELL_SCRIPT_HOOK_EFFECT_HIT
@@ -787,71 +787,37 @@ public:
         SafeWrapperType _safeWrapper;
     };
 
-    class OnSummonHandler final
+    class EmpowerStageCompletedHandler final
     {
     public:
-        using SpellOnSummonFnType = void(SpellScript::*)(Creature* summon);
+        using EmpowerStageFnType = void(SpellScript::*)(int32);
 
-        using SafeWrapperType = void(*)(SpellScript* spellScript, Creature* summon, SpellOnSummonFnType callImpl);
+        using SafeWrapperType = void(*)(SpellScript* spellScript, EmpowerStageFnType callImpl, int32 completedStagesCount);
 
         template<typename ScriptFunc>
-        explicit OnSummonHandler(ScriptFunc handler)
+        explicit EmpowerStageCompletedHandler(ScriptFunc handler)
         {
             using ScriptClass = GetScriptClass_t<ScriptFunc>;
 
-            static_assert(sizeof(SpellOnSummonFnType) >= sizeof(ScriptFunc));
-            static_assert(alignof(SpellOnSummonFnType) >= alignof(ScriptFunc));
+            static_assert(sizeof(EmpowerStageFnType) >= sizeof(ScriptFunc));
+            static_assert(alignof(EmpowerStageFnType) >= alignof(ScriptFunc));
 
-            static_assert(std::is_invocable_r_v<void, ScriptFunc, ScriptClass, Creature*>,
-                "OnSummonHandler signature must be \"void OnSummonHandler(Creature* summon)\"");
+            static_assert(std::is_invocable_r_v<void, ScriptFunc, ScriptClass, int32>,
+                "EmpowerStageCompleted/EmpowerCompleted signature must be \"void HandleEmpowerStageCompleted(int32 completedStagesCount)\"");
 
-            _callImpl = reinterpret_cast<SpellOnSummonFnType>(handler);
-            _safeWrapper = [](SpellScript* spellScript, Creature* summon, SpellOnSummonFnType callImpl) -> void
+            _callImpl = reinterpret_cast<EmpowerStageFnType>(handler);
+            _safeWrapper = [](SpellScript* spellScript, EmpowerStageFnType callImpl, int32 completedStagesCount) -> void
             {
-                return (static_cast<ScriptClass*>(spellScript)->*reinterpret_cast<ScriptFunc>(callImpl))(summon);
+                return (static_cast<ScriptClass*>(spellScript)->*reinterpret_cast<ScriptFunc>(callImpl))(completedStagesCount);
             };
         }
 
-        void Call(SpellScript* spellScript, Creature* summon) const
+        void Call(SpellScript* spellScript, int32 completedStagesCount) const
         {
-            return _safeWrapper(spellScript, summon, _callImpl);
+            return _safeWrapper(spellScript, _callImpl, completedStagesCount);
         }
     private:
-        SpellOnSummonFnType _callImpl;
-        SafeWrapperType _safeWrapper;
-    };
-
-    class OnPrepareHandler final
-    {
-    public:
-        using SpellOnPrepareFnType = void(SpellScript::*)();
-
-        using SafeWrapperType = void(*)(SpellScript* spellScript, SpellOnPrepareFnType callImpl);
-
-        template<typename ScriptFunc>
-        explicit OnPrepareHandler(ScriptFunc handler)
-        {
-            using ScriptClass = GetScriptClass_t<ScriptFunc>;
-
-            static_assert(sizeof(SpellOnPrepareFnType) >= sizeof(ScriptFunc));
-            static_assert(alignof(SpellOnPrepareFnType) >= alignof(ScriptFunc));
-
-            static_assert(std::is_invocable_r_v<void, ScriptFunc, ScriptClass>,
-                "OnPrepareHandler signature must be \"void OnPrepareHandler()\"");
-
-            _callImpl = reinterpret_cast<SpellOnPrepareFnType>(handler);
-            _safeWrapper = [](SpellScript* spellScript, SpellOnPrepareFnType callImpl) -> void
-            {
-                return (static_cast<ScriptClass*>(spellScript)->*reinterpret_cast<ScriptFunc>(callImpl))();
-            };
-        }
-
-        void Call(SpellScript* spellScript) const
-        {
-            return _safeWrapper(spellScript, _callImpl);
-        }
-    private:
-        SpellOnPrepareFnType _callImpl;
+        EmpowerStageFnType _callImpl;
         SafeWrapperType _safeWrapper;
     };
 
@@ -958,15 +924,15 @@ public:
     HookList<OnCalculateResistAbsorbHandler> OnCalculateResistAbsorb;
     #define SpellOnResistAbsorbCalculateFn(F) OnCalculateResistAbsorbHandler(&F)
 
-    // example: OnSummonHandler += SpellOnEffectSummonFn(class::function);
-    // where function is void function(Creature* summon)
-    HookList<OnSummonHandler> OnEffectSummon;
-    #define SpellOnEffectSummonFn(F) OnSummonHandler(&F)
+    // example: OnEmpowerStageCompleted += SpellOnEmpowerStageCompletedFn(class::function);
+    // where function is void function(int32 completedStages)
+    HookList<EmpowerStageCompletedHandler> OnEmpowerStageCompleted;
+    #define SpellOnEmpowerStageCompletedFn(F) EmpowerStageCompletedHandler(&F)
 
-    // example: OnPrepare += SpellOnPrepareFn();
-    // where function is void function()
-    HookList<OnPrepareHandler> OnPrepare;
-    #define SpellOnPrepareFn(F) OnPrepareHandler(&F)
+    // example: OnEmpowerCompleted += SpellOnEmpowerCompletedFn(class::function);
+    // where function is void function(int32 completedStages)
+    HookList<EmpowerStageCompletedHandler> OnEmpowerCompleted;
+    #define SpellOnEmpowerCompletedFn(F) EmpowerStageCompletedHandler(&F)
 
     // hooks are executed in following order, at specified event of spell:
     // 1. OnPrecast - executed during spell preparation (before cast bar starts)
@@ -988,6 +954,8 @@ public:
     // 14. OnEffectHitTarget - executed just before specified effect handler call - called for each target from spell target map
     // 15. OnHit - executed just before spell deals damage and procs auras - when spell hits target - called for each target from spell target map
     // 16. AfterHit - executed just after spell finishes all it's jobs for target - called for each target from spell target map
+    // 17. OnEmpowerStageCompleted - executed when empowered spell completes each stage
+    // 18. OnEmpowerCompleted - executed when empowered spell is released
 
     // this hook is only executed after a successful dispel of any aura
     // OnEffectSuccessfulDispel - executed just after effect successfully dispelled aura(s)
@@ -2100,40 +2068,6 @@ public:
         SafeWrapperType _safeWrapper;
     };
 
-    class AuraUpdateHandler final
-    {
-    public:
-        using AuraUpdateFnType = void(AuraScript::*)(uint32 diff);
-
-        using SafeWrapperType = void(*)(AuraScript* auraScript, uint32 diff, AuraUpdateFnType callImpl);
-
-        template<typename ScriptFunc>
-        explicit AuraUpdateHandler(ScriptFunc handler)
-        {
-            using ScriptClass = GetScriptClass_t<ScriptFunc>;
-
-            static_assert(sizeof(AuraUpdateFnType) >= sizeof(ScriptFunc));
-            static_assert(alignof(AuraUpdateFnType) >= alignof(ScriptFunc));
-
-            static_assert(std::is_invocable_r_v<void, ScriptFunc, ScriptClass, bool>,
-                "AuraUpdateHandler signature must be \"void OnAuraUpdate(uint32 diff)\"");
-
-            _callImpl = reinterpret_cast<AuraUpdateFnType>(handler);
-            _safeWrapper = [](AuraScript* auraScript, uint32 diff, AuraUpdateFnType callImpl) -> void
-                {
-                    return (static_cast<ScriptClass*>(auraScript)->*reinterpret_cast<ScriptFunc>(callImpl))(diff);
-                };
-        }
-
-        void Call(AuraScript* auraScript, uint32 diff) const
-        {
-            return _safeWrapper(auraScript, diff, _callImpl);
-        }
-    private:
-        AuraUpdateFnType _callImpl;
-        SafeWrapperType _safeWrapper;
-    };
-
      // left for custom compatibility only, DO NOT USE
     #define PrepareAuraScript(CLASSNAME)
 
@@ -2337,12 +2271,6 @@ public:
     // where function is: void function (bool isNowInCombat);
     HookList<EnterLeaveCombatHandler> OnEnterLeaveCombat;
     #define AuraEnterLeaveCombatFn(F) EnterLeaveCombatHandler(&F)
-
-    // executed when aura is updated
-    // example: OnAuraUpdate += AuraUpdateFn(class::function);
-    // where function is: void function (const uint32 diff);
-    HookList<AuraUpdateHandler> OnAuraUpdate;
-    #define AuraUpdateFn(F) AuraUpdateHandler(&F)
 
     // AuraScript interface - hook/effect execution manipulators
 
