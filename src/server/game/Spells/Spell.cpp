@@ -67,9 +67,6 @@
 #include "VMapManager2.h"
 #include "World.h"
 #include "WorldSession.h"
-#ifdef ELUNA
-#include "LuaEngine.h"
-#endif
 #include <numeric>
 #include <sstream>
 
@@ -3696,11 +3693,6 @@ void Spell::_cast(bool skipCheck)
         return;
     }
 
-#ifdef ELUNA
-    if (Eluna* e = m_caster->GetEluna())
-        e->OnSpellCast(this, skipCheck);
-#endif
-
     if (Player* playerCaster = m_caster->ToPlayer())
     {
         // now that we've done the basic check, now run the scripts
@@ -4435,6 +4427,13 @@ void Spell::finish(SpellCastResult result)
 
     Unit::ProcSkillsAndAuras(unitCaster, nullptr, PROC_FLAG_CAST_ENDED, PROC_FLAG_NONE, PROC_SPELL_TYPE_MASK_ALL, PROC_SPELL_PHASE_NONE, PROC_HIT_NONE, this, nullptr, nullptr);
 
+    if (IsEmpowerSpell())
+    {
+        // Empower spells trigger gcd at the end of cast instead of at start
+        if (SpellInfo const* gcd = sSpellMgr->GetSpellInfo(SPELL_EMPOWER_HARDCODED_GCD, DIFFICULTY_NONE))
+            unitCaster->GetSpellHistory()->AddGlobalCooldown(gcd, Milliseconds(gcd->StartRecoveryTime));
+    }
+
     if (result != SPELL_CAST_OK)
     {
         // on failure (or manual cancel) send TraitConfigCommitFailed to revert talent UI saved config selection
@@ -4443,7 +4442,10 @@ void Spell::finish(SpellCastResult result)
                 m_caster->ToPlayer()->SendDirectMessage(WorldPackets::Traits::TraitConfigCommitFailed(traitConfig->ID).Write());
 
         if (IsEmpowerSpell())
+        {
             unitCaster->GetSpellHistory()->ResetCooldown(m_spellInfo->Id, true);
+            RefundPower();
+        }
 
         return;
     }
@@ -4474,13 +4476,6 @@ void Spell::finish(SpellCastResult result)
     // Stop Attack for some spells
     if (m_spellInfo->HasAttribute(SPELL_ATTR0_CANCELS_AUTO_ATTACK_COMBAT))
         unitCaster->AttackStop();
-
-    if (IsEmpowerSpell())
-    {
-        // Empower spells trigger gcd at the end of cast instead of at start
-        if (SpellInfo const* gcd = sSpellMgr->GetSpellInfo(SPELL_EMPOWER_HARDCODED_GCD, DIFFICULTY_NONE))
-            unitCaster->GetSpellHistory()->AddGlobalCooldown(gcd, Milliseconds(gcd->StartRecoveryTime));
-    }
 }
 
 template<class T>
@@ -5545,30 +5540,27 @@ void Spell::TakePower()
             return;
     }
 
+    bool hit = true;
+    if (unitCaster->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (m_spellInfo->HasAttribute(SPELL_ATTR1_DISCOUNT_POWER_ON_MISS))
+        {
+            ObjectGuid targetGUID = m_targets.GetUnitTargetGUID();
+            if (!targetGUID.IsEmpty())
+                hit = std::ranges::any_of(m_UniqueTargetInfo, [&](TargetInfo const& targetInfo) { return targetInfo.TargetGUID == targetGUID && targetInfo.MissCondition == SPELL_MISS_NONE; });
+        }
+    }
+
     for (SpellPowerCost& cost : m_powerCost)
     {
-        Powers powerType = Powers(cost.Power);
-        bool hit = true;
-        if (unitCaster->GetTypeId() == TYPEID_PLAYER)
+        if (!hit)
         {
-            if (m_spellInfo->HasAttribute(SPELL_ATTR1_DISCOUNT_POWER_ON_MISS))
-            {
-                ObjectGuid targetGUID = m_targets.GetUnitTargetGUID();
-                if (!targetGUID.IsEmpty())
-                {
-                    auto ihit = std::find_if(std::begin(m_UniqueTargetInfo), std::end(m_UniqueTargetInfo), [&](TargetInfo const& targetInfo) { return targetInfo.TargetGUID == targetGUID && targetInfo.MissCondition != SPELL_MISS_NONE; });
-                    if (ihit != std::end(m_UniqueTargetInfo))
-                    {
-                        hit = false;
-                        //lower spell cost on fail (by talent aura)
-                        if (Player* modOwner = unitCaster->GetSpellModOwner())
-                            modOwner->ApplySpellMod(m_spellInfo, SpellModOp::PowerCostOnMiss, cost.Amount);
-                    }
-                }
-            }
+            //lower spell cost on fail (by talent aura)
+            if (Player* modOwner = unitCaster->GetSpellModOwner())
+                modOwner->ApplySpellMod(m_spellInfo, SpellModOp::PowerCostOnMiss, cost.Amount);
         }
 
-        if (powerType == POWER_RUNES)
+        if (cost.Power == POWER_RUNES)
         {
             TakeRunePower(hit);
             continue;
@@ -5578,23 +5570,52 @@ void Spell::TakePower()
             continue;
 
         // health as power used
-        if (powerType == POWER_HEALTH)
+        if (cost.Power == POWER_HEALTH)
         {
             unitCaster->ModifyHealth(-cost.Amount);
             continue;
         }
 
-        if (powerType >= MAX_POWERS)
+        unitCaster->ModifyPower(cost.Power, -cost.Amount);
+    }
+}
+
+void Spell::RefundPower()
+{
+    // GameObjects don't use power
+    Unit* unitCaster = m_caster->ToUnit();
+    if (!unitCaster)
+        return;
+
+    if (m_CastItem || m_triggeredByAuraSpell)
+        return;
+
+    //Don't take power if the spell is cast while .cheat power is enabled.
+    if (unitCaster->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (unitCaster->ToPlayer()->GetCommandStatus(CHEAT_POWER))
+            return;
+    }
+
+    for (SpellPowerCost& cost : m_powerCost)
+    {
+        if (cost.Power == POWER_RUNES)
         {
-            TC_LOG_ERROR("spells", "Spell::TakePower: Unknown power type '{}'", powerType);
+            RefundRunePower();
             continue;
         }
 
-        if (hit)
-            unitCaster->ModifyPower(powerType, -cost.Amount);
-        else if (cost.Amount > 0)
-            unitCaster->ModifyPower(powerType, -irand(0, cost.Amount / 4));
-        //unitCaster->ModifyPower(powerType, -cost.Amount);
+        if (!cost.Amount)
+            continue;
+
+        // health as power used
+        if (cost.Power == POWER_HEALTH)
+        {
+            unitCaster->ModifyHealth(cost.Amount);
+            continue;
+        }
+
+        unitCaster->ModifyPower(cost.Power, cost.Amount);
     }
 }
 
@@ -5647,6 +5668,19 @@ void Spell::TakeRunePower(bool didHit)
             --runeCost;
         }
     }
+}
+
+void Spell::RefundRunePower()
+{
+    if (m_caster->GetTypeId() != TYPEID_PLAYER || m_caster->ToPlayer()->GetClass() != CLASS_DEATH_KNIGHT)
+        return;
+
+    Player* player = m_caster->ToPlayer();
+
+    // restore old rune state
+    for (int32 i = 0; i < player->GetMaxPower(POWER_RUNES); ++i)
+        if (m_runesState & (1 << i))
+            player->SetRuneCooldown(i, 0);
 }
 
 void Spell::TakeReagents()
@@ -6406,17 +6440,6 @@ SpellCastResult Spell::CheckCast(bool strict, int32* param1 /*= nullptr*/, int32
                 SpellCastResult res = CanOpenLock(spellEffectInfo, lockId, skillId, reqSkillValue, skillValue);
                 if (res != SPELL_CAST_OK)
                     return res;
-				
-				// chance for fail at orange mining/herb/LockPicking gathering attempt
-                // second check prevent fail at rechecks
-                if (skillId != SKILL_NONE && (!m_selfContainer || ((*m_selfContainer) != this)))
-                {
-                    bool canFailAtMax = skillId != SKILL_HERBALISM && skillId != SKILL_MINING;
-
-                    // chance for failure in orange gather / lockpick (gathering skill can't fail at maxskill)
-                    if ((canFailAtMax || skillValue < sWorld->GetConfigMaxSkillValue()) && reqSkillValue > irand(skillValue - 25, skillValue + 37))
-                        return SPELL_FAILED_TRY_AGAIN;
-                }
                 break;
             }
             case SPELL_EFFECT_RESURRECT_PET:
@@ -9024,19 +9047,6 @@ void Spell::CallScriptObjectTargetSelectHandlers(WorldObject*& target, SpellEffI
         for (SpellScript::ObjectTargetSelectHandler const& objectTargetSelect : script->OnObjectTargetSelect)
             if (objectTargetSelect.IsEffectAffected(m_spellInfo, effIndex) && targetType.GetTarget() == objectTargetSelect.GetTarget())
                 objectTargetSelect.Call(script, target);
-
-        script->_FinishScriptCall();
-    }
-}
-
-void Spell::CallScriptOnSummonHandlers(Creature* creature)
-{
-    for (SpellScript* script : m_loadedScripts)
-    {
-        script->_PrepareScriptCall(SPELL_SCRIPT_HOOK_ON_SUMMON);
-        auto hookItrEnd = script->OnEffectSummon.end(), hookItr = script->OnEffectSummon.begin();
-        for (; hookItr != hookItrEnd; ++hookItr)
-            hookItr->Call(script, creature);
 
         script->_FinishScriptCall();
     }
