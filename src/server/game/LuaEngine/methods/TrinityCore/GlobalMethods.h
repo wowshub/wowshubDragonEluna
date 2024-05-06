@@ -1876,7 +1876,7 @@ namespace LuaGlobalFunctions
     {
         uint32 opcode = E->CHECKVAL<uint32>(1);
         size_t size = E->CHECKVAL<size_t>(2);
-        if (opcode >= OpcodeMisc::MAX_OPCODE)
+        if (opcode >= MAX_CMSG_OPCODE_NUMBER)
             return luaL_argerror(E->L, 1, "valid opcode expected");
 
         E->Push(new WorldPacket((OpcodesList)opcode, size));
