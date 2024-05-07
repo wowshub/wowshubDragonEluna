@@ -5214,6 +5214,31 @@ struct SpellLoadInfo
     static constexpr DB2LoadInfo Instance{ Fields, 4, &SpellMeta::Instance, HOTFIX_SEL_SPELL };
 };
 
+struct SpellEmpowerLoadInfo
+{
+    static constexpr DB2FieldMeta Fields[3] =
+    {
+        { false, FT_INT, "ID" },
+        { true, FT_INT, "SpellID" },
+        { true, FT_INT, "Unused1000" },
+    };
+
+    static constexpr DB2LoadInfo Instance{ Fields, 3, &SpellEmpowerMeta::Instance, HOTFIX_SEL_SPELL_EMPOWER };
+};
+
+struct SpellEmpowerStageLoadInfo
+{
+    static constexpr DB2FieldMeta Fields[4] =
+    {
+        { false, FT_INT, "ID" },
+        { true, FT_INT, "Stage" },
+        { true, FT_INT, "DurationMs" },
+        { false, FT_INT, "SpellEmpowerID" },
+    };
+
+    static constexpr DB2LoadInfo Instance{ Fields, 4, &SpellEmpowerStageMeta::Instance, HOTFIX_SEL_SPELL_EMPOWER_STAGE };
+};
+
 struct SpellEquippedItemsLoadInfo
 {
     static constexpr DB2FieldMeta Fields[5] =
