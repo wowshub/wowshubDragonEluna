@@ -64,9 +64,6 @@
 #include "PhasingHandler.h"
 #include "Player.h"
 #include "ReputationMgr.h"
-#ifdef ELUNA
-#include "LuaEngine.h"
-#endif
 #include "RestMgr.h"
 #include "SceneObject.h"
 #include "ScriptMgr.h"
@@ -88,7 +85,6 @@
 #include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
-#include "GroupMgr.h"
 
 NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EFFECTS] =
 {
@@ -127,7 +123,7 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectTriggerMissileSpell,                      // 32 SPELL_EFFECT_TRIGGER_MISSILE
     &Spell::EffectOpenLock,                                 // 33 SPELL_EFFECT_OPEN_LOCK
     &Spell::EffectSummonChangeItem,                         // 34 SPELL_EFFECT_SUMMON_CHANGE_ITEM
-    &Spell::EffectApplyAreaAura,                            // 35 SPELL_EFFECT_APPLY_AREA_AURA_PARTY
+    &Spell::EffectUnused,                                   // 35 SPELL_EFFECT_APPLY_AREA_AURA_PARTY
     &Spell::EffectLearnSpell,                               // 36 SPELL_EFFECT_LEARN_SPELL
     &Spell::EffectUnused,                                   // 37 SPELL_EFFECT_SPELL_DEFENSE            one spell: SPELLDEFENSE (DND)
     &Spell::EffectDispel,                                   // 38 SPELL_EFFECT_DISPEL
@@ -157,7 +153,7 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectPowerBurn,                                // 62 SPELL_EFFECT_POWER_BURN
     &Spell::EffectThreat,                                   // 63 SPELL_EFFECT_THREAT
     &Spell::EffectTriggerSpell,                             // 64 SPELL_EFFECT_TRIGGER_SPELL
-    &Spell::EffectApplyAreaAura,                            // 65 SPELL_EFFECT_APPLY_AREA_AURA_RAID
+    &Spell::EffectUnused,                                   // 65 SPELL_EFFECT_APPLY_AREA_AURA_RAID
     &Spell::EffectRechargeItem,                             // 66 SPELL_EFFECT_RECHARGE_ITEM
     &Spell::EffectHealMaxHealth,                            // 67 SPELL_EFFECT_HEAL_MAX_HEALTH
     &Spell::EffectInterruptCast,                            // 68 SPELL_EFFECT_INTERRUPT_CAST
@@ -197,9 +193,9 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectDismissPet,                               //102 SPELL_EFFECT_DISMISS_PET
     &Spell::EffectReputation,                               //103 SPELL_EFFECT_REPUTATION
     &Spell::EffectSummonObject,                             //104 SPELL_EFFECT_SUMMON_OBJECT_SLOT1
-    &Spell::EffectSurvey,                                   //105 SPELL_EFFECT_SURVEY
+    &Spell::EffectNULL,                                     //105 SPELL_EFFECT_SURVEY
     &Spell::EffectChangeRaidMarker,                         //106 SPELL_EFFECT_CHANGE_RAID_MARKER
-    &Spell::EffectCorpseLoot,                               //107 SPELL_EFFECT_SHOW_CORPSE_LOOT
+    &Spell::EffectNULL,                                     //107 SPELL_EFFECT_SHOW_CORPSE_LOOT
     &Spell::EffectDispelMechanic,                           //108 SPELL_EFFECT_DISPEL_MECHANIC
     &Spell::EffectResurrectPet,                             //109 SPELL_EFFECT_RESURRECT_PET
     &Spell::EffectDestroyAllTotems,                         //110 SPELL_EFFECT_DESTROY_ALL_TOTEMS
@@ -211,7 +207,7 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectSkinPlayerCorpse,                         //116 SPELL_EFFECT_SKIN_PLAYER_CORPSE       one spell: Remove Insignia, bg usage, required special corpse flags...
     &Spell::EffectSpiritHeal,                               //117 SPELL_EFFECT_SPIRIT_HEAL              one spell: Spirit Heal
     &Spell::EffectSkill,                                    //118 SPELL_EFFECT_SKILL                    professions and more
-    &Spell::EffectApplyAreaAura,                            //119 SPELL_EFFECT_APPLY_AREA_AURA_PET
+    &Spell::EffectUnused,                                   //119 SPELL_EFFECT_APPLY_AREA_AURA_PET
     &Spell::EffectTeleportGraveyard,                        //120 SPELL_EFFECT_TELEPORT_GRAVEYARD
     &Spell::EffectWeaponDmg,                                //121 SPELL_EFFECT_NORMALIZED_WEAPON_DMG
     &Spell::EffectUnused,                                   //122 SPELL_EFFECT_122                      unused
@@ -220,8 +216,8 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectModifyThreatPercent,                      //125 SPELL_EFFECT_MODIFY_THREAT_PERCENT
     &Spell::EffectStealBeneficialBuff,                      //126 SPELL_EFFECT_STEAL_BENEFICIAL_BUFF    spell steal effect?
     &Spell::EffectProspecting,                              //127 SPELL_EFFECT_PROSPECTING              Prospecting spell
-    &Spell::EffectApplyAreaAura,                            //128 SPELL_EFFECT_APPLY_AREA_AURA_FRIEND
-    &Spell::EffectApplyAreaAura,                            //129 SPELL_EFFECT_APPLY_AREA_AURA_ENEMY
+    &Spell::EffectUnused,                                   //128 SPELL_EFFECT_APPLY_AREA_AURA_FRIEND
+    &Spell::EffectUnused,                                   //129 SPELL_EFFECT_APPLY_AREA_AURA_ENEMY
     &Spell::EffectRedirectThreat,                           //130 SPELL_EFFECT_REDIRECT_THREAT
     &Spell::EffectPlaySound,                                //131 SPELL_EFFECT_PLAY_SOUND               sound id in misc value (SoundEntries.dbc)
     &Spell::EffectPlayMusic,                                //132 SPELL_EFFECT_PLAY_MUSIC               sound id in misc value (SoundEntries.dbc)
@@ -235,7 +231,7 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectForceCast,                                //140 SPELL_EFFECT_FORCE_CAST
     &Spell::EffectForceCast,                                //141 SPELL_EFFECT_FORCE_CAST_WITH_VALUE
     &Spell::EffectTriggerSpell,                             //142 SPELL_EFFECT_TRIGGER_SPELL_WITH_VALUE
-    &Spell::EffectApplyAreaAura,                            //143 SPELL_EFFECT_APPLY_AREA_AURA_OWNER
+    &Spell::EffectUnused,                                   //143 SPELL_EFFECT_APPLY_AREA_AURA_OWNER
     &Spell::EffectKnockBack,                                //144 SPELL_EFFECT_KNOCK_BACK_DEST
     &Spell::EffectPullTowardsDest,                          //145 SPELL_EFFECT_PULL_TOWARDS_DEST        Black Hole Effect
     &Spell::EffectNULL,                                     //146 SPELL_EFFECT_RESTORE_GARRISON_TROOP_VITALITY
@@ -253,7 +249,7 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectMilling,                                  //158 SPELL_EFFECT_MILLING                  milling
     &Spell::EffectRenamePet,                                //159 SPELL_EFFECT_ALLOW_RENAME_PET         allow rename pet once again
     &Spell::EffectForceCast,                                //160 SPELL_EFFECT_FORCE_CAST_2
-    &Spell::EffectSpecCount,                                //161 SPELL_EFFECT_TALENT_SPEC_COUNT        second talent spec (learn/revert)
+    &Spell::EffectNULL,                                     //161 SPELL_EFFECT_TALENT_SPEC_COUNT        second talent spec (learn/revert)
     &Spell::EffectActivateSpec,                             //162 SPELL_EFFECT_TALENT_SPEC_SELECT       activate primary/secondary spec
     &Spell::EffectNULL,                                     //163 SPELL_EFFECT_OBLITERATE_ITEM
     &Spell::EffectRemoveAura,                               //164 SPELL_EFFECT_REMOVE_AURA
@@ -274,16 +270,16 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectCreateAreaTrigger,                        //179 SPELL_EFFECT_CREATE_AREATRIGGER
     &Spell::EffectNULL,                                     //180 SPELL_EFFECT_UPDATE_AREATRIGGER
     &Spell::EffectRemoveTalent,                             //181 SPELL_EFFECT_REMOVE_TALENT
-    &Spell::EffectDespawnAreatrigger,                       //182 SPELL_EFFECT_DESPAWN_AREATRIGGER
+    &Spell::EffectNULL,                                     //182 SPELL_EFFECT_DESPAWN_AREATRIGGER
     &Spell::EffectNULL,                                     //183 SPELL_EFFECT_183
-    &Spell::EffectReputation,                               //184 SPELL_EFFECT_REPUTATION
-    &Spell::SendScene,                                      //185 SPELL_EFFECT_185
-    &Spell::SendScene,                                      //186 SPELL_EFFECT_186
+    &Spell::EffectReputation,                               //184 SPELL_EFFECT_REPUTATION_2
+    &Spell::EffectNULL,                                     //185 SPELL_EFFECT_185
+    &Spell::EffectNULL,                                     //186 SPELL_EFFECT_186
     &Spell::EffectNULL,                                     //187 SPELL_EFFECT_RANDOMIZE_ARCHAEOLOGY_DIGSITES
     &Spell::EffectNULL,                                     //188 SPELL_EFFECT_SUMMON_STABLED_PET_AS_GUARDIAN
-    &Spell::EffectLootWithToast,                            //189 SPELL_EFFECT_LOOT
-    &Spell::EffectJoinOrLeavePlayerParty,                   //190 SPELL_EFFECT_CHANGE_PARTY_MEMBERS
-    &Spell::EffectTeleportToDigsite,                        //191 SPELL_EFFECT_TELEPORT_TO_DIGSITE
+    &Spell::EffectNULL,                                     //189 SPELL_EFFECT_LOOT
+    &Spell::EffectNULL,                                     //190 SPELL_EFFECT_CHANGE_PARTY_MEMBERS
+    &Spell::EffectNULL,                                     //191 SPELL_EFFECT_TELEPORT_TO_DIGSITE
     &Spell::EffectUncageBattlePet,                          //192 SPELL_EFFECT_UNCAGE_BATTLEPET
     &Spell::EffectNULL,                                     //193 SPELL_EFFECT_START_PET_BATTLE
     &Spell::EffectUnused,                                   //194 SPELL_EFFECT_194
@@ -294,13 +290,13 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectNULL,                                     //199 SPELL_EFFECT_DESPAWN_SUMMON
     &Spell::EffectHealBattlePetPct,                         //200 SPELL_EFFECT_HEAL_BATTLEPET_PCT
     &Spell::EffectEnableBattlePets,                         //201 SPELL_EFFECT_ENABLE_BATTLE_PETS
-    &Spell::EffectApplyAreaAura,                            //202 SPELL_EFFECT_APPLY_AREA_AURA_SUMMONS
+    &Spell::EffectUnused,                                   //202 SPELL_EFFECT_APPLY_AREA_AURA_SUMMONS
     &Spell::EffectRemoveAura,                               //203 SPELL_EFFECT_REMOVE_AURA_2
     &Spell::EffectChangeBattlePetQuality,                   //204 SPELL_EFFECT_CHANGE_BATTLEPET_QUALITY
     &Spell::EffectLaunchQuestChoice,                        //205 SPELL_EFFECT_LAUNCH_QUEST_CHOICE
     &Spell::EffectNULL,                                     //206 SPELL_EFFECT_ALTER_ITEM
     &Spell::EffectNULL,                                     //207 SPELL_EFFECT_LAUNCH_QUEST_TASK
-    &Spell::EffectModReputation,                            //208 SPELL_EFFECT_SET_REPUTATION
+    &Spell::EffectNULL,                                     //208 SPELL_EFFECT_SET_REPUTATION
     &Spell::EffectUnused,                                   //209 SPELL_EFFECT_209
     &Spell::EffectLearnGarrisonBuilding,                    //210 SPELL_EFFECT_LEARN_GARRISON_BUILDING
     &Spell::EffectNULL,                                     //211 SPELL_EFFECT_LEARN_GARRISON_SPECIALIZATION
@@ -324,13 +320,13 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectNULL,                                     //229 SPELL_EFFECT_SET_FOLLOWER_QUALITY
     &Spell::EffectNULL,                                     //230 SPELL_EFFECT_230
     &Spell::EffectNULL,                                     //231 SPELL_EFFECT_INCREASE_FOLLOWER_EXPERIENCE
-    &Spell::EffectRemovePhase,                              //232 SPELL_EFFECT_REMOVE_PHASE
+    &Spell::EffectNULL,                                     //232 SPELL_EFFECT_REMOVE_PHASE
     &Spell::EffectNULL,                                     //233 SPELL_EFFECT_RANDOMIZE_FOLLOWER_ABILITIES
     &Spell::EffectNULL,                                     //234 SPELL_EFFECT_234
     &Spell::EffectUnused,                                   //235 SPELL_EFFECT_235
     &Spell::EffectGiveExperience,                           //236 SPELL_EFFECT_GIVE_EXPERIENCE
     &Spell::EffectGiveRestedExperience,                     //237 SPELL_EFFECT_GIVE_RESTED_EXPERIENCE_BONUS
-    &Spell::EffectIncreaseSkill,                            //238 SPELL_EFFECT_INCREASE_SKILL
+    &Spell::EffectNULL,                                     //238 SPELL_EFFECT_INCREASE_SKILL
     &Spell::EffectNULL,                                     //239 SPELL_EFFECT_END_GARRISON_BUILDING_CONSTRUCTION
     &Spell::EffectGiveArtifactPower,                        //240 SPELL_EFFECT_GIVE_ARTIFACT_POWER
     &Spell::EffectUnused,                                   //241 SPELL_EFFECT_241
@@ -341,7 +337,7 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectNULL,                                     //246 SPELL_EFFECT_FINISH_GARRISON_MISSION
     &Spell::EffectNULL,                                     //247 SPELL_EFFECT_ADD_GARRISON_MISSION_SET
     &Spell::EffectNULL,                                     //248 SPELL_EFFECT_FINISH_SHIPMENT
-    &Spell::EffectForceEquipItem,                           //249 SPELL_EFFECT_FORCE_EQUIP_ITEM
+    &Spell::EffectNULL,                                     //249 SPELL_EFFECT_FORCE_EQUIP_ITEM
     &Spell::EffectNULL,                                     //250 SPELL_EFFECT_TAKE_SCREENSHOT
     &Spell::EffectNULL,                                     //251 SPELL_EFFECT_SET_GARRISON_CACHE_SIZE
     &Spell::EffectTeleportUnits,                            //252 SPELL_EFFECT_TELEPORT_UNITS
@@ -353,7 +349,7 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectNULL,                                     //258 SPELL_EFFECT_MODIFY_KEYSTONE
     &Spell::EffectRespecAzeriteEmpoweredItem,               //259 SPELL_EFFECT_RESPEC_AZERITE_EMPOWERED_ITEM
     &Spell::EffectNULL,                                     //260 SPELL_EFFECT_SUMMON_STABLED_PET
-    &Spell::EffectScrapItem,                                //261 SPELL_EFFECT_SCRAP_ITEM
+    &Spell::EffectNULL,                                     //261 SPELL_EFFECT_SCRAP_ITEM
     &Spell::EffectUnused,                                   //262 SPELL_EFFECT_262
     &Spell::EffectNULL,                                     //263 SPELL_EFFECT_REPAIR_ITEM
     &Spell::EffectNULL,                                     //264 SPELL_EFFECT_REMOVE_GEM
@@ -363,7 +359,7 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectNULL,                                     //268 SPELL_EFFECT_APPLY_MOUNT_EQUIPMENT
     &Spell::EffectNULL,                                     //269 SPELL_EFFECT_INCREASE_ITEM_BONUS_LIST_GROUP_STEP
     &Spell::EffectNULL,                                     //270 SPELL_EFFECT_270
-    &Spell::EffectApplyAreaAura,                            //271 SPELL_EFFECT_APPLY_AREA_AURA_PARTY_NONRANDOM
+    &Spell::EffectUnused,                                   //271 SPELL_EFFECT_APPLY_AREA_AURA_PARTY_NONRANDOM
     &Spell::EffectNULL,                                     //272 SPELL_EFFECT_SET_COVENANT
     &Spell::EffectNULL,                                     //273 SPELL_EFFECT_CRAFT_RUNEFORGE_LEGENDARY
     &Spell::EffectUnused,                                   //274 SPELL_EFFECT_274
@@ -578,18 +574,6 @@ void Spell::EffectDummy()
     // normal DB scripted effect
     TC_LOG_DEBUG("spells", "Spell ScriptStart spellid {} in EffectDummy({})", m_spellInfo->Id, effectInfo->EffectIndex);
     m_caster->GetMap()->ScriptsStart(sSpellScripts, uint32(m_spellInfo->Id | (effectInfo->EffectIndex << 24)), m_caster, unitTarget);
-
-#ifdef ELUNA
-    if (Eluna* e = m_caster->GetEluna())
-    {
-        if (gameObjTarget)
-            e->OnDummyEffect(m_caster, m_spellInfo->Id, effectInfo->EffectIndex, gameObjTarget);
-        else if (unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT)
-            e->OnDummyEffect(m_caster, m_spellInfo->Id, effectInfo->EffectIndex, unitTarget->ToCreature());
-        else if (itemTarget)
-            e->OnDummyEffect(m_caster, m_spellInfo->Id, effectInfo->EffectIndex, itemTarget);
-    }
-#endif
 }
 
 void Spell::EffectTriggerSpell()
@@ -1606,10 +1590,6 @@ void Spell::EffectOpenLock()
         // these objects must have been spawned by outdoorpvp!
         else if (gameObjTarget->GetGOInfo()->type == GAMEOBJECT_TYPE_GOOBER && sOutdoorPvPMgr->HandleOpenGo(player, gameObjTarget))
             return;
-        else if (player && gameObjTarget->GetGOInfo()->type == GAMEOBJECT_TYPE_CHEST)
-            if (PlayerConditionEntry const* playerCondition = sPlayerConditionStore.LookupEntry(goInfo->chest.conditionID1))
-                if (!sConditionMgr->IsPlayerMeetingCondition(player, playerCondition))
-                    return;
         lockId = goInfo->GetLockId();
         guid = gameObjTarget->GetGUID();
     }
@@ -1806,7 +1786,7 @@ void Spell::EffectProficiency()
 
 void Spell::EffectSummonType()
 {
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH)
         return;
 
     uint32 entry = effectInfo->MiscValue;
@@ -1884,7 +1864,7 @@ void Spell::EffectSummonType()
         {
             if (properties->GetFlags().HasFlag(SummonPropertiesFlags::JoinSummonerSpawnGroup))
             {
-                summon = SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
+                SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
                 break;
             }
 
@@ -1894,7 +1874,7 @@ void Spell::EffectSummonType()
                 case SummonTitle::Guardian:
                 case SummonTitle::Runeblade:
                 case SummonTitle::Minion:
-                    summon = SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
+                    SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
                     break;
                     // Summons a vehicle, but doesn't force anyone to enter it (see SUMMON_CATEGORY_VEHICLE)
                 case SummonTitle::Vehicle:
@@ -1972,7 +1952,7 @@ void Spell::EffectSummonType()
             break;
         }
         case SUMMON_CATEGORY_PET:
-            summon = SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
+            SummonGuardian(effectInfo, entry, properties, numSummons, privateObjectOwner);
             break;
         case SUMMON_CATEGORY_PUPPET:
         {
@@ -2019,7 +1999,6 @@ void Spell::EffectSummonType()
     {
         summon->SetCreatorGUID(caster->GetGUID());
         ExecuteLogEffectSummonObject(SpellEffectName(effectInfo->Effect), summon);
-        CallScriptOnSummonHandlers(summon);
     }
 }
 
@@ -4886,11 +4865,11 @@ void Spell::EffectGameObjectSetDestructionState()
     gameObjTarget->SetDestructibleState(GameObjectDestructibleState(effectInfo->MiscValue), m_caster, true);
 }
 
-TempSummon* Spell::SummonGuardian(SpellEffectInfo const* effect, uint32 entry, SummonPropertiesEntry const* properties, uint32 numGuardians, ObjectGuid privateObjectOwner)
+void Spell::SummonGuardian(SpellEffectInfo const* effect, uint32 entry, SummonPropertiesEntry const* properties, uint32 numGuardians, ObjectGuid privateObjectOwner)
 {
     Unit* unitCaster = GetUnitCasterForEffectHandlers();
     if (!unitCaster)
-        return nullptr;
+        return;
 
     if (unitCaster->IsTotem())
         unitCaster = unitCaster->ToTotem()->GetOwner();
@@ -4898,8 +4877,6 @@ TempSummon* Spell::SummonGuardian(SpellEffectInfo const* effect, uint32 entry, S
     // in another case summon new
     float radius = 5.0f;
     Milliseconds duration = Milliseconds(m_spellInfo->CalcDuration(m_originalCaster));
-
-    TempSummon* OutSummon = nullptr;
 
     //TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
     Map* map = unitCaster->GetMap();
@@ -4914,7 +4891,7 @@ TempSummon* Spell::SummonGuardian(SpellEffectInfo const* effect, uint32 entry, S
 
         TempSummon* summon = map->SummonCreature(entry, pos, properties, duration, unitCaster, m_spellInfo->Id, 0, privateObjectOwner);
         if (!summon)
-            return nullptr;
+            return;
 
         if (summon->IsGuardian())
         {
@@ -4941,15 +4918,8 @@ TempSummon* Spell::SummonGuardian(SpellEffectInfo const* effect, uint32 entry, S
                 summon->SetDisplayId(1126); // modelid1
         }
 
-        // In case we have one creature, we can run the OnSummon hook
-        // Otherwise it doesn't really matter anyway
-        // Used for things like Monk Transcendence
-        OutSummon = summon;
-
         ExecuteLogEffectSummonObject(SpellEffectName(effect->Effect), summon);
     }
-
-    return OutSummon;
 }
 
 void Spell::EffectRenamePet()
@@ -6076,256 +6046,4 @@ void Spell::EffectTeleportGraveyard()
         return;
 
     target->RepopAtGraveyard();
-}
-
-//NEW
-
-void Spell::EffectApplyAreaAura()
-{
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
-        return;
-
-    if (!_spellAura || !unitTarget)
-        return;
-    ASSERT(unitTarget == _spellAura->GetOwner());
-    _spellAura->_ApplyEffectForTargets(SpellEffIndex(effectInfo->EffectIndex));
-}
-
-void Spell::EffectSurvey()
-{
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
-        return;
-
-    if (!m_caster)
-        return;
-
-    Player* player = m_caster->ToPlayer();
-    if (!player)
-        return;
-
-    uint8 slot = 4;
-    uint32 go_id = 0;
-    float x = m_caster->GetPositionX();
-    float y = m_caster->GetPositionY();
-    float z = m_caster->GetPositionZ();
-    float o = m_caster->GetOrientation();
-
-    int32 duration;
-
-    duration = 10000;
-
-    if (!go_id)
-    {
-        TC_LOG_ERROR("LOG_FILTER_SPELLS_AURAS", "Spell::EffectSurvey: no go id for x: {} y: {} z: {} map: {}", m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), m_caster->GetMapId());
-        return;
-    }
-}
-
-void Spell::EffectCorpseLoot()
-{
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
-        return;
-
-    if (!unitTarget->IsCreature())
-        return;
-    if (!m_caster->IsPlayer())
-        return;
-
-    Creature* creature = unitTarget->ToCreature();
-    if (!creature)
-        return;
-
-    m_caster->ToPlayer()->SendLoot(*creature->m_loot);
-    creature->RemoveUnitFlag(UNIT_FLAG_LOOTING);
-}
-
-void Spell::EffectSpecCount()
-{
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
-        return;
-
-    if (!unitTarget || !unitTarget->IsPlayer())
-        return;
-}
-
-void Spell::EffectDespawnAreatrigger()
-{
-    Player* player = GetCaster()->ToPlayer();
-    if (!player)
-        return;
-
-    player->RemoveAllAreaObjects();
-}
-
-//! Based on SPELL_EFFECT_ACTIVATE_SCENE3 spell 117790
-void Spell::SendScene()
-{
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET || !m_caster->IsPlayer())
-        return;
-
-    Position pos;
-    if (m_targets.HasDst())
-        pos = static_cast<Position>(*m_targets.GetDstPos());
-}
-
-void Spell::EffectLootWithToast()
-{
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
-        return;
-
-    if (!unitTarget || !unitTarget->IsPlayer())
-        return;
-
-    unitTarget->ToPlayer()->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell, ItemContext::NONE, false, true, DisplayToastMethod::PersonalLoot);
-}
-
-void Spell::EffectJoinOrLeavePlayerParty()
-{
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
-        return;
-
-    if (!unitTarget || !m_caster || !unitTarget->IsPlayer())
-        return;
-
-    Player* player = unitTarget->ToPlayer();
-
-    Group* group = player->GetGroup();
-    Creature* creature = m_caster->ToCreature();
-    if (!creature)
-        return;
-
-    if (!group)
-    {
-        group = new Group();
-        group->Create(player);
-        group->ConvertToLFG();
-        group->SetDungeonDifficultyID(Difficulty(m_diffMode));
-        sGroupMgr->AddGroup(group);
-    }
-    else if (group->IsMember(creature->GetGUID()))
-        return;
-}
-
-void Spell::EffectTeleportToDigsite()
-{
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
-        return;
-
-
-    Player* player = m_caster->ToPlayer();
-    if (!player || !player->GetSkillValue(SKILL_ARCHAEOLOGY))
-        return;
-
-    player->TeleportToDigsiteInMap(player->GetMapId());
-}
-
-void Spell::EffectModReputation()
-{
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
-        return;
-
-    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
-        return;
-
-    Player* player = unitTarget->ToPlayer();
-
-    int32  repChange = damage;
-
-    uint32 factionId = effectInfo->MiscValue;
-
-    FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionId);
-    if (!factionEntry)
-        return;
-
-    repChange = player->CalculateReputationGain(REPUTATION_SOURCE_SPELL, 0, repChange, factionId);
-
-    player->GetReputationMgr().ModifyReputation(factionEntry, repChange);
-}
-
-void Spell::EffectRemovePhase()
-{
-    bool Visibility = false;
-
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
-        return;
-
-    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
-        return;
-
-    PhasingHandler::RemovePhase(unitTarget->ToPlayer(), effectInfo->MiscValue, Visibility);
-}
-
-void Spell::EffectIncreaseSkill()
-{
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
-        return;
-
-    if (!unitTarget->IsPlayer())
-        return;
-
-    if (damage < 0)
-        return;
-
-    uint32 skillid = effectInfo->MiscValue;
-    uint32 limitValue = effectInfo->MiscValueB;
-    uint32 skillValue = unitTarget->ToPlayer()->GetPureSkillValue(skillid);
-    uint32 maxSkillValue = unitTarget->ToPlayer()->GetMaxSkillValue(skillid);
-
-    if (skillValue > maxSkillValue)
-        return;
-
-    if (skillValue > limitValue)
-        return;
-
-    SkillRaceClassInfoEntry const* rcEntry = sDB2Manager.GetSkillRaceClassInfo(skillid, unitTarget->GetRace(), unitTarget->GetClass());
-    if (!rcEntry)
-        return;
-
-    unitTarget->ToPlayer()->SetSkill(skillid, unitTarget->ToPlayer()->GetSkillStep(skillid), skillValue, maxSkillValue);
-}
-
-void Spell::EffectForceEquipItem()
-{
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
-        return;
-
-    Player* player = m_caster->ToPlayer();
-    if (!player)
-        return;
-
-    auto const& item = player->GetItemByEntry(effectInfo->ItemType);
-    if (!item)
-        return;
-
-    return;
-
-    uint16 dest;
-    if (player->CanEquipItem(NULL_SLOT, dest, item, true) == EQUIP_ERR_OK)
-    {
-        player->EquipItem(dest, item, true);
-        player->AutoUnequipOffhandIfNeed();
-    }
-}
-
-void Spell::EffectScrapItem()
-{
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
-        return;
-
-    if (!itemTarget)
-        return;
-
-    if (!(ITEM_FLAG4_SCRAPABLE))
-        return;
-
-    ItemScrappingLoot const* iSL = sObjectMgr->GetItemScrappingLoot(itemTarget);
-
-    if (!iSL)
-        return;
-
-    if (Player* player = GetCaster()->ToPlayer())
-    {
-        player->DestroyItem(itemTarget->GetBagSlot(), itemTarget->GetSlot(), true);
-        player->AutoStoreLoot(iSL->Id, LootTemplates_Scrapping);
-    }
 }
