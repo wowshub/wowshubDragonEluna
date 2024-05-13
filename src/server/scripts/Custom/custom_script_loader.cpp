@@ -16,7 +16,7 @@
  */
 
 // This is where scripts' loading functions should be declared:
-
+void AddLfgSoloScripts();  //solo lfg 
 //void AddSC_custom_commandscript();
 //void AddSC_custom_commandscrip();
 void AddSC_free_share_scripts();
@@ -27,6 +27,6 @@ void AddCustomScripts()
 {
     //AddSC_custom_commandscript();
     //AddSC_custom_commandscrip();
-
+    AddLfgSoloScripts(); //solo lfg 
     AddSC_free_share_scripts();
 }
