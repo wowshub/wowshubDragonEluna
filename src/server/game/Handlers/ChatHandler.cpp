@@ -133,7 +133,7 @@ void WorldSession::HandleChatMessageOpcode(WorldPackets::Chat::ChatMessage& chat
 
 void WorldSession::HandleChatMessageWhisperOpcode(WorldPackets::Chat::ChatMessageWhisper& chatMessageWhisper)
 {
-    HandleChatMessage(CHAT_MSG_WHISPER, Language(chatMessageWhisper.Language), chatMessageWhisper.Text, chatMessageWhisper.Target);
+    HandleChatMessage(CHAT_MSG_WHISPER, Language(chatMessageWhisper.Language), chatMessageWhisper.Text, chatMessageWhisper.Target, chatMessageWhisper.TargetGUID);
 }
 
 void WorldSession::HandleChatMessageChannelOpcode(WorldPackets::Chat::ChatMessageChannel& chatMessageChannel)
@@ -146,7 +146,7 @@ void WorldSession::HandleChatMessageEmoteOpcode(WorldPackets::Chat::ChatMessageE
     HandleChatMessage(CHAT_MSG_EMOTE, LANG_UNIVERSAL, chatMessageEmote.Text);
 }
 
-ChatMessageResult WorldSession::HandleChatMessage(ChatMsg type, Language lang, std::string msg, std::string target /*= ""*/, Optional<ObjectGuid> channelGuid /*= {}*/)
+ChatMessageResult WorldSession::HandleChatMessage(ChatMsg type, Language lang, std::string msg, std::string target /*= ""*/, Optional<ObjectGuid> targetGuid /*= {}*/)
 {
     Player* sender = GetPlayer();
 
@@ -295,15 +295,23 @@ ChatMessageResult WorldSession::HandleChatMessage(ChatMsg type, Language lang, s
         case CHAT_MSG_WHISPER:
         {
             /// @todo implement cross realm whispers (someday)
-            ExtendedPlayerName extName = ExtractExtendedPlayerName(target);
-
-            if (!normalizePlayerName(extName.Name))
+            Player* receiver = nullptr;
+            if (targetGuid && !targetGuid->IsEmpty())
             {
-                SendChatPlayerNotfoundNotice(target);
-                break;
+                receiver = ObjectAccessor::FindConnectedPlayer(*targetGuid);
             }
+            else
+            {
+                ExtendedPlayerName extName = ExtractExtendedPlayerName(target);
 
-            Player* receiver = ObjectAccessor::FindConnectedPlayerByName(extName.Name);
+                if (!normalizePlayerName(extName.Name))
+                {
+                    SendChatPlayerNotfoundNotice(target);
+                    break;
+                }
+
+                receiver = ObjectAccessor::FindConnectedPlayerByName(extName.Name);
+            }
             if (!receiver || (lang != LANG_ADDON && !receiver->isAcceptWhispers() && receiver->GetSession()->HasPermission(rbac::RBAC_PERM_CAN_FILTER_WHISPERS) && !receiver->IsInWhisperWhiteList(sender->GetGUID())))
             {
                 SendChatPlayerNotfoundNotice(target);
@@ -437,8 +445,8 @@ ChatMessageResult WorldSession::HandleChatMessage(ChatMsg type, Language lang, s
                 }
             }
 
-            Channel* chn = channelGuid
-                ? ChannelMgr::GetChannelForPlayerByGuid(*channelGuid, sender)
+            Channel* chn = targetGuid
+                ? ChannelMgr::GetChannelForPlayerByGuid(*targetGuid, sender)
                 : ChannelMgr::GetChannelForPlayerByNamePart(target, sender);
             if (chn)
             {
@@ -483,11 +491,23 @@ void WorldSession::HandleChatAddonMessageOpcode(WorldPackets::Chat::ChatAddonMes
 
 void WorldSession::HandleChatAddonMessageTargetedOpcode(WorldPackets::Chat::ChatAddonMessageTargeted& chatAddonMessageTargeted)
 {
-    HandleChatAddonMessage(chatAddonMessageTargeted.Params.Type, chatAddonMessageTargeted.Params.Prefix, chatAddonMessageTargeted.Params.Text,
-        chatAddonMessageTargeted.Params.IsLogged, chatAddonMessageTargeted.Target, chatAddonMessageTargeted.ChannelGUID);
+    switch (chatAddonMessageTargeted.Params.Type)
+    {
+        case CHAT_MSG_WHISPER:
+            HandleChatAddonMessage(chatAddonMessageTargeted.Params.Type, chatAddonMessageTargeted.Params.Prefix, chatAddonMessageTargeted.Params.Text,
+                chatAddonMessageTargeted.Params.IsLogged, chatAddonMessageTargeted.PlayerName, chatAddonMessageTargeted.PlayerGUID);
+            break;
+        case CHAT_MSG_CHANNEL:
+            HandleChatAddonMessage(chatAddonMessageTargeted.Params.Type, chatAddonMessageTargeted.Params.Prefix, chatAddonMessageTargeted.Params.Text,
+                chatAddonMessageTargeted.Params.IsLogged, chatAddonMessageTargeted.ChannelName, chatAddonMessageTargeted.ChannelGUID);
+            break;
+        default:
+            TC_LOG_ERROR("misc", "HandleChatAddonMessageTargetedOpcode: unknown addon message type {}", chatAddonMessageTargeted.Params.Type);
+            break;
+    }
 }
 
-void WorldSession::HandleChatAddonMessage(ChatMsg type, std::string prefix, std::string text, bool isLogged, std::string target /*= ""*/, Optional<ObjectGuid> channelGuid /*= {}*/)
+void WorldSession::HandleChatAddonMessage(ChatMsg type, std::string prefix, std::string text, bool isLogged, std::string target /*= ""*/, Optional<ObjectGuid> targetGuid /*= {}*/)
 {
     Player* sender = GetPlayer();
 
@@ -529,12 +549,20 @@ void WorldSession::HandleChatAddonMessage(ChatMsg type, std::string prefix, std:
         case CHAT_MSG_WHISPER:
         {
             /// @todo implement cross realm whispers (someday)
-            ExtendedPlayerName extName = ExtractExtendedPlayerName(target);
+            Player* receiver = nullptr;
+            if (targetGuid && !targetGuid->IsEmpty())
+            {
+                receiver = ObjectAccessor::FindConnectedPlayer(*targetGuid);
+            }
+            else
+            {
+                ExtendedPlayerName extName = ExtractExtendedPlayerName(target);
 
-            if (!normalizePlayerName(extName.Name))
-                break;
+                if (!normalizePlayerName(extName.Name))
+                    break;
 
-            Player* receiver = ObjectAccessor::FindPlayerByName(extName.Name);
+                receiver = ObjectAccessor::FindConnectedPlayerByName(extName.Name);
+            }
             if (!receiver)
                 break;
 
@@ -568,8 +596,8 @@ void WorldSession::HandleChatAddonMessage(ChatMsg type, std::string prefix, std:
         }
         case CHAT_MSG_CHANNEL:
         {
-            Channel* chn = channelGuid
-                ? ChannelMgr::GetChannelForPlayerByGuid(*channelGuid, sender)
+            Channel* chn = targetGuid
+                ? ChannelMgr::GetChannelForPlayerByGuid(*targetGuid, sender)
                 : ChannelMgr::GetChannelForPlayerByNamePart(target, sender);
             if (chn)
                 chn->AddonSay(sender->GetGUID(), prefix, text.c_str(), isLogged);
