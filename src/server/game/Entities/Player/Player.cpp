@@ -14206,8 +14206,14 @@ void Player::OnGossipSelect(WorldObject* source, int32 gossipOptionId, uint32 me
         case GossipOptionNpc::ChromieTimeNpc: // NYI
             break;
         case GossipOptionNpc::RuneforgeLegendaryCrafting: // NYI
+            PlayerTalkClass->SendCloseGossip();
+            SendRuneforgeLegendaryCraftingOpenNpc(source->GetGUID(), false);
+            handled = false;
             break;
         case GossipOptionNpc::RuneforgeLegendaryUpgrade: // NYI
+            PlayerTalkClass->SendCloseGossip();
+            SendRuneforgeLegendaryCraftingOpenNpc(source->GetGUID(), true);
+            handled = false;
             break;
         case GossipOptionNpc::ProfessionsCraftingOrder: // NYI
             break;
@@ -28880,6 +28886,14 @@ bool Player::AddItem(uint32 itemId, uint32 count)
     else
         return false;
     return true;
+}
+
+void Player::SendRuneforgeLegendaryCraftingOpenNpc(ObjectGuid const& guid, bool isUpgrade) const
+{
+    WorldPackets::Misc::LegendaryCraftingOpenNpc packet;
+    packet.ObjGUID = guid;
+    packet.IsUpgrade = isUpgrade;
+    SendDirectMessage(packet.Write());
 }
 
 bool Player::AddItemBonus(uint32 itemId, uint32 count, uint32 bonusId)
