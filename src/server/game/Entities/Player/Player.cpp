@@ -14205,12 +14205,12 @@ void Player::OnGossipSelect(WorldObject* source, int32 gossipOptionId, uint32 me
             break;
         case GossipOptionNpc::ChromieTimeNpc: // NYI
             break;
-        case GossipOptionNpc::RuneforgeLegendaryCrafting: // NYI
+        case GossipOptionNpc::RuneforgeLegendaryCrafting:
             PlayerTalkClass->SendCloseGossip();
             SendRuneforgeLegendaryCraftingOpenNpc(source->GetGUID(), false);
             handled = false;
             break;
-        case GossipOptionNpc::RuneforgeLegendaryUpgrade: // NYI
+        case GossipOptionNpc::RuneforgeLegendaryUpgrade:
             PlayerTalkClass->SendCloseGossip();
             SendRuneforgeLegendaryCraftingOpenNpc(source->GetGUID(), true);
             handled = false;

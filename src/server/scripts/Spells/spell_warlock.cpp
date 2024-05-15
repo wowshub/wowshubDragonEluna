@@ -1508,7 +1508,7 @@ public:
             }
         }
 
-        void OnSpellClick(Unit* player, bool result) override
+        void OnSpellClick(Unit* player, bool /*result*/) override
         {
             // don't allow using the gateway while having specific auras
             uint32 aurasToCheck[4] = { 121164, 121175, 121176, 121177 }; // Orbs of Power @ Temple of Kotmogu
