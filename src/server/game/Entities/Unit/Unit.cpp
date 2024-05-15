@@ -3198,6 +3198,9 @@ void Unit::UnsummonCreatureByEntry(uint32 entry, uint32 ms/* = 0*/)
 
 bool Unit::CanCastSpellWhileMoving(SpellInfo const* spellInfo) const
 {
+    if (spellInfo->HasAttribute(SPELL_ATTR13_DO_NOT_ALLOW_DISABLE_MOVEMENT_INTERRUPT))
+        return false;
+
     if (HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, spellInfo))
         return true;
 
