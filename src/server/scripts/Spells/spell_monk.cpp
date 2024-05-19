@@ -1467,7 +1467,7 @@ struct at_monk_chi_burst : AreaTriggerAI
 
         for (auto itr : at->GetInsideUnits())
         {
-            Unit* target = ObjectAccessor::GetUnit(*caster, itr);
+            //Unit* target = ObjectAccessor::GetUnit(*caster, itr);
             if (!caster->IsFriendlyTo(unit))
             {
                 caster->CastSpell(unit, SPELL_MONK_CHI_BURST_HEAL, true);
@@ -1605,7 +1605,7 @@ struct npc_monk_jade_serpent_statue : public ScriptedAI
 {
     npc_monk_jade_serpent_statue(Creature* c) : ScriptedAI(c) { }
 
-    void UpdateAI(uint32 diff) override
+    void UpdateAI(uint32 /*diff*/) override
     {
         if (Unit* owner = me->GetOwner())
         {

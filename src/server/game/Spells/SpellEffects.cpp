@@ -6099,12 +6099,7 @@ void Spell::EffectSurvey()
     if (!player)
         return;
 
-    uint8 slot = 4;
     uint32 go_id = 0;
-    float x = m_caster->GetPositionX();
-    float y = m_caster->GetPositionY();
-    float z = m_caster->GetPositionZ();
-    float o = m_caster->GetOrientation();
 
     int32 duration;
 

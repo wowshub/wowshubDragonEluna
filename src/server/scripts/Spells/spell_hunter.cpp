@@ -1803,7 +1803,7 @@ class spell_hun_spearhead : public SpellScript
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
-        Unit* target = caster->ToPlayer()->GetSelectedUnit();
+        //Unit* target = caster->ToPlayer()->GetSelectedUnit();
         Player* player = caster->ToPlayer();
         Pet* pet = player->GetPet();
 

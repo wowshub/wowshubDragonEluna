@@ -1458,7 +1458,7 @@ public:
 
             Position pos = dest->GetPosition();
 
-            caster->SendPlaySpellVisual(pos, 20.f, 63644, 0, 0, 2.0f);
+            caster->SendPlaySpellVisual(pos, 63644, 0, 0, 2.0f);
         }
 
         void Register() override
