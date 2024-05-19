@@ -2412,8 +2412,7 @@ struct npc_monk_sef_spirit : public ScriptedAI
         summoner->CastSpell(me, SPELL_MONK_TRANSCENDENCE_CLONE_TARGET, true);
         me->CastSpell(me, me->GetEntry() == NPC_FIRE_SPIRIT ? SPELL_MONK_SEF_FIRE_VISUAL : SPELL_MONK_SEF_EARTH_VISUAL, true);
         me->CastSpell(me, SPELL_MONK_SEF_SUMMONS_STATS, true);
-        int32 attackPower = summoner->ToUnit()->m_unitData->AttackPower / 100 * 45.0f;
-        int32 spellPower = summoner->ToUnit()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_NATURE) / 100 * 45.0f;
+        me->SetReactState(REACT_DEFENSIVE);
 
         if (Unit* target = ObjectAccessor::GetUnit(*summoner, summoner->ToUnit()->GetTarget()))
             me->CastSpell(target, SPELL_MONK_SEF_CHARGE, true);
