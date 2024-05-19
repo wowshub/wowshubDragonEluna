@@ -1467,7 +1467,7 @@ struct at_monk_chi_burst : AreaTriggerAI
 
         for (auto itr : at->GetInsideUnits())
         {
-            Unit* target = ObjectAccessor::GetUnit(*caster, itr);
+            //Unit* target = ObjectAccessor::GetUnit(*caster, itr);
             if (!caster->IsFriendlyTo(unit))
             {
                 caster->CastSpell(unit, SPELL_MONK_CHI_BURST_HEAL, true);
@@ -1605,7 +1605,7 @@ struct npc_monk_jade_serpent_statue : public ScriptedAI
 {
     npc_monk_jade_serpent_statue(Creature* c) : ScriptedAI(c) { }
 
-    void UpdateAI(uint32 diff) override
+    void UpdateAI(uint32 /*diff*/) override
     {
         if (Unit* owner = me->GetOwner())
         {
@@ -2412,8 +2412,7 @@ struct npc_monk_sef_spirit : public ScriptedAI
         summoner->CastSpell(me, SPELL_MONK_TRANSCENDENCE_CLONE_TARGET, true);
         me->CastSpell(me, me->GetEntry() == NPC_FIRE_SPIRIT ? SPELL_MONK_SEF_FIRE_VISUAL : SPELL_MONK_SEF_EARTH_VISUAL, true);
         me->CastSpell(me, SPELL_MONK_SEF_SUMMONS_STATS, true);
-        int32 attackPower = summoner->ToUnit()->m_unitData->AttackPower / 100 * 45.0f;
-        int32 spellPower = summoner->ToUnit()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_NATURE) / 100 * 45.0f;
+        me->SetReactState(REACT_DEFENSIVE);
 
         if (Unit* target = ObjectAccessor::GetUnit(*summoner, summoner->ToUnit()->GetTarget()))
             me->CastSpell(target, SPELL_MONK_SEF_CHARGE, true);

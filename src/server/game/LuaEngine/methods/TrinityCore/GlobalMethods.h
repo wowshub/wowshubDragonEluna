@@ -73,18 +73,13 @@ namespace LuaGlobalFunctions
     /**
      * Returns emulator's supported expansion.
      *
-     * Expansion is 0 for pre-TBC, 1 for TBC, 2 for WotLK, and 3 for Cataclysm.
+     * Expansion is 0 for pre-TBC, 1 for TBC, 2 for WotLK, 3 for Cataclysm, and 9 for Dragonflight.
      *
      * @return int32 expansion
      */
-    int GetCoreExpansion(Eluna* E)
+    int GetCoreExpansion(Eluna* /*E*/)
     {
-#ifdef WOTLK
-        E->Push(2);
-#elif CATA
-        E->Push(3);
-#endif
-        return 1;
+        return 9;
     }
 
     /**

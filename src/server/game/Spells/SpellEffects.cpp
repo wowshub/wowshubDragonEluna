@@ -3938,10 +3938,6 @@ void Spell::EffectKnockBack()
     if (unitTarget->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED))
         return;
 
-    // Instantly interrupt non melee spells being cast
-    if (unitTarget->IsNonMeleeSpellCast(true))
-        unitTarget->InterruptNonMeleeSpells(true);
-
     float ratio = 0.1f;
     float speedxy = float(effectInfo->MiscValue) * ratio;
     float speedz = float(damage) * ratio;
@@ -6103,12 +6099,7 @@ void Spell::EffectSurvey()
     if (!player)
         return;
 
-    uint8 slot = 4;
     uint32 go_id = 0;
-    float x = m_caster->GetPositionX();
-    float y = m_caster->GetPositionY();
-    float z = m_caster->GetPositionZ();
-    float o = m_caster->GetOrientation();
 
     int32 duration;
 
