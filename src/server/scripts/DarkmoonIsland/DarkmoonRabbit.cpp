@@ -115,15 +115,6 @@ public:
 
             if (!UpdateVictim())
                 return;
-
-            while (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                    default:
-                    break;
-                }
-            }
         }
 
         EventMap events;

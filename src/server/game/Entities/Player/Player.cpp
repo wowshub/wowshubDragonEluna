@@ -14205,9 +14205,15 @@ void Player::OnGossipSelect(WorldObject* source, int32 gossipOptionId, uint32 me
             break;
         case GossipOptionNpc::ChromieTimeNpc: // NYI
             break;
-        case GossipOptionNpc::RuneforgeLegendaryCrafting: // NYI
+        case GossipOptionNpc::RuneforgeLegendaryCrafting:
+            PlayerTalkClass->SendCloseGossip();
+            SendRuneforgeLegendaryCraftingOpenNpc(source->GetGUID(), false);
+            handled = false;
             break;
-        case GossipOptionNpc::RuneforgeLegendaryUpgrade: // NYI
+        case GossipOptionNpc::RuneforgeLegendaryUpgrade:
+            PlayerTalkClass->SendCloseGossip();
+            SendRuneforgeLegendaryCraftingOpenNpc(source->GetGUID(), true);
+            handled = false;
             break;
         case GossipOptionNpc::ProfessionsCraftingOrder: // NYI
             break;
@@ -20437,24 +20443,29 @@ uint32 Player::GetCustomizationChoice(uint32 chrCustomizationOptionId) const
     return 0;
 }
 
+void Player::ClearPreviousCustomizations(std::vector<ChrCustomizationOptionEntry const*> const* oldCustomizations)
+{
+    for (const auto optionEntry : *oldCustomizations)
+    {
+        const int32 index = m_playerData->Customizations.FindIndexIf([optionEntry](UF::ChrCustomizationChoice const& choice) { return choice.ChrCustomizationOptionID == optionEntry->ID; });
+        if (index >= 0)
+            RemoveDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::Customizations), index);
+    }
+}
+
 void Player::ClearPreviousModelCustomizations(const uint32 oldModel)
 {
     if (std::vector<ChrCustomizationOptionEntry const*> const* oldModelCustomizations = sDB2Manager.GetCustomiztionOptions(oldModel))
     {
-        for (const auto optionEntry : *oldModelCustomizations)
-        {
-            const int32 index = m_playerData->Customizations.FindIndexIf([optionEntry](UF::ChrCustomizationChoice const& choice) { return choice.ChrCustomizationOptionID == optionEntry->ID; });
-            if (index >= 0)
-                RemoveDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::Customizations), index);
-        }
+        ClearPreviousCustomizations(oldModelCustomizations);
     }
 }
 
 void Player::ClearPreviousRaceGenderCustomizations(const uint8 race, const uint8 gender)
 {
-    if (ChrModelEntry const* chrModel = sDB2Manager.GetChrModel(race, gender))
+    if (std::vector<ChrCustomizationOptionEntry const*> const* oldRaceGenderCustomizations = sDB2Manager.GetCustomiztionOptions(race, gender))
     {
-        ClearPreviousModelCustomizations(chrModel->ID);
+        ClearPreviousCustomizations(oldRaceGenderCustomizations);
     }
 }
 
@@ -28875,6 +28886,14 @@ bool Player::AddItem(uint32 itemId, uint32 count)
     else
         return false;
     return true;
+}
+
+void Player::SendRuneforgeLegendaryCraftingOpenNpc(ObjectGuid const& guid, bool isUpgrade) const
+{
+    WorldPackets::Misc::LegendaryCraftingOpenNpc packet;
+    packet.ObjGUID = guid;
+    packet.IsUpgrade = isUpgrade;
+    SendDirectMessage(packet.Write());
 }
 
 bool Player::AddItemBonus(uint32 itemId, uint32 count, uint32 bonusId)

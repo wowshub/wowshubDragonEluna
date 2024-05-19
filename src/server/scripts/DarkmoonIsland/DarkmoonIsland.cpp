@@ -241,7 +241,7 @@ public:
             return true;
         }
 
-        bool OnGossipSelect(Player* player, uint32 uiSender, uint32 action) override
+        bool OnGossipSelect(Player* player, uint32 /*uiSender*/, uint32 action) override
         {
             char const* GOSSIP_BUTTON_1;
             char const* GOSSIP_BUTTON_2;
@@ -444,7 +444,7 @@ public:
             return true;
         }
 
-        bool OnGossipSelect(Player* player, uint32 uiSender, uint32 action) override
+        bool OnGossipSelect(Player* player, uint32 /*uiSender*/, uint32 action) override
         {
             char const* GOSSIP_BUTTON_1;
             char const* GOSSIP_BUTTON_2;
@@ -675,7 +675,7 @@ public:
             return true;
         }
 
-        bool OnGossipSelect(Player* player, uint32 uiSender, uint32 action) override
+        bool OnGossipSelect(Player* player, uint32 /*uiSender*/, uint32 action) override
         {
             char const* GOSSIP_BUTTON_1;
             char const* GOSSIP_BUTTON_2;

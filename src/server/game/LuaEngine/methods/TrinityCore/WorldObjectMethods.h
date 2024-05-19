@@ -99,7 +99,7 @@ namespace LuaWorldObject
      *
      * @return uint32 phase
      */
-    int GetPhaseMask(Eluna* E, WorldObject* obj)
+    int GetPhaseMask(Eluna* E, WorldObject* /*obj*/)
     {
         EventMap event;
         E->Push(event.GetPhaseMask());
@@ -112,7 +112,7 @@ namespace LuaWorldObject
     * @param uint32 phaseMask
     * @param bool update = true : update visibility to nearby objects
     */
-    int SetPhaseMask(Eluna* E, WorldObject* obj)
+    int SetPhaseMask(Eluna* E, WorldObject* /*obj*/)
     {
         uint32 phaseMask = E->CHECKVAL<uint32>(2);
         EventMap event;

@@ -1054,7 +1054,7 @@ public:
 
     class spell_rog_stealth_with_subterfuge_AuraScript : public AuraScript
     {
-        void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (!GetCaster())
                 return;

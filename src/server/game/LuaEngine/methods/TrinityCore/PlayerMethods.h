@@ -2242,7 +2242,7 @@ namespace LuaPlayer
      * @param [Unit] target
      * @param int8 count
      */
-    int AddComboPoints(Eluna* E, Player* player)
+    int AddComboPoints(Eluna* E, Player* /*player*/)
     {
         Unit* target = E->CHECKOBJ<Unit>(2);
         int8 count = E->CHECKVAL<int8>(3);
@@ -3000,12 +3000,10 @@ namespace LuaPlayer
      * Learn the [Player] the talent specified by talent_id and talentRank
      *
      * @param uint32 talent_id
-     * @param uint32 talentRank
      */
     int LearnTalent(Eluna* E, Player* player)
     {
         uint32 id = E->CHECKVAL<uint32>(2);
-        uint32 rank = E->CHECKVAL<uint32>(3);
 
         int32 spellOnCooldown = 0;
         player->LearnTalent(id, &spellOnCooldown);

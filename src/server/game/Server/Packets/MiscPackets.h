@@ -1010,15 +1010,15 @@ namespace WorldPackets
             uint32 CurrencyID = 0;
         };
 		
-		class RuneforgeLegendaryCraftingOpenNpc  final : public ServerPacket
+		class LegendaryCraftingOpenNpc  final : public ServerPacket
         {
         public:
-            RuneforgeLegendaryCraftingOpenNpc() : ServerPacket(SMSG_RUNEFORGE_LEGENDARY_CRAFTING_OPEN_NPC, 16) {}
+            LegendaryCraftingOpenNpc() : ServerPacket(SMSG_RUNEFORGE_LEGENDARY_CRAFTING_OPEN_NPC, 16) {}
 
             WorldPacket const* Write() override;
 
             ObjectGuid ObjGUID;
-            bool IsUpgrade;
+            bool IsUpgrade = false;
         };
     }
 }

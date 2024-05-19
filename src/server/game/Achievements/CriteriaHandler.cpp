@@ -547,12 +547,15 @@ void CriteriaHandler::UpdateCriteria(CriteriaType type, uint64 miscValue1 /*= 0*
             case CriteriaType::Login:
             case CriteriaType::AnyoneTriggerGameEventScenario:
             case CriteriaType::DefeatDungeonEncounterWhileElegibleForLoot:
+            case CriteriaType::CompleteAnyScenario:
+            case CriteriaType::CompleteScenario:
             case CriteriaType::BattlePetReachLevel:
             case CriteriaType::ActivelyEarnPetLevel:
             case CriteriaType::DefeatDungeonEncounter:
             case CriteriaType::PlaceGarrisonBuilding:
             case CriteriaType::ActivateAnyGarrisonBuilding:
             case CriteriaType::LearnAnyHeirloom:
+            case CriteriaType::LearnAnyTransmog:
             case CriteriaType::HonorLevelIncrease:
             case CriteriaType::PrestigeLevelIncrease:
             case CriteriaType::LearnAnyTransmogInSlot:
@@ -572,6 +575,7 @@ void CriteriaHandler::UpdateCriteria(CriteriaType type, uint64 miscValue1 /*= 0*
             case CriteriaType::MoneyEarnedFromAuctions:/* FIXME: for online player only currently */
             case CriteriaType::TotalDamageTaken:
             case CriteriaType::TotalHealReceived:
+            case CriteriaType::CompletedLFGDungeon:
             case CriteriaType::CompletedLFGDungeonWithStrangers:
             case CriteriaType::DamageDealt:
             case CriteriaType::HealingDone:
@@ -801,8 +805,6 @@ void CriteriaHandler::UpdateCriteria(CriteriaType type, uint64 miscValue1 /*= 0*
             case CriteriaType::KickVoterInLFRDungeon:
             case CriteriaType::KickTargetInLFRDungeon:
             case CriteriaType::GroupedTankLeftEarlyInLFRDungeon:
-            case CriteriaType::CompleteAnyScenario:
-            case CriteriaType::CompleteScenario:
             case CriteriaType::AccountObtainPetThroughBattle:
             case CriteriaType::WinPetBattle:
             case CriteriaType::PlayerObtainPetThroughBattle:
@@ -828,7 +830,6 @@ void CriteriaHandler::UpdateCriteria(CriteriaType type, uint64 miscValue1 /*= 0*
             case CriteriaType::BattlePetAchievementPointsEarned:
             case CriteriaType::ReleasedSpirit:
             case CriteriaType::AccountKnownPet:
-            case CriteriaType::CompletedLFGDungeon:
             case CriteriaType::KickInitiatorInLFGDungeon:
             case CriteriaType::KickVoterInLFGDungeon:
             case CriteriaType::KickTargetInLFGDungeon:
@@ -1200,14 +1201,17 @@ bool CriteriaHandler::IsCompletedCriteria(Criteria const* criteria, uint64 requi
         case CriteriaType::DefeatDungeonEncounterWhileElegibleForLoot:
         case CriteriaType::GetLootByType:
         case CriteriaType::LearnTradeskillSkillLine:
+        case CriteriaType::CompletedLFGDungeon:
         case CriteriaType::CompletedLFGDungeonWithStrangers:
         case CriteriaType::DeliveredKillingBlow:
         case CriteriaType::CurrencyGained:
-        case CriteriaType::PlaceGarrisonBuilding:
+        case CriteriaType::CompleteAnyScenario:
+        case CriteriaType::CompleteScenario:
         case CriteriaType::UniquePetsOwned:
         case CriteriaType::BattlePetReachLevel:
         case CriteriaType::ActivelyEarnPetLevel:
         case CriteriaType::DefeatDungeonEncounter:
+        case CriteriaType::PlaceGarrisonBuilding:
         case CriteriaType::LearnHeirloom:
         case CriteriaType::LearnAnyHeirloom:
         case CriteriaType::EarnArtifactXP:
@@ -1283,6 +1287,7 @@ bool CriteriaHandler::IsCompletedCriteria(Criteria const* criteria, uint64 requi
         case CriteriaType::AbandonAnyQuest:
         case CriteriaType::BuyTaxi:
         case CriteriaType::AcceptSummon:
+        case CriteriaType::LearnAnyTransmog:
         default:
             break;
     }
@@ -1380,6 +1385,7 @@ bool CriteriaHandler::RequirementsSatisfied(Criteria const* criteria, uint64 mis
         case CriteriaType::KillPlayer:
         case CriteriaType::TotalDamageTaken:
         case CriteriaType::TotalHealReceived:
+        case CriteriaType::CompletedLFGDungeon:
         case CriteriaType::CompletedLFGDungeonWithStrangers:
         case CriteriaType::GotHaircut:
         case CriteriaType::WinDuel:
@@ -1389,6 +1395,8 @@ bool CriteriaHandler::RequirementsSatisfied(Criteria const* criteria, uint64 mis
         case CriteriaType::BuyItemsFromVendors:
         case CriteriaType::SellItemsToVendors:
         case CriteriaType::GainLevels:
+        case CriteriaType::LearnAnyTransmog:
+        case CriteriaType::CompleteAnyScenario:
             if (!miscValue1)
                 return false;
             break;
@@ -1510,6 +1518,7 @@ bool CriteriaHandler::RequirementsSatisfied(Criteria const* criteria, uint64 mis
         case CriteriaType::UseItem:
         case CriteriaType::LootItem:
         case CriteriaType::EquipItem:
+        case CriteriaType::LearnHeirloom:
             if (!miscValue1 || uint32(criteria->Entry->Asset.ItemID )!= miscValue1)
                 return false;
             break;
@@ -1652,6 +1661,10 @@ bool CriteriaHandler::RequirementsSatisfied(Criteria const* criteria, uint64 mis
         case CriteriaType::PlayerTriggerGameEvent:
         case CriteriaType::AnyoneTriggerGameEventScenario:
             if (!miscValue1 || miscValue1 != uint32(criteria->Entry->Asset.EventID))
+                return false;
+            break;
+        case CriteriaType::CompleteScenario:
+            if (miscValue1 != uint32(criteria->Entry->Asset.ScenarioID))
                 return false;
             break;
         default:

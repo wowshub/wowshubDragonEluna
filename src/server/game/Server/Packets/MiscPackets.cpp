@@ -820,10 +820,10 @@ WorldPacket const* WorldPackets::Misc::DisplayToast::Write()
     return &_worldPacket;
 }
 
-WorldPacket const* WorldPackets::Misc::RuneforgeLegendaryCraftingOpenNpc::Write()
+WorldPacket const* WorldPackets::Misc::LegendaryCraftingOpenNpc::Write()
 {
     _worldPacket << ObjGUID;
-    _worldPacket.WriteBit(IsUpgrade);
+    _worldPacket << uint8(IsUpgrade);
 
     return &_worldPacket;
 }

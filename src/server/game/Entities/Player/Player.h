@@ -46,6 +46,7 @@ struct BarberShopStyleEntry;
 struct BattlegroundTemplate;
 struct CharTitlesEntry;
 struct ChatChannelsEntry;
+struct ChrCustomizationOptionEntry;
 struct ChrSpecializationEntry;
 struct CreatureTemplate;
 struct CurrencyTypesEntry;
@@ -2785,6 +2786,8 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         bool IsReagentBankUnlocked() const { return HasPlayerFlagEx(PLAYER_FLAGS_EX_REAGENT_BANK_UNLOCKED); }
         void UnlockReagentBank() { SetPlayerFlagEx(PLAYER_FLAGS_EX_REAGENT_BANK_UNLOCKED); }
 
+        void SendRuneforgeLegendaryCraftingOpenNpc(ObjectGuid const& guid, bool isUpgrade) const;
+
         void CreateGarrison(uint32 garrSiteId);
         void DeleteGarrison();
         Garrison* GetGarrison() const { return _garrison.get(); }
@@ -2828,6 +2831,7 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         void SetAverageItemLevelEquipped(float newItemLevel) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_playerData).ModifyValue(&UF::PlayerData::AvgItemLevel, 1), newItemLevel); }
 
         uint32 GetCustomizationChoice(uint32 chrCustomizationOptionId) const;
+        void ClearPreviousCustomizations(std::vector<ChrCustomizationOptionEntry const*> const* oldCustomizations);
         void ClearPreviousModelCustomizations(const uint32 oldModel);
         void ClearPreviousRaceGenderCustomizations(const uint8 race, const uint8 gender);
         void SetMissingCustomizations();
