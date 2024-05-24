@@ -4548,3 +4548,31 @@ TimeIsTime.HourOffset = 0.0
 
 #
 #####################################################################################################
+
+###################################################################################################
+# Advanced flying #
+#############
+#
+# Customize advanced flying rates
+#
+
+AdvFly.AirFriction = 1.5
+AdvFly.MaxVel = 65.0
+AdvFly.LiftCoef = 0.7
+AdvFly.DoubleJumpVelMod = 5.0
+AdvFly.GlideStartMinHeight = 7.5
+AdvFly.AddImpulseMaxSpeed = 100.0
+AdvFly.MinBankingRate = 140.0
+AdvFly.MaxBankingRate = 270.0
+AdvFly.MinPitchingRateDown = 180.0
+AdvFly.MaxPitchingRateDown = 360.0
+AdvFly.MinPitchingRateUp = 180.0
+AdvFly.MaxPitchingRateUp = 360.0
+AdvFly.MinTurnVelocityThreshold = 45.0
+AdvFly.MaxTurnVelocityThreshold = 65.0
+AdvFly.SurfaceFriction = 2.75
+AdvFly.OverMaxDeceleration = 7.0
+AdvFly.LaunchSpeedCoefficient = 0.4
+
+#
+###################################################################################################
