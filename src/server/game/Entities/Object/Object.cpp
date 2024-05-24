@@ -376,23 +376,23 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
             *data << float(1.0f);                                       // MovementForcesModMagnitude
         }
 
-        *data << float(2.0f);                                           // advFlyingAirFriction
-        *data << float(65.0f);                                          // advFlyingMaxVel
-        *data << float(1.0f);                                           // advFlyingLiftCoefficient
-        *data << float(3.0f);                                           // advFlyingDoubleJumpVelMod
-        *data << float(10.0f);                                          // advFlyingGlideStartMinHeight
-        *data << float(100.0f);                                         // advFlyingAddImpulseMaxSpeed
-        *data << float(90.0f);                                          // advFlyingMinBankingRate
-        *data << float(140.0f);                                         // advFlyingMaxBankingRate
-        *data << float(180.0f);                                         // advFlyingMinPitchingRateDown
-        *data << float(360.0f);                                         // advFlyingMaxPitchingRateDown
-        *data << float(90.0f);                                          // advFlyingMinPitchingRateUp
-        *data << float(270.0f);                                         // advFlyingMaxPitchingRateUp
-        *data << float(30.0f);                                          // advFlyingMinTurnVelocityThreshold
-        *data << float(80.0f);                                          // advFlyingMaxTurnVelocityThreshold
-        *data << float(2.75f);                                          // advFlyingSurfaceFriction
-        *data << float(7.0f);                                           // advFlyingOverMaxDeceleration
-        *data << float(0.4f);                                           // advFlyingLaunchSpeedCoefficient
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_AIR_FRICTION));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_MAX_VEL));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_LIFT_COEF));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_DOUBLE_JUMP_VEL_MOD));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_GLIDE_START_MIN_HEIGHT));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_ADD_IMPULSE_MAX_SPEED));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_MIN_BANKING_RATE));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_MAX_BANKING_RATE));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_MIN_PITCHING_RATE_DOWN));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_MAX_PITCHING_RATE_DOWN));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_MIN_PITCHING_RATE_UP));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_MAX_PITCHING_RATE_UP));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_MIN_TURN_VELOCITY_THRESHOLD));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_MAX_TURN_VELOCITY_THRESHOLD));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_SURFACE_FRICTION));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_OVER_MAX_DECELERATION));
+        *data << float(unit->GetAdvFlyRate(ADV_FLY_LAUNCH_SPEED_COEFFICIENT));
 
         data->WriteBit(HasSpline);
         data->FlushBits();

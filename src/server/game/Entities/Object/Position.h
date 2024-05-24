@@ -57,6 +57,8 @@ struct TC_GAME_API Position
 private:
     float m_orientation;
 
+    float m_pitch;
+
 public:
     bool operator==(Position const& a) const;
 
@@ -73,10 +75,16 @@ public:
         m_orientation = NormalizeOrientationConstexprWrapper(orientation);
     }
 
+    constexpr void SetPitch(float pitch)
+    {
+        m_pitch = std::clamp(pitch, -1.0f, 1.0f);
+    }
+
     constexpr float GetPositionX() const { return m_positionX; }
     constexpr float GetPositionY() const { return m_positionY; }
     constexpr float GetPositionZ() const { return m_positionZ; }
     constexpr float GetOrientation() const { return m_orientation; }
+    constexpr float GetPitch() const { return m_pitch; }
 
     constexpr void GetPosition(float& x, float& y) const { x = m_positionX; y = m_positionY; }
     constexpr void GetPosition(float& x, float& y, float& z) const { GetPosition(x, y); z = m_positionZ; }

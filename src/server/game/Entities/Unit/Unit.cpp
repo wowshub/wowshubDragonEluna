@@ -386,6 +386,24 @@ Unit::Unit(bool isWorldObject) :
     _isCombatDisallowed = false;
 
     _lastExtraAttackSpell = 0;
+
+    SetAdvFlyRate(ADV_FLY_AIR_FRICTION, sWorld->getFloatConfig(CONFIG_ADV_FLY_AIR_FRICTION));
+    SetAdvFlyRate(ADV_FLY_MAX_VEL, sWorld->getFloatConfig(CONFIG_ADV_FLY_MAX_VEL));
+    SetAdvFlyRate(ADV_FLY_LIFT_COEF, sWorld->getFloatConfig(CONFIG_ADV_FLY_LIFT_COEF));
+    SetAdvFlyRate(ADV_FLY_DOUBLE_JUMP_VEL_MOD, sWorld->getFloatConfig(CONFIG_ADV_FLY_DOUBLE_JUMP_VEL_MOD));
+    SetAdvFlyRate(ADV_FLY_GLIDE_START_MIN_HEIGHT, sWorld->getFloatConfig(CONFIG_ADV_FLY_GLIDE_START_MIN_HEIGHT));
+    SetAdvFlyRate(ADV_FLY_ADD_IMPULSE_MAX_SPEED, sWorld->getFloatConfig(CONFIG_ADV_FLY_ADD_IMPULSE_MAX_SPEED));
+    SetAdvFlyRate(ADV_FLY_MIN_BANKING_RATE, sWorld->getFloatConfig(CONFIG_ADV_FLY_MIN_BANKING_RATE));
+    SetAdvFlyRate(ADV_FLY_MAX_BANKING_RATE, sWorld->getFloatConfig(CONFIG_ADV_FLY_MAX_BANKING_RATE));
+    SetAdvFlyRate(ADV_FLY_MIN_PITCHING_RATE_DOWN, sWorld->getFloatConfig(CONFIG_ADV_FLY_MIN_PITCHING_RATE_DOWN));
+    SetAdvFlyRate(ADV_FLY_MAX_PITCHING_RATE_DOWN, sWorld->getFloatConfig(CONFIG_ADV_FLY_MAX_PITCHING_RATE_DOWN));
+    SetAdvFlyRate(ADV_FLY_MIN_PITCHING_RATE_UP, sWorld->getFloatConfig(CONFIG_ADV_FLY_MIN_PITCHING_RATE_UP));
+    SetAdvFlyRate(ADV_FLY_MAX_PITCHING_RATE_UP, sWorld->getFloatConfig(CONFIG_ADV_FLY_MAX_PITCHING_RATE_UP));
+    SetAdvFlyRate(ADV_FLY_MIN_TURN_VELOCITY_THRESHOLD, sWorld->getFloatConfig(CONFIG_ADV_FLY_MIN_TURN_VELOCITY_THRESHOLD));
+    SetAdvFlyRate(ADV_FLY_MAX_TURN_VELOCITY_THRESHOLD, sWorld->getFloatConfig(CONFIG_ADV_FLY_MAX_TURN_VELOCITY_THRESHOLD));
+    SetAdvFlyRate(ADV_FLY_SURFACE_FRICTION, sWorld->getFloatConfig(CONFIG_ADV_FLY_SURFACE_FRICTION));
+    SetAdvFlyRate(ADV_FLY_OVER_MAX_DECELERATION, sWorld->getFloatConfig(CONFIG_ADV_FLY_OVER_MAX_DECELERATION));
+    SetAdvFlyRate(ADV_FLY_LAUNCH_SPEED_COEFFICIENT, sWorld->getFloatConfig(CONFIG_ADV_FLY_LAUNCH_SPEED_COEFFICIENT));
 }
 
 ////////////////////////////////////////////////////////////
@@ -8145,8 +8163,12 @@ void Unit::UpdateMountCapability()
         if (!aurEff->GetAmount())
             aurEff->GetBase()->Remove();
         else if (MountCapabilityEntry const* capability = sMountCapabilityStore.LookupEntry(aurEff->GetAmount())) // aura may get removed by interrupt flag, reapply
+        {
             if (!HasAura(capability->ModSpellAuraID))
                 CastSpell(this, capability->ModSpellAuraID, aurEff);
+
+            SetFlightCapabilityID(capability->FlightCapabilityID);
+        }    
     }
 }
 
@@ -13974,4 +13996,44 @@ Unit::AuraApplicationVector Unit::GetTargetAuraApplications(uint32 spellId) cons
     }
 
     return aurApps;
+}
+
+float Unit::GetAdvFlyingVelocity() const
+{
+    auto advFlying = m_movementInfo.advFlying;
+    if (!advFlying)
+        return .0f;
+
+    return std::max((*advFlying).forwardVelocity, std::abs((*advFlying).upVelocity));
+}
+
+bool Unit::SetCanAdvFly(bool enable)
+{
+    if (enable == HasExtraUnitMovementFlag2(MOVEMENTFLAG3_CAN_ADV_FLY))
+        return false;
+
+    if (enable)
+        AddExtraUnitMovementFlag2(MOVEMENTFLAG3_CAN_ADV_FLY);
+    else
+        RemoveExtraUnitMovementFlag2(MOVEMENTFLAG3_CAN_ADV_FLY);
+
+    static OpcodeServer const advFlyOpcodeTable[2] =
+    {
+        { SMSG_MOVE_UNSET_CAN_ADV_FLY },
+        { SMSG_MOVE_SET_CAN_ADV_FLY   }
+    };
+
+    if (Player* playerMover = Unit::ToPlayer(GetUnitBeingMoved()))
+    {
+        WorldPackets::Movement::MoveSetFlag packet(advFlyOpcodeTable[enable]);
+        packet.MoverGUID = GetGUID();
+        packet.SequenceIndex = m_movementCounter++;
+        playerMover->SendDirectMessage(packet.Write());
+
+        WorldPackets::Movement::MoveUpdate moveUpdate;
+        moveUpdate.Status = &m_movementInfo;
+        SendMessageToSet(moveUpdate.Write(), playerMover);
+    }
+
+    return true;
 }

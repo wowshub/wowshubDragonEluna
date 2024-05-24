@@ -828,3 +828,15 @@ WorldPacket const* WorldPackets::Misc::LegendaryCraftingOpenNpc::Write()
     return &_worldPacket;
 }
 
+void WorldPackets::Misc::OverrideScreenFlash::Read()
+{
+    _worldPacket >> BlackScreenOrRedScreen;
+}
+
+WorldPacket const* WorldPackets::Misc::PlayerChoiceClear::Write()
+{
+    _worldPacket << int32(ChoiceID);
+    _worldPacket << Status;
+
+    return &_worldPacket;
+}

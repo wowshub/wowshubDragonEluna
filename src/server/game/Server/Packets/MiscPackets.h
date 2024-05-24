@@ -1020,6 +1020,35 @@ namespace WorldPackets
             ObjectGuid ObjGUID;
             bool IsUpgrade = false;
         };
+
+        class PerksProgramReqestPendingRewards final : public ClientPacket
+        {
+        public:
+            PerksProgramReqestPendingRewards(WorldPacket&& packet) : ClientPacket(CMSG_PERKS_PROGRAM_REQUEST_PENDING_REWARDS, std::move(packet)) { }
+
+            void Read() override {}
+        };
+
+        class OverrideScreenFlash final : public ClientPacket
+        {
+        public:
+            OverrideScreenFlash(WorldPacket&& packet) : ClientPacket(CMSG_OVERRIDE_SCREEN_FLASH, std::move(packet)) { }
+
+            void Read() override;
+
+            bool BlackScreenOrRedScreen;
+        };
+
+        class PlayerChoiceClear final : public ServerPacket
+        {
+        public:
+            PlayerChoiceClear() :ServerPacket(SMSG_PLAYER_CHOICE_CLEAR) { }
+
+            WorldPacket const* Write() override;
+
+            int32 ChoiceID;
+            bool Status;
+        };
     }
 }
 
