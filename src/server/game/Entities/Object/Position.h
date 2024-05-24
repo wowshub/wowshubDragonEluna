@@ -26,8 +26,8 @@ class ByteBuffer;
 
 struct TC_GAME_API Position
 {
-    constexpr Position(float x = 0, float y = 0, float z = 0, float o = 0)
-        : m_positionX(x), m_positionY(y), m_positionZ(z), m_orientation(NormalizeOrientationConstexprWrapper(o)) { }
+    constexpr Position(float x = 0, float y = 0, float z = 0, float o = 0, float p = 0)
+        : m_positionX(x), m_positionY(y), m_positionZ(z), m_orientation(NormalizeOrientationConstexprWrapper(o)), m_pitch(p) { }
 
     // streamer tags
     struct XY;
