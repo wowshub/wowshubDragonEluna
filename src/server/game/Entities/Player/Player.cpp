@@ -21685,8 +21685,6 @@ Pet* Player::GetPet() const
 
 void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
 {
-    if (!pet)
-        pet = GetPet();
 
     if (pet)
     {

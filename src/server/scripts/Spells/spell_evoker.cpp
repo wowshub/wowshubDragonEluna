@@ -60,8 +60,8 @@ enum EvokerSpells
     SPELL_VISAGE                                = 372014,
     SPELL_ALTERED_FORM                          = 97709,
     SPELL_HATRED                                = 118328,
-    SPELL_SKYWARD_ASCENT                        = 367033,
-    SPELL_SURGE_FORWARD                         = 369541,
+    SPELL_SKYWARD_ASCENT                        = 376744,
+    SPELL_SURGE_FORWARD                         = 376743,
 };
 
 enum EvokerSpellLabels

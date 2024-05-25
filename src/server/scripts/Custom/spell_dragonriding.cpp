@@ -44,6 +44,14 @@ class spell_dragonriding : public AuraScript
 {
     PrepareAuraScript(spell_dragonriding);
 
+    void OnApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            caster->AddAura(423624, caster);
+        }
+    }
+
     void OnPeriodic(AuraEffect const* /*aurEff*/)
     {
         float advFlyingVelocity = GetTarget()->GetAdvFlyingVelocity();
@@ -58,18 +66,30 @@ class spell_dragonriding : public AuraScript
             {
                 if (!GetTarget()->HasAura(SPELL_THRILL_OF_THE_SKIES))
                     GetTarget()->CastSpell(GetTarget(), SPELL_THRILL_OF_THE_SKIES, TRIGGERED_FULL_MASK);
+                    
             }
             else
                 GetTarget()->RemoveAurasDueToSpell(SPELL_THRILL_OF_THE_SKIES);
+
         }
         else
             GetTarget()->RemoveAurasDueToSpell(SPELL_THRILL_OF_THE_SKIES);
 
     }
 
+    void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            caster->RemoveAura(423624);
+        }
+    }
+
     void Register() override
     {
         OnEffectPeriodic += AuraEffectPeriodicFn(spell_dragonriding::OnPeriodic, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+        OnEffectApply += AuraEffectApplyFn(spell_dragonriding::OnApply, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        AfterEffectRemove += AuraEffectRemoveFn(spell_dragonriding::OnRemove, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
