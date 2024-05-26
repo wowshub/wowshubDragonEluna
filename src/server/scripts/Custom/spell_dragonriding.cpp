@@ -115,6 +115,23 @@ class spell_dragonrider_energy : public AuraScript
                 aurEff->SetAmount(newAmount);
                 aurEff->GetBase()->SetNeedClientUpdateForTargets();
             }
+
+            int newMaxPower = 3;
+
+            if (caster->HasAura(377920) && !caster->HasAura(377921) && !caster->HasAura(377922))
+            {
+                newMaxPower = 4;
+            }
+            else if (caster->HasAura(377921) && caster->HasAura(377920) && !caster->HasAura(377922))
+            {
+                newMaxPower = 5;
+            }
+            else if (caster->HasAura(377922) && caster->HasAura(377921) && caster->HasAura(377920))
+            {
+                newMaxPower = 6;
+            }
+
+            caster->SetMaxPower(POWER_ALTERNATE_MOUNT, newMaxPower);
         }
     }
 
