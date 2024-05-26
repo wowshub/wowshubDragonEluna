@@ -838,6 +838,7 @@ struct WorldSafeLocsEntry
 {
     uint32 ID = 0;
     WorldLocation Loc;
+    Optional<ObjectGuid::LowType> TransportSpawnId = {};
 };
 
 struct GraveyardData
