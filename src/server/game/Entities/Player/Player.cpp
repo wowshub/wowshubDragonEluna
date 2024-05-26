@@ -21685,8 +21685,6 @@ Pet* Player::GetPet() const
 
 void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
 {
-    if (!pet)
-        pet = GetPet();
 
     if (pet)
     {
@@ -30805,4 +30803,42 @@ bool Player::TeleportToDigsiteInMap(uint32 mapId)
 
     return true;
 
+}
+
+void Player::InitAdvancedFly()
+{
+    std::vector<std::tuple<OpcodeServer, float, Optional<float>>> advFlyValues = {
+        { SMSG_MOVE_SET_ADV_FLYING_AIR_FRICTION,                GetAdvFlyRate(ADV_FLY_AIR_FRICTION),                {}                                                  },
+        { SMSG_MOVE_SET_ADV_FLYING_MAX_VEL,                     GetAdvFlyRate(ADV_FLY_MAX_VEL),                     {}                                                  },
+        { SMSG_MOVE_SET_ADV_FLYING_LIFT_COEFFICIENT,            GetAdvFlyRate(ADV_FLY_LIFT_COEF),                   {}                                                  },
+        { SMSG_MOVE_SET_ADV_FLYING_DOUBLE_JUMP_VEL_MOD,         GetAdvFlyRate(ADV_FLY_DOUBLE_JUMP_VEL_MOD),         {}                                                  },
+        { SMSG_MOVE_SET_ADV_FLYING_GLIDE_START_MIN_HEIGHT,      GetAdvFlyRate(ADV_FLY_GLIDE_START_MIN_HEIGHT),      {}                                                  },
+        { SMSG_MOVE_SET_ADV_FLYING_ADD_IMPULSE_MAX_SPEED,       GetAdvFlyRate(ADV_FLY_ADD_IMPULSE_MAX_SPEED),       {}                                                  },
+        { SMSG_MOVE_SET_ADV_FLYING_BANKING_RATE,                GetAdvFlyRate(ADV_FLY_MIN_BANKING_RATE),            GetAdvFlyRate(ADV_FLY_MAX_BANKING_RATE)             },
+        { SMSG_MOVE_SET_ADV_FLYING_PITCHING_RATE_DOWN,          GetAdvFlyRate(ADV_FLY_MIN_PITCHING_RATE_DOWN),      GetAdvFlyRate(ADV_FLY_MAX_PITCHING_RATE_DOWN)       },
+        { SMSG_MOVE_SET_ADV_FLYING_PITCHING_RATE_UP,            GetAdvFlyRate(ADV_FLY_MIN_PITCHING_RATE_UP),        GetAdvFlyRate(ADV_FLY_MAX_PITCHING_RATE_UP)         },
+        { SMSG_MOVE_SET_ADV_FLYING_TURN_VELOCITY_THRESHOLD,     GetAdvFlyRate(ADV_FLY_MIN_TURN_VELOCITY_THRESHOLD), GetAdvFlyRate(ADV_FLY_MAX_TURN_VELOCITY_THRESHOLD)  },
+        { SMSG_MOVE_SET_ADV_FLYING_SURFACE_FRICTION,            GetAdvFlyRate(ADV_FLY_SURFACE_FRICTION),            {}                                                  },
+        { SMSG_MOVE_SET_ADV_FLYING_OVER_MAX_DECELERATION,       GetAdvFlyRate(ADV_FLY_OVER_MAX_DECELERATION),       {}                                                  },
+        { SMSG_MOVE_SET_ADV_FLYING_LAUNCH_SPEED_COEFFICIENT,    GetAdvFlyRate(ADV_FLY_LAUNCH_SPEED_COEFFICIENT),    {}                                                  },
+    };
+
+    for (auto const& tuple : advFlyValues) {
+        auto advFlyingPacket = WorldPackets::Movement::SetAdvFlyingSpeed(std::get<0>(tuple));
+        advFlyingPacket.SequenceIndex = m_movementCounter++;
+        advFlyingPacket.speed = std::get<1>(tuple);
+        advFlyingPacket.maxSpeed = std::get<2>(tuple);
+        SendDirectMessage(advFlyingPacket.Write());
+    }
+
+    CastSpell(this, 372771, TRIGGERED_FULL_MASK);
+}
+
+void Player::AddMoveImpulse(Position direction)
+{
+    auto addImpulse = WorldPackets::Movement::MoveAddImpulse();
+    addImpulse.MoverGUID = GetGUID();
+    addImpulse.SequenceIndex = m_movementCounter++;
+    addImpulse.Direction = direction;
+    SendDirectMessage(addImpulse.Write());
 }

@@ -338,6 +338,7 @@ class TC_GAME_API AuraEffect
         void HandleModRequiredMountCapabilityFlags(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleSuppressItemPassiveEffectBySpellLabel(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleForceBreathBar(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAdvancedFlying(AuraApplication const* aurApp, uint8 mode, bool apply) const;
 
         void HandleAuraTrackResources(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const;
         void HandleCancelEquipmentStats(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const;
