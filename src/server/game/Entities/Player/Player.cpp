@@ -303,9 +303,6 @@ Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this)
 
     // Player summoning
     m_summon_expire = 0;
-    m_summon_instanceId = 0;
-
-    m_recall_instanceId = 0;
 
     m_unitMovedByMe = this;
     m_playerMovingMe = this;
@@ -16623,6 +16620,11 @@ void Player::ItemAddedQuestCheck(uint32 entry, uint32 count, Optional<bool> boun
 
     if (updatedObjectives.size() == 1 && updatedObjectives[0]->Flags2 & QUEST_OBJECTIVE_FLAG_2_QUEST_BOUND_ITEM)
     {
+        // Quest source items should ignore QUEST_OBJECTIVE_FLAG_2_QUEST_BOUND_ITEM
+        if (Quest const* quest = sObjectMgr->GetQuestTemplate(updatedObjectives[0]->QuestID))
+            if (quest->GetSrcItemId() == entry)
+                return;
+
         if (hadBoundItemObjective)
             *hadBoundItemObjective = updatedObjectives.size() == 1 && updatedObjectives[0]->Flags2 & QUEST_OBJECTIVE_FLAG_2_QUEST_BOUND_ITEM;
 
@@ -25554,8 +25556,8 @@ void Player::SendSummonRequestFrom(Unit* summoner)
         return;
 
     m_summon_expire = GameTime::GetGameTime() + MAX_PLAYER_SUMMON_DELAY;
-    m_summon_location.WorldRelocate(*summoner);
-    m_summon_instanceId = summoner->GetInstanceId();
+    m_summon_location.Location.WorldRelocate(*summoner);
+    m_summon_location.InstanceId = summoner->GetInstanceId();
 
     WorldPackets::Movement::SummonRequest summonRequest;
     summonRequest.SummonerGUID = summoner->GetGUID();
@@ -25606,7 +25608,7 @@ void Player::SummonIfPossible(bool agree)
     UpdateCriteria(CriteriaType::AcceptSummon, 1);
     RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags::Summon);
 
-    TeleportTo(m_summon_location, TELE_TO_NONE, m_summon_instanceId);
+    TeleportTo(m_summon_location, TELE_TO_NONE);
 
     broadcastSummonResponse(true);
 }
