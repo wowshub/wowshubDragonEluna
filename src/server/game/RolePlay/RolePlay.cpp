@@ -353,7 +353,9 @@ void Roleplay::CreatureMove(Creature* creature, float x, float y, float z, float
 
     WorldDatabase.Execute(stmt);
 
-    creature->SendTeleportPacket(creature->GetPosition());
+    TeleportLocation target{ .Location = { creature->GetMapId(), creature->GetPosition() } };
+
+    creature->SendTeleportPacket(target);
 }
 
 void Roleplay::CreatureTurn(Creature* creature, float o)
