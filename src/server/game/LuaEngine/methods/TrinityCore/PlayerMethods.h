@@ -2977,9 +2977,24 @@ namespace LuaPlayer
      */
     int ModifyMoney(Eluna* E, Player* player)
     {
-        int32 amt = E->CHECKVAL<int32>(2);
+        uint32 amt = E->CHECKVAL<uint32>(2);
 
         player->ModifyMoney(amt);
+        return 1;
+    }
+
+    /**
+     * Adds or subtracts from the [Player]s money in copper
+     *
+     * @param uint32 currencyId
+     * @param uint32 amount : negative to remove, positive to add
+     */
+    int ModifyCurrency(Eluna* E, Player* player)
+    {
+        uint32 currency = E->CHECKVAL<uint32>(2);
+        uint32 amt = E->CHECKVAL<uint32>(3);
+
+        player->ModifyCurrency(currency, amt, CurrencyGainSource::Cheat, CurrencyDestroyReason::Cheat);
         return 1;
     }
 
@@ -3598,6 +3613,7 @@ namespace LuaPlayer
         { "SendPacket", &LuaPlayer::SendPacket },
         { "SendAddonMessage", &LuaPlayer::SendAddonMessage },
         { "ModifyMoney", &LuaPlayer::ModifyMoney },
+        { "ModifyCurrency", &LuaPlayer::ModifyCurrency },
         { "LearnSpell", &LuaPlayer::LearnSpell },
         { "LearnTalent", &LuaPlayer::LearnTalent },
         { "RemoveArenaSpellCooldowns", &LuaPlayer::RemoveArenaSpellCooldowns },
