@@ -106,13 +106,6 @@
 #include "WorldSession.h"
 #include "WorldSocket.h"
 #include "WorldStateMgr.h"
-#ifdef ELUNA
-#include "LuaEngine.h"
-#include "ElunaLoader.h"
-#include "ElunaConfig.h"
-#endif
-
-#include "RolePlay.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -193,12 +186,6 @@ World::World()
 /// World destructor
 World::~World()
 {
-#ifdef ELUNA
-    // Delete world Eluna state
-    delete eluna;
-    eluna = nullptr;
-#endif
-
     ///- Empty the kicked session set
     while (!m_sessions.empty())
     {
@@ -1737,24 +1724,8 @@ void World::LoadConfigSettings(bool reload)
     // Enable AE loot
     m_bool_configs[CONFIG_ENABLE_AE_LOOT] = sConfigMgr->GetBoolDefault("Loot.EnableAELoot", true);
 
-    // Advanced flying
-    m_float_configs[CONFIG_ADV_FLY_AIR_FRICTION] = sConfigMgr->GetFloatDefault("AdvFly.AirFriction", 1.5f);
-    m_float_configs[CONFIG_ADV_FLY_MAX_VEL] = sConfigMgr->GetFloatDefault("AdvFly.MaxVel", 65.0f);
-    m_float_configs[CONFIG_ADV_FLY_LIFT_COEF] = sConfigMgr->GetFloatDefault("AdvFly.LiftCoef", 0.7f);
-    m_float_configs[CONFIG_ADV_FLY_DOUBLE_JUMP_VEL_MOD] = sConfigMgr->GetFloatDefault("AdvFly.DoubleJumpVelMod", 5.0f);
-    m_float_configs[CONFIG_ADV_FLY_GLIDE_START_MIN_HEIGHT] = sConfigMgr->GetFloatDefault("AdvFly.GlideStartMinHeight", 7.5f);
-    m_float_configs[CONFIG_ADV_FLY_ADD_IMPULSE_MAX_SPEED] = sConfigMgr->GetFloatDefault("AdvFly.AddImpulseMaxSpeed", 100.0f);
-    m_float_configs[CONFIG_ADV_FLY_MIN_BANKING_RATE] = sConfigMgr->GetFloatDefault("AdvFly.MinBankingRate", 140.0f);
-    m_float_configs[CONFIG_ADV_FLY_MAX_BANKING_RATE] = sConfigMgr->GetFloatDefault("AdvFly.MaxBankingRate", 270.0f);
-    m_float_configs[CONFIG_ADV_FLY_MIN_PITCHING_RATE_DOWN] = sConfigMgr->GetFloatDefault("AdvFly.MinPitchingRateDown", 180.0f);
-    m_float_configs[CONFIG_ADV_FLY_MAX_PITCHING_RATE_DOWN] = sConfigMgr->GetFloatDefault("AdvFly.MaxPitchingRateDown", 360.0f);
-    m_float_configs[CONFIG_ADV_FLY_MIN_PITCHING_RATE_UP] = sConfigMgr->GetFloatDefault("AdvFly.MinPitchingRateUp", 180.0f);
-    m_float_configs[CONFIG_ADV_FLY_MAX_PITCHING_RATE_UP] = sConfigMgr->GetFloatDefault("AdvFly.MaxPitchingRateUp", 360.0f);
-    m_float_configs[CONFIG_ADV_FLY_MIN_TURN_VELOCITY_THRESHOLD] = sConfigMgr->GetFloatDefault("AdvFly.MinTurnVelocityThreshold", 45.0f);
-    m_float_configs[CONFIG_ADV_FLY_MAX_TURN_VELOCITY_THRESHOLD] = sConfigMgr->GetFloatDefault("AdvFly.MaxTurnVelocityThreshold", 65.0f);
-    m_float_configs[CONFIG_ADV_FLY_SURFACE_FRICTION] = sConfigMgr->GetFloatDefault("AdvFly.SurfaceFriction", 2.75f);
-    m_float_configs[CONFIG_ADV_FLY_OVER_MAX_DECELERATION] = sConfigMgr->GetFloatDefault("AdvFly.OverMaxDeceleration", 7.0f);
-    m_float_configs[CONFIG_ADV_FLY_LAUNCH_SPEED_COEFFICIENT] = sConfigMgr->GetFloatDefault("AdvFly.LaunchSpeedCoefficient", 0.4f);
+    // Loading of Locales
+    m_bool_configs[CONFIG_LOAD_LOCALES] = sConfigMgr->GetBoolDefault("Load.Locales", true);
 
     // call ScriptMgr if we're reloading the configuration
     if (reload)
@@ -1803,19 +1774,6 @@ bool World::SetInitialWorldSettings()
         TC_LOG_FATAL("server.loading", "Unable to load map and vmap data for starting zones - server shutting down!");
         return false;
     }
-
-#ifdef ELUNA
-    ///- Initialize Lua Engine
-    TC_LOG_INFO("server.loading", "Loading Eluna config...");
-    sElunaConfig->Initialize();
-
-    ///- Initialize Lua Engine
-    if (sElunaConfig->IsElunaEnabled())
-    {
-        TC_LOG_INFO("server.loading", "Loading Lua scripts...");
-        sElunaLoader->LoadScripts();
-    }
-#endif
 
     ///- Initialize pool manager
     sPoolMgr->Initialize();
@@ -1904,9 +1862,6 @@ bool World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Initializing PlayerDump tables...");
     PlayerDump::InitializeTables();
 
-    TC_LOG_INFO("server.loading", "Loading Roleplay tables...");
-    sRoleplay->LoadAllTables();
-
     TC_LOG_INFO("server.loading", "Loading SpellInfo store...");
     sSpellMgr->LoadSpellInfoStore();
 
@@ -1953,15 +1908,18 @@ bool World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Localization strings...");
     uint32 oldMSTime = getMSTime();
-    sObjectMgr->LoadCreatureLocales();
-    sObjectMgr->LoadGameObjectLocales();
-    sObjectMgr->LoadQuestTemplateLocale();
-    sObjectMgr->LoadQuestOfferRewardLocale();
-    sObjectMgr->LoadQuestRequestItemsLocale();
-    sObjectMgr->LoadQuestObjectivesLocale();
-    sObjectMgr->LoadPageTextLocales();
-    sObjectMgr->LoadGossipMenuItemsLocales();
-    sObjectMgr->LoadPointOfInterestLocales();
+    if (m_bool_configs[CONFIG_LOAD_LOCALES])
+    {
+        sObjectMgr->LoadCreatureLocales();
+        sObjectMgr->LoadGameObjectLocales();
+        sObjectMgr->LoadQuestTemplateLocale();
+        sObjectMgr->LoadQuestOfferRewardLocale();
+        sObjectMgr->LoadQuestRequestItemsLocale();
+        sObjectMgr->LoadQuestObjectivesLocale();
+        sObjectMgr->LoadPageTextLocales();
+        sObjectMgr->LoadGossipMenuItemsLocales();
+        sObjectMgr->LoadPointOfInterestLocales();
+    }
 
     sObjectMgr->SetDBCLocaleIndex(GetDefaultDbcLocale());        // Get once for all the locale index of DBC language (console/broadcasts)
     TC_LOG_INFO("server.loading", ">> Localization strings loaded in {} ms", GetMSTimeDiffToNow(oldMSTime));
@@ -2041,9 +1999,6 @@ bool World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Creature Model Based Info Data...");
     sObjectMgr->LoadCreatureModelInfo();
-
-    TC_LOG_INFO("server.loading", "Loading Creature template outfits...");     // must be before LoadCreatureTemplates
-    sObjectMgr->LoadCreatureOutfits();
 
     TC_LOG_INFO("server.loading", "Loading Creature templates...");
     sObjectMgr->LoadCreatureTemplates();
@@ -2140,7 +2095,9 @@ bool World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Quest Greetings...");
     sObjectMgr->LoadQuestGreetings();
-    sObjectMgr->LoadQuestGreetingLocales();
+
+    if (m_bool_configs[CONFIG_LOAD_LOCALES])
+        sObjectMgr->LoadQuestGreetingLocales();
 
     TC_LOG_INFO("server.loading", "Loading Objects Pooling Data...");
     sPoolMgr->LoadFromDB();
@@ -2234,9 +2191,11 @@ bool World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Player Choices...");
     sObjectMgr->LoadPlayerChoices();
 
-    TC_LOG_INFO("server.loading", "Loading Player Choices Locales...");
-    sObjectMgr->LoadPlayerChoicesLocale();
-
+    if (m_bool_configs[CONFIG_LOAD_LOCALES])
+    {
+        TC_LOG_INFO("server.loading", "Loading Player Choices Locales...");
+        sObjectMgr->LoadPlayerChoicesLocale();
+    }
     TC_LOG_INFO("server.loading", "Loading Jump Charge Params...");
     sObjectMgr->LoadJumpChargeParams();
 
@@ -2281,8 +2240,12 @@ bool World::SetInitialWorldSettings()
     sAchievementMgr->LoadAchievementScripts();
     TC_LOG_INFO("server.loading", "Loading Achievement Rewards...");
     sAchievementMgr->LoadRewards();
-    TC_LOG_INFO("server.loading", "Loading Achievement Reward Locales...");
-    sAchievementMgr->LoadRewardLocales();
+
+    if (m_bool_configs[CONFIG_LOAD_LOCALES])
+    {
+        TC_LOG_INFO("server.loading", "Loading Achievement Reward Locales...");
+        sAchievementMgr->LoadRewardLocales();
+    }
     TC_LOG_INFO("server.loading", "Loading Completed Achievements...");
     sAchievementMgr->LoadCompletedAchievements();
 
@@ -2421,16 +2384,11 @@ bool World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Creature Texts...");
     sCreatureTextMgr->LoadCreatureTexts();
 
-    TC_LOG_INFO("server.loading", "Loading Creature Text Locales...");
-    sCreatureTextMgr->LoadCreatureTextLocales();
-
-#ifdef ELUNA
-    if (sElunaConfig->IsElunaEnabled())
+    if (m_bool_configs[CONFIG_LOAD_LOCALES])
     {
-        TC_LOG_INFO("server.loading", "Starting Eluna world state...");
-        eluna = new Eluna(nullptr, sElunaConfig->IsElunaCompatibilityMode());
+        TC_LOG_INFO("server.loading", "Loading Creature Text Locales...");
+        sCreatureTextMgr->LoadCreatureTextLocales();
     }
-#endif
 
     TC_LOG_INFO("server.loading", "Loading creature StaticFlags overrides...");
     sObjectMgr->LoadCreatureStaticFlagsOverride(); // must be after LoadCreatures
@@ -2571,11 +2529,6 @@ bool World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Calculate guild limitation(s) reset time...");
     InitGuildResetTime();
-
-#ifdef ELUNA
-    if (GetEluna())
-        GetEluna()->OnConfigLoad(false); // Must be done after Eluna is initialized and scripts have run.
-#endif
 
     TC_LOG_INFO("server.loading", "Calculate next currency reset time...");
     InitCurrencyResetTime();
@@ -2965,23 +2918,6 @@ void World::ForceGameEventUpdate()
     m_timers[WUPDATE_EVENTS].Reset();
 }
 
-void World::SendMapMessage(uint32 mapid, WorldPacket const* packet, WorldSession* self, uint32 team)
-{
-    SessionMap::const_iterator itr;
-    for (itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
-    {
-        if (itr->second &&
-            itr->second->GetPlayer() &&
-            itr->second->GetPlayer()->IsInWorld() &&
-            itr->second->GetPlayer()->GetMapId() == mapid &&
-            itr->second != self &&
-            (team == 0 || itr->second->GetPlayer()->GetTeam() == team))
-        {
-            itr->second->SendPacket(packet);
-        }
-    }
-}
-
 /// Send a packet to all players (except self if mentioned)
 void World::SendGlobalMessage(WorldPacket const* packet, WorldSession* self, Optional<Team> team)
 {
@@ -3158,28 +3094,6 @@ bool World::SendZoneMessage(uint32 zone, WorldPacket const* packet, WorldSession
             itr->second->GetPlayer()->GetZoneId() == zone &&
             itr->second != self &&
             (!team || itr->second->GetPlayer()->GetTeam() == team))
-        {
-            itr->second->SendPacket(packet);
-            foundPlayerToSend = true;
-        }
-    }
-
-    return foundPlayerToSend;
-}
-
-bool World::SendAreaIDMessage(uint32 areaID, WorldPacket const* packet, WorldSession* self, uint32 team)
-{
-    bool foundPlayerToSend = false;
-    SessionMap::const_iterator itr;
-
-    for (itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
-    {
-        if (itr->second &&
-            itr->second->GetPlayer() &&
-            itr->second->GetPlayer()->IsInWorld() &&
-            itr->second->GetPlayer()->GetAreaId() == areaID &&
-            itr->second != self &&
-            (team == 0 || itr->second->GetPlayer()->GetTeam() == team))
         {
             itr->second->SendPacket(packet);
             foundPlayerToSend = true;
