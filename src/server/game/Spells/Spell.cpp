@@ -3532,7 +3532,9 @@ SpellCastResult Spell::prepare(SpellCastTargets const& targets, AuraEffect const
     // Prepare data for triggers
     prepareDataForTriggerSystem();
 
-    m_casttime = CallScriptCalcCastTimeHandlers(m_spellInfo->CalcCastTime(this));
+    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_TIME))
+        m_casttime = m_spellInfo->CalcCastTime(this);
+    m_casttime = CallScriptCalcCastTimeHandlers(m_casttime);
 
     SpellCastResult movementResult = SPELL_CAST_OK;
     if (m_caster->IsUnit() && m_caster->ToUnit()->isMoving())
@@ -7243,7 +7245,7 @@ SpellCastResult Spell::CheckArenaAndRatedBattlegroundCastRules()
 
     // check USABLE attributes
     // USABLE takes precedence over NOT_USABLE
-    if (isRatedBattleground && m_spellInfo->HasAttribute(SPELL_ATTR9_USABLE_IN_RATED_BATTLEGROUNDS))
+    if (isRatedBattleground && m_spellInfo->HasAttribute(SPELL_ATTR9_IGNORE_DEFAULT_RATED_BATTLEGROUND_RESTRICTIONS))
         return SPELL_CAST_OK;
 
     if (isArena && m_spellInfo->HasAttribute(SPELL_ATTR4_IGNORE_DEFAULT_ARENA_RESTRICTIONS))
