@@ -3595,12 +3595,15 @@ struct LightLoadInfo
 
 struct LightParamsLoadInfo
 {
-    static constexpr DB2FieldMeta Fields[14] =
+    static constexpr DB2FieldMeta Fields[21] =
     {
+        { false, FT_INT, "ID" },
         { false, FT_FLOAT, "OverrideCelestialSphere1" },
         { false, FT_FLOAT, "OverrideCelestialSphere2" },
         { false, FT_FLOAT, "OverrideCelestialSphere3" },
-        { false, FT_INT, "ID" },
+        { false, FT_FLOAT, "Field_11_0_0_54210_0011" },
+        { false, FT_FLOAT, "Field_11_0_0_54210_0012" },
+        { false, FT_FLOAT, "Field_11_0_0_54210_0013" },
         { false, FT_BYTE, "HighlightSky" },
         { false, FT_SHORT, "LightSkyboxID" },
         { false, FT_BYTE, "CloudTypeID" },
@@ -3611,9 +3614,13 @@ struct LightParamsLoadInfo
         { false, FT_FLOAT, "OceanDeepAlpha" },
         { true, FT_INT, "Flags" },
         { true, FT_INT, "SsaoSettingsID" },
+        { false, FT_FLOAT, "Field_11_0_0_54210_012" },
+        { false, FT_FLOAT, "Field_11_0_0_54210_013" },
+        { false, FT_FLOAT, "Field_11_0_0_54210_014" },
+        { false, FT_FLOAT, "Field_11_0_0_54210_015" },
     };
 
-    static constexpr DB2LoadInfo Instance{ Fields, 14, &LightParamsMeta::Instance, HOTFIX_SEL_LIGHT_PARAMS };
+    static constexpr DB2LoadInfo Instance{ Fields, 21, &LightParamsMeta::Instance, HOTFIX_SEL_LIGHT_PARAMS };
 };
 
 struct LightSkyboxLoadInfo

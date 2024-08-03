@@ -1133,9 +1133,10 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_LIGHT_SKYBOX, "SELECT MAX(ID) + 1 FROM light_skybox", CONNECTION_SYNCH);
 
     // LightParams.db2
-    PrepareStatement(HOTFIX_SEL_LIGHT_PARAMS, "SELECT OverrideCelestialSphere1, OverrideCelestialSphere2, OverrideCelestialSphere3, ID, HighlightSky, "
-        "LightSkyboxID, CloudTypeID, Glow, WaterShallowAlpha, WaterDeepAlpha, OceanShallowAlpha, OceanDeepAlpha, Flags, SsaoSettingsID"
-        " FROM light_params WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PrepareStatement(HOTFIX_SEL_LIGHT_PARAMS, "SELECT ID, OverrideCelestialSphere1, OverrideCelestialSphere2, OverrideCelestialSphere3, "
+        "Field_11_0_0_54210_0011, Field_11_0_0_54210_0012, Field_11_0_0_54210_0013, HighlightSky, LightSkyboxID, CloudTypeID, Glow, "
+        "WaterShallowAlpha, WaterDeepAlpha, OceanShallowAlpha, OceanDeepAlpha, Flags, SsaoSettingsID, Field_11_0_0_54210_012, Field_11_0_0_54210_013, "
+        "Field_11_0_0_54210_014, Field_11_0_0_54210_015 FROM light_params WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_LIGHT_PARAMS, "SELECT MAX(ID) + 1 FROM light_params", CONNECTION_SYNCH);
 
     // LiquidType.db2

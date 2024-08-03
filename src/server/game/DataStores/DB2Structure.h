@@ -4954,8 +4954,9 @@ struct LightSkyboxEntry
 
 struct LightParamsEntry
 {
-    float OverrideCelestialSphere[3];
     uint32 ID;
+    float OverrideCelestialSphere[3];
+    float Field_11_0_0_54210_001[3];
     uint8 HighlightSky;
     uint16 LightSkyboxID;
     uint8 CloudTypeID;
@@ -4966,6 +4967,10 @@ struct LightParamsEntry
     float OceanDeepAlpha;
     int32 Flags;
     int32 SsaoSettingsID;
+    float Field_11_0_0_54210_012;
+    float Field_11_0_0_54210_013;
+    float Field_11_0_0_54210_014;
+    float Field_11_0_0_54210_015;
 };
 
 #pragma pack(pop)
