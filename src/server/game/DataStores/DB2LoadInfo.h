@@ -4971,16 +4971,17 @@ struct SoundKitLoadInfo
 
 struct SoundKitEntryLoadInfo
 {
-    static constexpr DB2FieldMeta Fields[5] =
+    static constexpr DB2FieldMeta Fields[6] =
     {
         { false, FT_INT, "ID" },
         { false, FT_INT, "SoundKitID" },
         { true, FT_INT, "FileDataID" },
         { false, FT_BYTE, "Frequency" },
         { false, FT_FLOAT, "Volume" },
+        { false, FT_INT, "PlayerConditionID" },
     };
 
-    static constexpr DB2LoadInfo Instance{ Fields, 5, &SoundKitEntryMeta::Instance, HOTFIX_SEL_SOUND_KIT_ENTRY };
+    static constexpr DB2LoadInfo Instance{ Fields, 6, &SoundKitEntryMeta::Instance, HOTFIX_SEL_SOUND_KIT_ENTRY };
 };
 
 struct SoundKitAdvancedLoadInfo
