@@ -3597,12 +3597,12 @@ struct LightParamsLoadInfo
 {
     static constexpr DB2FieldMeta Fields[14] =
     {
-        { false, FT_INT, "ID" },
         { false, FT_FLOAT, "OverrideCelestialSphere1" },
         { false, FT_FLOAT, "OverrideCelestialSphere2" },
         { false, FT_FLOAT, "OverrideCelestialSphere3" },
+        { false, FT_INT, "ID" },
         { false, FT_BYTE, "HighlightSky" },
-        { false, FT_SHORT,"LightSkyboxID" },
+        { false, FT_SHORT, "LightSkyboxID" },
         { false, FT_BYTE, "CloudTypeID" },
         { false, FT_FLOAT, "Glow" },
         { false, FT_FLOAT, "WaterShallowAlpha" },
