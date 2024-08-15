@@ -245,7 +245,7 @@ class spell_switch_flight : public SpellScript
 
         if (!caster->HasAura(404468) && !caster->HasAura(404464))
         {
-            caster->CastSpell(caster, 404468, TRIGGERED_FULL_MASK);;
+            caster->CastSpell(caster, 404468, TRIGGERED_FULL_MASK);
         }
         else if (!caster->HasAura(404468))
         {
