@@ -1954,8 +1954,8 @@ struct FriendshipRepReactionLoadInfo
     {
         { false, FT_INT, "ID" },
         { false, FT_STRING, "Reaction" },
-        { false, FT_INT, "FriendshipRepID" },
-        { false, FT_SHORT, "ReactionThreshold" },
+        { true, FT_INT, "FriendshipRepID" },
+        { true, FT_INT, "ReactionThreshold" },
         { true, FT_INT, "OverrideColor" },
     };
 
@@ -3830,7 +3830,7 @@ struct MapChallengeModeLoadInfo
 
 struct MapDifficultyLoadInfo
 {
-    static constexpr DB2FieldMeta Fields[11] =
+    static constexpr DB2FieldMeta Fields[12] =
     {
         { false, FT_INT, "ID" },
         { false, FT_STRING, "Message" },
@@ -3842,10 +3842,11 @@ struct MapDifficultyLoadInfo
         { true, FT_INT, "ItemContextPickerID" },
         { true, FT_INT, "Flags" },
         { true, FT_INT, "ContentTuningID" },
+        { true, FT_INT, "WorldStateExpressionID" },
         { false, FT_INT, "MapID" },
     };
 
-    static constexpr DB2LoadInfo Instance{ Fields, 11, &MapDifficultyMeta::Instance, HOTFIX_SEL_MAP_DIFFICULTY };
+    static constexpr DB2LoadInfo Instance{ Fields, 12, &MapDifficultyMeta::Instance, HOTFIX_SEL_MAP_DIFFICULTY };
 };
 
 struct ModelFileDataLoadInfo
@@ -4600,14 +4601,15 @@ struct QuestPackageItemLoadInfo
 
 struct QuestSortLoadInfo
 {
-    static constexpr DB2FieldMeta Fields[3] =
+    static constexpr DB2FieldMeta Fields[4] =
     {
         { false, FT_INT, "ID" },
         { false, FT_STRING, "SortName" },
         { true, FT_BYTE, "UiOrderIndex" },
+        { true, FT_INT, "Flags" },
     };
 
-    static constexpr DB2LoadInfo Instance{ Fields, 3, &QuestSortMeta::Instance, HOTFIX_SEL_QUEST_SORT };
+    static constexpr DB2LoadInfo Instance{ Fields, 4, &QuestSortMeta::Instance, HOTFIX_SEL_QUEST_SORT };
 };
 
 struct QuestV2LoadInfo
@@ -6100,7 +6102,7 @@ struct TransmogHolidayLoadInfo
 
 struct TraitCondLoadInfo
 {
-    static constexpr DB2FieldMeta Fields[16] =
+    static constexpr DB2FieldMeta Fields[17] =
     {
         { false, FT_INT, "ID" },
         { true, FT_INT, "CondType" },
@@ -6111,6 +6113,7 @@ struct TraitCondLoadInfo
         { true, FT_INT, "SpecSetID" },
         { true, FT_INT, "TraitNodeGroupID" },
         { true, FT_INT, "TraitNodeID" },
+        { true, FT_INT, "TraitNodeEntryID" },
         { true, FT_INT, "TraitCurrencyID" },
         { true, FT_INT, "SpentAmountRequired" },
         { true, FT_INT, "Flags" },
@@ -6120,7 +6123,7 @@ struct TraitCondLoadInfo
         { true, FT_INT, "TraitCondAccountElementID" },
     };
 
-    static constexpr DB2LoadInfo Instance{ Fields, 16, &TraitCondMeta::Instance, HOTFIX_SEL_TRAIT_COND };
+    static constexpr DB2LoadInfo Instance{ Fields, 17, &TraitCondMeta::Instance, HOTFIX_SEL_TRAIT_COND };
 };
 
 struct TraitCostLoadInfo
@@ -6530,7 +6533,7 @@ struct TransportRotationLoadInfo
 
 struct UiMapLoadInfo
 {
-    static constexpr DB2FieldMeta Fields[15] =
+    static constexpr DB2FieldMeta Fields[16] =
     {
         { false, FT_STRING, "Name" },
         { false, FT_INT, "ID" },
@@ -6547,9 +6550,10 @@ struct UiMapLoadInfo
         { true, FT_INT, "AlternateUiMapGroup" },
         { true, FT_INT, "ContentTuningID" },
         { true, FT_INT, "AdventureMapTextureKitID" },
+        { true, FT_BYTE, "MapArtZoneTextPosition" },
     };
 
-    static constexpr DB2LoadInfo Instance{ Fields, 15, &UiMapMeta::Instance, HOTFIX_SEL_UI_MAP };
+    static constexpr DB2LoadInfo Instance{ Fields, 16, &UiMapMeta::Instance, HOTFIX_SEL_UI_MAP };
 };
 
 struct UiMapAssignmentLoadInfo
