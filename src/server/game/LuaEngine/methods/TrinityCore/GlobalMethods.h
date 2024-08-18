@@ -79,7 +79,7 @@ namespace LuaGlobalFunctions
      */
     int GetCoreExpansion(Eluna* E)
     {
-        E->Push(sConfigMgr->GetIntDefault("Expansion", 1));
+        E->Push(sConfigMgr->GetIntDefault("Expansion", CURRENT_EXPANSION));
         return 1;
     }
 
