@@ -116,11 +116,14 @@ public:
 
         Creature* creature = Creature::CreateCreature(id, map, chr->GetPosition());
         if (!creature)
+        {
+            handler->PSendSysMessage("Could not spawn customnpc '%s', this can happen when an unknown displayid is set.", name);
+            handler->SetSentErrorMessage(true);
             return false;
+        }
 
         PhasingHandler::InheritPhaseShift(creature, chr);
         creature->SaveToDB(map->GetId(), { map->GetDifficultyID() });
-
         ObjectGuid::LowType db_guid = creature->GetSpawnId();
 
         creature->CleanupsBeforeDelete();
@@ -128,9 +131,16 @@ public:
 
         creature = Creature::CreateCreatureFromDB(db_guid, map, true, true);
         if (!creature)
+        {
+            handler->PSendSysMessage("Could spawn customnpc '%s', this can happen when an unknown displayid is set.", id);
+            handler->SetSentErrorMessage(true);
             return false;
+        }
 
         sObjectMgr->AddCreatureToGrid(sObjectMgr->GetCreatureData(db_guid));
+
+        sRoleplay->SaveCreature(creature);
+        sRoleplay->SetCreatureSelectionForPlayer(chr->GetGUID().GetCounter(), creature->GetSpawnId());
 
         sRoleplay->LoadCustomNpcSpawn(id, db_guid);
         handler->PSendSysMessage("Custom NPC %s spawned!", name);
@@ -160,6 +170,10 @@ public:
         }
 
         uint8 variation = variationId.value_or(1);
+        if (variation < 1) {
+            variation = 1;
+        }
+
         uint8 modelCount = sRoleplay->GetModelVariationCountForNpc(name);
         if ((modelCount + 1) < variation) {
             handler->PSendSysMessage("The highest model variation for Custom NPC '%s' is '%u'. The highest variation that can be added at the moment is '%u'.", name, modelCount, modelCount + 1);
@@ -181,6 +195,10 @@ public:
         }
 
         uint8 variation = variationId.value_or(1);
+        if (variation < 1) {
+            variation = 1;
+        }
+
         uint8 modelCount = sRoleplay->GetModelVariationCountForNpc(name);
         if ((modelCount + 1) < variation) {
             handler->PSendSysMessage("The highest model variation for Custom NPC '%s' is '%u'. The highest variation that can be added at the moment is '%u'.", name, modelCount, modelCount + 1);
@@ -253,6 +271,10 @@ public:
         }
 
         uint8 variation = variationId.value_or(1);
+        if (variation < 1) {
+            variation = 1;
+        }
+
         uint8 modelCount = sRoleplay->GetModelVariationCountForNpc(name);
         if ((modelCount + 1) < variation) {
             handler->PSendSysMessage("The highest model variation for Custom NPC '%s' is '%u'. The highest variation that can be added at the moment is '%u'.", name, modelCount, modelCount + 1);
@@ -279,7 +301,7 @@ public:
         default:
             handler->SendSysMessage("This item is not a visibly equipped item.");
             handler->SetSentErrorMessage(true);
-            TC_LOG_DEBUG("freedom", "Could not recognize inventory slot '%u' as visible item.", item->GetInventoryType());
+            TC_LOG_DEBUG("roleplay", "Could not recognize inventory slot '%u' as visible item.", item->GetInventoryType());
             return false;
         }
 
@@ -321,6 +343,10 @@ public:
         }
 
         uint8 variation = variationId.value_or(1);
+        if (variation < 1) {
+            variation = 1;
+        }
+
         uint8 modelCount = sRoleplay->GetEquipmentVariationCountForNpc(name);
         if ((modelCount + 1) < variation) {
             handler->PSendSysMessage("The highest equipment set variation for Custom NPC '%s' is '%u'. The highest variation that can be added at the moment is '%u'.", name, modelCount, modelCount + 1);
@@ -355,6 +381,10 @@ public:
         }
 
         uint8 variation = variationId.value_or(1);
+        if (variation < 1) {
+            variation = 1;
+        }
+
         uint8 modelCount = sRoleplay->GetEquipmentVariationCountForNpc(name);
         if ((modelCount + 1) < variation) {
             handler->PSendSysMessage("The highest equipment set variation for Custom NPC '%s' is '%u'. The highest variation that can be added at the moment is '%u'.", name, modelCount, modelCount + 1);
@@ -389,6 +419,10 @@ public:
         }
 
         uint8 variation = variationId.value_or(1);
+        if (variation < 1) {
+            variation = 1;
+        }
+
         uint8 modelCount = sRoleplay->GetEquipmentVariationCountForNpc(name);
         if ((modelCount + 1) < variation) {
             handler->PSendSysMessage("The highest equipment set variation for Custom NPC '%s' is '%u'. The highest variation that can be added at the moment is '%u'.", name, modelCount, modelCount + 1);
@@ -410,6 +444,10 @@ public:
         }
 
         uint8 variation = variationId.value_or(1);
+        if (variation < 1) {
+            variation = 1;
+        }
+
         uint8 modelCount = sRoleplay->GetModelVariationCountForNpc(name);
         if ((modelCount + 1) < variation) {
             handler->PSendSysMessage("The highest model variation for Custom NPC '%s' is '%u'. The highest variation that can be added at the moment is '%u'.", name, modelCount, modelCount + 1);
@@ -444,6 +482,10 @@ public:
         }
 
         uint8 variation = variationId.value_or(1);
+        if (variation < 1) {
+            variation = 1;
+        }
+
         uint8 modelCount = sRoleplay->GetModelVariationCountForNpc(name);
         if ((modelCount + 1) < variation) {
             handler->PSendSysMessage("The highest model variation for Custom NPC '%s' is '%u'. The highest variation that can be added at the moment is '%u'.", name, modelCount, modelCount + 1);
@@ -507,6 +549,10 @@ public:
         }
 
         uint8 variation = variationId.value_or(1);
+        if (variation < 1) {
+            variation = 1;
+        }
+
         uint8 modelCount = sRoleplay->GetEquipmentVariationCountForNpc(name);
         if ((modelCount + 1) < variation) {
             handler->PSendSysMessage("The highest equipment set variation for Custom NPC '%s' is '%u'. The highest variation that can be added at the moment is '%u'.", name, modelCount, modelCount + 1);
@@ -528,6 +574,10 @@ public:
         }
 
         uint8 variation = variationId.value_or(1);
+        if (variation < 1) {
+            variation = 1;
+        }
+
         uint8 modelCount = sRoleplay->GetEquipmentVariationCountForNpc(name);
         if ((modelCount + 1) < variation) {
             handler->PSendSysMessage("The highest equipment set variation for Custom NPC '%s' is '%u'. The highest variation that can be added at the moment is '%u'.", name, modelCount, modelCount + 1);
@@ -549,6 +599,10 @@ public:
         }
 
         uint8 variation = variationId.value_or(1);
+        if (variation < 1) {
+            variation = 1;
+        }
+
         uint8 modelCount = sRoleplay->GetEquipmentVariationCountForNpc(name);
         if ((modelCount + 1) < variation) {
             handler->PSendSysMessage("The highest equipment set variation for Custom NPC '%s' is '%u'. The highest variation that can be added at the moment is '%u'.", name, modelCount, modelCount + 1);
@@ -570,6 +624,10 @@ public:
         }
 
         uint8 variation = variationId.value_or(1);
+        if (variation < 1) {
+            variation = 1;
+        }
+
         uint8 modelCount = sRoleplay->GetModelVariationCountForNpc(name);
         if ((modelCount + 1) < variation) {
             handler->PSendSysMessage("The highest model variation for Custom NPC '%s' is '%u'. The highest variation that can be added at the moment is '%u'.", name, modelCount, modelCount + 1);
@@ -591,6 +649,10 @@ public:
         }
 
         uint8 variation = variationId.value_or(1);
+        if (variation < 1) {
+            variation = 1;
+        }
+
         uint8 modelCount = sRoleplay->GetModelVariationCountForNpc(name);
         if ((modelCount + 1) < variation) {
             handler->PSendSysMessage("The highest model variation for Custom NPC '%s' is '%u'. The highest variation that can be added at the moment is '%u'.", name, modelCount, modelCount + 1);
@@ -612,6 +674,10 @@ public:
         }
 
         uint8 variation = variationId.value_or(1);
+        if (variation < 1) {
+            variation = 1;
+        }
+
         uint8 modelCount = sRoleplay->GetModelVariationCountForNpc(name);
         if ((modelCount + 1) < variation) {
             handler->PSendSysMessage("The highest model variation for Custom NPC '%s' is '%u'. The highest variation that can be added at the moment is '%u'.", name, modelCount, modelCount + 1);
@@ -649,6 +715,10 @@ public:
             handler->PSendSysMessage("There is no Custom NPC with the name: %s", name);
             handler->SetSentErrorMessage(true);
             return false;
+        }
+
+        if (variationId < 1) {
+            variationId = 1;
         }
 
         if (variationId == 1) {

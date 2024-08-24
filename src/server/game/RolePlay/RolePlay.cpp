@@ -233,7 +233,6 @@ void Roleplay::CreatureSetAnimKitId(Creature* creature, uint16 animKitId)
 
 void Roleplay::CreatureSetModel(Creature* creature, uint32 displayId) {
     creature->SetDisplayId(displayId);
-    creature->SetDisplayId(displayId, true);
 
     _creatureExtraStore[creature->GetSpawnId()].displayLock = true;
     _creatureExtraStore[creature->GetSpawnId()].displayId = displayId;
@@ -1254,7 +1253,7 @@ void Roleplay::ReloadSpawnedCustomNpcs(std::string const& key)
             uint8 modelId = urand(0u, sObjectMgr->_creatureTemplateStore[data.templateId].Models.size() - 1);
             CreatureModel model = sObjectMgr->_creatureTemplateStore[data.templateId].Models[modelId];
             CreatureAddon cAddon = sObjectMgr->_creatureTemplateAddonStore[data.templateId];
-            creature->SetDisplayId(model.CreatureDisplayID, model.DisplayScale);
+            creature->SetDisplayId(model.CreatureDisplayID);
             creature->SetName(sObjectMgr->_creatureTemplateStore[data.templateId].Name);
             creature->LoadEquipment(urand(1u, sObjectMgr->_equipmentInfoStore[data.templateId].size()));
 

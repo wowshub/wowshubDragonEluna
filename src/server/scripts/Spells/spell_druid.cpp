@@ -420,16 +420,6 @@ class spell_dru_cultivation : public AuraScript
 // 1850 - Dash
 class spell_dru_dash : public AuraScript
 {
-    void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
-    {
-        Unit* caster = GetCaster();
-
-        if (GetUnitOwner()->GetShapeshiftForm() != FORM_CAT_FORM)
-        {
-            caster->CastSpell(caster, 768, true);
-        }
-    }
-
     void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
     {
         // do not set speed if not in cat form
@@ -439,7 +429,6 @@ class spell_dru_dash : public AuraScript
 
     void Register() override
     {
-        OnEffectApply += AuraEffectApplyFn(spell_dru_dash::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
         DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dru_dash::CalculateAmount, EFFECT_0, SPELL_AURA_MOD_INCREASE_SPEED);
     }
 };
