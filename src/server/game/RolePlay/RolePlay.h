@@ -13,6 +13,7 @@
 struct PlayerExtraData
 {
     ObjectGuid::LowType selectedCreatureGuid;
+    WorldLocation markerLocation;
 };
 
 typedef std::unordered_map<ObjectGuid::LowType, PlayerExtraData> PlayerExtraDataContainer;
@@ -93,11 +94,11 @@ public:
     void CreatureSetEmote(Creature* creature, uint32 emoteId);
     void CreatureSetMount(Creature* creature, uint32 mountId);
     void CreatureSetAuraToggle(Creature* creature, uint32 auraId, bool toggle);
-    void CreatureSetBytes1(Creature* creature);
-    void CreatureSetBytes2(Creature* creature);
     void CreatureSetGravity(Creature* creature, bool toggle);
     void CreatureSetSwim(Creature* creature, bool toggle);
     void CreatureSetFly(Creature* creature, bool toggle);
+    void CreatureSetAnimKitId(Creature* creature, uint16 animKitId);
+    void CreatureSetModel(Creature* creature, uint32 displayId);
     bool CreatureCanSwim(Creature const* creature);
     bool CreatureCanWalk(Creature const* creature);
     bool CreatureCanFly(Creature const* creature);
@@ -144,6 +145,10 @@ public:
     void RemoveCustomNpcVariation(std::string const& key, uint8 variationId);
     void DeleteCustomNpc(std::string const& key);
 
+    // Marker
+    void StoreMarkerLocationForPlayer(Player* player, const WorldLocation* marker);
+    WorldLocation* GetMarketLocationForPlayer(Player* player) { return &_playerExtraDataStore[player->GetGUID().GetCounter()].markerLocation; }
+
 protected:
     PlayerExtraDataContainer _playerExtraDataStore;
     CreatureExtraContainer _creatureExtraStore;
@@ -155,6 +160,7 @@ private:
     void SaveCustomNpcDataToDb(CustomNpcData outfitData);
     void SaveNpcCreatureTemplateToDb(CreatureTemplate cTemplate);
     void SaveNpcEquipmentInfoToDb(uint32 templateId, uint8 variationId);
+    void SaveNpcCreatureTemplateAddonToDb(uint32 templateId, CreatureAddon cAddon);
     void SaveNpcModelInfo(CreatureModel model, uint32 creatureTemplateId, uint8 variationId);
     void ReloadSpawnedCustomNpcs(std::string const& key);
     void EnsureNpcModelExists(uint32 templateId, uint8 variationId);

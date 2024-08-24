@@ -168,27 +168,6 @@ void Roleplay::CreatureSetAuraToggle(Creature* creature, uint32 auraId, bool tog
     }
 }
 
-void Roleplay::CreatureSetBytes1(Creature* creature)
-{
-    uint32 spawnId = creature->GetSpawnId();
-    auto addonData = &(sObjectMgr->_creatureAddonStore[spawnId]);
-
-    creature->SetStandState(UnitStandStateType(addonData->standState));
-    creature->ReplaceAllVisFlags(UnitVisFlags(addonData->visFlags));
-    creature->SetAnimTier(AnimTier(addonData->animTier), false);
-}
-
-void Roleplay::CreatureSetBytes2(Creature* creature)
-{
-    uint32 spawnId = creature->GetSpawnId();
-    auto addonData = &(sObjectMgr->_creatureAddonStore[spawnId]);
-
-    creature->SetSheath(SheathState(addonData->sheathState));
-    creature->ReplaceAllPvpFlags(UnitPVPStateFlags(addonData->pvpFlags));
-    creature->ReplaceAllPetFlags(UNIT_PET_FLAG_NONE);
-    creature->SetShapeshiftForm(FORM_NONE);
-}
-
 void Roleplay::CreatureSetGravity(Creature* creature, bool toggle)
 {
     _creatureExtraStore[creature->GetSpawnId()].gravity = toggle;
@@ -241,6 +220,24 @@ void Roleplay::CreatureSetFly(Creature* creature, bool toggle)
     WorldPackets::Movement::MoveSplineSetFlag packet(toggle ? SMSG_MOVE_SPLINE_START_SWIM : SMSG_MOVE_SPLINE_STOP_SWIM);
     packet.MoverGUID = creature->GetGUID();
     creature->SendMessageToSet(packet.Write(), true);
+}
+
+void Roleplay::CreatureSetAnimKitId(Creature* creature, uint16 animKitId)
+{
+    uint32 spawnId = creature->GetSpawnId();
+    auto addonData = &(sObjectMgr->_creatureAddonStore[spawnId]);
+    addonData->aiAnimKit = animKitId;
+
+    creature->SetAIAnimKitId(animKitId);
+}
+
+void Roleplay::CreatureSetModel(Creature* creature, uint32 displayId) {
+    creature->SetDisplayId(displayId);
+    creature->SetDisplayId(displayId, true);
+
+    _creatureExtraStore[creature->GetSpawnId()].displayLock = true;
+    _creatureExtraStore[creature->GetSpawnId()].displayId = displayId;
+    _creatureExtraStore[creature->GetSpawnId()].nativeDisplayId = displayId;
 }
 
 bool Roleplay::CreatureCanSwim(Creature const* creature)
@@ -333,6 +330,13 @@ void Roleplay::CreatureMove(Creature* creature, float x, float y, float z, float
     if (!creature)
         return;
 
+    // if (CreatureData const* data = sObjectMgr->GetCreatureData(creature->GetSpawnId()))
+    // {
+    //     const_cast<CreatureData*>(data)->posX = x;
+    //     const_cast<CreatureData*>(data)->posY = y;
+    //     const_cast<CreatureData*>(data)->posZ = z;
+    //     const_cast<CreatureData*>(data)->orientation = o;
+    // }
     // TODO: Check if this works
     creature->Relocate(x, y, z, o);
 
@@ -342,6 +346,13 @@ void Roleplay::CreatureMove(Creature* creature, float x, float y, float z, float
     if (creature->HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
         z += creature->GetHoverOffset();
     creature->Relocate(x, y, z, o);
+    //creature->GetMotionMaster()->Initialize();
+
+    //if (creature->IsAlive())                            // dead creature will reset movement generator at respawn
+    //{
+    //    creature->setDeathState(JUST_DIED);
+    //    creature->Respawn();
+    //}
 
     WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_POSITION);
 
@@ -746,7 +757,7 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
 
     co->id = outfitId;
     co->race = player->GetRace();
-    co->Class = player->GetClass();
+    co->Class = 1;
 
     auto* maleModel = sDB2Manager.GetChrModel(co->race, GENDER_MALE);
     auto* femaleModel = sDB2Manager.GetChrModel(co->race, GENDER_FEMALE);
@@ -792,7 +803,7 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
 
     CreatureTemplate creatureTemplate;
 
-    uint32 npcCreatureTemplateId = sConfigMgr->GetInt64Default("Freedom.CustomNpc.CreatureTemplateIdStart", 400000);
+    uint32 npcCreatureTemplateId = sConfigMgr->GetInt64Default("Roleplay.CustomNpc.CreatureTemplateIdStart", 400000);
     if (!_customNpcStore.empty()) {
         using pairtype = std::pair<std::string, CustomNpcData>;
         npcCreatureTemplateId = std::max_element(_customNpcStore.begin(), _customNpcStore.end(),
@@ -811,6 +822,7 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
     creatureTemplate.speed_walk = 1.0f;
     creatureTemplate.speed_run = 1.14286f;
     creatureTemplate.scale = 1.0f;
+    creatureTemplate.Classification = CreatureClassifications::Normal;
     creatureTemplate.dmgschool = 0;
     creatureTemplate.BaseAttackTime = 0;
     creatureTemplate.RangeAttackTime = 0;
@@ -839,6 +851,7 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
     creatureTemplate.WidgetSetID = 0;
     creatureTemplate.WidgetSetUnitConditionID = 0;
     creatureTemplate.RegenHealth = 1;
+    creatureTemplate.CreatureImmunitiesId = 0;
     creatureTemplate.flags_extra = 0;
     creatureTemplate.ScriptID = sObjectMgr->GetScriptId("");
 
@@ -1192,6 +1205,40 @@ void Roleplay::SaveNpcEquipmentInfoToDb(uint32 templateId, uint8 variationId)
     WorldDatabase.Execute(stmt);
 }
 
+void Roleplay::SaveNpcCreatureTemplateAddonToDb(uint32 templateId, CreatureAddon cAddon)
+{
+    TC_LOG_DEBUG("roleplay", "ROLEPLAY: Saving creature addon template for creature template id '%u' to DB...", templateId);
+    WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_CREATURE_TEMPLATE_ADDON);
+
+    // REPLACE INTO creature_template_addon (entry, path_id, mount, bytes1, bytes2, emote, aiAnimKit, movementAnimKit, meleeAnimkit, visibilityDistanceType, auras) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    int index = 0;
+    stmt->setUInt32(index++, templateId);
+    stmt->setUInt32(index++, cAddon.PathId);
+    stmt->setUInt32(index++, cAddon.mount);
+    stmt->setUInt32(index++, cAddon.emote);
+    stmt->setUInt16(index++, cAddon.aiAnimKit);
+    stmt->setUInt16(index++, cAddon.movementAnimKit);
+    stmt->setUInt16(index++, cAddon.meleeAnimKit);
+    stmt->setUInt8(index++, uint8(cAddon.visibilityDistanceType));
+    if (!cAddon.auras.empty())
+    {
+        std::string auraList = "";
+        for (auto aura : cAddon.auras)
+        {
+            if (auraList.empty())
+                auraList = std::to_string(aura);
+            else
+                auraList += " " + std::to_string(aura);
+        }
+        stmt->setString(index, auraList);
+    }
+    else
+    {
+        stmt->setNull(index);
+    }
+    WorldDatabase.Execute(stmt);
+}
+
 void Roleplay::ReloadSpawnedCustomNpcs(std::string const& key)
 {
     TC_LOG_DEBUG("roleplay", "ROLEPLAY: Reloading custom npc '%s'", key);
@@ -1206,9 +1253,22 @@ void Roleplay::ReloadSpawnedCustomNpcs(std::string const& key)
             TC_LOG_DEBUG("roleplay", "ROLEPLAY: Reloading creature id '%lu'", spawn);
             uint8 modelId = urand(0u, sObjectMgr->_creatureTemplateStore[data.templateId].Models.size() - 1);
             CreatureModel model = sObjectMgr->_creatureTemplateStore[data.templateId].Models[modelId];
+            CreatureAddon cAddon = sObjectMgr->_creatureTemplateAddonStore[data.templateId];
             creature->SetDisplayId(model.CreatureDisplayID, model.DisplayScale);
             creature->SetName(sObjectMgr->_creatureTemplateStore[data.templateId].Name);
             creature->LoadEquipment(urand(1u, sObjectMgr->_equipmentInfoStore[data.templateId].size()));
+
+            creature->RemoveAllAuras();
+            for (auto auraId : cAddon.auras) {
+                creature->AddAura(auraId, creature);
+            }
+
+            creature->SetEmoteState(Emote(cAddon.emote));
+            if (cAddon.mount)
+                creature->Mount(cAddon.mount);
+            else
+                creature->Dismount();
+
             TC_LOG_DEBUG("roleplay", "ROLEPLAY: Reloaded creature id '%lu'", spawn);
         }
     }
@@ -1218,7 +1278,7 @@ void Roleplay::ReloadSpawnedCustomNpcs(std::string const& key)
 void Roleplay::DeleteCustomNpc(std::string const& key)
 {
     CustomNpcData data = _customNpcStore[key];
-    TC_LOG_DEBUG("roleplay", "ROLEPLAY: Deleting custom npc '%s' with entry '%u'", key, data.templateId);
+    TC_LOG_DEBUG("roleplay", "ROLEPLAY: Deleting custom npc '%s' with entry '%u'", key.c_str(), data.templateId);
     // Remove spawns
     for (auto spawn : data.spawns) {
         TC_LOG_DEBUG("roleplay", "ROLEPLAY: Deleting spawn " UI64FMTD, spawn);
@@ -1238,6 +1298,10 @@ void Roleplay::DeleteCustomNpc(std::string const& key)
     trans->Append(stmt);
 
     stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_CREATURE_EQUIP_TEMPLATE);
+    stmt->setUInt32(0, data.templateId);
+    trans->Append(stmt);
+
+    stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_CREATURE_TEMPLATE_ADDON);
     stmt->setUInt32(0, data.templateId);
     trans->Append(stmt);
 
@@ -1266,6 +1330,7 @@ void Roleplay::DeleteCustomNpc(std::string const& key)
         sObjectMgr->_creatureOutfitStore.erase(outfitId);
     }
     sObjectMgr->_equipmentInfoStore.erase(data.templateId);
+    sObjectMgr->_creatureTemplateAddonStore.erase(data.templateId);
     sObjectMgr->_creatureTemplateStore.erase(data.templateId);
 }
 
@@ -1327,7 +1392,6 @@ void Roleplay::EnsureNpcOutfitExists(uint32 templateId, uint8 variationId, float
             }
             outfit->guild = lastOutfit->guild;
             outfit->id = outfitId;
-
             sObjectMgr->_creatureOutfitStore[outfitId] = std::move(outfit);
             if (variation >= modelsSize) {
                 cTemplate.Models.push_back(CreatureModel(outfitId, displayScale, 1));
@@ -1378,6 +1442,11 @@ uint8 Roleplay::GetModelVariationCountForNpc(std::string const& key) {
 }
 uint8 Roleplay::GetEquipmentVariationCountForNpc(std::string const& key) {
     return sObjectMgr->_equipmentInfoStore[_customNpcStore[key].templateId].size();
+}
+
+void Roleplay::StoreMarkerLocationForPlayer(Player* player, const WorldLocation* marker)
+{
+    _playerExtraDataStore[player->GetGUID().GetCounter()].markerLocation = *marker;
 }
 
 #pragma endregion

@@ -45,6 +45,7 @@ EndScriptData */
 #include "PhasingHandler.h"
 #include "Player.h"
 #include "RBAC.h"
+#include "RolePlay.h"
 #include "SmartEnum.h"
 #include "SpellMgr.h"
 #include "Transport.h"
@@ -709,9 +710,9 @@ public:
             return false;
         }
 
-        creature->SetDisplayId(displayId, true);
+        sRoleplay->CreatureSetModel(creature, displayId);
 
-        creature->SaveToDB();
+        sRoleplay->SaveCreature(creature);
 
         return true;
     }
