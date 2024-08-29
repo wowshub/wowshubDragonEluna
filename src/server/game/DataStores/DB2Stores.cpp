@@ -939,6 +939,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sSpecializationSpellsStore);
     LOAD_DB2(sSpecializationSpellsDisplayStore);
     LOAD_DB2(sSpecSetMemberStore);
+    LOAD_DB2(sSpellStore);
     LOAD_DB2(sSpellAuraOptionsStore);
     LOAD_DB2(sSpellAuraRestrictionsStore);
     LOAD_DB2(sSpellCastTimesStore);
