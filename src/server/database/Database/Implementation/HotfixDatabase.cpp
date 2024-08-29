@@ -2086,6 +2086,18 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     // WorldStateExpression.db2
     PrepareStatement(HOTFIX_SEL_WORLD_STATE_EXPRESSION, "SELECT ID, Expression FROM world_state_expression WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_WORLD_STATE_EXPRESSION, "SELECT MAX(ID) + 1 FROM world_state_expression", CONNECTION_SYNCH);
+
+    // SoundAmbience.db2
+    PrepareStatement(HOTFIX_SEL_SOUND_AMBIENCE, "SELECT ID, Flags, FlavorSoundFilterID, AmbienceID1, AmbienceID2, AmbienceStartID1, AmbienceStartID2, "
+        "AmbienceStopID1, AmbienceStopID2, SoundKitID1, SoundKitID2 FROM sound_ambience WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_SOUND_AMBIENCE, "SELECT MAX(ID) + 1 FROM sound_ambience", CONNECTION_SYNCH);
+
+    // ZoneMusic.db2
+    PrepareStatement(HOTFIX_SEL_ZONE_MUSIC, "SELECT ID, SetName, SilenceIntervalMin1, SilenceIntervalMin2, SilenceIntervalMax1, SilenceIntervalMax2, "
+        "Sounds1, Sounds2 FROM zone_music WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_ZONE_MUSIC, "SELECT MAX(ID) + 1 FROM zone_music", CONNECTION_SYNCH);
+    PREPARE_LOCALE_STMT(HOTFIX_SEL_ZONE_MUSIC, "SELECT ID, SetName_lang FROM zone_music_locale"
+        " WHERE (`VerifiedBuild` > 0) = ? AND locale = ?", CONNECTION_SYNCH);
 }
 
 HotfixDatabaseConnection::HotfixDatabaseConnection(MySQLConnectionInfo& connInfo, ConnectionFlags connectionFlags) : MySQLConnection(connInfo, connectionFlags)

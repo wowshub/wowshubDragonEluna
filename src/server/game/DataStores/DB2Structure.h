@@ -4988,5 +4988,26 @@ struct LightParamsEntry
     float Field_11_0_0_54210_015;
 };
 
+struct SoundAmbienceEntry
+{
+    uint32 ID;
+    int32 Flags;
+    uint32 FlavorSoundFilterID;
+    uint32 AmbienceID[2];
+    uint32 AmbienceStartID[2];
+    uint32 AmbienceStopID[2];
+    uint32 SoundKitID[2];
+
+};
+
+struct ZoneMusicEntry
+{
+    uint32 ID;
+    char const* SetName;
+    uint32 SilenceIntervalMin[2];
+    uint32 SilenceIntervalMax[2];
+    uint32 Sounds[2];
+};
+
 #pragma pack(pop)
 #endif

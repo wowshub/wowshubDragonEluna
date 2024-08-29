@@ -325,6 +325,7 @@ TC_GAME_API extern DB2Storage<VignetteEntry>                        sVignetteSto
 TC_GAME_API extern DB2Storage<WorldEffectEntry>                     sWorldEffectStore;
 TC_GAME_API extern DB2Storage<WorldMapOverlayEntry>                 sWorldMapOverlayStore;
 TC_GAME_API extern DB2Storage<WorldStateExpressionEntry>            sWorldStateExpressionStore;
+TC_GAME_API extern DB2Storage<ZoneMusicEntry>                       sZoneMusicEntryStore;
 
 struct ContentTuningLevels
 {

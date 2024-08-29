@@ -405,6 +405,7 @@ DB2Storage<WMOAreaTableEntry>                   sWMOAreaTableStore("WMOAreaTable
 DB2Storage<WorldEffectEntry>                    sWorldEffectStore("WorldEffect.db2", &WorldEffectLoadInfo::Instance);
 DB2Storage<WorldMapOverlayEntry>                sWorldMapOverlayStore("WorldMapOverlay.db2", &WorldMapOverlayLoadInfo::Instance);
 DB2Storage<WorldStateExpressionEntry>           sWorldStateExpressionStore("WorldStateExpression.db2", &WorldStateExpressionLoadInfo::Instance);
+DB2Storage<ZoneMusicEntry>                      sZoneMusicStore("ZoneMusic.db2", &ZoneMusicLoadInfo::Instance);
 
 TaxiMask                                        sTaxiNodesMask;
 TaxiMask                                        sOldContinentsNodesMask;
@@ -934,6 +935,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sSoulbindConduitRankStore);
     LOAD_DB2(sSoundKitStore);
     LOAD_DB2(sSoundKitEntryStore);
+    LOAD_DB2(sSoundKitAdvancedStore);
     LOAD_DB2(sSpecializationSpellsStore);
     LOAD_DB2(sSpecializationSpellsDisplayStore);
     LOAD_DB2(sSpecSetMemberStore);
@@ -1033,6 +1035,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sWorldEffectStore);
     LOAD_DB2(sWorldMapOverlayStore);
     LOAD_DB2(sWorldStateExpressionStore);
+    LOAD_DB2(sZoneMusicStore);
 
     // error checks
     if (!loadErrors.empty())
