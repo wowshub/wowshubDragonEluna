@@ -9182,7 +9182,7 @@ void ObjectMgr::LoadCreatureOutfits()
         ASSERT(GetCreatureModelInfo(femaleModel->DisplayID), "Dress NPCs requires an entry in creature_model_info for modelid %u (%u Female)", femaleModel->DisplayID, e->Name[DEFAULT_LOCALE]);
     }
 
-    QueryResult result = WorldDatabase.Query("SELECT entry, race, class, gender, spellvisualkitid, customizations, "
+    QueryResult result = WorldDatabase.Query("SELECT entry, npcsoundsid, race, class, gender, spellvisualkitid, customizations, "
         "head, head_appearance, shoulders, shoulders_appearance, body, body_appearance, chest, chest_appearance, waist, waist_appearance, "
         "legs, legs_appearance, feet, feet_appearance, wrists, wrists_appearance, hands, hands_appearance, tabard, tabard_appearance, back, back_appearance, "
         "guildid FROM creature_template_outfits");
@@ -9211,6 +9211,12 @@ void ObjectMgr::LoadCreatureOutfits()
         std::shared_ptr<CreatureOutfit> co(new CreatureOutfit());
 
         co->id = entry;
+        co->npcsoundsid = fields[i++].GetUInt32();
+        if (co->npcsoundsid && !sNPCSoundsStore.HasRecord(co->npcsoundsid))
+        {
+            TC_LOG_ERROR("server.loading", ">> Outfit entry {} in `creature_template_outfits` has incorrect npcsoundsid ({}). Using 0.", entry, co->npcsoundsid);
+            co->npcsoundsid = 0;
+        }
         co->race = fields[i++].GetUInt8();
         const ChrRacesEntry* rEntry = sChrRacesStore.LookupEntry(co->race);
         if (!rEntry)

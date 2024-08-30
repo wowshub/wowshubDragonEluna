@@ -3047,6 +3047,15 @@ struct NPCModelItemSlotDisplayInfoEntry
     uint32 ExtendedDisplayID;
 };
 
+struct NPCSoundsEntry
+{
+    uint32 ID;
+    uint32 hello;
+    uint32 goodbye;
+    uint32 pissed;
+    uint32 ack;
+};
+
 struct CreatureDisplayInfoStore
 {
     bool HasRecord(uint32 id) const;

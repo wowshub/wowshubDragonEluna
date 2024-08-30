@@ -203,6 +203,7 @@ TC_GAME_API extern DB2Storage<ModifierTreeEntry>                    sModifierTre
 TC_GAME_API extern DB2Storage<MountCapabilityEntry>                 sMountCapabilityStore;
 TC_GAME_API extern DB2Storage<MountEntry>                           sMountStore;
 TC_GAME_API extern DB2Storage<MovieEntry>                           sMovieStore;
+TC_GAME_API extern DB2Storage<NPCSoundsEntry>                       sNPCSoundsStore;
 TC_GAME_API extern DB2Storage<NPCModelItemSlotDisplayInfoEntry>     sNPCModelItemSlotDisplayInfoStore;
 TC_GAME_API extern DB2Storage<MythicPlusSeasonEntry>                sMythicPlusSeasonStore;
 TC_GAME_API extern DB2Storage<OverrideSpellDataEntry>               sOverrideSpellDataStore;

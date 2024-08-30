@@ -1259,6 +1259,9 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PrepareStatement(HOTFIX_SEL_NPC_MODEL_ITEM_SLOT_DISPLAY_INFO, "SELECT ID, DisplayID, Slot, ExtendedDisplayID FROM npc_model_item_slot_display_info WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_NPC_MODEL_ITEM_SLOT_DISPLAY_INFO, "SELECT MAX(ID) + 1 FROM npc_model_item_slot_display_info", CONNECTION_SYNCH);
 
+    // NPCSounds.db2
+    PrepareStatement(HOTFIX_SEL_NPC_SOUNDS, "SELECT ID, hello, goodbye, pissed, ack FROM npc_sounds WHERE (`VerifiedBuild` > 0) = ? ORDER BY ID DESC", CONNECTION_SYNCH);
+
     // NumTalentsAtLevel.db2
     PrepareStatement(HOTFIX_SEL_NUM_TALENTS_AT_LEVEL, "SELECT ID, NumTalents, NumTalentsDeathKnight, NumTalentsDemonHunter FROM num_talents_at_level"
         " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
