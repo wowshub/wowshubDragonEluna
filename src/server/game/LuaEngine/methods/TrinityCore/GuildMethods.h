@@ -196,7 +196,7 @@ namespace LuaGuild
     int AddMember(Eluna* E, Guild* guild)
     {
         Player* player = E->CHECKOBJ<Player>(2);
-        GuildRankId rankId = *E->CHECKOBJ<GuildRankId>(3, GUILD_RANK_NONE);
+        GuildRankId rankId = *E->CHECKOBJ<GuildRankId>(3);
 
         CharacterDatabaseTransaction trans(nullptr);
 

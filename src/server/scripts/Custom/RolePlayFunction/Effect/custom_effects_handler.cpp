@@ -53,20 +53,20 @@ namespace Noblegarden
     }
 
 
-    void EffectsHandler::Toggle(Unit* unit, uint32 id, uint8 mode, ChatHandler* handler)
+    void EffectsHandler::Toggle(Unit* unit, uint32 id, uint8 mode, ChatHandler* /*handler*/)
     {
         if (HasEffect(unit, id)) Remove(unit, id); else Add(unit, id, mode);
     }
 
 
-    void EffectsHandler::Oneshot(Unit* unit, uint32 id, uint8 mode, ChatHandler* handler)
+    void EffectsHandler::Oneshot(Unit* unit, uint32 id, uint8 mode, ChatHandler* /*handler*/)
     {
         unit->SendCancelSpellVisualKit(id);
         unit->SendPlaySpellVisualKit(id, mode, 0);
     }
 
 
-    void EffectsHandler::Remove(Unit* unit, uint32 id, ChatHandler* handler)
+    void EffectsHandler::Remove(Unit* unit, uint32 id, ChatHandler* /*handler*/)
     {
         if (auto targetInfo = GetUnitInfo(unit))
         {
@@ -81,7 +81,7 @@ namespace Noblegarden
     }
 
 
-    void EffectsHandler::Channel(Unit* unit, Unit* target, uint32 id, ChatHandler* handler)
+    void EffectsHandler::Channel(Unit* unit, Unit* target, uint32 id, ChatHandler* /*handler*/)
     {
         unit->ClearChannelObjects();
 
@@ -145,7 +145,7 @@ namespace Noblegarden
     }
 
 
-    void EffectsHandler::Reset(Unit* unit, ChatHandler* handler)
+    void EffectsHandler::Reset(Unit* unit, ChatHandler* /*handler*/)
     {
         if (auto targetInfo = GetUnitInfo(unit))
         {
@@ -161,7 +161,7 @@ namespace Noblegarden
     }
 
 
-    bool EffectsHandler::HasEffect(Unit* unit, uint32 id, ChatHandler* handler)
+    bool EffectsHandler::HasEffect(Unit* unit, uint32 id, ChatHandler* /*handler*/)
     {
         auto exists = false;
 
