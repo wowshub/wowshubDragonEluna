@@ -1007,7 +1007,7 @@ namespace WorldPackets
         class ResyncRunes final : public ServerPacket
         {
         public:
-            ResyncRunes(size_t size) : ServerPacket(SMSG_RESYNC_RUNES, 1 + 1 + 4 + size) { }
+            ResyncRunes(std::size_t size) : ServerPacket(SMSG_RESYNC_RUNES, 1 + 1 + 4 + size) { }
 
             WorldPacket const* Write() override;
 
