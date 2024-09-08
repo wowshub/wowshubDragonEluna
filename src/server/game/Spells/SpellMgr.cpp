@@ -5046,18 +5046,6 @@ void SpellMgr::LoadSpellInfoCorrections()
         spellInfo->AttributesEx4 |= SPELL_ATTR4_AURA_IS_BUFF;
     });
 
-    // Dragonriding Thrill of the Skies visual
-    ApplySpellFix({ 373404 }, [](SpellInfo* spellInfo)
-    {
-        spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21); // Infinite
-    });
-
-    // Dragonrider Energy
-    ApplySpellFix({ 372773 }, [](SpellInfo* spellInfo)
-    {
-        spellInfo->AuraInterruptFlags = SpellAuraInterruptFlags::None;
-    });
-
     for (SpellInfo const& s : mSpellInfoMap)
     {
         SpellInfo* spellInfo = &const_cast<SpellInfo&>(s);

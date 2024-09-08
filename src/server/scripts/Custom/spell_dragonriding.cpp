@@ -21,6 +21,7 @@
  */
 
 #include "Containers.h"
+#include "DB2Stores.h"
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
@@ -31,138 +32,122 @@
 #include <MovementPackets.h>
 #include <G3D/g3dmath.h>
 
-const float THRILL_OF_THE_SKIES_MIN_VELOCITY = 60.f;
-
-enum DragonRidingSpells
+enum AdvancedFlyingSpells 
 {
-    SPELL_DRAGONRIDER_ENERGIZE  = 372606,
-    SPELL_THRILL_OF_THE_SKIES   = 377234
+    SPELL_DRAGONRIDER_ENERGIZE      = 372606,
+    SPELL_VIGOR_CACHE               = 433547,
+    SPELL_RIDING_ABROAD             = 432503, // TODO outside of dragon isles
+    SPELL_ENERGY_WIDGET             = 423624,
+    SWITCH_AF_REGULAR               = 404468,
+    SWITCH_AF_DRAGONRIDING          = 404464
+
 };
 
-// 406095 - Dynamic Flight
-class spell_dragonriding : public AuraScript
+// 373646 - Soar (Racial)
+// 406095 - Skyriding
+// 430833 - Soar (Racial)
+class spell_af_skyriding : public AuraScript
 {
-    PrepareAuraScript(spell_dragonriding);
-
-    void OnApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster();
 
-        if (caster->HasAura(404464) && !caster->HasAura(423624))
+        if (caster->HasAura(SWITCH_AF_DRAGONRIDING) && !caster->HasAura(SPELL_ENERGY_WIDGET))
         {
-            caster->AddAura(423624, caster);
+            GetTarget()->CastSpell(GetTarget(), SPELL_ENERGY_WIDGET, true);
+            GetTarget()->SetPower(POWER_ALTERNATE_MOUNT, GetTarget()->GetPower(POWER_ALTERNATE_MOUNT), true);
         }
-    }
-
-    void OnPeriodic(AuraEffect const* /*aurEff*/)
-    {
-        float advFlyingVelocity = GetTarget()->GetAdvFlyingVelocity();
-        bool advFylingEnabled = GetTarget()->HasAuraType(SPELL_AURA_ADVANCED_FLYING);
-
-        float ground = GetTarget()->GetFloorZ();
-        bool isInAir = (G3D::fuzzyGt(GetTarget()->GetPositionZ(), ground + GROUND_HEIGHT_TOLERANCE) || G3D::fuzzyLt(GetTarget()->GetPositionZ(), ground - GROUND_HEIGHT_TOLERANCE));
-
-        if (isInAir && advFlyingVelocity && advFylingEnabled)
-        {
-            if (advFlyingVelocity > THRILL_OF_THE_SKIES_MIN_VELOCITY)
-            {
-                if (!GetTarget()->HasAura(SPELL_THRILL_OF_THE_SKIES))
-                    GetTarget()->CastSpell(GetTarget(), SPELL_THRILL_OF_THE_SKIES, TRIGGERED_FULL_MASK);
-                    
-            }
-            else
-                GetTarget()->RemoveAurasDueToSpell(SPELL_THRILL_OF_THE_SKIES);
-
-        }
-        else
-            GetTarget()->RemoveAurasDueToSpell(SPELL_THRILL_OF_THE_SKIES);
-
     }
 
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
-        if (Unit* caster = GetCaster())
-        {
-            caster->RemoveAura(423624);
-        }
+        GetTarget()->RemoveAurasDueToSpell(SPELL_ENERGY_WIDGET);
     }
 
     void Register() override
     {
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_dragonriding::OnPeriodic, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
-        OnEffectApply += AuraEffectApplyFn(spell_dragonriding::OnApply, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        AfterEffectRemove += AuraEffectRemoveFn(spell_dragonriding::OnRemove, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(spell_af_skyriding::OnApply, EFFECT_0, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_af_skyriding::OnRemove, EFFECT_0, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
-// 372771 - Dragonrider Energy
-class spell_dragonrider_energy : public AuraScript
+// 372773 - Dragonrider Energy
+class spell_af_energy : public AuraScript
 {
-    PrepareAuraScript(spell_dragonrider_energy);
-
-    void OnPeriodic(AuraEffect* aurEff)
+    void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
-        if (Unit* caster = GetCaster()) {
-            if (ShouldRegenEnergy(caster)) {
-                int32 baseRegen = 25;
-
-                int32 newAmount = aurEff->GetAmount() + baseRegen;
-
-                if (newAmount >= 100) {
-                    newAmount -= 100;
-
-                    caster->CastSpell(caster, SPELL_DRAGONRIDER_ENERGIZE, TRIGGERED_FULL_MASK);
-                }
-
-                aurEff->SetAmount(newAmount);
-                aurEff->GetBase()->SetNeedClientUpdateForTargets();
-            }
-
-            int newMaxPower = 3;
-
-            if (caster->HasAura(377920) && !caster->HasAura(377921) && !caster->HasAura(377922))
-            {
-                newMaxPower = 4;
-            }
-            else if (caster->HasAura(377921) && caster->HasAura(377920) && !caster->HasAura(377922))
-            {
-                newMaxPower = 5;
-            }
-            else if (caster->HasAura(377922) && caster->HasAura(377921) && caster->HasAura(377920))
-            {
-                newMaxPower = 6;
-            }
-
-            caster->SetMaxPower(POWER_ALTERNATE_MOUNT, newMaxPower);
+        Unit* target = GetTarget();
+        if (!target->HasAura(SPELL_VIGOR_CACHE))
+        {
+            CastSpellExtraArgs extraArgs(TRIGGERED_FULL_MASK);
+            extraArgs.AddSpellMod(SPELLVALUE_BASE_POINT0, target->GetPower(POWER_ALTERNATE_MOUNT));
+            target->CastSpell(target, SPELL_VIGOR_CACHE, extraArgs);
         }
     }
 
-    bool ShouldRegenEnergy(Unit const* caster) const
+    void OnPeriodic(AuraEffect* /*aurEff*/)
     {
-        if (caster->GetPower(POWER_ALTERNATE_MOUNT) == caster->GetMaxPower(POWER_ALTERNATE_MOUNT)) {
-            return false;
+        if (Unit* caster = GetCaster())
+        {
+            if (ShouldRegenEnergy(caster))
+            {
+                if (AuraEffect* subAmountAurEff = caster->GetAuraEffect(SPELL_VIGOR_CACHE, EFFECT_1))
+                {
+                    int32 baseRegen = 20; // Todo : Calculate this based on talents & if we are thrilled/grounded
+
+                    int32 newAmount = subAmountAurEff->GetAmount() + baseRegen;
+
+                    if (newAmount >= 100)
+                    {
+                        newAmount -= 100;
+
+                        caster->CastSpell(caster, SPELL_DRAGONRIDER_ENERGIZE, TRIGGERED_FULL_MASK);
+
+                        if (AuraEffect* amountAurEff = caster->GetAuraEffect(SPELL_VIGOR_CACHE, EFFECT_0))
+                            amountAurEff->SetAmount(caster->GetPower(POWER_ALTERNATE_MOUNT));
+                    }
+
+                    subAmountAurEff->SetAmount(newAmount);
+                    subAmountAurEff->GetBase()->SetNeedClientUpdateForTargets();
+                }
+            }
         }
+    }
 
-        if (caster->GetAdvFlyingVelocity() > THRILL_OF_THE_SKIES_MIN_VELOCITY)
-            return true;
-
-        float ground = caster->GetFloorZ();
-        bool isInAir = (G3D::fuzzyGt(caster->GetPositionZ(), ground + GROUND_HEIGHT_TOLERANCE) || G3D::fuzzyLt(caster->GetPositionZ(), ground - GROUND_HEIGHT_TOLERANCE));
-        return !isInAir;
+    void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        GetTarget()->RemoveAurasDueToSpell(SPELL_VIGOR_CACHE);
     }
 
     void Register() override
     {
-        OnEffectUpdatePeriodic += AuraEffectUpdatePeriodicFn(spell_dragonrider_energy::OnPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        OnEffectApply += AuraEffectApplyFn(spell_af_energy::OnApply, EFFECT_0, SPELL_AURA_ENABLE_ALT_POWER, AURA_EFFECT_HANDLE_REAL);
+        OnEffectUpdatePeriodic += AuraEffectUpdatePeriodicFn(spell_af_energy::OnPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        OnEffectRemove += AuraEffectRemoveFn(spell_af_energy::OnRemove, EFFECT_0, SPELL_AURA_ENABLE_ALT_POWER, AURA_EFFECT_HANDLE_REAL);
+    }
+
+private:
+    bool ShouldRegenEnergy(Unit const* caster) const
+    {
+        if (caster->GetPower(POWER_ALTERNATE_MOUNT) == caster->GetMaxPower(POWER_ALTERNATE_MOUNT))
+            return false;
+
+        FlightCapabilityEntry const* flightCapabilityEntry = sFlightCapabilityStore.LookupEntry(caster->GetFlightCapabilityID());
+        if (!flightCapabilityEntry)
+            return false;
+
+        float velocityRegenThreshold = flightCapabilityEntry->MaxVel * flightCapabilityEntry->VigorRegenMaxVelCoefficient;
+        if (caster->GetAdvFlyingVelocity() >= velocityRegenThreshold)
+            return true;
+
+        return !caster->IsInAir() || caster->IsInWater();
     }
 };
 
 // 374763 - Lift off
 // 372610 - Skyward Ascent (Dragonriding)
-class spell_dr_skyward_ascent : public SpellScript
+class spell_af_skyward_ascent : public SpellScript
 {
-    PrepareSpellScript(spell_dr_skyward_ascent);
-
     void HandleHitTarget(SpellEffIndex effIndex)
     {
         if (Player* caster = GetCaster()->ToPlayer())
@@ -174,15 +159,13 @@ class spell_dr_skyward_ascent : public SpellScript
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_dr_skyward_ascent::HandleHitTarget, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnEffectHitTarget += SpellEffectFn(spell_af_skyward_ascent::HandleHitTarget, EFFECT_0, SPELL_EFFECT_DUMMY);
     }
 };
 
-// 372608 - Surge Forward (Dragonriding)
-class spell_dr_surge_forward : public SpellScript
+// 372608 - Surge Forward
+class spell_af_surge_forward : public SpellScript
 {
-    PrepareSpellScript(spell_dr_surge_forward);
-
     void HandleHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Player* caster = GetCaster()->ToPlayer())
@@ -191,7 +174,7 @@ class spell_dr_surge_forward : public SpellScript
 
             float destX = caster->GetPositionX() + SURGE_SPEED * std::cos(caster->GetOrientation());
             float destY = caster->GetPositionY() + SURGE_SPEED * std::sin(caster->GetOrientation());
-            float destZ = caster->GetPositionZ() + SURGE_SPEED * std::tan(caster->GetPitch());
+            float destZ = caster->GetPositionZ() + SURGE_SPEED * std::tan(caster->m_movementInfo.pitch);
 
             caster->AddMoveImpulse(Position(destX - caster->GetPositionX(), destY - caster->GetPositionY(), destZ - caster->GetPositionZ()));
         }
@@ -199,35 +182,30 @@ class spell_dr_surge_forward : public SpellScript
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_dr_surge_forward::HandleHitTarget, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnEffectHitTarget += SpellEffectFn(spell_af_surge_forward::HandleHitTarget, EFFECT_0, SPELL_EFFECT_DUMMY);
     }
 };
 
-// 361584 - Whirling Surge (Dragonriding)
-class spell_dr_whirling_surge : public SpellScript
+// 361584 - Whirling Surge
+class spell_af_whirling_surge : public SpellScript
 {
-    PrepareSpellScript(spell_dr_whirling_surge);
-
     void HandleHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Player* caster = GetCaster()->ToPlayer())
         {
-            float SURGE_SPEED = 50.0f;
+            float SURGE_SPEED = 60.0f;
 
             float destX = caster->GetPositionX() + SURGE_SPEED * std::cos(caster->GetOrientation());
             float destY = caster->GetPositionY() + SURGE_SPEED * std::sin(caster->GetOrientation());
-            float destZ = caster->GetPositionZ() + SURGE_SPEED * std::tan(caster->GetPitch());
+            float destZ = caster->GetPositionZ() + SURGE_SPEED * std::tan(caster->m_movementInfo.pitch);
 
             caster->AddMoveImpulse(Position(destX - caster->GetPositionX(), destY - caster->GetPositionY(), destZ - caster->GetPositionZ()));
-
-            if (!GetCaster()->HasAura(SPELL_THRILL_OF_THE_SKIES))
-                GetCaster()->CastSpell(GetCaster(), SPELL_THRILL_OF_THE_SKIES, TRIGGERED_FULL_MASK);
         }
     }
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_dr_whirling_surge::HandleHitTarget, EFFECT_0, SPELL_EFFECT_APPLY_AURA);
+        OnEffectHitTarget += SpellEffectFn(spell_af_whirling_surge::HandleHitTarget, EFFECT_0, SPELL_EFFECT_APPLY_AURA);
     }
 };
 
@@ -242,19 +220,19 @@ class spell_switch_flight : public SpellScript
         if (!caster)
             return;
 
-        if (!caster->HasAura(404468) && !caster->HasAura(404464))
+        if (!caster->HasAura(SWITCH_AF_REGULAR) && !caster->HasAura(SWITCH_AF_DRAGONRIDING))
         {
-            caster->CastSpell(caster, 404468, TRIGGERED_FULL_MASK);
+            caster->CastSpell(caster, SWITCH_AF_REGULAR, TRIGGERED_FULL_MASK);
         }
-        else if (!caster->HasAura(404468))
+        else if (!caster->HasAura(SWITCH_AF_REGULAR))
         {
-            caster->RemoveAura(404464);
-            caster->CastSpell(caster, 404468, TRIGGERED_FULL_MASK);
+            caster->RemoveAura(SWITCH_AF_DRAGONRIDING);
+            caster->CastSpell(caster, SWITCH_AF_REGULAR, TRIGGERED_FULL_MASK);
         }
-        else if (!caster->HasAura(404464))
+        else if (!caster->HasAura(SWITCH_AF_DRAGONRIDING))
         {
-            caster->RemoveAura(404468);
-            caster->CastSpell(caster, 404464, TRIGGERED_FULL_MASK);
+            caster->RemoveAura(SWITCH_AF_REGULAR);
+            caster->CastSpell(caster, SWITCH_AF_DRAGONRIDING, TRIGGERED_FULL_MASK);
         }
 
     }
@@ -268,10 +246,10 @@ class spell_switch_flight : public SpellScript
 
 void AddSC_dragonriding_spell_scripts()
 {
-    RegisterSpellScript(spell_dragonriding);
-    RegisterSpellScript(spell_dragonrider_energy);
-    RegisterSpellScript(spell_dr_skyward_ascent);
-    RegisterSpellScript(spell_dr_surge_forward);
-    RegisterSpellScript(spell_dr_whirling_surge);
+    RegisterSpellScript(spell_af_skyriding);
+    RegisterSpellScript(spell_af_energy);
+    RegisterSpellScript(spell_af_skyward_ascent);
+    RegisterSpellScript(spell_af_surge_forward);
+    RegisterSpellScript(spell_af_whirling_surge);
     RegisterSpellScript(spell_switch_flight);
 }

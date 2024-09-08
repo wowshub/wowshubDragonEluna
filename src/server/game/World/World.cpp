@@ -1741,25 +1741,6 @@ void World::LoadConfigSettings(bool reload)
     // Loading of Locales
     m_bool_configs[CONFIG_LOAD_LOCALES] = sConfigMgr->GetBoolDefault("Load.Locales", true);
 
-    // Advanced flying
-    m_float_configs[CONFIG_ADV_FLY_AIR_FRICTION] = sConfigMgr->GetFloatDefault("AdvFly.AirFriction", 1.5f);
-    m_float_configs[CONFIG_ADV_FLY_MAX_VEL] = sConfigMgr->GetFloatDefault("AdvFly.MaxVel", 65.0f);
-    m_float_configs[CONFIG_ADV_FLY_LIFT_COEF] = sConfigMgr->GetFloatDefault("AdvFly.LiftCoef", 0.7f);
-    m_float_configs[CONFIG_ADV_FLY_DOUBLE_JUMP_VEL_MOD] = sConfigMgr->GetFloatDefault("AdvFly.DoubleJumpVelMod", 5.0f);
-    m_float_configs[CONFIG_ADV_FLY_GLIDE_START_MIN_HEIGHT] = sConfigMgr->GetFloatDefault("AdvFly.GlideStartMinHeight", 7.5f);
-    m_float_configs[CONFIG_ADV_FLY_ADD_IMPULSE_MAX_SPEED] = sConfigMgr->GetFloatDefault("AdvFly.AddImpulseMaxSpeed", 100.0f);
-    m_float_configs[CONFIG_ADV_FLY_MIN_BANKING_RATE] = sConfigMgr->GetFloatDefault("AdvFly.MinBankingRate", 140.0f);
-    m_float_configs[CONFIG_ADV_FLY_MAX_BANKING_RATE] = sConfigMgr->GetFloatDefault("AdvFly.MaxBankingRate", 270.0f);
-    m_float_configs[CONFIG_ADV_FLY_MIN_PITCHING_RATE_DOWN] = sConfigMgr->GetFloatDefault("AdvFly.MinPitchingRateDown", 180.0f);
-    m_float_configs[CONFIG_ADV_FLY_MAX_PITCHING_RATE_DOWN] = sConfigMgr->GetFloatDefault("AdvFly.MaxPitchingRateDown", 360.0f);
-    m_float_configs[CONFIG_ADV_FLY_MIN_PITCHING_RATE_UP] = sConfigMgr->GetFloatDefault("AdvFly.MinPitchingRateUp", 180.0f);
-    m_float_configs[CONFIG_ADV_FLY_MAX_PITCHING_RATE_UP] = sConfigMgr->GetFloatDefault("AdvFly.MaxPitchingRateUp", 360.0f);
-    m_float_configs[CONFIG_ADV_FLY_MIN_TURN_VELOCITY_THRESHOLD] = sConfigMgr->GetFloatDefault("AdvFly.MinTurnVelocityThreshold", 45.0f);
-    m_float_configs[CONFIG_ADV_FLY_MAX_TURN_VELOCITY_THRESHOLD] = sConfigMgr->GetFloatDefault("AdvFly.MaxTurnVelocityThreshold", 65.0f);
-    m_float_configs[CONFIG_ADV_FLY_SURFACE_FRICTION] = sConfigMgr->GetFloatDefault("AdvFly.SurfaceFriction", 2.75f);
-    m_float_configs[CONFIG_ADV_FLY_OVER_MAX_DECELERATION] = sConfigMgr->GetFloatDefault("AdvFly.OverMaxDeceleration", 7.0f);
-    m_float_configs[CONFIG_ADV_FLY_LAUNCH_SPEED_COEFFICIENT] = sConfigMgr->GetFloatDefault("AdvFly.LaunchSpeedCoefficient", 0.4f);
-
     // call ScriptMgr if we're reloading the configuration
     if (reload)
         sScriptMgr->OnConfigLoad(reload);

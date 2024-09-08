@@ -1092,10 +1092,16 @@ void WorldPackets::Movement::MoveInitActiveMoverComplete::Read()
 WorldPacket const* WorldPackets::Movement::SetAdvFlyingSpeed::Write()
 {
     _worldPacket << uint32(SequenceIndex);
-    _worldPacket << float(speed);
-    if (maxSpeed) {
-        _worldPacket << float(*maxSpeed);
-    }
+    _worldPacket << float(Speed);
+
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Movement::SetAdvFlyingMinMaxSpeeds::Write()
+{
+    _worldPacket << uint32(SequenceIndex);
+    _worldPacket << float(Speed);
+    _worldPacket << float(MaxSpeed);
 
     return &_worldPacket;
 }
@@ -1105,77 +1111,6 @@ WorldPacket const* WorldPackets::Movement::MoveAddImpulse::Write()
     _worldPacket << MoverGUID;
     _worldPacket << uint32(SequenceIndex);
     _worldPacket << Direction;
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Movement::MoveSetCanAdvFly::Write()
-{
-    _worldPacket << MoverGUID;
-    _worldPacket << uint32(SequenceIndex);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Movement::MoveUnsetCanAdvFly::Write()
-{
-    _worldPacket << MoverGUID;
-    _worldPacket << uint32(SequenceIndex);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Movement::MoveSetAdvFlyingAirFriction::Write()
-{
-    _worldPacket << MoverGUID;
-    _worldPacket << uint32(unk1);
-    _worldPacket << uint32(unk2);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Movement::MoveSetAdvFlyingMaxVel::Write()
-{
-    _worldPacket << MoverGUID;
-    _worldPacket << uint32(unk1);
-    _worldPacket << uint32(unk2);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Movement::MoveSetAdvFlyingLiftCoefficient::Write()
-{
-    _worldPacket << MoverGUID;
-    _worldPacket << uint32(unk1);
-    _worldPacket << uint32(unk2);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Movement::MoveSetAdvFlyingDoubleJumpVelMod::Write()
-{
-    _worldPacket << MoverGUID;
-    _worldPacket << uint32(unk1);
-    _worldPacket << uint32(unk2);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Movement::MoveSetAdvFlyingBankingRate::Write()
-{
-    _worldPacket << MoverGUID;
-    _worldPacket << uint32(unk1);
-    _worldPacket << uint32(unk2);
-    _worldPacket << uint32(unk3);
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Movement::MoveSetAdvFlyingAddImpulseMaxSpeed::Write()
-{
-    _worldPacket << MoverGUID;
-    _worldPacket << uint32(unk1);
-    _worldPacket << uint32(unk2);
 
     return &_worldPacket;
 }

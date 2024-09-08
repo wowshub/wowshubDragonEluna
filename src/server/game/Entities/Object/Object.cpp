@@ -377,23 +377,29 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
             *data << float(1.0f);                                       // MovementForcesModMagnitude
         }
 
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_AIR_FRICTION));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_MAX_VEL));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_LIFT_COEF));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_DOUBLE_JUMP_VEL_MOD));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_GLIDE_START_MIN_HEIGHT));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_ADD_IMPULSE_MAX_SPEED));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_MIN_BANKING_RATE));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_MAX_BANKING_RATE));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_MIN_PITCHING_RATE_DOWN));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_MAX_PITCHING_RATE_DOWN));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_MIN_PITCHING_RATE_UP));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_MAX_PITCHING_RATE_UP));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_MIN_TURN_VELOCITY_THRESHOLD));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_MAX_TURN_VELOCITY_THRESHOLD));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_SURFACE_FRICTION));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_OVER_MAX_DECELERATION));
-        *data << float(unit->GetAdvFlyRate(ADV_FLY_LAUNCH_SPEED_COEFFICIENT));
+        FlightCapabilityEntry const* flightCapabilityEntry = sFlightCapabilityStore.LookupEntry(unit->GetFlightCapabilityID());
+        if (!flightCapabilityEntry)
+            flightCapabilityEntry = sFlightCapabilityStore.LookupEntry(1);
+
+        ASSERT(flightCapabilityEntry, "Wrong default value for flightCapabilityID");
+
+        *data << float(flightCapabilityEntry->AirFriction);
+        *data << float(flightCapabilityEntry->MaxVel);
+        *data << float(flightCapabilityEntry->LiftCoefficient);
+        *data << float(flightCapabilityEntry->DoubleJumpVelMod);
+        *data << float(flightCapabilityEntry->GlideStartMinHeight);
+        *data << float(flightCapabilityEntry->AddImpulseMaxSpeed);
+        *data << float(flightCapabilityEntry->BankingRateMin);
+        *data << float(flightCapabilityEntry->BankingRateMax);
+        *data << float(flightCapabilityEntry->PitchingRateDownMin);
+        *data << float(flightCapabilityEntry->PitchingRateDownMax);
+        *data << float(flightCapabilityEntry->PitchingRateUpMin);
+        *data << float(flightCapabilityEntry->PitchingRateUpMax);
+        *data << float(flightCapabilityEntry->TurnVelocityThresholdMin);
+        *data << float(flightCapabilityEntry->TurnVelocityThresholdMax);
+        *data << float(flightCapabilityEntry->SurfaceFriction);
+        *data << float(flightCapabilityEntry->OverMaxDeceleration);
+        *data << float(flightCapabilityEntry->LaunchSpeedCoefficient);
 
         data->WriteBit(HasSpline);
         data->FlushBits();
