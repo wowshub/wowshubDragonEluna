@@ -52,7 +52,7 @@ class spell_af_skyriding : public AuraScript
     {
         Unit* caster = GetCaster();
 
-        if (caster->HasAura(SWITCH_AF_DRAGONRIDING) && !caster->HasAura(SPELL_ENERGY_WIDGET))
+        if (caster->HasAura(SWITCH_AF_DRAGONRIDING))
         {
             GetTarget()->CastSpell(GetTarget(), SPELL_ENERGY_WIDGET, true);
             GetTarget()->SetPower(POWER_ALTERNATE_MOUNT, GetTarget()->GetPower(POWER_ALTERNATE_MOUNT), true);
@@ -66,8 +66,8 @@ class spell_af_skyriding : public AuraScript
 
     void Register() override
     {
-        OnEffectApply += AuraEffectApplyFn(spell_af_skyriding::OnApply, EFFECT_0, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_af_skyriding::OnRemove, EFFECT_0, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(spell_af_skyriding::OnApply, EFFECT_2, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_af_skyriding::OnRemove, EFFECT_2, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
     }
 };
 

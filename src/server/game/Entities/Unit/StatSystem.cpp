@@ -957,8 +957,6 @@ uint32 Creature::GetPowerIndex(Powers power) const
             return 3;
         case POWER_ALTERNATE_ENCOUNTER:
             return 4;
-        case POWER_ALTERNATE_MOUNT:
-            return 5;
         default:
             break;
     }
