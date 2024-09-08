@@ -1479,6 +1479,7 @@ class TC_GAME_API Unit : public WorldObject
         void AddSummonedCreature(ObjectGuid guid, uint32 entry);
         void RemoveSummonedCreature(ObjectGuid guid);
         Creature* GetSummonedCreatureByEntry(uint32 entry);
+        int32 GetTotalSpellPowerValue(SpellSchoolMask mask, bool heal) const;
         void UnsummonCreatureByEntry(uint32 entry, uint32 ms = 0);
 
 

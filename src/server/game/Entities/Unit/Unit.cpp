@@ -3207,6 +3207,56 @@ Creature* Unit::GetSummonedCreatureByEntry(uint32 entry)
     return ObjectAccessor::GetCreature(*this, itr->first);
 }
 
+int32 Unit::GetTotalSpellPowerValue(SpellSchoolMask mask, bool heal) const
+{
+    if (!IsPlayer())
+    {
+        if (GetOwner())
+        {
+            if (Player* ownerPlayer = GetOwner()->ToPlayer())
+            {
+                if (IsTotem())
+                    return GetOwner()->GetTotalSpellPowerValue(mask, heal);
+                else
+                {
+                    if (IsPet())
+                        return ownerPlayer->m_activePlayerData->PetSpellPower;
+                    else if (IsGuardian())
+                        return ((Guardian*)this)->GetBonusDamage();
+                }
+            }
+        }
+
+        if (heal)
+            return SpellBaseHealingBonusDone(mask);
+        else
+            return SpellBaseDamageBonusDone(mask);
+    }
+
+    Player const* thisPlayer = ToPlayer();
+
+    int32 sp = 0;
+
+    if (heal)
+        sp = thisPlayer->m_activePlayerData->ModHealingDonePos;
+    else
+    {
+        int32 counter = 0;
+        for (uint32 i = 1; i < MAX_SPELL_SCHOOL; i++)
+        {
+            if (mask & (1 << i))
+            {
+                sp += thisPlayer->m_activePlayerData->ModDamageDonePos[i];
+                counter++;
+            }
+        }
+        if (counter > 0)
+            sp /= counter;
+    }
+
+    return std::max(sp, 0); //avoid negative spell power
+}
+
 void Unit::UnsummonCreatureByEntry(uint32 entry, uint32 ms/* = 0*/)
 {
     if (Creature* creature = GetSummonedCreatureByEntry(entry))
