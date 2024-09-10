@@ -27,16 +27,13 @@
 #include "SpellPackets.h"
 #include "Player.h"
 
-void Crafting::DoCraft(uint32 craftingDataId)
+SpellCastResult Crafting::DoCraft(uint32 craftingDataId)
 {
     std::vector<ModifiedCraftingSpellSlotEntry const*> spellSlots = sDB2Manager.GetMCRSpellSlotBySpell(_spell->GetSpellInfo()->Id);
     _craftingData = sCraftingDataStore.LookupEntry(craftingDataId);
 
     if (!_craftingData || spellSlots.empty())
-    {
-        _spell->SendCastResult(SpellCastResult::SPELL_FAILED_ERROR);
-        return;
-    }
+        return SpellCastResult::SPELL_FAILED_ERROR;
 
     std::unordered_map<uint32 /*itemId*/, uint32 /*quantity*/> usedReagentsToDestroy;
     std::vector<uint32> bonusTreeIds;
@@ -76,10 +73,7 @@ void Crafting::DoCraft(uint32 craftingDataId)
         {
             // If we don't have enough Reagent for this slot and it is required, craft failed
             if (reagentSlot->ReagentType == MCR_REAGENT_TYPE_REQUIRED)
-            {
-                _spell->SendCastResult(SpellCastResult::SPELL_FAILED_NEED_MORE_ITEMS);
-                return;
-            }
+                return SpellCastResult::SPELL_FAILED_NEED_MORE_ITEMS;
 
             // Still not enough but the reagent is optional, just skip
             continue;
@@ -112,10 +106,7 @@ void Crafting::DoCraft(uint32 craftingDataId)
 
         // If any item provided do not match, probably a cheater, return
         if (!hasOneMatchingItem)
-        {
-            _spell->SendCastResult(SpellCastResult::SPELL_FAILED_NEED_MORE_ITEMS);
-            return;
-        }
+            return SpellCastResult::SPELL_FAILED_NEED_MORE_ITEMS;
     }
 
     uint32 skillLevel = GetSkillLevelForCraft();
@@ -123,44 +114,34 @@ void Crafting::DoCraft(uint32 craftingDataId)
 
     uint32 qualityTier = sDB2Manager.GetCraftingQualityTierByDifficultyPercent(_craftingData->CraftingDifficultyID, difficultyPercentMatched);
 
-    // If this is a simple item (no quality), we have the id
-    uint32 newItemId = _craftingData->CraftedItemID;
+    uint32 craftedItemId = GetCraftedItemIdForQuality(qualityTier);
 
-    // If it's a reagent, get id from CraftingDataItem
-    if (!newItemId)
-    {
-        std::vector<uint32> craftedItemList = sDB2Manager.GetCraftingDataItemIDByCraftingData(_craftingData->ID);
-
-        // If we didn't found anything, we have a problem. Return and don't take reagent from player.
-        if (craftedItemList.size() < qualityTier)
-        {
-            _spell->SendCastResult(SpellCastResult::SPELL_FAILED_ERROR);
-            return;
-        }
-
-        newItemId = craftedItemList[qualityTier - 1];
-    }
+    // If we didn't found anything, we have a problem. Return and don't take reagent from player.
+    if (!craftedItemId)
+        return SpellCastResult::SPELL_FAILED_ERROR;
 
     ItemContext context = _spell->GetSpellInfo()->HasAttribute(SPELL_ATTR0_IS_TRADESKILL) ? ItemContext::Trade_Skill : ItemContext::NONE;
 
     std::vector<int32> bonusLists;
     for (int32 bonusTreeID : bonusTreeIds)
     {
-        std::vector<int32> treeBonusList = ItemBonusMgr::GetBonusListsForItem(newItemId, { context, {}, {}, bonusTreeID, qualityTier });
+        std::vector<int32> treeBonusList = ItemBonusMgr::GetBonusListsForItem(craftedItemId, { context, {}, {}, bonusTreeID, qualityTier });
         bonusLists.insert(std::end(bonusLists), std::begin(treeBonusList), std::end(treeBonusList));
     }
 
-    if (Item* createdItem = _spell->DoCreateItem(newItemId, context, &bonusLists, false))
+    if (Item* createdItem = _spell->DoCreateItem(craftedItemId, context, &bonusLists, false))
     {
         InitCraftingStatModifier(createdItem);
 
         createdItem->AddToWorld();
-        createdItem->SendUpdateToPlayer(createdItem->GetOwner());
+        createdItem->SendUpdateToPlayer(_player);
     }
 
     // Item has been crafted, remove reagent from player
     for (auto const& [itemId, itemCount] : usedReagentsToDestroy)
         _player->DestroyItemCount(itemId, itemCount, true);
+
+    return SpellCastResult::SPELL_CAST_OK;
 }
 
 uint32 Crafting::GetSkillLevelForCraft()
@@ -240,4 +221,22 @@ void Crafting::InitCraftingStatModifier(Item* item)
         else if (item->GetItemStatType(i) == ITEM_MOD_MODIFIED_CRAFTING_STAT_2)
             item->SetModifier(ITEM_MODIFIER_CHANGE_MODIFIED_CRAFTING_STAT_2, allowedStats[1]);
     }
+}
+
+uint32 Crafting::GetCraftedItemIdForQuality(uint32 qualityTier)
+{
+    // If this is a simple item (no quality), we have the id
+    uint32 newItemId = _craftingData->CraftedItemID;
+
+    // If it's a reagent with quality, get id from CraftingDataItem
+    if (!newItemId)
+    {
+        std::vector<uint32> craftedItemList = sDB2Manager.GetCraftingDataItemIDByCraftingData(_craftingData->ID);
+        if (craftedItemList.size() < qualityTier)
+            return 0;
+
+        newItemId = craftedItemList[qualityTier - 1];
+    }
+
+    return newItemId;
 }
