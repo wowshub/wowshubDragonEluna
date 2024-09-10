@@ -91,13 +91,12 @@ class spell_necronom_i_nom : public SpellScript
 
 enum ItemIds
 {
-    YELLOW = 163521,
-    PURPLE = 163518,
-    GREEN = 163172,
-    RED = 163517,
-    ORANGE = 163520,
-    BLUE = 163516,
-    MAX_ITEM_ID
+    YELLOW  = 163521,
+    PURPLE  = 163518,
+    GREEN   = 163172,
+    RED     = 163517,
+    ORANGE  = 163520,
+    BLUE    = 163516
 };
 
 // itemid - 166704
@@ -112,31 +111,29 @@ class spell_bowl_of_glowing_pufferfish : public SpellScript
 
         if (Player* player = caster->ToPlayer())
         {
-            uint32 randomIndex = urand(0, MAX_ITEM_ID - 1);
+            uint32 RandomItem = urand(0, 5);
 
-            uint32 itemId = 0;
-            switch (randomIndex)
+            switch (RandomItem)
             {
             case 0:
-                itemId = YELLOW;
+                player->AddItem(YELLOW, 1);
                 break;
             case 1:
-                itemId = PURPLE;
+                player->AddItem(PURPLE, 1);
                 break;
             case 2:
-                itemId = GREEN;
+                player->AddItem(GREEN, 1);
                 break;
             case 3:
-                itemId = RED;
+                player->AddItem(RED, 1);
                 break;
             case 4:
-                itemId = ORANGE;
+                player->AddItem(ORANGE, 1);
                 break;
             case 5:
-                itemId = BLUE;
+                player->AddItem(BLUE, 1);
                 break;
             }
-            player->AddItem(itemId, 1);
         }
     }
 
