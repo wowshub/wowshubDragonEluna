@@ -35,7 +35,13 @@ enum ToySpells
     SPELL_NECRONOM_I_NOM_MORPH              = 340118,
     SPELL_NECRONOM_I_NOM_SCALE              = 340161,
     SPELL_NECRONOM_I_NOM_FILTER             = 341640,
-    SPELL_BOWL_OF_GLOWING_PUFFERFISH_TAKE   = 291106,
+    SPELL_TWELVE_STRING_GUITAR              = 232247,
+    SPELL_TWELVE_STRING_GUITAR_2            = 232596,
+    SPELL_TWELVE_STRING_GUITAR_3            = 232597,
+    SPELL_TWELVE_STRING_GUITAR_4            = 232598,
+    SPELL_TWELVE_STRING_GUITAR_5            = 232599
+
+
 
 };
 
@@ -143,16 +149,53 @@ class spell_bowl_of_glowing_pufferfish : public SpellScript
     }
 };
 
-class item_darkmoon_faire_fireworks2 : public ItemScript
+// itemid - 143543
+// spellid - 232592
+class spell_twelve_string_guitar : public SpellScript
 {
-public:
-    item_darkmoon_faire_fireworks2() : ItemScript("item_darkmoon_faire_fireworks2") { }
-
-    bool OnUse(Player* player, Item* /*item*/, SpellCastTargets const& /*targets*/, ObjectGuid /*castId*/) override
+    bool Validate(SpellInfo const* /*spellInfo*/) override
     {
-        player->CastSpell(player, 103740, false);
+        return ValidateSpellInfo(
+            {
+                SPELL_TWELVE_STRING_GUITAR,
+                SPELL_TWELVE_STRING_GUITAR_2,
+                SPELL_TWELVE_STRING_GUITAR_3,
+                SPELL_TWELVE_STRING_GUITAR_4,
+                SPELL_TWELVE_STRING_GUITAR_5
+            });
+    }
 
-        return true;
+    void HandleOnCast()
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        uint32 RandomEffects = urand(0, 4);
+
+        switch (RandomEffects)
+        {
+        case 0:
+            caster->CastSpell(caster, SPELL_TWELVE_STRING_GUITAR, true);
+            break;
+        case 1:
+            caster->CastSpell(caster, SPELL_TWELVE_STRING_GUITAR_2, true);
+            break;
+        case 2:
+            caster->CastSpell(caster, SPELL_TWELVE_STRING_GUITAR_3, true);
+            break;
+        case 3:
+            caster->CastSpell(caster, SPELL_TWELVE_STRING_GUITAR_4, true);
+            break;
+        case 4:
+            caster->CastSpell(caster, SPELL_TWELVE_STRING_GUITAR_5, true);
+            break;
+        }
+    }
+
+    void Register() override
+    {
+        OnCast += SpellCastFn(spell_twelve_string_guitar::HandleOnCast);
     }
 };
 
@@ -160,5 +203,5 @@ void AddSC_toy_spell_scripts()
 {
     RegisterSpellScript(spell_necronom_i_nom);
     RegisterSpellScript(spell_bowl_of_glowing_pufferfish);
-    new item_darkmoon_faire_fireworks2();
+    RegisterSpellScript(spell_twelve_string_guitar);
 }
