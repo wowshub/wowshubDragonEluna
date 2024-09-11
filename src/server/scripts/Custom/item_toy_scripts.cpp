@@ -199,6 +199,14 @@ class spell_twelve_string_guitar : public SpellScript
     }
 };
 
+//176199	Mystery Keg
+//176202	Mystery Keg
+//176203	Mystery Keg
+//176205	Mystery Keg
+//176206	Mystery Keg
+//176209	Mystery Keg
+//176212	Mystery Keg
+
 void AddSC_toy_spell_scripts()
 {
     RegisterSpellScript(spell_necronom_i_nom);
