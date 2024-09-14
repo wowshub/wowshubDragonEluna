@@ -36,6 +36,9 @@
 #include "QuestPools.h"
 #include "ReputationMgr.h"
 #include "ScriptMgr.h"
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
 #include "World.h"
 
 void WorldSession::HandleQuestgiverStatusQueryOpcode(WorldPackets::Quest::QuestGiverStatusQuery& packet)
@@ -57,6 +60,12 @@ void WorldSession::HandleQuestgiverHelloOpcode(WorldPackets::Quest::QuestGiverHe
 {
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_QUESTGIVER_HELLO {}", packet.QuestGiverGUID.ToString());
 
+#ifndef DISABLE_DRESSNPCS_CORESOUNDS
+    if (packet.QuestGiverGUID.IsAnyTypeCreature())
+        if (Creature* creature = _player->GetMap()->GetCreature(packet.QuestGiverGUID))
+            creature->SendMirrorSound(_player, 0);
+#endif
+
     Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(packet.QuestGiverGUID, UNIT_NPC_FLAG_QUESTGIVER, UNIT_NPC_FLAG_2_NONE);
     if (!creature)
     {
@@ -75,6 +84,13 @@ void WorldSession::HandleQuestgiverHelloOpcode(WorldPackets::Quest::QuestGiverHe
     creature->SetHomePosition(creature->GetPosition());
 
     _player->PlayerTalkClass->ClearMenus();
+
+#ifdef ELUNA
+    if (Eluna* e = GetPlayer()->GetEluna())
+        if (e->OnGossipHello(_player, creature))
+            return;
+#endif
+
     if (creature->AI()->OnGossipHello(_player))
         return;
 
