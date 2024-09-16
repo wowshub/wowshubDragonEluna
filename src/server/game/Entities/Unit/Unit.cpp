@@ -369,6 +369,7 @@ Unit::Unit(bool isWorldObject) :
     m_baseSpellCritChance = 5.0f;
 
     m_speed_rate.fill(1.0f);
+    _advFlyingSpeeds.fill(0.0f);
 
     // remove aurastates allowing special moves
     m_reactiveTimer = { };
@@ -5033,6 +5034,33 @@ float Unit::GetTotalAuraMultiplier(AuraType auraType, std::function<bool(AuraEff
     return multiplier;
 }
 
+float Unit::GetTotalAuraPercent(AuraType auraType, std::function<bool(AuraEffect const*)> const& predicate) const
+{
+    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auraType);
+    if (mTotalAuraList.empty())
+        return 1.0f;
+
+    std::map<SpellGroup, int32> sameEffectSpellGroup;
+    float multiplier = 1.0f;
+
+    for (AuraEffect const* aurEff : mTotalAuraList)
+    {
+        if (predicate(aurEff))
+        {
+            // Check if the Aura Effect has a the Same Effect Stack Rule and if so, use the highest amount of that SpellGroup
+            // If the Aura Effect does not have this Stack Rule, it returns false so we can add to the multiplier as usual
+            if (!sSpellMgr->AddSameEffectStackRuleSpellGroups(aurEff->GetSpellInfo(), static_cast<uint32>(auraType), aurEff->GetAmount(), sameEffectSpellGroup))
+                ApplyPct(multiplier, aurEff->GetAmount());
+        }
+    }
+
+    // Add the highest of the Same Effect Stack Rule SpellGroups to the multiplier
+    for (auto itr = sameEffectSpellGroup.begin(); itr != sameEffectSpellGroup.end(); ++itr)
+        ApplyPct(multiplier, itr->second);
+
+    return multiplier;
+}
+
 int32 Unit::GetMaxPositiveAuraModifier(AuraType auraType, std::function<bool(AuraEffect const*)> const& predicate) const
 {
     AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auraType);
@@ -5073,6 +5101,11 @@ int32 Unit::GetTotalAuraModifier(AuraType auraType) const
 float Unit::GetTotalAuraMultiplier(AuraType auraType) const
 {
     return GetTotalAuraMultiplier(auraType, [](AuraEffect const* /*aurEff*/) { return true; });
+}
+
+float Unit::GetTotalAuraPercent(AuraType auraType) const
+{
+    return GetTotalAuraPercent(auraType, [](AuraEffect const* /*aurEff*/) { return true; });
 }
 
 int32 Unit::GetMaxPositiveAuraModifier(AuraType auraType) const
@@ -9861,6 +9894,8 @@ void Unit::AddToWorld()
     i_motionMaster->AddToWorld();
 
     RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags::EnterWorld);
+
+    CalculateAdvFlyingSpeeds();
 }
 
 void Unit::RemoveFromWorld()
@@ -12571,6 +12606,49 @@ bool Unit::CanSwim() const
     return HasUnitFlag(UNIT_FLAG_RENAME | UNIT_FLAG_CAN_SWIM);
 }
 
+void Unit::SetFlightCapabilityID(uint32 flightCapabilityID)
+{
+    SetUpdateFieldFlagValue(m_values.ModifyValue(&Unit::m_unitData).ModifyValue(&UF::UnitData::FlightCapabilityID), flightCapabilityID);
+
+    CalculateAdvFlyingSpeeds();
+}
+
+void Unit::CalculateAdvFlyingSpeeds()
+{
+    FlightCapabilityEntry const* flightCapabilityEntry = sFlightCapabilityStore.LookupEntry(GetFlightCapabilityID());
+    if (!flightCapabilityEntry)
+        flightCapabilityEntry = sFlightCapabilityStore.LookupEntry(1);
+
+    ASSERT(flightCapabilityEntry, "Wrong default value for flightCapabilityID");
+
+    _advFlyingSpeeds[ADV_FLYING_ADD_IMPULSE_MAX_SPEED] = flightCapabilityEntry->AddImpulseMaxSpeed * GetTotalAuraPercent(SPELL_AURA_ADV_FLY_MOD_ADD_IMPULSE_MAX_SPEED);
+    _advFlyingSpeeds[ADV_FLYING_AIR_FRICTION] = flightCapabilityEntry->AirFriction * GetTotalAuraPercent(SPELL_AURA_ADV_FLY_MOD_AIR_FRICTION);
+    _advFlyingSpeeds[ADV_FLYING_BANKING_RATE_MIN] = flightCapabilityEntry->BankingRateMin * GetTotalAuraPercent(SPELL_AURA_ADV_FLY_MOD_BANKING_RATE);
+    _advFlyingSpeeds[ADV_FLYING_BANKING_RATE_MAX] = flightCapabilityEntry->BankingRateMax * GetTotalAuraPercent(SPELL_AURA_ADV_FLY_MOD_BANKING_RATE);
+    _advFlyingSpeeds[ADV_FLYING_DOUBLE_JUMP_VEL_MOD] = flightCapabilityEntry->DoubleJumpVelMod;
+    _advFlyingSpeeds[ADV_FLYING_GLIDE_START_MIN_HEIGHT] = flightCapabilityEntry->GlideStartMinHeight;
+    _advFlyingSpeeds[ADV_FLYING_LAUNCH_SPEED_COEFFICIENT] = flightCapabilityEntry->LaunchSpeedCoefficient;
+    _advFlyingSpeeds[ADV_FLYING_LIFT_COEFFICIENT] = flightCapabilityEntry->LiftCoefficient * GetTotalAuraPercent(SPELL_AURA_ADV_FLY_MOD_LIFT_COEF);
+    _advFlyingSpeeds[ADV_FLYING_MAX_VEL] = flightCapabilityEntry->MaxVel * GetTotalAuraPercent(SPELL_AURA_ADV_FLY_MOD_MAX_VEL);
+    _advFlyingSpeeds[ADV_FLYING_OVER_MAX_DECELERATION] = flightCapabilityEntry->OverMaxDeceleration * GetTotalAuraPercent(SPELL_AURA_ADV_FLY_MOD_OVER_MAX_DECELERATION);
+    _advFlyingSpeeds[ADV_FLYING_PITCHING_RATE_DOWN_MIN] = flightCapabilityEntry->PitchingRateDownMin * GetTotalAuraPercent(SPELL_AURA_ADV_FLY_MOD_PITCHING_RATE_DOWN);
+    _advFlyingSpeeds[ADV_FLYING_PITCHING_RATE_DOWN_MAX] = flightCapabilityEntry->PitchingRateDownMax * GetTotalAuraPercent(SPELL_AURA_ADV_FLY_MOD_PITCHING_RATE_DOWN);
+    _advFlyingSpeeds[ADV_FLYING_PITCHING_RATE_UP_MIN] = flightCapabilityEntry->PitchingRateUpMin * GetTotalAuraPercent(SPELL_AURA_ADV_FLY_MOD_PITCHING_RATE_UP);
+    _advFlyingSpeeds[ADV_FLYING_PITCHING_RATE_UP_MAX] = flightCapabilityEntry->PitchingRateUpMax * GetTotalAuraPercent(SPELL_AURA_ADV_FLY_MOD_PITCHING_RATE_UP);
+    _advFlyingSpeeds[ADV_FLYING_SURFACE_FRICTION] = flightCapabilityEntry->SurfaceFriction;
+    _advFlyingSpeeds[ADV_FLYING_TURN_VELOCITY_THRESHOLD_MIN] = flightCapabilityEntry->TurnVelocityThresholdMin;
+    _advFlyingSpeeds[ADV_FLYING_TURN_VELOCITY_THRESHOLD_MAX] = flightCapabilityEntry->TurnVelocityThresholdMax;
+}
+
+float Unit::GetAdvFlyingVelocity() const
+{
+    Optional<MovementInfo::AdvFlying> const& advFlying = m_movementInfo.advFlying;
+    if (!advFlying)
+        return .0f;
+
+    return std::sqrt(advFlying->forwardVelocity * advFlying->forwardVelocity + advFlying->upVelocity * advFlying->upVelocity);
+}
+
 void Unit::NearTeleportTo(Position const& pos, bool casting /*= false*/)
 {
     DisableSpline();
@@ -13103,6 +13181,37 @@ bool Unit::SetCanFly(bool enable)
         WorldPackets::Movement::MoveSplineSetFlag packet(flyOpcodeTable[enable][0]);
         packet.MoverGUID = GetGUID();
         SendMessageToSet(packet.Write(), true);
+    }
+
+    return true;
+}
+
+bool Unit::SetCanAdvFly(bool enable)
+{
+    if (enable == HasExtraUnitMovementFlag2(MOVEMENTFLAG3_CAN_ADV_FLY))
+        return false;
+
+    if (enable)
+        AddExtraUnitMovementFlag2(MOVEMENTFLAG3_CAN_ADV_FLY);
+    else
+        RemoveExtraUnitMovementFlag2(MOVEMENTFLAG3_CAN_ADV_FLY);
+
+    static OpcodeServer const advFlyOpcodeTable[2] =
+    {
+        SMSG_MOVE_UNSET_CAN_ADV_FLY,
+        SMSG_MOVE_SET_CAN_ADV_FLY
+    };
+
+    if (Player* playerMover = Unit::ToPlayer(GetUnitBeingMoved()))
+    {
+        WorldPackets::Movement::MoveSetFlag packet(advFlyOpcodeTable[enable]);
+        packet.MoverGUID = GetGUID();
+        packet.SequenceIndex = m_movementCounter++;
+        playerMover->SendDirectMessage(packet.Write());
+
+        WorldPackets::Movement::MoveUpdate moveUpdate;
+        moveUpdate.Status = &m_movementInfo;
+        SendMessageToSet(moveUpdate.Write(), playerMover);
     }
 
     return true;
@@ -14219,44 +14328,4 @@ Unit::AuraApplicationVector Unit::GetTargetAuraApplications(uint32 spellId) cons
     }
 
     return aurApps;
-}
-
-float Unit::GetAdvFlyingVelocity() const
-{
-    Optional<MovementInfo::AdvFlying> const& advFlying = m_movementInfo.advFlying;
-    if (!advFlying)
-        return .0f;
-
-    return std::sqrt(advFlying->forwardVelocity * advFlying->forwardVelocity + advFlying->upVelocity * advFlying->upVelocity);
-}
-
-bool Unit::SetCanAdvFly(bool enable)
-{
-    if (enable == HasExtraUnitMovementFlag2(MOVEMENTFLAG3_CAN_ADV_FLY))
-        return false;
-
-    if (enable)
-        AddExtraUnitMovementFlag2(MOVEMENTFLAG3_CAN_ADV_FLY);
-    else
-        RemoveExtraUnitMovementFlag2(MOVEMENTFLAG3_CAN_ADV_FLY);
-
-    static OpcodeServer const advFlyOpcodeTable[2] =
-    {
-        SMSG_MOVE_UNSET_CAN_ADV_FLY,
-        SMSG_MOVE_SET_CAN_ADV_FLY
-    };
-
-    if (Player* playerMover = Unit::ToPlayer(GetUnitBeingMoved()))
-    {
-        WorldPackets::Movement::MoveSetFlag packet(advFlyOpcodeTable[enable]);
-        packet.MoverGUID = GetGUID();
-        packet.SequenceIndex = m_movementCounter++;
-        playerMover->SendDirectMessage(packet.Write());
-
-        WorldPackets::Movement::MoveUpdate moveUpdate;
-        moveUpdate.Status = &m_movementInfo;
-        SendMessageToSet(moveUpdate.Write(), playerMover);
-    }
-
-    return true;
 }

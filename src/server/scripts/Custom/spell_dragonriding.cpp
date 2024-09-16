@@ -50,11 +50,9 @@ class spell_af_skyriding : public AuraScript
 {
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
-        Unit* caster = GetCaster();
-
-        if (caster->HasAura(SWITCH_AF_DRAGONRIDING))
+        if (GetTarget()->HasAura(SWITCH_AF_DRAGONRIDING))
         {
-            GetTarget()->CastSpell(GetTarget(), SPELL_ENERGY_WIDGET, true);
+            GetTarget()->CastSpell(GetTarget(), SPELL_ENERGY_WIDGET, TRIGGERED_FULL_MASK);
             GetTarget()->SetPower(POWER_ALTERNATE_MOUNT, GetTarget()->GetPower(POWER_ALTERNATE_MOUNT), true);
         }
     }

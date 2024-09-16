@@ -665,7 +665,7 @@ void OpcodeTable::InitializeClientOpcodes()
     DEFINE_HANDLER(CMSG_MOVE_SET_ADV_FLYING_PITCHING_RATE_UP_ACK,           STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleMovementAckMessage);
     DEFINE_HANDLER(CMSG_MOVE_SET_ADV_FLYING_SURFACE_FRICTION_ACK,           STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleMovementAckMessage);
     DEFINE_HANDLER(CMSG_MOVE_SET_ADV_FLYING_TURN_VELOCITY_THRESHOLD_ACK,    STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleMovementAckMessage);
-    DEFINE_HANDLER(CMSG_MOVE_SET_CAN_ADV_FLY_ACK,                           STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::Handle_NULL);
+    DEFINE_HANDLER(CMSG_MOVE_SET_CAN_ADV_FLY_ACK,                           STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleMovementAckMessage);
     DEFINE_HANDLER(CMSG_MOVE_SET_CAN_FLY_ACK,                               STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleMovementAckMessage);
     DEFINE_HANDLER(CMSG_MOVE_SET_CAN_TURN_WHILE_FALLING_ACK,                STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleMovementAckMessage);
     DEFINE_HANDLER(CMSG_MOVE_SET_COLLISION_HEIGHT_ACK,                      STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleSetCollisionHeightAck);
