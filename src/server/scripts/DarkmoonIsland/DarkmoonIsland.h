@@ -21,7 +21,11 @@
 enum darkmoonIslandQuests
 {
     QUEST_WHACK_A_GNOLL         = 29463,
-    QUEST_HUMANOID_CANNONBALL   = 29436
+    QUEST_HUMANOID_CANNONBALL   = 29436,
+    QUEST_TARGET_TURTLE         = 29455,
+    QUEST_HE_SHOOTS_HE_SCORES   = 29438,
+    QUEST_ITS_HAMMER_TIME       = 29463,
+    QUEST_TONK_COMMANDER        = 29434,
 };
 
 enum darkmoonIslandItems

@@ -63,16 +63,18 @@
 
 enum eSpells
 {
-    SPELL_CANON_PREPARATION = 102112,
-    SPELL_ROOT = 97936,
+    SPELL_CANON_PREPARATION         = 102112,
+    SPELL_ROOT                      = 94563,
+    SPELL_HELPER_FLY                = 34873,
 
-    SPELL_CANON_DEFLAGRATION = 102121,
-    SPELL_MAGIC_WINGS = 102116,
+    SPELL_CANON_DEFLAGRATION        = 102121,
+    SPELL_MAGIC_WINGS               = 102116,
+    SPELL_CANNONBALL_LAUNCH_VISUAL  = 102115,
 
-    SPELL_TARGET_CREDIT = 100962,
-    SPELL_TARGET_CENTER = 62173,
-    SPELL_TARGET_NEAR = 62175,
-    SPELL_TARGET_MISS = 62179
+    SPELL_TARGET_CREDIT             = 100962,
+    SPELL_TARGET_CENTER             = 62173,
+    SPELL_TARGET_NEAR               = 62175,
+    SPELL_TARGET_MISS               = 62179,
 };
 
 #define ACHIEVEMENT_BLASTENHEIMER_BULLSEYE  6021
@@ -92,7 +94,7 @@ public:
                 player->PrepareQuestMenu(me->GetGUID());
 
             if (player->GetQuestStatus(QUEST_HUMANOID_CANNONBALL) == QUEST_STATUS_INCOMPLETE)
-                AddGossipItemFor(player, GossipOptionNpc::None, "Давай! (Использовать жетон Новолуния)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Launch me! |cFF0000FF(Darkmoon Game Token)|r", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
             SendGossipMenuFor(player, player->GetGossipTextId(me), me->GetGUID());
             return true;
@@ -107,10 +109,11 @@ public:
             }
 
             player->DestroyItemCount(ITEM_DARKMOON_TOKEN, 1, true);
-
-            player->NearTeleportTo(-4018.15f, 6299.57f, 13.11f, 3.31f, true);
-            player->CastSpell(player, SPELL_CANON_PREPARATION, false);
-            player->CastSpell(player, SPELL_ROOT, false);
+            player->CastSpell(player, SPELL_ROOT, true);
+            player->CastSpell(player, 102113, true);
+            if (Aura* flyAura = player->AddAura(SPELL_HELPER_FLY, player))
+                flyAura->SetDuration(5000);
+            player->CastSpell(player, SPELL_CANON_PREPARATION, true);
 
             CloseGossipMenuFor(player);
             return true;
@@ -163,20 +166,21 @@ public:
                 uint32 dist = me->GetDistance(player);
                 uint32 creditCount = 1;
 
-                if (dist <= 3.0f)
+                if (dist <= 2.0f)
                 {
                     if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(ACHIEVEMENT_BLASTENHEIMER_BULLSEYE))
                         player->CompletedAchievement(achievementEntry);
                     me->AddAura(SPELL_TARGET_CENTER, player);
                     creditCount = 5;
                 }
-                else if (dist <= 10.0f)
+                else if (dist <= 5.0f)
                 {
                     me->AddAura(SPELL_TARGET_NEAR, player);
                     creditCount = 3;
                 }
                 else
                     me->AddAura(SPELL_TARGET_MISS, player);
+                    player->RemoveAurasDueToSpell(SPELL_CANON_DEFLAGRATION);
 
                 for (uint8 i = 0; i < creditCount; ++i)
                     player->CastSpell(player, SPELL_TARGET_CREDIT, false);
@@ -199,8 +203,7 @@ public:
             if (me->IsQuestGiver())
                 player->PrepareQuestMenu(me->GetGUID());
 
-            if (player->GetQuestStatus(QUEST_HUMANOID_CANNONBALL) != QUEST_STATUS_NONE)
-                AddGossipItemFor(player, GossipOptionNpc::None, "Телепортируй меня к пушке !", GOSSIP_SENDER_MAIN, 0, "Хотите ли заплатить 30 серебреников?", 3000, false);
+                AddGossipItemFor(player, GossipOptionNpc::None, "Teleport me to the cannon |cFF0000FF(30 silver)|r", GOSSIP_SENDER_MAIN, 0);
 
             player->PlayerTalkClass->SendGossipMenu(player->GetGossipTextId(me), me->GetGUID());
             return true;
@@ -209,7 +212,7 @@ public:
         bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 /*gossipListId*/) override
         {
             player->ModifyMoney(-3000);
-            player->TeleportTo(974, -4019.00f, 6286.58f, 12.49f, 1.39f);
+            player->CastSpell(player, 109244, true);
 
             CloseGossipMenuFor(player);
             return true;
@@ -230,9 +233,11 @@ class spell_darkmoon_canon_preparation : public AuraScript
     {
         if (Player* target = GetTarget()->ToPlayer())
         {
+            target->RemoveAurasDueToSpell(SPELL_HELPER_FLY);
             target->RemoveAurasDueToSpell(SPELL_ROOT);
-            target->SetOrientation(3.31f);
-            target->CastSpell(target, SPELL_CANON_DEFLAGRATION, false); // Must be first
+            target->SetOrientation(target->GetOrientation() - 2.95f);
+            target->CastSpell(target, SPELL_CANON_DEFLAGRATION, false);
+            target->CastSpell(target, SPELL_CANNONBALL_LAUNCH_VISUAL, true);
             target->CastSpell(target, SPELL_MAGIC_WINGS, false);
         }
     }

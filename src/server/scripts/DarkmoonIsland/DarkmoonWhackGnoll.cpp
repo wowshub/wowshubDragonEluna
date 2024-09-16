@@ -114,14 +114,6 @@ enum whackEvents
     EVENT_CHECK_PLAYER_POS  = 4
 };
 
-#define QUEST_WHACK_A_GNOLL 29463
-
-#define MAX_BARRELS         9
-
-#define GNOLL_TIMER         3000ms
-#define DOLL_TIMER          6000ms
-#define BOSS_TIMER          10000ms
-
 class npc_whack_gnoll_bunny : public CreatureScript
 {
     public:
@@ -146,10 +138,10 @@ class npc_whack_gnoll_bunny : public CreatureScript
                 GetBarrels();
 
                 events.Reset();
-                events.ScheduleEvent(EVENT_SUMMON_GNOLL,        GNOLL_TIMER);
-                events.ScheduleEvent(EVENT_SUMMON_DOLL,         DOLL_TIMER);
-                events.ScheduleEvent(EVENT_SUMMON_BOSS,         BOSS_TIMER);
-                events.ScheduleEvent(EVENT_CHECK_PLAYER_POS,    1000ms);
+                events.ScheduleEvent(EVENT_SUMMON_GNOLL,        3s);
+                events.ScheduleEvent(EVENT_SUMMON_DOLL,         6s);
+                events.ScheduleEvent(EVENT_SUMMON_BOSS,         10s);
+                events.ScheduleEvent(EVENT_CHECK_PLAYER_POS,    1s);
             }
 
             void GetBarrels()
@@ -184,24 +176,11 @@ class npc_whack_gnoll_bunny : public CreatureScript
                 return nullptr;
             }
 
-            void SummonFromBarrel(Creature* barrel, uint32 spellId)
-            {
-                if (!barrel)
-                    return;
-
-                if (spellId != SPELL_SUMMON_GNOLL && spellId != SPELL_SUMMON_DOLL && spellId != SPELL_SUMMON_BOSS)
-                    return;
-
-                barrel->CastSpell(barrel, spellId, false);
-                barrel->CastSpell(barrel, SPELL_SPAWN_VISUAL, false);
-                barrel->AddAura(SPELL_OK_TO_HIT, barrel);
-            }
-
             void UpdateAI(uint32 diff) override
             {
                 events.Update(diff);
 
-                if (barrelList.size() != MAX_BARRELS)
+                if (barrelList.size() != 9)
                     GetBarrels();
 
                 while (uint32 eventId = events.ExecuteEvent())
@@ -211,25 +190,36 @@ class npc_whack_gnoll_bunny : public CreatureScript
                         case EVENT_SUMMON_GNOLL:
                         {
                             if (Creature* barrel = GetRandomBarrel())
-                                SummonFromBarrel(barrel, SPELL_SUMMON_GNOLL);
+                            {
+                                Creature* gnoll = barrel->SummonCreature(NPC_GNOLL, barrel->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 3s);
+                                barrel->CastSpell(barrel, SPELL_SPAWN_VISUAL, false);
+                                barrel->AddAura(SPELL_OK_TO_HIT, gnoll);
+                            }
 
-                            events.ScheduleEvent(EVENT_SUMMON_GNOLL, GNOLL_TIMER);
+                            events.ScheduleEvent(EVENT_SUMMON_GNOLL, 3s);
                             break;
                         }
                         case EVENT_SUMMON_DOLL:
                         {
                             if (Creature* barrel = GetRandomBarrel())
-                                SummonFromBarrel(barrel, SPELL_SUMMON_DOLL);
+                            {
+                                Creature* doll =  barrel->SummonCreature(NPC_DOLL, barrel->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 6s);
+                                barrel->CastSpell(barrel, SPELL_SPAWN_VISUAL, false);
+                            }
 
-                            events.ScheduleEvent(EVENT_SUMMON_DOLL, DOLL_TIMER);
+                            events.ScheduleEvent(EVENT_SUMMON_DOLL, 6s);
                             break;
                         }
                         case EVENT_SUMMON_BOSS:
                         {
                             if (Creature* barrel = GetRandomBarrel())
-                                SummonFromBarrel(barrel, SPELL_SUMMON_BOSS);
+                            {
+                                Creature* boss = barrel->SummonCreature(NPC_BOSS, barrel->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 10s);
+                                barrel->CastSpell(barrel, SPELL_SPAWN_VISUAL, false);
+                                barrel->AddAura(SPELL_OK_TO_HIT, boss);
+                            }
 
-                            events.ScheduleEvent(EVENT_SUMMON_BOSS, BOSS_TIMER);
+                            events.ScheduleEvent(EVENT_SUMMON_BOSS, 10s);
                             break;
                         }
                         case EVENT_CHECK_PLAYER_POS:
@@ -251,7 +241,7 @@ class npc_whack_gnoll_bunny : public CreatureScript
                                 }
                             }
 
-                            events.ScheduleEvent(EVENT_CHECK_PLAYER_POS, 1000ms);
+                            events.ScheduleEvent(EVENT_CHECK_PLAYER_POS, 1s);
                             break;
                         }
                     }
@@ -265,6 +255,20 @@ class npc_whack_gnoll_mola : public CreatureScript
 public:
     npc_whack_gnoll_mola() : CreatureScript("npc_whack_gnoll_mola") { }
 
+    bool OnQuestComplete(Player* player, Creature* creature, Quest const* quest)
+    {
+        if (quest->GetQuestId() == QUEST_WHACK_A_GNOLL)
+        {
+            creature->GetAI()->DoAction(0);
+            player->SetPower(POWER_ALTERNATE_POWER, 0);
+            player->RemoveAurasDueToSpell(SPELL_ENABLE_POWERBAR);
+            player->RemoveAurasDueToSpell(SPELL_DOLL_STUN);
+            player->CastSpell(player, SPELL_FORBIDDEN_ZONE, true);
+        }
+
+        return true;
+    }
+
     struct npc_whack_gnoll_molaAI : public ScriptedAI
     {
         npc_whack_gnoll_molaAI(Creature* creature) : ScriptedAI(creature) { }
@@ -275,7 +279,7 @@ public:
                 player->PrepareQuestMenu(me->GetGUID());
 
             if (player->GetQuestStatus(QUEST_WHACK_A_GNOLL) == QUEST_STATUS_INCOMPLETE)
-                AddGossipItemFor(player, GossipOptionNpc::None, "Я хочу играть в Ударь-Гнолла! (Жетон новолуния)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                AddGossipItemFor(player, GossipOptionNpc::None, "I want to play Whack-a-Gnoll! |cFF0000FF(Darkmoon Game Token)|", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
             player->PlayerTalkClass->SendGossipMenu(player->GetGossipTextId(me), me->GetGUID());
             return true;
@@ -288,22 +292,9 @@ public:
 
             me->AddAura(SPELL_OVERRIDE_ACTION, player);
             me->AddAura(SPELL_ENABLE_POWERBAR, player);
-            player->SetPower(POWER_ALTERNATE_POWER, player->GetReqKillOrCastCurrentCount(QUEST_WHACK_A_GNOLL, 54505));
+            player->SetPower(POWER_ALTERNATE_POWER, player->GetReqKillOrCastCurrentCount(29463, 54505));
 
             CloseGossipMenuFor(player);
-            return true;
-        }
-
-        bool OnQuestComplete(Player* player, Creature* /*creature*/, Quest const* quest)
-        {
-            if (quest->GetQuestId() == QUEST_WHACK_A_GNOLL)
-            {
-                player->SetPower(POWER_ALTERNATE_POWER, 0);
-                player->RemoveAurasDueToSpell(SPELL_ENABLE_POWERBAR);
-                player->RemoveAurasDueToSpell(SPELL_DOLL_STUN);
-                player->CastSpell(player, SPELL_FORBIDDEN_ZONE, true);
-            }
-
             return true;
         }
     };

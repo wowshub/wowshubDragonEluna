@@ -74,284 +74,6 @@
 #include "TemporarySummon.h"
 #include <sstream>
 
- // Whee! - 46668
-class spell_darkmoon_carousel_whee : public SpellScriptLoader
-{
-public:
-    spell_darkmoon_carousel_whee() : SpellScriptLoader("spell_darkmoon_carousel_whee") { }
-
-    class spell_darkmoon_carousel_whee_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_darkmoon_carousel_whee_AuraScript);
-
-        uint32 update;
-
-        bool Validate(SpellInfo const* /*spell*/) override
-        {
-            update = 0;
-            return true;
-        }
-
-        void OnUpdate(uint32 diff)
-        {
-            update += diff;
-
-            if (update >= 5000)
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Transport* transport = dynamic_cast<Transport*>(_player->GetTransport()))
-                    {
-                        if (transport->GetEntry() == GOB_DARKMOON_CAROUSEL)
-                        {
-                            if (Aura* aura = GetAura())
-                            {
-                                uint32 currentMaxDuration = aura->GetMaxDuration();
-                                uint32 newMaxDurantion = currentMaxDuration + (5 * MINUTE * IN_MILLISECONDS);
-                                newMaxDurantion = newMaxDurantion <= (60 * MINUTE * IN_MILLISECONDS) ? newMaxDurantion : (60 * MINUTE * IN_MILLISECONDS);
-
-                                aura->SetMaxDuration(newMaxDurantion);
-                                aura->SetDuration(newMaxDurantion);
-                            }
-                        }
-                    }
-                }
-
-                update = 0;
-            }
-        }
-
-        void Register() override
-        {
-            OnAuraUpdate += AuraUpdateFn(spell_darkmoon_carousel_whee_AuraScript::OnUpdate);
-        }
-    };
-
-    AuraScript* GetAuraScript() const override
-    {
-        return new spell_darkmoon_carousel_whee_AuraScript();
-    }
-};
-
-// To the Staging Area! - 101260
-class spell_darkmoon_staging_area_teleport : public SpellScriptLoader
-{
-public:
-    spell_darkmoon_staging_area_teleport() : SpellScriptLoader("spell_darkmoon_staging_area_teleport") { }
-
-    class spell_darkmoon_staging_area_teleport_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_darkmoon_staging_area_teleport_SpellScript);
-
-        bool Load() override
-        {
-            return GetCaster() != nullptr;
-        }
-
-        void RelocateDest(SpellEffIndex /*effIndex*/)
-        {
-            if (Player* caster = GetCaster()->ToPlayer())
-            {
-                switch (caster->GetMapId())
-                {
-                    case 974: //Darkmoon Island
-                        if (caster->GetTeamId() == TEAM_HORDE)
-                            GetHitDest()->WorldRelocate(WorldLocation(1, -1454.415894f, 207.967484f, -7.790083f, 0.689538f));
-                        else
-                            GetHitDest()->WorldRelocate(WorldLocation(0, -9517.5f, 82.3f, 59.51f, 2.92168f));
-                        break;
-                    default:
-                        GetHitDest()->WorldRelocate(WorldLocation(974, -3618.669922f, 6315.669922f, 113.190002f, 3.204420f));
-                        break;
-                }
-            }
-        }
-
-        void Register() override
-        {
-            OnEffectLaunch += SpellEffectFn(spell_darkmoon_staging_area_teleport_SpellScript::RelocateDest, EFFECT_0, SPELL_EFFECT_TELEPORT_UNITS);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_darkmoon_staging_area_teleport_SpellScript();
-    }
-};
-
-class item_darkmoon_faire_fireworks : public ItemScript
-{
-public:
-    item_darkmoon_faire_fireworks() : ItemScript("item_darkmoon_faire_fireworks") { }
-
-    bool OnUse(Player* player, Item* /*item*/, SpellCastTargets const& /*targets*/, ObjectGuid /*castId*/) override
-    {
-        AchievementEntry const* AchievFireworksAlliance = sAchievementStore.LookupEntry(6030);
-        AchievementEntry const* AchievFireworksHorde = sAchievementStore.LookupEntry(6031);
-
-        if (player->GetTeam() == ALLIANCE)
-        {
-            player->CompletedAchievement(AchievFireworksAlliance);
-            player->CastSpell(player, 103740, false);
-        }
-        else
-        {
-            player->CompletedAchievement(AchievFireworksHorde);
-            player->CastSpell(player, 103740, false);
-        }
-
-        return true;
-    }
-};
-
-// 54485 - Jessica Rogers
-class npc_jessica_rogers : public CreatureScript
-{
-public:
-    npc_jessica_rogers() : CreatureScript("npc_jessica_rogers") { }
-
-    struct npc_jessica_rogersAI : public ScriptedAI
-    {
-        npc_jessica_rogersAI(Creature* creature) : ScriptedAI(creature) { }
-
-        bool OnGossipHello(Player* player) override
-        {
-            if (me->IsQuestGiver())
-                player->PrepareQuestMenu(me->GetGUID());
-
-            char const* GOSSIP_BUTTON_1;
-            char const* GOSSIP_BUTTON_2;
-
-            switch (LocaleConstant currentlocale = player->GetSession()->GetSessionDbcLocale())
-            {
-            case 20:    // locales end on 11, case 20 is impossible case, this is just to fix compile warnings.
-                break;
-            default:
-                GOSSIP_BUTTON_1 = "How do I play the Ring Toss?";
-                GOSSIP_BUTTON_2 = "Ready to play! |cFF0000FF(Darkmoon Game Token)|r";
-                break;
-            };
-
-            AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-
-            if (!player->HasAura(101612) && !player->HasAura(110230) && !player->HasAura(102121) && !player->HasAura(102178) && !player->HasAura(102058) && !player->HasAura(101871))
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-
-            SendGossipMenuFor(player, 54485, me->GetGUID());
-            return true;
-        }
-
-        bool OnGossipSelect(Player* player, uint32 /*uiSender*/, uint32 action) override
-        {
-            char const* GOSSIP_BUTTON_1;
-            char const* GOSSIP_BUTTON_2;
-            char const* GOSSIP_BUTTON_3;
-
-            switch (LocaleConstant currentlocale = player->GetSession()->GetSessionDbcLocale())
-            {
-            case 20:    // locales end on 11, case 20 is impossible case, this is just to fix compile warnings.
-                break;
-            default:
-                GOSSIP_BUTTON_1 = "How do I play the Ring Toss?";
-                GOSSIP_BUTTON_2 = "Ready to play! |cFF0000FF(Darkmoon Game Token)|r";
-                GOSSIP_BUTTON_3 = "Alright.";
-                break;
-            };
-
-            player->PlayerTalkClass->ClearMenus();
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 1)
-            {
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-                SendGossipMenuFor(player, 54486, me->GetGUID());
-            }
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 2)
-            {
-                if (player->HasItemCount(71083))
-                {
-                    CloseGossipMenuFor(player);
-
-                    player->DestroyItemCount(71083, 1, true);
-                    player->RemoveAurasByType(SPELL_AURA_MOUNTED);
-
-                    player->AddAura(102058, player);
-                    player->SetPower(POWER_ALTERNATE_POWER, 10);
-
-                    return true;
-                }
-                else
-                    SendGossipMenuFor(player, 54603, me->GetGUID());
-            }
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 3)
-            {
-                if (me->IsQuestGiver())
-                    player->PrepareQuestMenu(me->GetGUID());
-
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-
-                if (!player->HasAura(101612) && !player->HasAura(110230) && !player->HasAura(102121) && !player->HasAura(102178) && !player->HasAura(102058) && !player->HasAura(101871))
-                    AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-
-                SendGossipMenuFor(player, 54485, me->GetGUID());
-            }
-
-            return true;
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_jessica_rogersAI(creature);
-    }
-};
-
-//
-class spell_ring_toss : public SpellScriptLoader
-{
-public:
-    spell_ring_toss() : SpellScriptLoader("spell_ring_toss") {}
-
-    class spell_ring_toss_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_ring_toss_SpellScript);
-
-        SpellCastResult CheckRequirement()
-        {
-            if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
-                return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
-
-            return SPELL_CAST_OK;
-        }
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            Unit* caster = GetCaster();
-            Player* player = GetCaster()->ToPlayer();
-
-            if (Creature* dubenko = caster->FindNearestCreature(54490, 100.0f, true))
-            {
-                caster->CastSpell(dubenko, 101697, false);
-                dubenko->CastSpell(dubenko, 101737, false);
-            }
-
-            player->KilledMonsterCredit(54495, ObjectGuid::Empty);
-        }
-
-        void Register()
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_ring_toss_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            OnCheckCast += SpellCheckCastFn(spell_ring_toss_SpellScript::CheckRequirement);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_ring_toss_SpellScript();
-    }
-};
-
 enum DarkmoonFaireYells
 {
     // Selina
@@ -568,85 +290,145 @@ public:
     }
 };
 
-enum ShootGallery
-{
-    EVENT_SHOOTGALLERY_START_GAME = 1,
-    EVENT_SHOOTGALLERY_FINISH_GAME = 2,
-};
-
-class npc_rinling : public CreatureScript
+ // Whee! - 46668
+class spell_darkmoon_carousel_whee : public SpellScriptLoader
 {
 public:
-    npc_rinling() : CreatureScript("npc_rinling") { }
+    spell_darkmoon_carousel_whee() : SpellScriptLoader("spell_darkmoon_carousel_whee") { }
 
-    struct npc_rinlingAI : public ScriptedAI
+    class spell_darkmoon_carousel_whee_AuraScript : public AuraScript
     {
-        npc_rinlingAI(Creature* creature) : ScriptedAI(creature) { }
+        PrepareAuraScript(spell_darkmoon_carousel_whee_AuraScript);
 
-        EventMap events;
+        uint32 update;
 
-        bool Active;
-
-        void Reset()
+        bool Validate(SpellInfo const* /*spell*/) override
         {
-            Active = false;
+            update = 0;
+            return true;
         }
 
-        void StartGame()
+        void OnUpdate(uint32 diff)
         {
-            if (!Active)
+            update += diff;
+
+            if (update >= 5000)
             {
-                events.ScheduleEvent(EVENT_SHOOTGALLERY_START_GAME, 0ms);
-                events.ScheduleEvent(EVENT_SHOOTGALLERY_FINISH_GAME, 60000ms);
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Transport* transport = dynamic_cast<Transport*>(_player->GetTransport()))
+                    {
+                        if (transport->GetEntry() == GOB_DARKMOON_CAROUSEL)
+                        {
+                            if (Aura* aura = GetAura())
+                            {
+                                uint32 currentMaxDuration = aura->GetMaxDuration();
+                                uint32 newMaxDurantion = currentMaxDuration + (5 * MINUTE * IN_MILLISECONDS);
+                                newMaxDurantion = newMaxDurantion <= (60 * MINUTE * IN_MILLISECONDS) ? newMaxDurantion : (60 * MINUTE * IN_MILLISECONDS);
+
+                                aura->SetMaxDuration(newMaxDurantion);
+                                aura->SetDuration(newMaxDurantion);
+                            }
+                        }
+                    }
+                }
+
+                update = 0;
             }
         }
 
-        void UpdateAI(uint32 diff)
+        void Register() override
         {
-            events.Update(diff);
+            OnAuraUpdate += AuraUpdateFn(spell_darkmoon_carousel_whee_AuraScript::OnUpdate);
+        }
+    };
 
-            Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_darkmoon_carousel_whee_AuraScript();
+    }
+};
 
-            while (uint32 eventId = events.ExecuteEvent())
+// To the Staging Area! - 101260
+class spell_darkmoon_staging_area_teleport : public SpellScriptLoader
+{
+public:
+    spell_darkmoon_staging_area_teleport() : SpellScriptLoader("spell_darkmoon_staging_area_teleport") { }
+
+    class spell_darkmoon_staging_area_teleport_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_darkmoon_staging_area_teleport_SpellScript);
+
+        bool Load() override
+        {
+            return GetCaster() != nullptr;
+        }
+
+        void RelocateDest(SpellEffIndex /*effIndex*/)
+        {
+            if (Player* caster = GetCaster()->ToPlayer())
             {
-                switch (eventId)
+                switch (caster->GetMapId())
                 {
-                case EVENT_SHOOTGALLERY_START_GAME:
-                    switch (urand(0, 2))
-                    {
-                    case 0:
-                        if (Creature* summon = me->SummonCreature(54231, -4072.19f, 6356.46f, 13.35f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms))
-                            summon->CastSpell(summon, 102341, false);
-
-                        me->SummonCreature(54225, -4070.09f, 6354.87f, 12.57f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
-                        me->SummonCreature(54225, -4068.41f, 6353.09f, 13.24f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
+                    case 974: //Darkmoon Island
+                        if (caster->GetTeamId() == TEAM_HORDE)
+                            GetHitDest()->WorldRelocate(WorldLocation(1, -1454.415894f, 207.967484f, -7.790083f, 0.689538f));
+                        else
+                            GetHitDest()->WorldRelocate(WorldLocation(0, -9517.5f, 82.3f, 59.51f, 2.92168f));
                         break;
-                    case 1:
-                        me->SummonCreature(54225, -4072.19f, 6356.46f, 13.35f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
-
-                        if (Creature* summon = me->SummonCreature(54231, -4070.09f, 6354.87f, 12.57f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms))
-                            summon->CastSpell(summon, 102341, false);
-
-                        me->SummonCreature(54225, -4068.41f, 6353.09f, 12.24f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
+                    default:
+                        GetHitDest()->WorldRelocate(WorldLocation(974, -3618.669922f, 6315.669922f, 113.190002f, 3.204420f));
                         break;
-                    case 2:
-                        me->SummonCreature(54225, -4072.19f, 6356.46f, 13.35f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
-                        me->SummonCreature(54225, -4070.09f, 6354.87f, 12.57f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
-
-                        if (Creature* summon = me->SummonCreature(54231, -4068.41f, 6353.09f, 13.24f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms))
-                            summon->CastSpell(summon, 102341, false);
-
-                        break;
-                    }
-                    events.ScheduleEvent(EVENT_SHOOTGALLERY_START_GAME, 5000ms);
-                    break;
-                case EVENT_SHOOTGALLERY_FINISH_GAME:
-                    Active = false;
-                    events.CancelEvent(EVENT_SHOOTGALLERY_START_GAME);
-                    break;
                 }
             }
         }
+
+        void Register() override
+        {
+            OnEffectLaunch += SpellEffectFn(spell_darkmoon_staging_area_teleport_SpellScript::RelocateDest, EFFECT_0, SPELL_EFFECT_TELEPORT_UNITS);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_darkmoon_staging_area_teleport_SpellScript();
+    }
+};
+
+class item_darkmoon_faire_fireworks : public ItemScript
+{
+public:
+    item_darkmoon_faire_fireworks() : ItemScript("item_darkmoon_faire_fireworks") { }
+
+    bool OnUse(Player* player, Item* /*item*/, SpellCastTargets const& /*targets*/, ObjectGuid /*castId*/) override
+    {
+        AchievementEntry const* AchievFireworksAlliance = sAchievementStore.LookupEntry(6030);
+        AchievementEntry const* AchievFireworksHorde = sAchievementStore.LookupEntry(6031);
+
+        if (player->GetTeam() == ALLIANCE)
+        {
+            player->CompletedAchievement(AchievFireworksAlliance);
+            player->CastSpell(player, 103740, false);
+        }
+        else
+        {
+            player->CompletedAchievement(AchievFireworksHorde);
+            player->CastSpell(player, 103740, false);
+        }
+
+        return true;
+    }
+};
+
+// 54485 - Jessica Rogers
+class npc_jessica_rogers : public CreatureScript
+{
+public:
+    npc_jessica_rogers() : CreatureScript("npc_jessica_rogers") { }
+
+    struct npc_jessica_rogersAI : public ScriptedAI
+    {
+        npc_jessica_rogersAI(Creature* creature) : ScriptedAI(creature) { }
 
         bool OnGossipHello(Player* player) override
         {
@@ -661,17 +443,14 @@ public:
             case 20:    // locales end on 11, case 20 is impossible case, this is just to fix compile warnings.
                 break;
             default:
-                GOSSIP_BUTTON_1 = "How does the shooting gallery work? ";
-                GOSSIP_BUTTON_2 = "I'm ready to shoot! |cFF0000FF(Darkmoon Game Token)|r";
+                GOSSIP_BUTTON_1 = "How do I play the Ring Toss?";
+                GOSSIP_BUTTON_2 = "Ready to play! |cFF0000FF(Darkmoon Game Token)|r";
                 break;
             };
 
             AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
-            if (!player->HasAura(101612) && !player->HasAura(110230) && !player->HasAura(102121) && !player->HasAura(102178) && !player->HasAura(102058) && !player->HasAura(101871))
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-
-            SendGossipMenuFor(player, 23002, me->GetGUID());
             return true;
         }
 
@@ -686,8 +465,8 @@ public:
             case 20:    // locales end on 11, case 20 is impossible case, this is just to fix compile warnings.
                 break;
             default:
-                GOSSIP_BUTTON_1 = "How does the shooting gallery work? ";
-                GOSSIP_BUTTON_2 = "I'm ready to shoot! |cFF0000FF(Darkmoon Game Token)|r";
+                GOSSIP_BUTTON_1 = "How do I play the Ring Toss?";
+                GOSSIP_BUTTON_2 = "Ready to play! |cFF0000FF(Darkmoon Game Token)|r";
                 GOSSIP_BUTTON_3 = "Alright.";
                 break;
             };
@@ -697,7 +476,6 @@ public:
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
                 AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-                SendGossipMenuFor(player, 23003, me->GetGUID());
             }
 
             if (action == GOSSIP_ACTION_INFO_DEF + 2)
@@ -709,15 +487,11 @@ public:
                     player->DestroyItemCount(71083, 1, true);
                     player->RemoveAurasByType(SPELL_AURA_MOUNTED);
 
-                    player->AddAura(101871, player);
-
-                    CAST_AI(npc_rinling::npc_rinlingAI, me->AI())->StartGame();
-                    CAST_AI(npc_rinling::npc_rinlingAI, me->AI())->Active = true;
+                    player->AddAura(102058, player);
+                    player->SetPower(POWER_ALTERNATE_POWER, 10);
 
                     return true;
                 }
-                else
-                    SendGossipMenuFor(player, 54603, me->GetGUID());
             }
 
             if (action == GOSSIP_ACTION_INFO_DEF + 3)
@@ -726,20 +500,62 @@ public:
                     player->PrepareQuestMenu(me->GetGUID());
 
                 AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
-                if (!player->HasAura(101612) && !player->HasAura(110230) && !player->HasAura(102121) && !player->HasAura(102178) && !player->HasAura(102058) && !player->HasAura(101871))
-                    AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-
-                SendGossipMenuFor(player, 23002, me->GetGUID());
             }
 
             return true;
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(Creature* creature) const override
     {
-        return new npc_rinlingAI(creature);
+        return new npc_jessica_rogersAI(creature);
+    }
+};
+
+//
+class spell_ring_toss : public SpellScriptLoader
+{
+public:
+    spell_ring_toss() : SpellScriptLoader("spell_ring_toss") {}
+
+    class spell_ring_toss_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_ring_toss_SpellScript);
+
+        SpellCastResult CheckRequirement()
+        {
+            if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
+                return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+
+            return SPELL_CAST_OK;
+        }
+
+        void HandleDummy(SpellEffIndex /*effIndex*/)
+        {
+            Unit* caster = GetCaster();
+            Player* player = GetCaster()->ToPlayer();
+
+            if (Creature* dubenko = caster->FindNearestCreature(54490, 100.0f, true))
+            {
+                caster->CastSpell(dubenko, 101697, false);
+                dubenko->CastSpell(dubenko, 101737, false);
+            }
+
+            player->KilledMonsterCredit(54495, ObjectGuid::Empty);
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_ring_toss_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            OnCheckCast += SpellCheckCastFn(spell_ring_toss_SpellScript::CheckRequirement);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_ring_toss_SpellScript();
     }
 };
 
@@ -1027,6 +843,137 @@ public:
     }
 };
 
+enum ShootGallery
+{
+    EVENT_SHOOTGALLERY_START_GAME = 1,
+    EVENT_SHOOTGALLERY_FINISH_GAME = 2,
+};
+
+class npc_rinling : public CreatureScript
+{
+public:
+    npc_rinling() : CreatureScript("npc_rinling") { }
+
+    struct npc_rinlingAI : public ScriptedAI
+    {
+        npc_rinlingAI(Creature* creature) : ScriptedAI(creature) { }
+
+        EventMap events;
+
+        bool Active;
+
+        void Reset()
+        {
+            Active = false;
+        }
+
+        void StartGame()
+        {
+            if (!Active)
+            {
+                events.ScheduleEvent(EVENT_SHOOTGALLERY_START_GAME, 0ms);
+                events.ScheduleEvent(EVENT_SHOOTGALLERY_FINISH_GAME, 60000ms);
+            }
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_SHOOTGALLERY_START_GAME:
+                    switch (urand(0, 2))
+                    {
+                    case 0:
+                        if (Creature* summon = me->SummonCreature(54231, -4072.19f, 6356.46f, 13.35f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms))
+                            summon->CastSpell(summon, 102341, false);
+
+                        //me->SummonCreature(24171, -4070.09f, 6354.87f, 12.57f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
+                        //me->SummonCreature(24171, -4068.41f, 6353.09f, 13.24f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
+                        break;
+                    case 1:
+                        //me->SummonCreature(24171, -4072.19f, 6356.46f, 13.35f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
+
+                        if (Creature* summon = me->SummonCreature(54231, -4070.09f, 6354.87f, 12.57f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms))
+                            summon->CastSpell(summon, 102341, false);
+
+                        //me->SummonCreature(24171, -4068.41f, 6353.09f, 12.24f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
+                        break;
+                    case 2:
+                        //me->SummonCreature(24171, -4072.19f, 6356.46f, 13.35f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
+                        //me->SummonCreature(24171, -4070.09f, 6354.87f, 12.57f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
+
+                        if (Creature* summon = me->SummonCreature(54231, -4068.41f, 6353.09f, 13.24f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms))
+                            summon->CastSpell(summon, 102341, false);
+
+                        break;
+                    }
+                    events.ScheduleEvent(EVENT_SHOOTGALLERY_START_GAME, 5000ms);
+                    break;
+                case EVENT_SHOOTGALLERY_FINISH_GAME:
+                    Active = false;
+                    events.CancelEvent(EVENT_SHOOTGALLERY_START_GAME);
+                    break;
+                }
+            }
+        }
+
+        bool OnGossipHello(Player* player) override
+        {
+            if (me->IsQuestGiver())
+                player->PrepareQuestMenu(me->GetGUID());
+
+            if (player->GetQuestStatus(QUEST_HE_SHOOTS_HE_SCORES) == QUEST_STATUS_INCOMPLETE)
+                AddGossipItemFor(player, GossipOptionNpc::None, "I'm ready to shoot! |cFF0000FF(Darkmoon Game Token)|r", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+
+            player->PlayerTalkClass->SendGossipMenu(player->GetGossipTextId(me), me->GetGUID());
+            return true;
+        }
+
+        bool OnGossipSelect(Player* player, uint32 /*uiSender*/, uint32 action) override
+        {
+            if (player->HasItemCount(ITEM_DARKMOON_TOKEN))
+            {
+                CloseGossipMenuFor(player);
+
+                player->DestroyItemCount(ITEM_DARKMOON_TOKEN, 1, true);
+                player->RemoveAurasByType(SPELL_AURA_MOUNTED);
+
+                player->AddAura(101871, player);
+
+                int16 progress = player->GetReqKillOrCastCurrentCount(QUEST_HE_SHOOTS_HE_SCORES, 54231);
+                if (progress > 0)
+                    player->SetPower(POWER_ALTERNATE_POWER, progress);
+
+                CAST_AI(npc_rinling::npc_rinlingAI, me->AI())->StartGame();
+                CAST_AI(npc_rinling::npc_rinlingAI, me->AI())->Active = true;
+            }
+
+            return true;
+        }
+
+        bool OnQuestComplete(Player* player, Creature* /*creature*/, Quest const* quest)
+        {
+            if (quest->GetQuestId() == QUEST_HE_SHOOTS_HE_SCORES)
+            {
+                player->RemoveAurasDueToSpell(101871);
+            }
+
+            return true;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_rinlingAI(creature);
+    }
+};
+
 class spell_shoot_gallery_shoot : public SpellScriptLoader
 {
 public:
@@ -1048,13 +995,31 @@ public:
         {
             Player* player = GetCaster()->ToPlayer();
 
-            if (GetHitCreature()->GetEntry() == 54231)
-            {
-                player->KilledMonsterCredit(54231, ObjectGuid::Empty);
+            if (!player)
+                return;
 
-                AchievementEntry const* AchievShooter = sAchievementStore.LookupEntry(6022);
-                player->CompletedAchievement(AchievShooter);
-                player->SetPower(POWER_ALTERNATE_POWER, player->GetPower(POWER_ALTERNATE_POWER) + 1);
+            Unit* target = GetHitUnit();
+
+            if (!target)
+                return;
+
+            if (Aura* shootAura = target->GetAura(43313))
+            {
+                target->CastSpell(player, 43300, true);
+
+                if (shootAura->GetMaxDuration() - shootAura->GetDuration() < 1000)
+                {
+                    target->CastSpell(player, 101012, true);
+                    AchievementEntry const* achiev = sAchievementStore.LookupEntry(6022);
+                    if (player)
+                        player->CompletedAchievement(achiev);
+                }
+
+                if (player)
+                {
+                    if (player->GetReqKillOrCastCurrentCount(QUEST_HE_SHOOTS_HE_SCORES, 54231) >= 25)
+                        player->RemoveAurasDueToSpell(101871);
+                }
             }
         }
 
@@ -1071,20 +1036,69 @@ public:
     }
 };
 
+class spell_heshoots_indicator : public SpellScriptLoader
+{
+public:
+    spell_heshoots_indicator() : SpellScriptLoader("spell_heshoots_indicator")
+    {
+    }
+
+    class spell_heshoots_indicator_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_heshoots_indicator_AuraScript);
+
+        void EffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*modes*/)
+        {
+            if (!GetUnitOwner())
+                return;
+
+            GetUnitOwner()->CastSpell(GetUnitOwner(), 43313, true);
+        }
+
+        void EffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*modes*/)
+        {
+            if (!GetUnitOwner())
+                return;
+
+            GetUnitOwner()->RemoveAurasDueToSpell(43313);
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_heshoots_indicator_AuraScript::EffectApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectApplyFn(spell_heshoots_indicator_AuraScript::EffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_heshoots_indicator_AuraScript();
+    }
+};
+
 void AddSC_darkmoon_island()
 {
-    new npc_jessica_rogers();
     new npc_selina_dourman2();
-    new npc_rinling();
-    new spell_ring_toss();
-    new item_darkmoon_faire_fireworks();
+
     new spell_darkmoon_carousel_whee();
     new spell_darkmoon_staging_area_teleport();
+
+    new item_darkmoon_faire_fireworks();
+
+    //ring toss
+    new npc_jessica_rogers();
+    new spell_ring_toss();
+
+
     new spell_gen_repair_damaged_tonk();
     new spell_gen_shoe_baby();
     new spell_cook_crunchy_frog();
     new spell_heal_injuried_carnie();
     new spell_put_up_darkmoon_banner();
     new spell_darkmoon_deathmatch();
+
+    //shoot gallery
+    new npc_rinling();
     new spell_shoot_gallery_shoot();
+    new spell_heshoots_indicator();
 };
