@@ -29,8 +29,6 @@
 #include "DarkmoonIsland.h"
 #include "AchievementMgr.h"
 #include "ScriptedCreature.h"
-#include "Player.h"
-#include "GameObject.h"
 #include "GameObjectAI.h"
 #include "InstanceScript.h"
 #include "Log.h"
@@ -45,6 +43,7 @@
 #include "AchievementPackets.h"
 #include "DB2HotfixGenerator.h"
 #include "TemporarySummon.h"
+#include "Vehicle.h"
 #include <sstream>
 #include <G3D/Quat.h>
 
@@ -325,7 +324,7 @@ public:
                 player->PrepareQuestMenu(me->GetGUID());
 
             if (player->GetQuestStatus(QUEST_TONK_COMMANDER) == QUEST_STATUS_INCOMPLETE)
-                AddGossipItemFor(player, GossipOptionNpc::None, "Ready to play! |cFF0000FF(Darkmoon Game Token)|r", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                AddGossipItemFor(player, 13019, 1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
             player->PlayerTalkClass->SendGossipMenu(player->GetGossipTextId(me), me->GetGUID());
             return true;
@@ -342,12 +341,13 @@ public:
                 player->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
 
                 player->AddAura(102178, player);
-                player->AddAura(8878, player);
+                player->SetImmuneToAll(true);
+                player->SetPower(POWER_ALTERNATE_POWER, player->GetReqKillOrCastCurrentCount(QUEST_TONK_COMMANDER, 33081));
 
                 if (Creature* summon = me->SummonCreature(54588, -4131.37f, 6317.32f, 13.11f, 4.31f, TEMPSUMMON_TIMED_DESPAWN, 60s))
                 {
                     player->CastSpell(summon, 46598, false);
-                    summon->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_NORMAL, true);
+                    summon->ApplySpellImmune(102292, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_NORMAL, true);
                 }
 
                 CAST_AI(npc_finlay_coolshot::npc_finlay_coolshotAI, me->AI())->StartGame();
@@ -435,7 +435,7 @@ public:
                             me->GetMotionMaster()->MoveIdle();
                             changePath = false;
                             me->SetFacingToObject(creature);
-                            me->AddAura(102341, creature);
+                            me->CastSpell(creature, 102341, TRIGGERED_FULL_MASK);
                             me->CastSpell(creature, 102227, false);
                             pathCheckTimer = 3000; // 2s spellcast + 1s delay
                             break;
@@ -492,8 +492,8 @@ public:
                 return;
 
             target->SetPower(POWER_ALTERNATE_POWER, 0);
-            target->RemoveAurasDueToSpell(8878);
             target->CastSpell(target, 109976, true);
+            target->SetImmuneToAll(false);
         }
 
         void Register() override
@@ -508,6 +508,94 @@ public:
     }
 };
 
+class PositionCheck
+{
+public:
+    PositionCheck(Unit* caster) : _caster(caster) {}
+
+    bool operator()(WorldObject* unit)
+    {
+        bool isTooFar = _caster->GetDistance2d(unit) >= 2.5f;
+        bool isNotInFront = !_caster->isInFront(unit, 90.0f);
+        return isTooFar || isNotInFront;
+    }
+
+private:
+    Unit* _caster;
+};
+
+// SPELL_SHOOT : 102292
+class spell_tonk_shoot : public SpellScriptLoader
+{
+public:
+    spell_tonk_shoot() : SpellScriptLoader("spell_tonk_shoot") { }
+
+    class spell_tonk_shoot_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_tonk_shoot_SpellScript);
+
+        SpellCastResult CheckCast()
+        {
+            Unit* caster = GetCaster();
+
+            if (!caster)
+                return SPELL_CAST_OK;
+
+            std::list<Creature*> targetList;
+            caster->GetCreatureListWithEntryInGrid(targetList, 54642, 2.5f);
+            caster->GetCreatureListWithEntryInGrid(targetList, 33081, 2.5f);
+
+            targetList.remove_if(PositionCheck(GetCaster()));
+
+            if (targetList.empty())
+                return SPELL_CAST_OK;
+
+            Creature* target = targetList.front();
+
+            switch (target->GetEntry())
+            {
+            case 54642:
+            {
+                caster->CastSpell(caster, 110162, true);
+                break;
+            }
+            case 33081:
+            {
+                caster->SetPower(POWER_ALTERNATE_POWER, (caster->GetPower(POWER_ALTERNATE_POWER) + 1));
+                break;
+            }
+            }
+            caster->Kill(caster, target);
+            return SPELL_CAST_OK;
+        }
+
+        void Register() override
+        {
+            OnCheckCast += SpellCheckCastFn(spell_tonk_shoot_SpellScript::CheckCast);
+        }
+
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_tonk_shoot_SpellScript();
+    }
+};
+
+// areatrigger - 7340
+class at_tonks_zone : public AreaTriggerScript
+{
+public:
+    at_tonks_zone() : AreaTriggerScript("at_tonks_zone") { }
+
+    bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/)
+    {
+        if (!player->IsGameMaster() && !player->HasAura(102178))
+            player->CastSpell(player, 109976, true);
+        return true;
+    }
+};
+
 void AddSC_darkmoon_tonk()
 {
     //npc
@@ -515,4 +603,7 @@ void AddSC_darkmoon_tonk()
     new npc_darkmoon_enemy_tonk();
     //spell
     new spell_tonk_override_action();
+    new spell_tonk_shoot();
+    //areatrigger
+    new at_tonks_zone();
 };

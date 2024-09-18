@@ -74,50 +74,31 @@
 #include "TemporarySummon.h"
 #include <sstream>
 
-enum DarkmoonFaireYells
-{
-    // Selina
-    SAY_SELINA_WELCOME = 0,
-};
-
-enum SelinaDourmanEvent
-{
-    EVENT_RENEW_SELINA_TEXT = 1,
-};
-
-class npc_selina_dourman2 : public CreatureScript
+// npc - 55089 55093 55397 55398 
+class npc_fire_juggler_darkmoon : public CreatureScript
 {
 public:
-    npc_selina_dourman2() : CreatureScript("npc_selina_dourman2") { }
+    npc_fire_juggler_darkmoon() : CreatureScript("npc_fire_juggler_darkmoon") { }
 
-    struct npc_selina_dourmanAI2 : public ScriptedAI
+    enum eNPC
     {
+        SPELL_JUGGLE_TORCH_AURA = 46322, //  102905,
+        EVENT_START_FIRE_JUGGLING = 101,
+    };
 
-        npc_selina_dourmanAI2(Creature* creature) : ScriptedAI(creature) { }
+    struct npc_fire_juggler_darkmoonAI : public ScriptedAI
+    {
+        npc_fire_juggler_darkmoonAI(Creature* creature) : ScriptedAI(creature) { }
 
         EventMap events;
 
-        bool Talked;
-
-        void Reset()
+        void Reset() override
         {
-            Talked = false;
+            events.Reset();
+            events.ScheduleEvent(EVENT_START_FIRE_JUGGLING, 1s);
         }
 
-        void MoveInLineOfSight(Unit* who)
-        {
-            if (who->GetTypeId() != TYPEID_PLAYER)
-                return;
-
-            if (who->GetExactDist(me) <= 20.0f && !Talked)
-            {
-                Talked = true;
-                Talk(SAY_SELINA_WELCOME);
-                events.ScheduleEvent(EVENT_RENEW_SELINA_TEXT, 60000ms);
-            }
-        }
-
-        void UpdateAI(uint32 diff)
+        void UpdateAI(uint32 diff) override
         {
             events.Update(diff);
 
@@ -125,168 +106,23 @@ public:
             {
                 switch (eventId)
                 {
-                case EVENT_RENEW_SELINA_TEXT:
-                    Talked = false;
+                case EVENT_START_FIRE_JUGGLING:
+                {
+                    if (!me->HasAura(SPELL_JUGGLE_TORCH_AURA))
+                        me->AddAura(SPELL_JUGGLE_TORCH_AURA, me);
+                    events.ScheduleEvent(EVENT_START_FIRE_JUGGLING, 3s);
                     break;
                 }
-            }
-        }
-
-        bool OnGossipHello(Player* player) override
-        {
-            if (me->IsQuestGiver())
-                player->PrepareQuestMenu(me->GetGUID());
-
-            char const* GOSSIP_BUTTON_1;
-            char const* GOSSIP_BUTTON_2;
-            char const* GOSSIP_BUTTON_3;
-            char const* GOSSIP_BUTTON_4;
-            char const* GOSSIP_BUTTON_5;
-
-            switch (LocaleConstant currentlocale = player->GetSession()->GetSessionDbcLocale())
-            {
-            case 20:    // locales end on 11, case 20 is impossible case, this is just to fix compile warnings.
-                break;
-            default:
-                GOSSIP_BUTTON_1 = "Darkmoon adventurer guide?";
-                GOSSIP_BUTTON_2 = "What can I buy?";
-                GOSSIP_BUTTON_3 = "Do you qualify for the Darkmoon Faire?";
-                GOSSIP_BUTTON_4 = "Letters from the Darkmoon?";
-                GOSSIP_BUTTON_5 = "Attractions?";
-                break;
-            };
-
-            AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-            AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-            AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
-            AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
-
-            SendGossipMenuFor(player, 23004, me->GetGUID());
-            return true;
-        }
-
-        bool OnGossipSelect(Player* player, uint32 /*uiSender*/, uint32 action) override
-        {
-            char const* GOSSIP_BUTTON_1;
-            char const* GOSSIP_BUTTON_2;
-            char const* GOSSIP_BUTTON_3;
-            char const* GOSSIP_BUTTON_4;
-            char const* GOSSIP_BUTTON_5;
-            char const* GOSSIP_BUTTON_6;
-            char const* GOSSIP_BUTTON_7;
-            char const* GOSSIP_BUTTON_8;
-            char const* GOSSIP_BUTTON_9;
-            char const* GOSSIP_BUTTON_10;
-            char const* GOSSIP_BUTTON_11;
-            char const* GOSSIP_BUTTON_12;
-            char const* GOSSIP_BUTTON_13;
-
-            switch (LocaleConstant currentlocale = player->GetSession()->GetSessionDbcLocale())
-            {
-            case 20:    // locales end on 11, case 20 is impossible case, this is just to fix compile warnings.
-                break;
-            default:
-                GOSSIP_BUTTON_1 = "Darkmoon adventurer guide?";
-                GOSSIP_BUTTON_2 = "What can I buy?";
-                GOSSIP_BUTTON_3 = "Do you qualify for the Darkmoon Faire?";
-                GOSSIP_BUTTON_4 = "Letters from the Darkmoon?";
-                GOSSIP_BUTTON_5 = "Attractions?";
-                GOSSIP_BUTTON_6 = "Can you give me a guide to the Darkmoon adventurer?";
-                GOSSIP_BUTTON_7 = "Tell me more.";
-                GOSSIP_BUTTON_8 = "Tonk Battle?";
-                GOSSIP_BUTTON_9 = "Canon?";
-                GOSSIP_BUTTON_10 = "Whack-A-Gnoll?";
-                GOSSIP_BUTTON_11 = "Toss Rings?";
-                GOSSIP_BUTTON_12 = "Shooting gallery?";
-                GOSSIP_BUTTON_13 = "Clairvoyant?";
-                break;
-            };
-
-            player->PlayerTalkClass->ClearMenus();
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 1)
-            {
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_6, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
-                SendGossipMenuFor(player, 23005, me->GetGUID());
+                }
             }
 
-            if (action == GOSSIP_ACTION_INFO_DEF + 2)
-                SendGossipMenuFor(player, 23006, me->GetGUID());
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 3)
-                SendGossipMenuFor(player, 23007, me->GetGUID());
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 4)
-            {
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_7, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
-                SendGossipMenuFor(player, 23008, me->GetGUID());
-            }
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 5)
-            {
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_8, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 8);
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_9, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 9);
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_10, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 10);
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_11, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11);
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_12, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 12);
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_13, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 13);
-                SendGossipMenuFor(player, 23010, me->GetGUID());
-            }
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 6)
-            {
-                player->PlayerTalkClass->ClearMenus();
-                CloseGossipMenuFor(player);
-                player->AddItem(71634, 1);
-            }
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 7)
-                SendGossipMenuFor(player, 23009, me->GetGUID());
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 8)
-            {
-                SendGossipMenuFor(player, 23011, me->GetGUID());
-                //player->PlayerTalkClass->SendPointOfInterest();
-            }
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 9)
-            {
-                SendGossipMenuFor(player, 23012, me->GetGUID());
-                //player->PlayerTalkClass->SendPointOfInterest();
-            }
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 10)
-            {
-                SendGossipMenuFor(player, 23013, me->GetGUID());
-                //player->PlayerTalkClass->SendPointOfInterest();
-            }
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 11)
-            {
-                SendGossipMenuFor(player, 23014, me->GetGUID());
-                //player->PlayerTalkClass->SendPointOfInterest();
-            }
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 12)
-            {
-                SendGossipMenuFor(player, 23015, me->GetGUID());
-                //player->PlayerTalkClass->SendPointOfInterest();
-            }
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 13)
-            {
-                SendGossipMenuFor(player, 23016, me->GetGUID());
-                //player->PlayerTalkClass->SendPointOfInterest();
-            }
-
-            return true;
+            UpdateVictim();
         }
     };
 
     CreatureAI* GetAI(Creature* creature) const override
     {
-        return new npc_selina_dourmanAI2(creature);
+        return new npc_fire_juggler_darkmoonAI(creature);
     }
 };
 
@@ -420,6 +256,17 @@ public:
     }
 };
 
+enum JESSICA_GOSSIP
+{
+    GOSSIP_BUTTON_1 = 13012,
+    GOSSIP_BUTTON_1_ID = 0,
+    GOSSIP_BUTTON_2 = 13012,
+    GOSSIP_BUTTON_2_ID = 1,
+    GOSSIP_BUTTON_3 = 13013,
+    GOSSIP_BUTTON_3_ID = 0,
+    
+};
+
 // 54485 - Jessica Rogers
 class npc_jessica_rogers : public CreatureScript
 {
@@ -435,75 +282,48 @@ public:
             if (me->IsQuestGiver())
                 player->PrepareQuestMenu(me->GetGUID());
 
-            char const* GOSSIP_BUTTON_1;
-            char const* GOSSIP_BUTTON_2;
+            AddGossipItemFor(player, GOSSIP_BUTTON_1, GOSSIP_BUTTON_1_ID, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            SendGossipMenuFor(player, 18284, me->GetGUID());
 
-            switch (LocaleConstant currentlocale = player->GetSession()->GetSessionDbcLocale())
+            if (player->GetQuestStatus(QUEST_TARGET_TURTLE) == QUEST_STATUS_INCOMPLETE)
             {
-            case 20:    // locales end on 11, case 20 is impossible case, this is just to fix compile warnings.
-                break;
-            default:
-                GOSSIP_BUTTON_1 = "How do I play the Ring Toss?";
-                GOSSIP_BUTTON_2 = "Ready to play! |cFF0000FF(Darkmoon Game Token)|r";
-                break;
-            };
+                AddGossipItemFor(player, GOSSIP_BUTTON_2, GOSSIP_BUTTON_2_ID, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+                SendGossipMenuFor(player, 53027, me->GetGUID());
+            }
 
-            AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-
+            player->PlayerTalkClass->SendGossipMenu(player->GetGossipTextId(me), me->GetGUID());
             return true;
         }
 
-        bool OnGossipSelect(Player* player, uint32 /*uiSender*/, uint32 action) override
+        bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipListId) override
         {
-            char const* GOSSIP_BUTTON_1;
-            char const* GOSSIP_BUTTON_2;
-            char const* GOSSIP_BUTTON_3;
+            uint32 const action = player->PlayerTalkClass->GetGossipOptionAction(gossipListId);
+            ClearGossipMenuFor(player);
 
-            switch (LocaleConstant currentlocale = player->GetSession()->GetSessionDbcLocale())
+            switch (action)
             {
-            case 20:    // locales end on 11, case 20 is impossible case, this is just to fix compile warnings.
+            case GOSSIP_ACTION_INFO_DEF + 1:
+                AddGossipItemFor(player, GOSSIP_BUTTON_3, GOSSIP_BUTTON_3_ID, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
                 break;
-            default:
-                GOSSIP_BUTTON_1 = "How do I play the Ring Toss?";
-                GOSSIP_BUTTON_2 = "Ready to play! |cFF0000FF(Darkmoon Game Token)|r";
-                GOSSIP_BUTTON_3 = "Alright.";
-                break;
-            };
-
-            player->PlayerTalkClass->ClearMenus();
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 1)
-            {
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-            }
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 2)
-            {
-                if (player->HasItemCount(71083))
+            case GOSSIP_ACTION_INFO_DEF + 2:
+                if (player->HasItemCount(ITEM_DARKMOON_TOKEN))
                 {
                     CloseGossipMenuFor(player);
 
-                    player->DestroyItemCount(71083, 1, true);
+                    player->DestroyItemCount(ITEM_DARKMOON_TOKEN, 1, true);
                     player->RemoveAurasByType(SPELL_AURA_MOUNTED);
 
-                    player->AddAura(102058, player);
+                    player->AddAura(SPELL_RINGTOSS_ENABLE, player);
                     player->SetPower(POWER_ALTERNATE_POWER, 10);
 
                     return true;
                 }
+                break;
+            case GOSSIP_ACTION_INFO_DEF + 3:
+                AddGossipItemFor(player, GOSSIP_BUTTON_1, GOSSIP_BUTTON_1_ID, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                AddGossipItemFor(player, GOSSIP_BUTTON_2, GOSSIP_BUTTON_2_ID, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+                break;
             }
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 3)
-            {
-                if (me->IsQuestGiver())
-                    player->PrepareQuestMenu(me->GetGUID());
-
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-                AddGossipItemFor(player, GossipOptionNpc::None, GOSSIP_BUTTON_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-
-            }
-
             return true;
         }
     };
@@ -537,14 +357,33 @@ public:
             Unit* caster = GetCaster();
             Player* player = GetCaster()->ToPlayer();
 
-            if (Creature* dubenko = caster->FindNearestCreature(54490, 100.0f, true))
+            WorldLocation* loc = GetHitDest();
+
+            Creature* dubenko = caster->FindNearestCreature(54490, 100.0f, true);
+
+            //dubenko->CastSpell(dubenko, 101737, false);
+            if (dubenko && dubenko->IsWithinDist2d(loc, 1.2f))
             {
-                caster->CastSpell(dubenko, 101697, false);
-                dubenko->CastSpell(dubenko, 101737, false);
+                if (dubenko->HasAura(SPELL_RINGTOSS_TURTLE_CIRCLE_1))
+                {
+                    if (dubenko->HasAura(SPELL_RINGTOSS_TURTLE_CIRCLE_2))
+                        dubenko->CastSpell(dubenko, SPELL_RINGTOSS_TURTLE_CIRCLE_3, true);
+                    else
+                        dubenko->CastSpell(dubenko, SPELL_RINGTOSS_TURTLE_CIRCLE_2, true);
+                }
+                else
+                    dubenko->CastSpell(dubenko, SPELL_RINGTOSS_TURTLE_CIRCLE_1, true);
+
+                caster->CastSpell(dubenko, SPELL_RINGTOSS_HIT, false);
             }
 
-            player->KilledMonsterCredit(54495, ObjectGuid::Empty);
+            if (player)
+            {
+                if (player->GetReqKillOrCastCurrentCount(QUEST_TARGET_TURTLE, 54495) >= 3)
+                    player->RemoveAurasDueToSpell(SPELL_RINGTOSS_ENABLE);
+            }            
         }
+                        
 
         void Register()
         {
@@ -556,6 +395,20 @@ public:
     SpellScript* GetSpellScript() const
     {
         return new spell_ring_toss_SpellScript();
+    }
+};
+
+// at_target_turtle 7338
+class at_target_turtle : public AreaTriggerScript
+{
+public:
+    at_target_turtle() : AreaTriggerScript("at_target_turtle") { }
+
+    bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/)
+    {
+        if (!player->IsGameMaster())
+            player->CastSpell(player, 109972, true);
+        return true;
     }
 };
 
@@ -843,84 +696,77 @@ public:
     }
 };
 
-enum ShootGallery
+enum HeShootsSpells
 {
-    EVENT_SHOOTGALLERY_START_GAME = 1,
-    EVENT_SHOOTGALLERY_FINISH_GAME = 2,
+    SPELL_HESHOOTS_CRACKSHOT_ENABLE = 101871,
+    SPELL_HESHOOTS_SHOOT = 101872,
+    SPELL_HESHOOTS_TARGET_INDICATOR = 101010,
+    SPELL_HESHOOTS_TARGET_INDICATOR_VISUAL = 43313,
+    SPELL_HESHOOTS_KILL_CREDIT = 43300,
+    SPELL_HESHOOTS_KILL_CREDIT_BONUS = 101012,
 };
 
-class npc_rinling : public CreatureScript
+class npc_rinling_darkmoon : public CreatureScript
 {
 public:
-    npc_rinling() : CreatureScript("npc_rinling") { }
+    npc_rinling_darkmoon() : CreatureScript("npc_rinling_darkmoon") { }
 
-    struct npc_rinlingAI : public ScriptedAI
+    struct npc_rinling_darkmoonAI : public ScriptedAI
     {
-        npc_rinlingAI(Creature* creature) : ScriptedAI(creature) { }
+        npc_rinling_darkmoonAI(Creature* creature) : ScriptedAI(creature)
+        {
+            Reset();
+        }
 
-        EventMap events;
+        uint32 nextQuoteTimer;
+        uint8 nextQuote;
 
-        bool Active;
+        uint32 nextTargetChangeTimer;
+        int8 targetIndex;
+        ObjectGuid targetList[3];
 
         void Reset()
         {
-            Active = false;
+            nextQuoteTimer = urand(1, 60) * 1000;
+            nextQuote = 0;
+            nextTargetChangeTimer = 0;
+            targetIndex = -1;
         }
 
-        void StartGame()
+        void UpdateAI(const uint32 diff)
         {
-            if (!Active)
+            if (nextTargetChangeTimer <= diff)
             {
-                events.ScheduleEvent(EVENT_SHOOTGALLERY_START_GAME, 0ms);
-                events.ScheduleEvent(EVENT_SHOOTGALLERY_FINISH_GAME, 60000ms);
-            }
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            events.Update(diff);
-
-            Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
-
-            while (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
+                if (targetIndex < 0 || targetIndex >= 3)
                 {
-                case EVENT_SHOOTGALLERY_START_GAME:
-                    switch (urand(0, 2))
+                    std::list<Creature*> crList;
+                    GetCreatureListWithEntryInGrid(crList, me, 24171, 100.0f);
+                    int i = 0;
+                    for (std::list<Creature*>::const_iterator itr = crList.begin(); itr != crList.end(); ++itr)
                     {
-                    case 0:
-                        if (Creature* summon = me->SummonCreature(54231, -4072.19f, 6356.46f, 13.35f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms))
-                            summon->CastSpell(summon, 102341, false);
-
-                        //me->SummonCreature(24171, -4070.09f, 6354.87f, 12.57f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
-                        //me->SummonCreature(24171, -4068.41f, 6353.09f, 13.24f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
-                        break;
-                    case 1:
-                        //me->SummonCreature(24171, -4072.19f, 6356.46f, 13.35f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
-
-                        if (Creature* summon = me->SummonCreature(54231, -4070.09f, 6354.87f, 12.57f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms))
-                            summon->CastSpell(summon, 102341, false);
-
-                        //me->SummonCreature(24171, -4068.41f, 6353.09f, 12.24f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
-                        break;
-                    case 2:
-                        //me->SummonCreature(24171, -4072.19f, 6356.46f, 13.35f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
-                        //me->SummonCreature(24171, -4070.09f, 6354.87f, 12.57f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms);
-
-                        if (Creature* summon = me->SummonCreature(54231, -4068.41f, 6353.09f, 13.24f, 4.21f, TEMPSUMMON_TIMED_DESPAWN, 5000ms))
-                            summon->CastSpell(summon, 102341, false);
-
-                        break;
+                        targetList[i++] = (*itr)->GetGUID();
+                        if (i >= 3)
+                            break;
                     }
-                    events.ScheduleEvent(EVENT_SHOOTGALLERY_START_GAME, 5000ms);
-                    break;
-                case EVENT_SHOOTGALLERY_FINISH_GAME:
-                    Active = false;
-                    events.CancelEvent(EVENT_SHOOTGALLERY_START_GAME);
-                    break;
                 }
+
+                int8 chosen = -1;
+                do
+                {
+                    // randomly choose one of targets
+                    chosen = urand(0, 2);
+                } while (chosen == targetIndex && urand(0, 1) == 0); // the same target could be chosen with only 50% chance (+-)
+
+                targetIndex = chosen;
+
+                Creature* creature_bunny = ObjectAccessor::GetCreature(*me, targetList[chosen]);
+                if (creature_bunny)
+                    creature_bunny->CastSpell(creature_bunny, SPELL_HESHOOTS_TARGET_INDICATOR, true);
+
+                nextTargetChangeTimer = 6500 + urand(0, 1000);
             }
+            else
+                nextTargetChangeTimer -= diff;
         }
 
         bool OnGossipHello(Player* player) override
@@ -928,74 +774,69 @@ public:
             if (me->IsQuestGiver())
                 player->PrepareQuestMenu(me->GetGUID());
 
+            AddGossipItemFor(player, 6225, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+
             if (player->GetQuestStatus(QUEST_HE_SHOOTS_HE_SCORES) == QUEST_STATUS_INCOMPLETE)
-                AddGossipItemFor(player, GossipOptionNpc::None, "I'm ready to shoot! |cFF0000FF(Darkmoon Game Token)|r", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                AddGossipItemFor(player, 6225, 2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
             player->PlayerTalkClass->SendGossipMenu(player->GetGossipTextId(me), me->GetGUID());
             return true;
         }
 
-        bool OnGossipSelect(Player* player, uint32 /*uiSender*/, uint32 action) override
+        bool OnGossipSelect(Player* player, uint32 /*uiSender*/, uint32 gossipListId) override
         {
-            if (player->HasItemCount(ITEM_DARKMOON_TOKEN))
+            uint32 const action = player->PlayerTalkClass->GetGossipOptionAction(gossipListId);
+            ClearGossipMenuFor(player);
+
+            switch (action)
             {
-                CloseGossipMenuFor(player);
+                // Info
+            case GOSSIP_ACTION_INFO_DEF + 1:
+                    player->PlayerTalkClass->ClearMenus();
+                    SendGossipMenuFor(player, 18353, me->GetGUID());
+                    return OnGossipHello(player);
+                break;
+                // Ready to play
+            case  GOSSIP_ACTION_INFO_DEF + 2:
+                if (player->HasItemCount(ITEM_DARKMOON_TOKEN))
+                {
+                    CloseGossipMenuFor(player);
 
-                player->DestroyItemCount(ITEM_DARKMOON_TOKEN, 1, true);
-                player->RemoveAurasByType(SPELL_AURA_MOUNTED);
+                    player->DestroyItemCount(ITEM_DARKMOON_TOKEN, 1, true);
+                    player->CastSpell(player, SPELL_HESHOOTS_CRACKSHOT_ENABLE, true);
 
-                player->AddAura(101871, player);
+                    int16 progress = player->GetReqKillOrCastCurrentCount(QUEST_HE_SHOOTS_HE_SCORES, 54231);
+                    if (progress > 0)
+                        player->SetPower(POWER_ALTERNATE_POWER, progress);
 
-                int16 progress = player->GetReqKillOrCastCurrentCount(QUEST_HE_SHOOTS_HE_SCORES, 54231);
-                if (progress > 0)
-                    player->SetPower(POWER_ALTERNATE_POWER, progress);
-
-                CAST_AI(npc_rinling::npc_rinlingAI, me->AI())->StartGame();
-                CAST_AI(npc_rinling::npc_rinlingAI, me->AI())->Active = true;
+                    return true;
+                }
+                break;
             }
 
-            return true;
-        }
-
-        bool OnQuestComplete(Player* player, Creature* /*creature*/, Quest const* quest)
-        {
-            if (quest->GetQuestId() == QUEST_HE_SHOOTS_HE_SCORES)
-            {
-                player->RemoveAurasDueToSpell(101871);
-            }
-
-            return true;
+            return false;
         }
     };
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return new npc_rinlingAI(creature);
+        return new npc_rinling_darkmoonAI(creature);
     }
 };
 
-class spell_shoot_gallery_shoot : public SpellScriptLoader
+// spell - 101872
+class spell_heshoots_shoot_hit : public SpellScriptLoader
 {
 public:
-    spell_shoot_gallery_shoot() : SpellScriptLoader("spell_shoot_gallery_shoot") {}
+    spell_heshoots_shoot_hit() : SpellScriptLoader("spell_heshoots_shoot_hit") { }
 
-    class spell_shoot_gallery_shoot_SpellScript : public SpellScript
+    class spell_heshoots_shoot_hit_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_shoot_gallery_shoot_SpellScript);
+        PrepareSpellScript(spell_heshoots_shoot_hit_SpellScript);
 
-        SpellCastResult CheckRequirement()
+        void HandleDummy(SpellEffIndex /*effIndex*/)
         {
-            if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
-                return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
-
-            return SPELL_CAST_OK;
-        }
-
-        void OnHit()
-        {
-            Player* player = GetCaster()->ToPlayer();
-
-            if (!player)
+            if (!GetCaster())
                 return;
 
             Unit* target = GetHitUnit();
@@ -1003,45 +844,45 @@ public:
             if (!target)
                 return;
 
-            if (Aura* shootAura = target->GetAura(43313))
+            if (Aura* shootAura = target->GetAura(SPELL_HESHOOTS_TARGET_INDICATOR))
             {
-                target->CastSpell(player, 43300, true);
+                target->CastSpell(GetCaster(), SPELL_HESHOOTS_KILL_CREDIT, true);
+
+                Player* pl = GetCaster()->ToPlayer();
 
                 if (shootAura->GetMaxDuration() - shootAura->GetDuration() < 1000)
                 {
-                    target->CastSpell(player, 101012, true);
+                    target->CastSpell(GetCaster(), SPELL_HESHOOTS_KILL_CREDIT_BONUS, true);
                     AchievementEntry const* achiev = sAchievementStore.LookupEntry(6022);
-                    if (player)
-                        player->CompletedAchievement(achiev);
+                    if (pl)
+                        pl->CompletedAchievement(achiev);
                 }
 
-                if (player)
+                if (pl)
                 {
-                    if (player->GetReqKillOrCastCurrentCount(QUEST_HE_SHOOTS_HE_SCORES, 54231) >= 25)
-                        player->RemoveAurasDueToSpell(101871);
+                    if (pl->GetReqKillOrCastCurrentCount(QUEST_HE_SHOOTS_HE_SCORES, 54231) >= 25)
+                        pl->RemoveAurasDueToSpell(SPELL_HESHOOTS_CRACKSHOT_ENABLE);
                 }
             }
         }
 
         void Register()
         {
-            AfterHit += SpellHitFn(spell_shoot_gallery_shoot_SpellScript::OnHit);
-            OnCheckCast += SpellCheckCastFn(spell_shoot_gallery_shoot_SpellScript::CheckRequirement);
+            OnEffectHitTarget += SpellEffectFn(spell_heshoots_shoot_hit_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
         }
     };
 
     SpellScript* GetSpellScript() const
     {
-        return new spell_shoot_gallery_shoot_SpellScript();
+        return new spell_heshoots_shoot_hit_SpellScript();
     }
 };
 
+// spell - 101010
 class spell_heshoots_indicator : public SpellScriptLoader
 {
 public:
-    spell_heshoots_indicator() : SpellScriptLoader("spell_heshoots_indicator")
-    {
-    }
+    spell_heshoots_indicator() : SpellScriptLoader("spell_heshoots_indicator") { }
 
     class spell_heshoots_indicator_AuraScript : public AuraScript
     {
@@ -1052,7 +893,7 @@ public:
             if (!GetUnitOwner())
                 return;
 
-            GetUnitOwner()->CastSpell(GetUnitOwner(), 43313, true);
+            GetUnitOwner()->CastSpell(GetUnitOwner(), SPELL_HESHOOTS_TARGET_INDICATOR_VISUAL, true);
         }
 
         void EffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*modes*/)
@@ -1060,7 +901,7 @@ public:
             if (!GetUnitOwner())
                 return;
 
-            GetUnitOwner()->RemoveAurasDueToSpell(43313);
+            GetUnitOwner()->RemoveAurasDueToSpell(SPELL_HESHOOTS_TARGET_INDICATOR_VISUAL);
         }
 
         void Register()
@@ -1078,7 +919,7 @@ public:
 
 void AddSC_darkmoon_island()
 {
-    new npc_selina_dourman2();
+    new npc_fire_juggler_darkmoon();
 
     new spell_darkmoon_carousel_whee();
     new spell_darkmoon_staging_area_teleport();
@@ -1088,7 +929,7 @@ void AddSC_darkmoon_island()
     //ring toss
     new npc_jessica_rogers();
     new spell_ring_toss();
-
+    new at_target_turtle();
 
     new spell_gen_repair_damaged_tonk();
     new spell_gen_shoe_baby();
@@ -1098,7 +939,7 @@ void AddSC_darkmoon_island()
     new spell_darkmoon_deathmatch();
 
     //shoot gallery
-    new npc_rinling();
-    new spell_shoot_gallery_shoot();
+    new npc_rinling_darkmoon();
+    new spell_heshoots_shoot_hit();
     new spell_heshoots_indicator();
 };

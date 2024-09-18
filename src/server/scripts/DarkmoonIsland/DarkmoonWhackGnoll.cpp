@@ -18,25 +18,14 @@
 #include "ScriptMgr.h"
 #include "DarkmoonIsland.h"
 #include "ScriptedGossip.h"
-#include "ScriptMgr.h"
 #include "Cell.h"
 #include "CellImpl.h"
 #include "GridNotifiers.h"
-#include "GridNotifiersImpl.h"
 #include "SpellScript.h"
-#include "SpellAuras.h"
-#include "ScriptedGossip.h"
-#include "MotionMaster.h"
 #include "GameObject.h"
 #include "Transport.h"
-#include "DarkmoonIsland.h"
 #include "AchievementMgr.h"
-#include "ScriptMgr.h"
-#include "ScriptedGossip.h"
 #include "ScriptedCreature.h"
-#include "DarkmoonIsland.h"
-#include "Player.h"
-#include "GameObject.h"
 #include "GameObjectAI.h"
 #include "InstanceScript.h"
 #include "Log.h"
@@ -51,7 +40,6 @@
 #include "AchievementPackets.h"
 #include "DB2HotfixGenerator.h"
 #include "DB2Stores.h"
-#include "CellImpl.h"
 #include "ChatTextBuilder.h"
 #include "Containers.h"
 #include "DatabaseEnv.h"
@@ -70,10 +58,6 @@
 #include "AreaTriggerAI.h"
 #include "CreatureAI.h"
 #include "CreatureAIImpl.h"
-#include "SpellScript.h"
-#include "SpellAuras.h"
-#include "SharedDefines.h"
-#include "ObjectAccessor.h"
 #include "TemporarySummon.h"
 #include <sstream>
 
@@ -126,8 +110,7 @@ class npc_whack_gnoll_bunny : public CreatureScript
 
         struct npc_whack_gnoll_bunnyAI : ScriptedAI
         {
-            npc_whack_gnoll_bunnyAI(Creature* pCreature) : ScriptedAI(pCreature)
-            {}
+            npc_whack_gnoll_bunnyAI(Creature* pCreature) : ScriptedAI(pCreature) { }
 
             std::list<ObjectGuid> barrelList;
             EventMap events;
@@ -255,20 +238,6 @@ class npc_whack_gnoll_mola : public CreatureScript
 public:
     npc_whack_gnoll_mola() : CreatureScript("npc_whack_gnoll_mola") { }
 
-    bool OnQuestComplete(Player* player, Creature* creature, Quest const* quest)
-    {
-        if (quest->GetQuestId() == QUEST_WHACK_A_GNOLL)
-        {
-            creature->GetAI()->DoAction(0);
-            player->SetPower(POWER_ALTERNATE_POWER, 0);
-            player->RemoveAurasDueToSpell(SPELL_ENABLE_POWERBAR);
-            player->RemoveAurasDueToSpell(SPELL_DOLL_STUN);
-            player->CastSpell(player, SPELL_FORBIDDEN_ZONE, true);
-        }
-
-        return true;
-    }
-
     struct npc_whack_gnoll_molaAI : public ScriptedAI
     {
         npc_whack_gnoll_molaAI(Creature* creature) : ScriptedAI(creature) { }
@@ -292,7 +261,7 @@ public:
 
             me->AddAura(SPELL_OVERRIDE_ACTION, player);
             me->AddAura(SPELL_ENABLE_POWERBAR, player);
-            player->SetPower(POWER_ALTERNATE_POWER, player->GetReqKillOrCastCurrentCount(29463, 54505));
+            player->SetPower(POWER_ALTERNATE_POWER, player->GetReqKillOrCastCurrentCount(QUEST_WHACK_A_GNOLL, 54505));
 
             CloseGossipMenuFor(player);
             return true;
@@ -335,8 +304,7 @@ class PositionCheck
         bool operator()(WorldObject* unit)
         {
             bool isTooFar = _caster->GetDistance2d(unit) >= 3.0f;
-            bool isNotInFront = !_caster->isInFront(unit, 90.0f);
-            return isTooFar || isNotInFront;
+            return isTooFar;
         }
 
         private:
@@ -462,7 +430,7 @@ public:
 
     bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/) override
     {
-        if (!player->HasAura(SPELL_ENABLE_POWERBAR))
+        if (!player->HasAura(SPELL_ENABLE_POWERBAR) && !player->IsGameMaster())
             player->CastSpell(player, SPELL_FORBIDDEN_ZONE, true);
 
         return false;
