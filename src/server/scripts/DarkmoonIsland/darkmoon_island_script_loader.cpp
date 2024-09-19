@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 ShadowCore
+ * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -21,6 +21,9 @@ void AddSC_darkmoon_island();
 void AddSC_darkmoon_rabbit();
 void AddSC_darkmoon_tonk();
 void AddSC_darkmoon_whack_gnoll();
+void AddSC_darkmoon_shooting_gallery();
+void AddSC_darkmoon_ring_toss();
+void AddSC_darkmoon_firebird_challenge();
 
 
 // The name of this function should match:
@@ -32,4 +35,7 @@ void AddDarkmoonIslandScripts()
     AddSC_darkmoon_rabbit();
     AddSC_darkmoon_tonk();
     AddSC_darkmoon_whack_gnoll();
+    AddSC_darkmoon_shooting_gallery();
+    AddSC_darkmoon_ring_toss();
+    AddSC_darkmoon_firebird_challenge();
 }
