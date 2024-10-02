@@ -4077,7 +4077,7 @@ struct ModifiedCraftingReagentSlotLoadInfo
         { true, FT_INT, "Field_9_0_1_33978_001" },
         { true, FT_INT, "PlayerConditionID" },
         { true, FT_INT, "ReagentType" },
-        { true, FT_BYTE, "Field_10_0_2_46091_005" },
+        { false, FT_BYTE, "Field_10_0_2_46091_005" },
     };
 
     static constexpr DB2LoadInfo Instance{ Fields, 6, &ModifiedCraftingReagentSlotMeta::Instance, HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_SLOT };
@@ -4088,7 +4088,7 @@ struct ModifiedCraftingSpellSlotLoadInfo
     static constexpr DB2FieldMeta Fields[7] =
     {
         { false, FT_INT, "ID" },
-        { true, FT_INT, "SpellID" },
+        { false, FT_INT, "SpellID" },
         { true, FT_INT, "Slot" },
         { true, FT_INT, "ModifiedCraftingReagentSlotID" },
         { true, FT_INT, "Field_9_0_1_35679_003" },
@@ -6275,7 +6275,7 @@ struct TextureFileDataLoadInfo
     {
         { false, FT_INT, "ID" },
         { false, FT_BYTE, "UsageType" },
-        { true, FT_INT, "TextureID" },
+        { false, FT_INT, "TextureID" },
     };
 
     static constexpr DB2LoadInfo Instance{ Fields, 3, &TextureFileDataMeta::Instance, HOTFIX_SEL_TEXTURE_FILE_DATA };
