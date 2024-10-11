@@ -748,21 +748,6 @@ namespace WorldPackets
             uint32 Ticks = 0;
         };
 
-        class SetAdvFlyingSpeed final : public ServerPacket
-        {
-        public:
-            SetAdvFlyingSpeed(OpcodeServer opcode, uint32 sequenceIndex, float speed) : ServerPacket(opcode, 4 + 4)
-            {
-                SequenceIndex = sequenceIndex;
-                Speed = speed;
-            }
-
-            WorldPacket const* Write() override;
-
-            uint32 SequenceIndex;
-            float Speed;
-        };
-
         class SetAdvFlyingMinMaxSpeeds final : public ServerPacket
         {
         public:

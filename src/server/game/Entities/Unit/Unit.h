@@ -1814,7 +1814,6 @@ class TC_GAME_API Unit : public WorldObject
         virtual bool CanEnterWater() const = 0;
         virtual bool CanSwim() const;
 
-        uint32 GetFlightCapabilityID() const { return m_unitData->FlightCapabilityID; }
         void SetFlightCapabilityID(uint32 flightCapabilityID);
         float GetAdvFlyingSpeed(AdvFlyingRateType speedType) const { return _advFlyingSpeeds[speedType]; }
         void CalculateAdvFlyingSpeeds();
