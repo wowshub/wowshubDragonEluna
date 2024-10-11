@@ -1119,14 +1119,6 @@ void WorldPackets::Movement::MoveInitActiveMoverComplete::Read()
     _worldPacket >> Ticks;
 }
 
-WorldPacket const* WorldPackets::Movement::SetAdvFlyingSpeed::Write()
-{
-    _worldPacket << uint32(SequenceIndex);
-    _worldPacket << float(Speed);
-
-    return &_worldPacket;
-}
-
 WorldPacket const* WorldPackets::Movement::SetAdvFlyingMinMaxSpeeds::Write()
 {
     _worldPacket << uint32(SequenceIndex);

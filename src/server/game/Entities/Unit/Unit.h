@@ -610,29 +610,6 @@ enum ReactiveType
     MAX_REACTIVE
 };
 
-enum AdvFlyingRateType : uint8
-{
-    ADV_FLYING_AIR_FRICTION = 0,
-    ADV_FLYING_MAX_VEL,
-    ADV_FLYING_LIFT_COEFFICIENT,
-    ADV_FLYING_DOUBLE_JUMP_VEL_MOD,
-    ADV_FLYING_GLIDE_START_MIN_HEIGHT,
-    ADV_FLYING_ADD_IMPULSE_MAX_SPEED,
-    ADV_FLYING_BANKING_RATE_MIN,
-    ADV_FLYING_BANKING_RATE_MAX,
-    ADV_FLYING_PITCHING_RATE_DOWN_MIN,
-    ADV_FLYING_PITCHING_RATE_DOWN_MAX,
-    ADV_FLYING_PITCHING_RATE_UP_MIN,
-    ADV_FLYING_PITCHING_RATE_UP_MAX,
-    ADV_FLYING_TURN_VELOCITY_THRESHOLD_MIN,
-    ADV_FLYING_TURN_VELOCITY_THRESHOLD_MAX,
-    ADV_FLYING_SURFACE_FRICTION,
-    ADV_FLYING_OVER_MAX_DECELERATION,
-    ADV_FLYING_LAUNCH_SPEED_COEFFICIENT,
-
-    ADV_FLYING_MAX_SPEED_TYPE
-};
-
 struct PositionUpdateInfo
 {
     void Reset()
@@ -1814,8 +1791,6 @@ class TC_GAME_API Unit : public WorldObject
         virtual bool CanEnterWater() const = 0;
         virtual bool CanSwim() const;
 
-        void SetFlightCapabilityID(uint32 flightCapabilityID);
-        float GetAdvFlyingSpeed(AdvFlyingRateType speedType) const { return _advFlyingSpeeds[speedType]; }
         void CalculateAdvFlyingSpeeds();
         float GetAdvFlyingVelocity() const;
 
