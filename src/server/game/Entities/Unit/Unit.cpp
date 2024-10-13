@@ -8348,7 +8348,7 @@ void Unit::UpdateMountCapability()
 
             if (!HasAura(capability->ModSpellAuraID))
                 CastSpell(this, capability->ModSpellAuraID, aurEff);
-        }    
+        }
     }
 }
 
