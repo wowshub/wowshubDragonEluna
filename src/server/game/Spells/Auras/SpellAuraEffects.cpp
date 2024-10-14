@@ -6667,23 +6667,6 @@ void AuraEffect::HandleAuraModSpellPowerPercent(AuraApplication const* aurApp, u
     target->ToPlayer()->UpdateSpellDamageAndHealingBonus();
 }
 
-void AuraEffect::HandleAdvancedFlying(AuraApplication const* aurApp, uint8 mode, bool apply) const
-{
-    if (!(mode & AURA_EFFECT_HANDLE_REAL))
-        return;
-
-    Player* player = aurApp->GetTarget()->ToPlayer();
-    if (!player)
-        return;
-
-    player->SetCanDoubleJump(apply || player->HasAura(SPELL_DH_DOUBLE_JUMP));
-    player->SetCanFly(apply);
-    player->SetCanAdvFly(apply);
-
-    if (apply)
-        player->InitAdvFlying();
-}
-
 template TC_GAME_API void AuraEffect::GetTargetList(std::list<Unit*>&) const;
 template TC_GAME_API void AuraEffect::GetTargetList(std::deque<Unit*>&) const;
 template TC_GAME_API void AuraEffect::GetTargetList(std::vector<Unit*>&) const;
