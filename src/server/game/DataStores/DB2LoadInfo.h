@@ -792,9 +792,9 @@ struct BroadcastTextDurationLoadInfo
     static constexpr DB2FieldMeta Fields[4] =
     {
         { false, FT_INT, "ID" },
-        { false, FT_INT, "BroadcastTextID" },
         { true, FT_INT, "Locale" },
         { true, FT_INT, "Duration" },
+        { false, FT_INT, "BroadcastTextID" },
     };
 
     static constexpr DB2LoadInfo Instance{ Fields, 4, &BroadcastTextDurationMeta::Instance, HOTFIX_SEL_BROADCAST_TEXT_DURATION };
@@ -1060,14 +1060,12 @@ struct ChrCustomizationMaterialLoadInfo
 
 struct ChrCustomizationOptionLoadInfo
 {
-    static constexpr DB2FieldMeta Fields[15] =
+    static constexpr DB2FieldMeta Fields[13] =
     {
         { false, FT_STRING, "Name" },
         { false, FT_INT, "ID" },
         { false, FT_SHORT, "SecondaryID" },
         { true, FT_INT, "Flags" },
-        { true, FT_INT, "ChrRacesID" },
-        { true, FT_INT, "Sex" },
         { false, FT_INT, "ChrModelID" },
         { true, FT_INT, "SortIndex" },
         { true, FT_INT, "ChrCustomizationCategoryID" },
@@ -1079,7 +1077,7 @@ struct ChrCustomizationOptionLoadInfo
         { true, FT_INT, "AddedInPatch" },
     };
 
-    static constexpr DB2LoadInfo Instance{ Fields, 15, &ChrCustomizationOptionMeta::Instance, HOTFIX_SEL_CHR_CUSTOMIZATION_OPTION };
+    static constexpr DB2LoadInfo Instance{ Fields, 13, &ChrCustomizationOptionMeta::Instance, HOTFIX_SEL_CHR_CUSTOMIZATION_OPTION };
 };
 
 struct ChrCustomizationReqLoadInfo
@@ -1792,7 +1790,7 @@ struct DestructibleModelDataLoadInfo
 
 struct DifficultyLoadInfo
 {
-    static constexpr DB2FieldMeta Fields[14] =
+    static constexpr DB2FieldMeta Fields[15] =
     {
         { false, FT_INT, "ID" },
         { false, FT_STRING, "Name" },
@@ -1808,9 +1806,10 @@ struct DifficultyLoadInfo
         { false, FT_INT, "GroupSizeHealthCurveID" },
         { false, FT_INT, "GroupSizeDmgCurveID" },
         { false, FT_INT, "GroupSizeSpellPointsCurveID" },
+        { true, FT_INT, "Unknown1105" },
     };
 
-    static constexpr DB2LoadInfo Instance{ Fields, 14, &DifficultyMeta::Instance, HOTFIX_SEL_DIFFICULTY };
+    static constexpr DB2LoadInfo Instance{ Fields, 15, &DifficultyMeta::Instance, HOTFIX_SEL_DIFFICULTY };
 };
 
 struct DungeonEncounterLoadInfo
@@ -3661,7 +3660,7 @@ struct LanguagesLoadInfo
 
 struct LfgDungeonsLoadInfo
 {
-    static constexpr DB2FieldMeta Fields[31] =
+    static constexpr DB2FieldMeta Fields[32] =
     {
         { false, FT_INT, "ID" },
         { false, FT_STRING, "Name" },
@@ -3691,12 +3690,13 @@ struct LfgDungeonsLoadInfo
         { false, FT_SHORT, "BonusReputationAmount" },
         { false, FT_SHORT, "MentorItemLevel" },
         { false, FT_BYTE, "MentorCharLevel" },
+        { false, FT_BYTE, "MaxPremadeGroupSize" },
         { true, FT_INT, "ContentTuningID" },
         { true, FT_INT, "Flags1" },
         { true, FT_INT, "Flags2" },
     };
 
-    static constexpr DB2LoadInfo Instance{ Fields, 31, &LFGDungeonsMeta::Instance, HOTFIX_SEL_LFG_DUNGEONS };
+    static constexpr DB2LoadInfo Instance{ Fields, 32, &LFGDungeonsMeta::Instance, HOTFIX_SEL_LFG_DUNGEONS };
 };
 
 struct LightLoadInfo
@@ -5730,7 +5730,7 @@ struct SpellLevelsLoadInfo
 
 struct SpellMiscLoadInfo
 {
-    static constexpr DB2FieldMeta Fields[32] =
+    static constexpr DB2FieldMeta Fields[33] =
     {
         { false, FT_INT, "ID" },
         { true, FT_INT, "Attributes1" },
@@ -5748,6 +5748,7 @@ struct SpellMiscLoadInfo
         { true, FT_INT, "Attributes13" },
         { true, FT_INT, "Attributes14" },
         { true, FT_INT, "Attributes15" },
+        { true, FT_INT, "Attributes16" },
         { false, FT_BYTE, "DifficultyID" },
         { false, FT_SHORT, "CastingTimeIndex" },
         { false, FT_SHORT, "DurationIndex" },
@@ -5766,7 +5767,7 @@ struct SpellMiscLoadInfo
         { false, FT_INT, "SpellID" },
     };
 
-    static constexpr DB2LoadInfo Instance{ Fields, 32, &SpellMiscMeta::Instance, HOTFIX_SEL_SPELL_MISC };
+    static constexpr DB2LoadInfo Instance{ Fields, 33, &SpellMiscMeta::Instance, HOTFIX_SEL_SPELL_MISC };
 };
 
 struct SpellNameLoadInfo
