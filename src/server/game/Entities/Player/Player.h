@@ -109,7 +109,7 @@ enum PlayerRestState : uint8;
 enum class PlayerCreateMode : int8;
 enum RestTypes : uint8;
 enum TransferAbortReason : uint32;
-enum OpcodeServer : uint16;
+enum OpcodeServer : uint32;
 
 namespace BattlePets
 {
