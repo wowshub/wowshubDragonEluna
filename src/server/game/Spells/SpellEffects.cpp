@@ -1921,7 +1921,6 @@ void Spell::EffectSummonType()
     {
         case SUMMON_CATEGORY_WILD:
         case SUMMON_CATEGORY_ALLY:
-        case SUMMON_CATEGORY_UNK:
         {
             if (properties->GetFlags().HasFlag(SummonPropertiesFlags::JoinSummonerSpawnGroup))
             {
@@ -2025,6 +2024,7 @@ void Spell::EffectSummonType()
             summon = unitCaster->GetMap()->SummonCreature(entry, *destTarget, properties, duration, unitCaster, m_spellInfo->Id, 0, privateObjectOwner);
             break;
         }
+        case SUMMON_CATEGORY_POSSESSED_VEHICLE:
         case SUMMON_CATEGORY_VEHICLE:
         {
             if (!unitCaster)
