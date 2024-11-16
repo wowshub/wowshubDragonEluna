@@ -2342,53 +2342,6 @@ public:
     }
 };
 
-// Demonbolt - 157695
-class spell_warl_demonbolt : public SpellScript
-{
-    PrepareSpellScript(spell_warl_demonbolt);
-
-    int32 _summons = 0;
-
-    void HandleHit(SpellEffIndex /*effIndex*/)
-    {
-        Unit* caster = GetCaster();
-        Unit* target = GetHitUnit();
-        if (!caster || !target)
-            return;
-
-        int32 damage = GetHitDamage();
-        AddPct(damage, _summons * 20);
-        SetHitDamage(damage);
-    }
-
-    void CountSummons(std::list<WorldObject*>& targets)
-    {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
-
-        for (WorldObject* wo : targets)
-        {
-            if (!wo->ToCreature())
-                continue;
-            if (wo->ToCreature()->GetOwner() != caster)
-                continue;
-            if (wo->ToCreature()->GetCreatureType() != CREATURE_TYPE_DEMON)
-                continue;
-
-            _summons++;
-        }
-
-        targets.clear();
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_warl_demonbolt::HandleHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warl_demonbolt::CountSummons, EFFECT_2, TARGET_UNIT_CASTER_AND_SUMMONS);
-    }
-};
-
 class ImplosionDamageEvent : public BasicEvent
 {
 public:
@@ -2948,7 +2901,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_eye_laser();
     new spell_warlock_demonbolt_new();
     new spell_warl_demonic_calling();
-    RegisterSpellScript(spell_warl_demonbolt);
     new spell_warl_implosion();
     new spell_warlock_doom();
     new spell_warlock_soul_fire();

@@ -2623,7 +2623,7 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
 
         void ClearManualRecallPosition()
         {
-            manual_recall_location.WorldRelocate();
+            manual_recall_location.WorldRelocate(*this);
             manual_recall_location.m_mapId = 4294967295;
             manual_recall_instanceId = -1;
         }

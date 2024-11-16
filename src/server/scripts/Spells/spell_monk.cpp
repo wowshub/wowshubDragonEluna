@@ -88,7 +88,6 @@ enum MonkSpells
     SPELL_MONK_THUNDER_FOCUS_TEA                        = 116680,
     SPELL_MONK_RISING_THUNDER                           = 210804,
     SPELL_MONK_RENEWING_MIST_HOT                        = 119611,
-    SPELL_MONK_MORTAL_WOUNDS                            = 115804,
     SPELL_MONK_ESSENCE_FONT_PERIODIC_HEAL               = 191840,
     SPELL_MONK_ENVELOPING_MIST                          = 124682,
     SPELL_MONK_FORTIFYING_BREW                          = 120954,
@@ -915,44 +914,6 @@ public:
     SpellScript* GetSpellScript() const override
     {
         return new spell_monk_spear_hand_strike_SpellScript();
-    }
-};
-
-// Rising Sun Kick - 107428
-class spell_monk_rising_sun_kick : public SpellScript
-{
-    PrepareSpellScript(spell_monk_rising_sun_kick);
-    void HandleOnHit(SpellEffIndex /*effIndex*/)
-    {
-        Player* caster = GetCaster()->ToPlayer();
-        Unit* target = GetHitUnit();
-        if (!target || !caster)
-            return;
-        if (caster->HasAura(SPELL_MONK_RISING_THUNDER))
-            caster->ToPlayer()->GetSpellHistory()->ResetCooldown(SPELL_MONK_THUNDER_FOCUS_TEA, true);
-        if (caster->GetPrimarySpecialization() == ChrSpecialization::MonkBrewmaster)
-            caster->CastSpell(target, SPELL_MONK_MORTAL_WOUNDS, true);
-        if (caster->GetPrimarySpecialization() == ChrSpecialization::MonkMistweaver && caster->HasAura(SPELL_RISING_MIST))
-        {
-            caster->CastSpell(nullptr, SPELL_RISING_MIST_HEAL, true);
-            if (Aura* reneWingMist = caster->GetAura(SPELL_MONK_RENEWING_MIST_HOT))
-                reneWingMist->RefreshDuration(true);
-            if (Aura* envelopingMist = caster->GetAura(SPELL_MONK_ENVELOPING_MIST))
-                envelopingMist->RefreshDuration(true);
-            if (Aura* essenceFont = caster->GetAura(SPELL_MONK_ESSENCE_FONT_PERIODIC_HEAL))
-                essenceFont->RefreshDuration(true);
-        }
-        std::list<Unit*> u_li;
-        caster->GetFriendlyUnitListInRange(u_li, 100.0f);
-        for (auto& targets : u_li)
-        {
-            if (Aura* relatedAuras = targets->GetAura(SPELL_MONK_RENEWING_MIST_HOT || targets->GetAura(SPELL_MONK_ENVELOPING_MIST || targets->GetAura(SPELL_MONK_ESSENCE_FONT_PERIODIC_HEAL))))
-                relatedAuras->RefreshDuration(true);
-        }
-    }
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_monk_rising_sun_kick::HandleOnHit, EFFECT_0, SPELL_EFFECT_TRIGGER_SPELL);
     }
 };
 
@@ -2605,7 +2566,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_zen_flight_check();
     RegisterSpellAndAuraScriptPair(spell_monk_disable, aura_monk_disable);
     new spell_monk_spear_hand_strike();
-    RegisterSpellScript(spell_monk_rising_sun_kick);
     new spell_monk_fortifying_brew();
     new spell_monk_purifying_brew();
     new spell_monk_breath_of_fire();
