@@ -1362,7 +1362,7 @@ struct at_monk_chi_burst : AreaTriggerAI
         for (auto itr : at->GetInsideUnits())
         {
             //Unit* target = ObjectAccessor::GetUnit(*caster, itr);
-            if (!caster->IsFriendlyTo(unit))
+            if (caster->IsFriendlyTo(unit))
             {
                 caster->CastSpell(unit, SPELL_MONK_CHI_BURST_HEAL, true);
             }
