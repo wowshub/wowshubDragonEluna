@@ -219,6 +219,7 @@ Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this)
     m_bCanDelayTeleport = false;
     m_bHasDelayedTeleport = false;
     m_teleport_options = TELE_TO_NONE;
+    m_teleportSpellId = 0;
     m_newWorldCounter = 0;
 
     m_trade = nullptr;
@@ -1141,7 +1142,7 @@ void Player::Update(uint32 p_time)
     //we should execute delayed teleports only for alive(!) players
     //because we don't want player's ghost teleported from graveyard
     if (IsHasDelayedTeleport() && IsAlive())
-        TeleportTo(m_teleport_dest, m_teleport_options);
+        TeleportTo(m_teleport_dest, m_teleport_options, m_teleportSpellId);
 
     if (_justPassedBarberChecks)
         _justPassedBarberChecks = false;
@@ -1245,17 +1246,17 @@ uint16 Player::GetChatFlags() const
     return tag;
 }
 
-bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientation, TeleportToOptions options /*= TELE_TO_NONE*/, Optional<uint32> instanceId /*= {}*/)
+bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientation, TeleportToOptions options /*= TELE_TO_NONE*/, Optional<uint32> instanceId /*= {}*/, uint32 teleportSpellId /*= 0*/)
 {
-    return TeleportTo({ .Location = WorldLocation(mapid, x, y, z, orientation), .InstanceId = instanceId }, options);
+    return TeleportTo({ .Location = WorldLocation(mapid, x, y, z, orientation), .InstanceId = instanceId }, options, teleportSpellId);
 }
 
-bool Player::TeleportTo(WorldLocation const& loc, TeleportToOptions options, Optional<uint32> instanceId)
+bool Player::TeleportTo(WorldLocation const& loc, TeleportToOptions options, Optional<uint32> instanceId, uint32 teleportSpellId)
 {
-    return TeleportTo({ .Location = loc, .InstanceId = instanceId }, options);
+    return TeleportTo({ .Location = loc, .InstanceId = instanceId }, options, teleportSpellId);
 }
 
-bool Player::TeleportTo(TeleportLocation const& teleportLocation, TeleportToOptions options /*= TELE_TO_NONE*/)
+bool Player::TeleportTo(TeleportLocation const& teleportLocation, TeleportToOptions options /*= TELE_TO_NONE*/, uint32 teleportSpellId)
 {
     if (!MapManager::IsValidMapCoord(teleportLocation.Location))
     {
@@ -1334,6 +1335,7 @@ bool Player::TeleportTo(TeleportLocation const& teleportLocation, TeleportToOpti
             //lets save teleport destination for player
             m_teleport_dest = teleportLocation;
             m_teleport_options = options;
+            m_teleportSpellId = teleportSpellId;
             return true;
         }
 
@@ -1353,6 +1355,7 @@ bool Player::TeleportTo(TeleportLocation const& teleportLocation, TeleportToOpti
         // this will be used instead of the current location in SaveToDB
         m_teleport_dest = teleportLocation;
         m_teleport_options = options;
+        m_teleportSpellId = teleportSpellId;
         SetFallInformation(0, GetPositionZ());
 
         // code for finish transfer called in WorldSession::HandleMovementOpcodes()
@@ -1400,6 +1403,7 @@ bool Player::TeleportTo(TeleportLocation const& teleportLocation, TeleportToOpti
             //lets save teleport destination for player
             m_teleport_dest = teleportLocation;
             m_teleport_options = options;
+            m_teleportSpellId = teleportSpellId;
             return true;
         }
 
@@ -1453,6 +1457,8 @@ bool Player::TeleportTo(TeleportLocation const& teleportLocation, TeleportToOpti
             WorldPackets::Movement::TransferPending transferPending;
             transferPending.MapID = teleportLocation.Location.GetMapId();
             transferPending.OldMapPosition = teleportLocation.Location.GetPosition();
+            if (teleportSpellId)
+                transferPending.TransferSpellID = teleportSpellId;
             if (teleportLocation.TransportGuid.has_value())
             {
                 transferPending.Ship.emplace();
@@ -1478,6 +1484,7 @@ bool Player::TeleportTo(TeleportLocation const& teleportLocation, TeleportToOpti
 
         m_teleport_dest = teleportLocation;
         m_teleport_options = options;
+        m_teleportSpellId = teleportSpellId;
         SetFallInformation(0, GetPositionZ());
         // if the player is saved before worldportack (at logout for example)
         // this will be used instead of the current location in SaveToDB
