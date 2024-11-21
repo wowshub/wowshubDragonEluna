@@ -174,7 +174,7 @@ namespace LuaSpell
     {
         MountEntry const* mountEntry = sDB2Manager.GetMount(spell->m_spellInfo->Id);
         uint32 displayId = 0;
-        if (!mountEntry->IsSelfMount())
+        if (!mountEntry->GetFlags().HasFlag(MountFlags::IsSelfMount))
         {
             DB2Manager::MountXDisplayContainer const* mountDisplays = sDB2Manager.GetMountDisplays(mountEntry->ID);
             DB2Manager::MountXDisplayContainer usableDisplays;
