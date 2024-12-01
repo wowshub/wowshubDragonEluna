@@ -90,6 +90,12 @@ enum HunterSpells
     SPELL_HUNTER_WILD_CALL_AURA                     = 185791,
     SPELL_HUNTER_AURA_SHOOTING                      = 224729,
     SPELL_HUNTER_BARRAGE                            = 120360,
+    SPELL_WILDFIRE_INFUSION_TALENT                  = 271014,
+    SPELL_WILDFIRE_INFUSION_OVERRIDE_1              = 271015,
+    SPELL_WILDFIRE_INFUSION_OVERRIDE_2              = 271020,
+    SPELL_WILDFIRE_INFUSION_OVERRIDE_3              = 271050,
+    SPELL_WILDFIRE_INFUSION_DUMMY                   = 271615,
+    SPELL_VOLATILE_BOMB_DAMAGE                      = 260231,
 };
 
 enum MiscSpells
@@ -1900,6 +1906,265 @@ public:
     }
 };
 
+// 259495 - Wildfire Bomb
+class spell_hunter_wildfire_bomb : public SpellScript
+{
+    PrepareSpellScript(spell_hunter_wildfire_bomb);
+
+    void DoEffectHitTarget(SpellEffIndex /*effIndex*/)
+    {
+        if (Unit* target = GetHitUnit())
+            GetCaster()->Variables.Set<Unit*>("mainTarget", target);
+    }
+
+    void DoCast()
+    {
+        if (GetCaster()->HasAura(SPELL_WILDFIRE_INFUSION_TALENT))
+            GetCaster()->CastSpell(GetCaster(), SPELL_WILDFIRE_INFUSION_DUMMY, true);
+    }
+
+    void Register() override
+    {
+        AfterCast += SpellCastFn(spell_hunter_wildfire_bomb::DoCast);
+        OnEffectHitTarget += SpellEffectFn(spell_hunter_wildfire_bomb::DoEffectHitTarget, EFFECT_0, SPELL_EFFECT_TRIGGER_MISSILE);
+    }
+};
+
+// 271014 - Wildfire Infusion Talent
+class spell_hunter_wildfire_infusion_talent : public AuraScript
+{
+    PrepareAuraScript(spell_hunter_wildfire_infusion_talent);
+
+    void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        GetTarget()->CastSpell(GetTarget(), SPELL_WILDFIRE_INFUSION_OVERRIDE_2, true);
+    }
+
+    void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        GetTarget()->RemoveAurasDueToSpell(SPELL_WILDFIRE_INFUSION_OVERRIDE_1);
+        GetTarget()->RemoveAurasDueToSpell(SPELL_WILDFIRE_INFUSION_OVERRIDE_2);
+        GetTarget()->RemoveAurasDueToSpell(SPELL_WILDFIRE_INFUSION_OVERRIDE_3);
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_hunter_wildfire_infusion_talent::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+        OnEffectRemove += AuraEffectRemoveFn(spell_hunter_wildfire_infusion_talent::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+    }
+};
+
+// 271615 - Wildfire Infusion Dummy
+class spell_hunter_wildfire_infusion_dummy : public AuraScript
+{
+    PrepareAuraScript(spell_hunter_wildfire_infusion_dummy);
+
+    void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (GetTarget()->HasAura(SPELL_WILDFIRE_INFUSION_OVERRIDE_1))
+        {
+            if (roll_chance_i(50))
+                GetTarget()->CastSpell(GetTarget(), SPELL_WILDFIRE_INFUSION_OVERRIDE_2, true);
+            else
+                GetTarget()->CastSpell(GetTarget(), SPELL_WILDFIRE_INFUSION_OVERRIDE_3, true);
+            GetTarget()->RemoveAurasDueToSpell(SPELL_WILDFIRE_INFUSION_OVERRIDE_1);
+        }
+        else if (GetTarget()->HasAura(SPELL_WILDFIRE_INFUSION_OVERRIDE_2))
+        {
+            if (roll_chance_i(50))
+                GetTarget()->CastSpell(GetTarget(), SPELL_WILDFIRE_INFUSION_OVERRIDE_1, true);
+            else
+                GetTarget()->CastSpell(GetTarget(), SPELL_WILDFIRE_INFUSION_OVERRIDE_3, true);
+            GetTarget()->RemoveAurasDueToSpell(SPELL_WILDFIRE_INFUSION_OVERRIDE_2);
+        }
+        else if (GetTarget()->HasAura(SPELL_WILDFIRE_INFUSION_OVERRIDE_3))
+        {
+            if (roll_chance_i(50))
+                GetTarget()->CastSpell(GetTarget(), SPELL_WILDFIRE_INFUSION_OVERRIDE_1, true);
+            else
+                GetTarget()->CastSpell(GetTarget(), SPELL_WILDFIRE_INFUSION_OVERRIDE_2, true);
+            GetTarget()->RemoveAurasDueToSpell(SPELL_WILDFIRE_INFUSION_OVERRIDE_3);
+        }
+        else
+            GetTarget()->CastSpell(GetTarget(), SPELL_WILDFIRE_INFUSION_OVERRIDE_2, true);
+    }
+
+    void OnPeriodic(AuraEffect const* /*aurEff*/)
+    {
+        if (GetTarget()->IsInCombat())
+        {
+            RefreshDuration();
+            return;
+        }
+        GetTarget()->RemoveAurasDueToSpell(SPELL_WILDFIRE_INFUSION_OVERRIDE_1);
+        GetTarget()->RemoveAurasDueToSpell(SPELL_WILDFIRE_INFUSION_OVERRIDE_2);
+        GetTarget()->RemoveAurasDueToSpell(SPELL_WILDFIRE_INFUSION_OVERRIDE_3);
+        if (GetTarget()->HasAura(SPELL_WILDFIRE_INFUSION_TALENT))
+            GetTarget()->CastSpell(GetTarget(), SPELL_WILDFIRE_INFUSION_OVERRIDE_2, true);
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_hunter_wildfire_infusion_dummy::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_hunter_wildfire_infusion_dummy::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
+// 265163 - Wildfire Bomb AT Creator
+struct at_hunter_wildfire_bomb : AreaTriggerAI
+{
+    at_hunter_wildfire_bomb(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
+
+    enum UsedSpells
+    {
+        SPELL_HUNTER_WILDFIRE_BOMB_DAMAGE = 265157,
+        SPELL_HUNTER_WILDIFRE_BOMB_DOT = 259496
+    };
+
+    Unit* mainTarget = nullptr;
+
+    void OnCreate(Spell const* /*creatingSpell*/) override
+    {
+        if (Unit* caster = at->GetCaster())
+        {
+            mainTarget = caster->Variables.GetValue<Unit*>("mainTarget");
+            caster->Variables.Remove("mainTarget");
+            if (mainTarget)
+                at->SetOrientation(caster->GetAbsoluteAngle(mainTarget));
+            else
+                at->Remove();
+        }
+    }
+
+    void OnUnitEnter(Unit* enteredUnit) override
+    {
+        if (Unit* caster = at->GetCaster())
+            if (caster->IsValidAttackTarget(enteredUnit))
+            {
+                caster->CastSpell(enteredUnit, SPELL_HUNTER_WILDFIRE_BOMB_DAMAGE, true);
+                if (at->HasInArc(static_cast<float>(M_PI - M_PI / 5), enteredUnit) || enteredUnit == mainTarget)
+                    caster->CastSpell(enteredUnit, SPELL_HUNTER_WILDIFRE_BOMB_DOT, true);
+            }
+    }
+};
+
+// 265163 - Shrapnel Bomb AT Creator
+struct at_hunter_shrapnel_bomb : AreaTriggerAI
+{
+    at_hunter_shrapnel_bomb(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
+
+    enum UsedSpells
+    {
+        SPELL_HUNTER_SHRAPNEL_BOMB_DAMAGE = 270338,
+        SPELL_HUNTER_SHRAPNEL_BOMB_DOT = 270339
+    };
+
+    Unit* mainTarget = nullptr;
+
+    void OnCreate(Spell const* /*creatingSpell*/) override
+    {
+        if (Unit* caster = at->GetCaster())
+        {
+            mainTarget = caster->Variables.GetValue<Unit*>("mainTarget");
+            caster->Variables.Remove("mainTarget");
+            if (mainTarget)
+                at->SetOrientation(caster->GetAbsoluteAngle(mainTarget));
+            else
+                at->Remove();
+        }
+    }
+
+    void OnUnitEnter(Unit* enteredUnit) override
+    {
+        if (Unit* caster = at->GetCaster())
+            if (caster->IsValidAttackTarget(enteredUnit))
+            {
+                caster->CastSpell(enteredUnit, SPELL_HUNTER_SHRAPNEL_BOMB_DAMAGE, true);
+                if (at->HasInArc(static_cast<float>(M_PI - M_PI / 5), enteredUnit) || enteredUnit == mainTarget)
+                    caster->CastSpell(enteredUnit, SPELL_HUNTER_SHRAPNEL_BOMB_DOT, true);
+            }
+    }
+};
+
+// 271047 - Volatile Bomb AT Creator
+struct at_hunter_volatile_bomb : AreaTriggerAI
+{
+    at_hunter_volatile_bomb(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
+
+    enum UsedSpells
+    {
+        SPELL_HUNTER_VOLATILE_BOMB_DAMAGE = 271048,
+        SPELL_HUNTER_VOLATILE_BOMB_DOT = 271049
+    };
+
+    Unit* mainTarget = nullptr;
+
+    void OnCreate(Spell const* /*creatingSpell*/) override
+    {
+        if (Unit* caster = at->GetCaster())
+        {
+            mainTarget = caster->Variables.GetValue<Unit*>("mainTarget");
+            caster->Variables.Remove("mainTarget");
+            if (mainTarget)
+            {
+                at->SetOrientation(caster->GetAbsoluteAngle(mainTarget));
+                caster->CastSpell(mainTarget, SPELL_VOLATILE_BOMB_DAMAGE, true);
+            }
+            else
+                at->Remove();
+        }
+    }
+
+    void OnUnitEnter(Unit* enteredUnit) override
+    {
+        if (Unit* caster = at->GetCaster())
+            if (caster->IsValidAttackTarget(enteredUnit))
+            {
+                caster->CastSpell(enteredUnit, SPELL_HUNTER_VOLATILE_BOMB_DAMAGE, true);
+                if (at->HasInArc(static_cast<float>(M_PI - M_PI / 5), enteredUnit) || enteredUnit == mainTarget)
+                    caster->CastSpell(enteredUnit, SPELL_HUNTER_VOLATILE_BOMB_DOT, true);
+            }
+    }
+};
+
+// 270327  - Pheromone Bomb AT Creator
+struct at_hunter_pheromone_bomb : AreaTriggerAI
+{
+    at_hunter_pheromone_bomb(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
+
+    enum UsedSpells
+    {
+        SPELL_HUNTER_PHEROMONE_BOMB_DAMAGE = 270329,
+        SPELL_HUNTER_PHEROMONE_BOMB_DOT = 270332
+    };
+
+    Unit* mainTarget = nullptr;
+
+    void OnCreate(Spell const* /*creatingSpell*/) override
+    {
+        if (Unit* caster = at->GetCaster())
+        {
+            mainTarget = caster->Variables.GetValue<Unit*>("mainTarget");
+            caster->Variables.Remove("mainTarget");
+            if (mainTarget)
+                at->SetOrientation(caster->GetAbsoluteAngle(mainTarget));
+            else
+                at->Remove();
+        }
+    }
+
+    void OnUnitEnter(Unit* enteredUnit) override
+    {
+        if (Unit* caster = at->GetCaster())
+            if (caster->IsValidAttackTarget(enteredUnit))
+            {
+                caster->CastSpell(enteredUnit, SPELL_HUNTER_PHEROMONE_BOMB_DAMAGE, true);
+                if (at->HasInArc(static_cast<float>(M_PI - M_PI / 5), enteredUnit) || enteredUnit == mainTarget)
+                    caster->CastSpell(enteredUnit, SPELL_HUNTER_PHEROMONE_BOMB_DOT, true);
+            }
+    }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     RegisterSpellScript(spell_hun_a_murder_of_crows);
@@ -1949,4 +2214,11 @@ void AddSC_hunter_spell_scripts()
     RegisterSpellScript(spell_hun_flanking_strike);
     RegisterSpellScript(spell_hun_spearhead);
     new at_hun_explosive_trap();
+    RegisterSpellScript(spell_hunter_wildfire_bomb);
+    RegisterSpellScript(spell_hunter_wildfire_infusion_talent);
+    RegisterSpellScript(spell_hunter_wildfire_infusion_dummy);
+    RegisterAreaTriggerAI(at_hunter_wildfire_bomb);
+    RegisterAreaTriggerAI(at_hunter_pheromone_bomb);
+    RegisterAreaTriggerAI(at_hunter_shrapnel_bomb);
+    RegisterAreaTriggerAI(at_hunter_volatile_bomb);
 }
