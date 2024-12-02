@@ -1926,7 +1926,7 @@ class spell_hunter_wildfire_bomb : public SpellScript
     void Register() override
     {
         AfterCast += SpellCastFn(spell_hunter_wildfire_bomb::DoCast);
-        OnEffectHitTarget += SpellEffectFn(spell_hunter_wildfire_bomb::DoEffectHitTarget, EFFECT_0, SPELL_EFFECT_TRIGGER_MISSILE);
+        OnEffectHitTarget += SpellEffectFn(spell_hunter_wildfire_bomb::DoEffectHitTarget, EFFECT_1, SPELL_EFFECT_TRIGGER_MISSILE);
     }
 };
 
@@ -2165,6 +2165,26 @@ struct at_hunter_pheromone_bomb : AreaTriggerAI
     }
 };
 
+// 883 - Call Pet 1
+// 83242 - Call Pet 2
+// 83243 - Call Pet 3
+// 83244 - Call Pet 4
+// 83245 - Call Pet 5
+class spell_hun_call_pet : public SpellScript
+{
+    PrepareSpellScript(spell_hun_call_pet);
+
+    SpellCastResult CheckCast()
+    {
+        return SPELL_CAST_OK;
+    }
+
+    void Register() override
+    {
+        OnCheckCast += SpellCheckCastFn(spell_hun_call_pet::CheckCast);
+    }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     RegisterSpellScript(spell_hun_a_murder_of_crows);
@@ -2221,4 +2241,5 @@ void AddSC_hunter_spell_scripts()
     RegisterAreaTriggerAI(at_hunter_pheromone_bomb);
     RegisterAreaTriggerAI(at_hunter_shrapnel_bomb);
     RegisterAreaTriggerAI(at_hunter_volatile_bomb);
+    RegisterSpellScript(spell_hun_call_pet);
 }

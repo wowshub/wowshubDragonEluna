@@ -966,11 +966,17 @@ class spell_mage_ice_block : public SpellScript
             target = nullptr;
     }
 
+    SpellCastResult CheckCast()
+    {
+        return SPELL_CAST_OK;
+    }
+
     void Register() override
     {
         OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_mage_ice_block::PreventStunWithEverwarmSocks, EFFECT_0, TARGET_UNIT_CASTER);
         OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_mage_ice_block::PreventEverwarmSocks, EFFECT_5, TARGET_UNIT_CASTER);
         OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_mage_ice_block::PreventEverwarmSocks, EFFECT_6, TARGET_UNIT_CASTER);
+        OnCheckCast += SpellCheckCastFn(spell_mage_ice_block::CheckCast);
     }
 };
 
