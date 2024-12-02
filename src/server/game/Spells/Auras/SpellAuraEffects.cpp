@@ -2958,7 +2958,13 @@ void AuraEffect::HandleModAdvFlying(AuraApplication const* aurApp, uint8 mode, b
     target->SetCanAdvFly(apply);
 
     if (apply)
+    {
         target->CastSpell(target, 372771, TRIGGERED_FULL_MASK);
+    }
+    else
+    {
+        target->RemoveOwnedAura(372771, target->GetGUID());
+    }
 }
 
 void AuraEffect::HandleIgnoreMovementForces(AuraApplication const* aurApp, uint8 mode, bool apply) const
