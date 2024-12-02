@@ -228,29 +228,29 @@ class spell_af_whirling_surge : public SpellScript
 // 436854 - Switch Flight Style
 class spell_switch_flight : public SpellScript
 {
-    PrepareSpellScript(spell_switch_flight);
-
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
-        Unit* caster = GetCaster();
+        Unit* caster = GetCaster()->ToPlayer();
         if (!caster)
             return;
 
-        if (!caster->HasAura(SWITCH_AF_REGULAR) && !caster->HasAura(SWITCH_AF_DRAGONRIDING))
+        bool hasRegular = caster->HasAura(SWITCH_AF_REGULAR);
+        bool hasDragonRiding = caster->HasAura(SWITCH_AF_DRAGONRIDING);
+
+        if (!hasRegular && !hasDragonRiding)
         {
             caster->CastSpell(caster, SWITCH_AF_REGULAR, TRIGGERED_FULL_MASK);
         }
-        else if (!caster->HasAura(SWITCH_AF_REGULAR))
-        {
-            caster->RemoveAura(SWITCH_AF_DRAGONRIDING);
-            caster->CastSpell(caster, SWITCH_AF_REGULAR, TRIGGERED_FULL_MASK);
-        }
-        else if (!caster->HasAura(SWITCH_AF_DRAGONRIDING))
+        else if (hasRegular && !hasDragonRiding)
         {
             caster->RemoveAura(SWITCH_AF_REGULAR);
             caster->CastSpell(caster, SWITCH_AF_DRAGONRIDING, TRIGGERED_FULL_MASK);
         }
-
+        else if (!hasRegular && hasDragonRiding)
+        {
+            caster->RemoveAura(SWITCH_AF_DRAGONRIDING);
+            caster->CastSpell(caster, SWITCH_AF_REGULAR, TRIGGERED_FULL_MASK);
+        }
     }
 
     void Register() override

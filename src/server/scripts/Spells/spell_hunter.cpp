@@ -1909,7 +1909,6 @@ public:
 // 259495 - Wildfire Bomb
 class spell_hunter_wildfire_bomb : public SpellScript
 {
-    PrepareSpellScript(spell_hunter_wildfire_bomb);
 
     void DoEffectHitTarget(SpellEffIndex /*effIndex*/)
     {
@@ -1926,14 +1925,13 @@ class spell_hunter_wildfire_bomb : public SpellScript
     void Register() override
     {
         AfterCast += SpellCastFn(spell_hunter_wildfire_bomb::DoCast);
-        OnEffectHitTarget += SpellEffectFn(spell_hunter_wildfire_bomb::DoEffectHitTarget, EFFECT_1, SPELL_EFFECT_TRIGGER_MISSILE);
+        OnEffectHitTarget += SpellEffectFn(spell_hunter_wildfire_bomb::DoEffectHitTarget, EFFECT_0, SPELL_EFFECT_TRIGGER_MISSILE);
     }
 };
 
 // 271014 - Wildfire Infusion Talent
 class spell_hunter_wildfire_infusion_talent : public AuraScript
 {
-    PrepareAuraScript(spell_hunter_wildfire_infusion_talent);
 
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
@@ -1957,7 +1955,6 @@ class spell_hunter_wildfire_infusion_talent : public AuraScript
 // 271615 - Wildfire Infusion Dummy
 class spell_hunter_wildfire_infusion_dummy : public AuraScript
 {
-    PrepareAuraScript(spell_hunter_wildfire_infusion_dummy);
 
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
@@ -2172,8 +2169,6 @@ struct at_hunter_pheromone_bomb : AreaTriggerAI
 // 83245 - Call Pet 5
 class spell_hun_call_pet : public SpellScript
 {
-    PrepareSpellScript(spell_hun_call_pet);
-
     SpellCastResult CheckCast()
     {
         return SPELL_CAST_OK;
