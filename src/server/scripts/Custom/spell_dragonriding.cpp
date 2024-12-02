@@ -38,6 +38,7 @@ enum AdvancedFlyingSpells
     SPELL_VIGOR_CACHE               = 433547,
     SPELL_RIDING_ABROAD             = 432503, // TODO outside of dragon isles
     SPELL_ENERGY_WIDGET             = 423624,
+
     SWITCH_AF_REGULAR               = 404468,
     SWITCH_AF_DRAGONRIDING          = 404464
 
@@ -261,10 +262,10 @@ class spell_switch_flight : public SpellScript
 
 void AddSC_dragonriding_spell_scripts()
 {
-    //RegisterSpellScript(spell_af_skyriding);
-    //RegisterSpellScript(spell_af_energy);
-    //RegisterSpellScript(spell_af_skyward_ascent);
-    //RegisterSpellScript(spell_af_surge_forward);
-    //RegisterSpellScript(spell_af_whirling_surge);
+    RegisterSpellScript(spell_af_skyriding);
+    RegisterSpellScript(spell_af_energy);
+    RegisterSpellScript(spell_af_skyward_ascent);
+    RegisterSpellScript(spell_af_surge_forward);
+    RegisterSpellScript(spell_af_whirling_surge);
     RegisterSpellScript(spell_switch_flight);
 }

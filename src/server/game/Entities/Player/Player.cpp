@@ -31176,25 +31176,6 @@ bool Player::TeleportToDigsiteInMap(uint32 mapId)
 
 }
 
-void Player::InitAdvFlying()
-{
-    SendAdvFlyingSpeed(SMSG_MOVE_SET_ADV_FLYING_AIR_FRICTION,               ADV_FLYING_AIR_FRICTION);
-    SendAdvFlyingSpeed(SMSG_MOVE_SET_ADV_FLYING_MAX_VEL,                    ADV_FLYING_MAX_VEL);
-    SendAdvFlyingSpeed(SMSG_MOVE_SET_ADV_FLYING_LIFT_COEFFICIENT,           ADV_FLYING_LIFT_COEFFICIENT);
-    SendAdvFlyingSpeed(SMSG_MOVE_SET_ADV_FLYING_DOUBLE_JUMP_VEL_MOD,        ADV_FLYING_DOUBLE_JUMP_VEL_MOD);
-    SendAdvFlyingSpeed(SMSG_MOVE_SET_ADV_FLYING_GLIDE_START_MIN_HEIGHT,     ADV_FLYING_GLIDE_START_MIN_HEIGHT);
-    SendAdvFlyingSpeed(SMSG_MOVE_SET_ADV_FLYING_ADD_IMPULSE_MAX_SPEED,      ADV_FLYING_ADD_IMPULSE_MAX_SPEED);
-    SendAdvFlyingSpeed(SMSG_MOVE_SET_ADV_FLYING_SURFACE_FRICTION,           ADV_FLYING_SURFACE_FRICTION);
-    SendAdvFlyingSpeed(SMSG_MOVE_SET_ADV_FLYING_OVER_MAX_DECELERATION,      ADV_FLYING_OVER_MAX_DECELERATION);
-    SendAdvFlyingSpeed(SMSG_MOVE_SET_ADV_FLYING_LAUNCH_SPEED_COEFFICIENT,   ADV_FLYING_LAUNCH_SPEED_COEFFICIENT);
-}
-
-inline void Player::SendAdvFlyingSpeed(OpcodeServer opcode, AdvFlyingRateTypeSingle speedType, Optional<AdvFlyingRateTypeSingle> maxSpeedType /*= {}*/)
-{
-    if (maxSpeedType.has_value())
-        SendDirectMessage(WorldPackets::Movement::SetAdvFlyingMinMaxSpeeds(opcode, m_movementCounter++, GetAdvFlyingSpeed(speedType), GetAdvFlyingSpeed(*maxSpeedType)).Write());
-}
-
 void Player::AddMoveImpulse(Position direction)
 {
     WorldPackets::Movement::MoveAddImpulse addImpulse = WorldPackets::Movement::MoveAddImpulse();
