@@ -2405,11 +2405,9 @@ namespace LuaPlayer
                 }
                 break;
             }
-            case QUEST_OBJECTIVE_MONSTER:
+            case QUEST_OBJECTIVE_CURRENCY:
             {
-                if (CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(obj.ObjectID))
-                    for (uint16 z = 0; z < obj.Amount; ++z)
-                        player->KilledMonster(creatureInfo, ObjectGuid::Empty);
+                player->ModifyCurrency(obj.ObjectID, obj.Amount, CurrencyGainSource::Cheat);
                 break;
             }
             case QUEST_OBJECTIVE_GAMEOBJECT:
