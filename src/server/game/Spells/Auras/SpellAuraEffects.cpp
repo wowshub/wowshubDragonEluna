@@ -6656,7 +6656,7 @@ void AuraEffect::HandleCancelEquipmentStats(AuraApplication const* aurApp, uint8
     playerTarget->UpdateItemSetAuras(false);
 }
 
-void AuraEffect::HandleSwitchTeam(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const
+void AuraEffect::HandleSwitchTeam(AuraApplication const* /*aurApp*/, uint8 mode, bool /*apply*/) const
 {
     if (!(mode & AURA_EFFECT_HANDLE_REAL))
         return;
