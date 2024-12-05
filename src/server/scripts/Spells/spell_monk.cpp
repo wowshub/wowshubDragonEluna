@@ -2145,8 +2145,10 @@ class spell_monk_storm_earth_and_fire : public AuraScript
     void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         GetTarget()->RemoveAurasDueToSpell(SPELL_MONK_SEF_STORM_VISUAL);
+
         if (Creature* fireSpirit = GetTarget()->GetSummonedCreatureByEntry(NPC_FIRE_SPIRIT))
             fireSpirit->ToTempSummon()->DespawnOrUnsummon();
+
         if (Creature* earthSpirit = GetTarget()->GetSummonedCreatureByEntry(NPC_EARTH_SPIRIT))
             earthSpirit->ToTempSummon()->DespawnOrUnsummon();
     }
@@ -2164,21 +2166,12 @@ struct npc_monk_sef_spirit : public ScriptedAI
     void IsSummonedBy(WorldObject* summoner)
     {
         me->SetLevel(summoner->ToUnit()->GetLevel());
-        me->SetMaxHealth(summoner->ToUnit()->GetMaxHealth() / 3);
-        me->SetFullHealth();
         summoner->CastSpell(me, SPELL_MONK_TRANSCENDENCE_CLONE_TARGET, true);
         me->CastSpell(me, me->GetEntry() == NPC_FIRE_SPIRIT ? SPELL_MONK_SEF_FIRE_VISUAL : SPELL_MONK_SEF_EARTH_VISUAL, true);
         me->CastSpell(me, SPELL_MONK_SEF_SUMMONS_STATS, true);
-        me->SetReactState(REACT_DEFENSIVE);
+
         if (Unit* target = ObjectAccessor::GetUnit(*summoner, summoner->ToUnit()->GetTarget()))
             me->CastSpell(target, SPELL_MONK_SEF_CHARGE, true);
-        else
-        {
-            if (me->GetEntry() == NPC_FIRE_SPIRIT)
-                me->GetMotionMaster()->MoveFollow(summoner->ToUnit(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
-            else
-                me->GetMotionMaster()->MoveFollow(summoner->ToUnit(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE * 3);
-        }
     }
 };
 
@@ -2188,41 +2181,16 @@ public:
     playerScript_monk_earth_fire_storm() : PlayerScript("playerScript_monk_earth_fire_storm") { }
     void OnSuccessfulSpellCast(Player* player, Spell* spell) override
     {
-        if (player->GetClass() != CLASS_MONK)
-            return;
         SpellInfo const* spellInfo = spell->GetSpellInfo();
         if (player->HasAura(SPELL_MONK_SEF) && !spellInfo->IsPositive())
         {
             if (Unit* target = ObjectAccessor::GetUnit(*player, player->GetTarget()))
             {
                 if (Creature* fireSpirit = player->GetSummonedCreatureByEntry(NPC_FIRE_SPIRIT))
-                {
-                    fireSpirit->SetFacingToObject(target, true);
                     fireSpirit->CastSpell(target, spellInfo->Id, true);
-                }
+
                 if (Creature* earthSpirit = player->GetSummonedCreatureByEntry(NPC_EARTH_SPIRIT))
-                {
-                    earthSpirit->SetFacingToObject(target, true);
                     earthSpirit->CastSpell(target, spellInfo->Id, true);
-                }
-            }
-        }
-        if (player->HasAura(SPELL_MONK_SEF) && spellInfo->IsPositive())
-        {
-            if (Unit* GetTarget = player->GetSelectedUnit())
-            {
-                if (!GetTarget->IsFriendlyTo(player))
-                    return;
-                if (Creature* fireSpirit = player->GetSummonedCreatureByEntry(NPC_FIRE_SPIRIT))
-                {
-                    fireSpirit->SetFacingToObject(GetTarget, true);
-                    fireSpirit->CastSpell(GetTarget, spellInfo->Id, true);
-                }
-                if (Creature* earthSpirit = player->GetSummonedCreatureByEntry(NPC_EARTH_SPIRIT))
-                {
-                    earthSpirit->SetFacingToObject(GetTarget, true);
-                    earthSpirit->CastSpell(GetTarget, spellInfo->Id, true);
-                }
             }
         }
     }

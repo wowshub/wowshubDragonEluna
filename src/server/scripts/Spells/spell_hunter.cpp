@@ -2180,69 +2180,6 @@ class spell_hun_call_pet : public SpellScript
     }
 };
 
-/// Kill Shot - 53351
-/// Kill Shot (overrided) - 157708
-class spell_hun_kill_shot : public SpellScriptLoader
-{
-public:
-    spell_hun_kill_shot() : SpellScriptLoader("spell_hun_kill_shot") { }
-
-    class spell_hun_kill_shot_SpellScript : public SpellScript
-    {
-        void HandleAfterHit()
-        {
-            if (Player* l_Caster = GetCaster()->ToPlayer())
-            {
-                if (Unit* l_Target = GetHitUnit())
-                {
-                    if (l_Target->IsAlive())
-                    {
-                        if (l_Caster->HasAura(90967))
-                            return;
-
-                        l_Caster->CastSpell(l_Caster, 90967, true);
-                        l_Caster->GetSpellHistory()->ResetCooldown(GetSpellInfo()->Id, true);
-                    }
-                    else
-                        l_Caster->CastSpell(l_Caster, 164851, true);
-                }
-            }
-        }
-
-        void HandleDamage(SpellEffIndex /*p_EffIndex*/)
-        {
-            // Longview - 184901 (Talisman of the Master Tracker)
-            if (Player* l_Player = GetCaster()->ToPlayer())
-            {
-                if (l_Player->HasAura(184901))
-                {
-                    if (Unit* l_Target = GetHitUnit())
-                    {
-                        int32 l_Yards = l_Player->GetDistance(l_Target);
-
-                        SpellInfo const* l_SpellInfo = sSpellMgr->GetSpellInfo(184901, DIFFICULTY_NONE);
-
-                        int32 l_TrinketBase = 1 + (l_SpellInfo->GetEffect(EFFECT_0).BasePoints / 100) * l_Yards;
-
-                        SetHitDamage(GetHitDamage() + CalculatePct(GetHitDamage(), l_TrinketBase));
-                    }
-                }
-            }
-        }
-
-        void Register()
-        {
-            AfterHit += SpellHitFn(spell_hun_kill_shot_SpellScript::HandleAfterHit);
-            OnEffectHitTarget += SpellEffectFn(spell_hun_kill_shot_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_NORMALIZED_WEAPON_DMG);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_hun_kill_shot_SpellScript();
-    }
-};
-
 void AddSC_hunter_spell_scripts()
 {
     RegisterSpellScript(spell_hun_a_murder_of_crows);
@@ -2300,5 +2237,4 @@ void AddSC_hunter_spell_scripts()
     RegisterAreaTriggerAI(at_hunter_shrapnel_bomb);
     RegisterAreaTriggerAI(at_hunter_volatile_bomb);
     RegisterSpellScript(spell_hun_call_pet);
-    RegisterSpellScript(spell_hun_kill_shot);
 }
