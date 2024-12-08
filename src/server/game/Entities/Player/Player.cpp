@@ -2372,6 +2372,8 @@ void Player::GiveLevel(uint8 level)
     UpdateCriteria(CriteriaType::ActivelyReachLevel, level);
     if (level > oldLevel)
         UpdateCriteria(CriteriaType::GainLevels, level - oldLevel);
+    if (IsMaxLevel())
+        UpdateCriteria(CriteriaType::ReachMaxLevel);
 
     PushQuests();
 
@@ -15009,7 +15011,7 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
                     GetReputationMgr().SetVisible(factionEntry);
                 break;
             case QUEST_OBJECTIVE_CRITERIA_TREE:
-                m_questObjectiveCriteriaMgr->ResetCriteriaTree(obj.ObjectID);
+                m_questObjectiveCriteriaMgr->ResetCriteriaTree(&obj);
                 break;
             default:
                 break;
