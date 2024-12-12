@@ -433,39 +433,25 @@ class spell_evo_verdant_embrace_trigger_heal : public SpellScript
 // 369536 - Soar
 class spell_evo_soar : public SpellScript
 {
-    PrepareSpellScript(spell_evo_soar);
-
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        return ValidateSpellInfo({ SPELL_EVOKER_SOAR_RACIAL, SPELL_SKYWARD_ASCENT, SPELL_SURGE_FORWARD });
-    }
-
-    void HandleOnHit(SpellEffIndex /*effIndex*/)
+    void HandleOnCast()
     {
         Unit* caster = GetCaster();
-        if (!caster)
-            return;
-
-        // Increase flight speed by 830540%
-        caster->SetSpeedRate(MOVE_FLIGHT, 83054.0f);
-
-        Player* player = GetHitPlayer();
-        // Add "Skyward Ascent" and "Surge Forward" to the caster's spellbook
-        player->LearnSpell(SPELL_SKYWARD_ASCENT, false);
-        player->LearnSpell(SPELL_SURGE_FORWARD, false);
+        caster->GetMotionMaster()->MoveJump(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ() + 30.0f, 20.0f, 10.0f);
     }
-
+    void HandleAfterCast()
+    {
+        GetCaster()->CastSpell(GetCaster(), 430747, true);
+    }
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_evo_soar::HandleOnHit, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnCast += SpellCastFn(spell_evo_soar::HandleOnCast);
+        AfterCast += SpellCastFn(spell_evo_soar::HandleAfterCast);
     }
 };
 
 // 351239 - Visage (Racial)
 class spell_evo_cosmic_visage : public SpellScript
 {
-    PrepareSpellScript(spell_evo_cosmic_visage);
-
     void HandleOnCast()
     {
         Unit* caster = GetCaster();
@@ -496,6 +482,21 @@ class spell_evo_cosmic_visage : public SpellScript
     }
 };
 
+// 359073 - Eternity Surge
+class spell_evo_eternity_surge : public SpellScript
+{
+    void OnComplete(int32 completedStageCount) const
+    {
+        GetCaster()->CastSpell(GetExplTargetUnit(), 359077, CastSpellExtraArgs()
+            .SetTriggeringSpell(GetSpell())
+            .SetTriggerFlags(TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_DONT_REPORT_CAST_ERROR));
+    }
+    void Register() override
+    {
+        OnEmpowerCompleted += SpellOnEmpowerStageCompletedFn(spell_evo_eternity_surge::OnComplete);
+    }
+};
+
 void AddSC_evoker_spell_scripts()
 {
     RegisterSpellScript(spell_evo_azure_strike);
@@ -514,4 +515,5 @@ void AddSC_evoker_spell_scripts()
     //new
     RegisterSpellScript(spell_evo_soar);
     RegisterSpellScript(spell_evo_cosmic_visage);
+    RegisterSpellScript(spell_evo_eternity_surge);
 }

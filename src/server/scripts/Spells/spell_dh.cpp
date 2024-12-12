@@ -3676,6 +3676,21 @@ public:
     }
 };
 
+// Allow spec on level 10
+class DemonHunterAllowSpec : public PlayerScript
+{
+public:
+    DemonHunterAllowSpec() : PlayerScript("DemonHunterAllowSpec") { }
+
+    void OnLevelChanged(Player* player, uint8 oldLevel) override
+    {
+        if (player->GetClass() == CLASS_DEMON_HUNTER && player->GetLevel() >= 10)
+        {
+            player->LearnSpell(218386, false);
+        }
+    }
+};
+
 void AddSC_demon_hunter_spell_scripts()
 {
     RegisterSpellScript(spell_dh_chaos_strike);
@@ -3788,4 +3803,5 @@ void AddSC_demon_hunter_spell_scripts()
     new spell_dh_chaos_strike_specless();
     new spell_dh_fel_rush_specless();
     RegisterPlayerScript(DH_DisableDoubleJump_OnMount);
+    new DemonHunterAllowSpec();
 }

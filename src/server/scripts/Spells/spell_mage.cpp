@@ -319,11 +319,11 @@ class spell_mage_blazing_barrier : public AuraScript
         return ValidateSpellInfo({ SPELL_MAGE_BLAZING_BARRIER_TRIGGER });
     }
 
-    void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
+    void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
     {
-        canBeRecalculated = false;
-        if (Unit* caster = GetCaster())
-            amount = int32(caster->SpellBaseHealingBonusDone(GetSpellInfo()->GetSchoolMask()) * 7.0f);
+        amount = CalculatePct(GetUnitOwner()->GetMaxHealth(), 20);
+        if (Player const* player = GetUnitOwner()->ToPlayer())
+            AddPct(amount, player->GetRatingBonusValue(CR_VERSATILITY_DAMAGE_DONE) + player->GetTotalAuraModifier(SPELL_AURA_MOD_VERSATILITY));
     }
 
     void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
@@ -943,40 +943,6 @@ class spell_mage_ice_barrier : public AuraScript
     {
         DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_ice_barrier::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
         OnEffectProc += AuraEffectProcFn(spell_mage_ice_barrier::HandleProc, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-    }
-};
-
-// 45438 - Ice Block
-class spell_mage_ice_block : public SpellScript
-{
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        return ValidateSpellInfo({ SPELL_MAGE_EVERWARM_SOCKS });
-    }
-
-    void PreventStunWithEverwarmSocks(WorldObject*& target)
-    {
-        if (GetCaster()->HasAura(SPELL_MAGE_EVERWARM_SOCKS))
-            target = nullptr;
-    }
-
-    void PreventEverwarmSocks(WorldObject*& target)
-    {
-        if (!GetCaster()->HasAura(SPELL_MAGE_EVERWARM_SOCKS))
-            target = nullptr;
-    }
-
-    SpellCastResult CheckCast()
-    {
-        return SPELL_CAST_OK;
-    }
-
-    void Register() override
-    {
-        OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_mage_ice_block::PreventStunWithEverwarmSocks, EFFECT_0, TARGET_UNIT_CASTER);
-        OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_mage_ice_block::PreventEverwarmSocks, EFFECT_5, TARGET_UNIT_CASTER);
-        OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_mage_ice_block::PreventEverwarmSocks, EFFECT_6, TARGET_UNIT_CASTER);
-        OnCheckCast += SpellCheckCastFn(spell_mage_ice_block::CheckCast);
     }
 };
 
@@ -1855,7 +1821,6 @@ void AddSC_mage_spell_scripts()
     RegisterSpellScript(spell_mage_frostbolt);
     RegisterSpellScript(spell_mage_hyper_impact);
     RegisterSpellScript(spell_mage_ice_barrier);
-    RegisterSpellScript(spell_mage_ice_block);
     RegisterSpellScript(spell_mage_ice_lance);
     RegisterSpellScript(spell_mage_ice_lance_damage);
     RegisterSpellScript(spell_mage_ignite);
