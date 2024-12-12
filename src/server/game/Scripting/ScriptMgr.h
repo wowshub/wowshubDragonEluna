@@ -811,6 +811,19 @@ class TC_GAME_API PlayerScript : public ScriptObject
 
         // Called when a charge recovery cooldown start for that player
         virtual void OnChargeRecoveryTimeStart(Player* /*player*/, uint32 /*chargeCategoryId*/, int32& /*chargeRecoveryTime*/) { }
+
+        // Called at each player update
+        virtual void OnUpdate(Player* /*player*/, uint32 /*diff*/) { }
+
+        // Called when a player quits from a vehicle
+        virtual void OnPlayerExitVehicle(Player* /*player*/) { }
+
+        // Called when a player sits on a vehicle
+        virtual void OnPlayerEnterVehicle(Player* /*player*/) { }
+
+        virtual void OnSpellLearned(Player* /*player*/, uint32 /*spellID*/) { }
+
+        virtual void OnLogin(Player* /* player */) { }
 };
 
 class TC_GAME_API AccountScript : public ScriptObject
@@ -1263,6 +1276,10 @@ class TC_GAME_API ScriptMgr
         void OnPlayerSuccessfulSpellCast(Player* player, Spell* spell);
         void OnCooldownStart(Player* player, SpellInfo const* spellInfo, uint32 itemId, int32& cooldown, uint32& categoryId, int32& categoryCooldown);
         void OnChargeRecoveryTimeStart(Player* player, uint32 chargeCategoryId, int32& chargeRecoveryTime);
+        void OnPlayerEnterVehicle(Player* player);
+        void OnPlayerExitVehicle(Player* player);
+        void OnPlayerSpellLearned(Player* player, uint32 spellID);
+        void OnPlayerUpdate(Player* player, uint32 diff);
 
     public: /* AccountScript */
 
@@ -1448,5 +1465,22 @@ public:
 #define RegisterBattlegroundMapScript(script_name, mapId) new GenericBattlegroundMapScript<script_name>(#script_name, mapId)
 
 #define sScriptMgr ScriptMgr::instance()
+
+template <class AI>
+class GenericInstanceMapScript : public InstanceMapScript
+{
+public:
+    GenericInstanceMapScript(char const* name, uint32 mapId) : InstanceMapScript(name, mapId) { }
+    InstanceScript* GetInstanceScript(InstanceMap* map) const override { return new AI(map); }
+};
+#define RegisterInstanceScript(ai_name, mapId) new GenericInstanceMapScript<ai_name>(#ai_name, mapId)
+
+#define RegisterCreatureScript(script) new script()
+#define RegisterSceneScript(script) new script()
+#define RegisterQuestScript(script) new script()
+#define RegisterConversationScript(script) new script()
+#define RegisterPlayerScript(script) new script()
+#define RegisterZoneScript(script) new script()
+#define RegisterItemScript(script) new script()
 
 #endif

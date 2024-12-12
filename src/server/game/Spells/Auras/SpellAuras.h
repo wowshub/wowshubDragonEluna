@@ -120,6 +120,8 @@ class TC_GAME_API Aura
     friend class Unit;
 
     public:
+        ThisCore::AnyData Variables;
+
         typedef std::unordered_map<ObjectGuid, AuraApplication*> ApplicationMap;
 
         static uint32 BuildEffectMaskForOwner(SpellInfo const* spellProto, uint32 availableEffectMask, WorldObject* owner);

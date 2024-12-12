@@ -2494,6 +2494,26 @@ void ScriptMgr::OnChargeRecoveryTimeStart(Player* player, uint32 chargeCategoryI
     FOREACH_SCRIPT(PlayerScript)->OnChargeRecoveryTimeStart(player, chargeCategoryId, chargeRecoveryTime);
 }
 
+void ScriptMgr::OnPlayerEnterVehicle(Player* player)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnPlayerEnterVehicle(player);
+}
+
+void ScriptMgr::OnPlayerExitVehicle(Player* player)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnPlayerExitVehicle(player);
+}
+
+void ScriptMgr::OnPlayerSpellLearned(Player* player, uint32 spellID)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnSpellLearned(player, spellID);
+}
+
+void ScriptMgr::OnPlayerUpdate(Player* player, uint32 diff)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnUpdate(player, diff);
+}
+
 // Account
 void ScriptMgr::OnAccountLogin(uint32 accountId)
 {

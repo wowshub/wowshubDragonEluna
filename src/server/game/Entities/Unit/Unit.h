@@ -1499,6 +1499,7 @@ class TC_GAME_API Unit : public WorldObject
         }
         std::vector<std::pair<int32, std::function<void()>>>timedDelayedOperations; ///< Delayed operations
         bool emptyWarned; ///< Warning when there are no more delayed operations
+        void GetAnyUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange) const;
 
         void GetAttackableUnitListInRange(std::list<Unit*>& list, float fMaxSearchRange) const;
         int32 GetAuraEffectAmount(AuraType auraType, SpellFamilyNames spellFamilyName, uint32 IconFileDataId, uint8 effIndex) const;
