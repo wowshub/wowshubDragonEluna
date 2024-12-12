@@ -3575,28 +3575,6 @@ struct at_shattered_soul_fragment : AreaTriggerAI
     }
 };
 
-//232893
-class spell_dh_felblade : public SpellScript
-{
-
-    void HandleOnHit(SpellEffIndex /*effIndex*/)
-    {
-        if (!GetCaster() || !GetHitUnit())
-            return;
-
-        if (GetCaster()->GetDistance2d(GetHitUnit()) <= 15.0f)
-        {
-            GetCaster()->CastSpell(GetHitUnit(), SPELL_DH_FELBLADE_CHARGE, true);
-            GetCaster()->CastSpell(GetHitUnit(), SPELL_DH_FELBLADE_DMG, true);
-        }
-    }
-
-    void Register()
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_dh_felblade::HandleOnHit, EFFECT_0, SPELL_EFFECT_DUMMY);
-    }
-};
-
 // Chaos Strike (initial, without spec in mardum) - 344862
 class spell_dh_chaos_strike_specless : public SpellScriptLoader
 {
@@ -3799,7 +3777,6 @@ void AddSC_demon_hunter_spell_scripts()
     RegisterPlayerScript(dh_shattered_souls);
     RegisterSpellScript(spell_dh_annihilation);
     RegisterAreaTriggerAI(at_shattered_soul_fragment);
-    RegisterSpellScript(spell_dh_felblade);
     new spell_dh_chaos_strike_specless();
     new spell_dh_fel_rush_specless();
     RegisterPlayerScript(DH_DisableDoubleJump_OnMount);
