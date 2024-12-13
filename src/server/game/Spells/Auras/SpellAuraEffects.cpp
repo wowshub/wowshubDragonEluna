@@ -2959,11 +2959,11 @@ void AuraEffect::HandleModAdvFlying(AuraApplication const* aurApp, uint8 mode, b
 
     if (apply)
     {
-        target->CastSpell(target, 372773, TRIGGERED_FULL_MASK);
+        target->CastSpell(target, 372771, TRIGGERED_FULL_MASK);
     }
     else
     {
-        target->RemoveOwnedAura(372773, target->GetGUID());
+        target->RemoveOwnedAura(372771, target->GetGUID());
     }
 }
 

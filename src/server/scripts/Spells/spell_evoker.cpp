@@ -442,7 +442,17 @@ class spell_evo_soar : public SpellScript
     }
     void HandleAfterCast()
     {
-        GetCaster()->CastSpell(GetCaster(), 430747, true);
+        Player* caster = GetCaster()->ToPlayer();
+
+        caster->CastSpell(caster, 430747, true);
+
+        float SURGE_SPEED = 30.0f;
+
+        float destX = caster->GetPositionX() + SURGE_SPEED * std::cos(caster->GetOrientation());
+        float destY = caster->GetPositionY() + SURGE_SPEED * std::sin(caster->GetOrientation());
+        float destZ = caster->GetPositionZ() + SURGE_SPEED * std::tan(caster->m_movementInfo.pitch);
+
+        caster->AddMoveImpulse(Position(destX - caster->GetPositionX(), destY - caster->GetPositionY(), destZ - caster->GetPositionZ()));
     }
     void Register() override
     {

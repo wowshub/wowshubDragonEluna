@@ -5087,6 +5087,12 @@ void SpellMgr::LoadSpellInfoCorrections()
         spellInfo->AttributesEx4 |= SPELL_ATTR4_AURA_IS_BUFF;
     });
 
+    // Dragonrider Energy
+    ApplySpellFix({ 372773 }, [](SpellInfo* spellInfo)
+    {
+        spellInfo->AuraInterruptFlags = SpellAuraInterruptFlags::None;
+    });
+
     // TODO: temporary, remove with dragonriding
     ApplySpellFix({ 404468 }, [](SpellInfo* spellInfo)
     {
