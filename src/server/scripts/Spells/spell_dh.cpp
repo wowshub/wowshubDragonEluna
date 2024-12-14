@@ -1282,7 +1282,7 @@ public:
                 return;
 
             if (const WorldLocation* dest = GetExplTargetDest())
-                player->CastSpell(Position(dest->GetPositionX(), dest->GetPositionY(), dest->GetPositionZ()), SPELL_DH_METAMORPHOSIS, true);
+                player->CastSpell(Position(dest->GetPositionX(), dest->GetPositionY(), dest->GetPositionZ()), SPELL_DH_METAMORPHOSIS, TRIGGERED_FULL_MASK);
 
             if (player->HasAura(SPELL_DH_DEMON_REBORN)) // Remove CD of Eye Beam, Chaos Nova and Blur
             {
@@ -1321,7 +1321,7 @@ public:
             if (!caster)
                 return;
 
-            caster->CastSpell(caster, SPELL_DH_METAMORPHOSIS_IMPACT_DAMAGE, true);
+            caster->CastSpell(caster, SPELL_DH_METAMORPHOSIS_IMPACT_DAMAGE, TRIGGERED_FULL_MASK);
         }
 
         void Register() override
