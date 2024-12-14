@@ -1409,6 +1409,15 @@ private:
 #define RegisterSpellAndAuraScriptPairWithArgs(script_1, script_2, script_name, ...) new GenericSpellAndAuraScriptLoader<BOOST_PP_REMOVE_PARENS(script_1), BOOST_PP_REMOVE_PARENS(script_2), decltype(std::make_tuple(__VA_ARGS__))>(script_name, std::make_tuple(__VA_ARGS__))
 #define RegisterSpellAndAuraScriptPair(script_1, script_2) RegisterSpellAndAuraScriptPairWithArgs(script_1, script_2, #script_1)
 
+template <class A>
+class GenericAuraScriptLoader : public SpellScriptLoader
+{
+public:
+    GenericAuraScriptLoader(char const* name) : SpellScriptLoader(name) { }
+    AuraScript* GetAuraScript() const override { return new A(); }
+};
+#define RegisterAuraScript(aura_script) new GenericAuraScriptLoader<aura_script>(#aura_script)
+
 template <class AI>
 class GenericCreatureScript : public CreatureScript
 {
