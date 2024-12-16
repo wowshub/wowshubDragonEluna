@@ -537,8 +537,45 @@ class spell_dk_death_gate : public SpellScript
     void HandleScript(SpellEffIndex effIndex)
     {
         PreventHitDefaultEffect(effIndex);
-        if (Unit* target = GetHitUnit())
-            target->CastSpell(target, GetEffectValue(), false);
+        Unit* target = GetHitUnit();
+        if (!target)
+            return;
+
+        if (Player* player = target->ToPlayer())
+        {
+            if (player->IsManualRecallPositionValid())
+            {
+                player->ManualRecall();
+                player->ClearManualRecallPosition();
+                return;
+            }
+            else
+            {
+                player->SaveManualRecallPosition();
+            }
+
+            int QUEST_SCARLET_ARMIES_APPROACH = 12757; // only time death gate teles to classic ebon hold.
+            int QUEST_LIGHT_OF_DAWN = 12801; // lights hope chappel fight. after this death gate teles to final phase of classic ebon hold.
+            int QUEST_THE_BATTLE_FOR_EBON_HOLD = 13166;
+            /* If player is over level 45 tele to legion ebon hold */
+            if (player->GetLevel() >= 45 || (player->GetQuestStatus(QUEST_THE_BATTLE_FOR_EBON_HOLD) == QUEST_STATUS_REWARDED))
+            {
+                player->TeleportTo(1220, -1503.367f, 1052.059f, 260.396f, 3.75f); // legion ebon hold
+            }
+
+            /* If on quest 12757 "Scarlet enemies approach" */
+            else if ((player->GetQuestStatus(QUEST_LIGHT_OF_DAWN) == QUEST_STATUS_NONE) && (player->GetQuestStatus(QUEST_SCARLET_ARMIES_APPROACH) == QUEST_STATUS_NONE) && (!player->IsAlliedRace())
+                || (player->HasQuest(QUEST_SCARLET_ARMIES_APPROACH) || (player->IsAlliedRace())))
+            {
+                player->TeleportTo(609, 2368.0444f, -5656.1748f, 382.2804f, 3.74f); // classic ebon hold
+            }
+
+            /* If quest 12801 "Light of Dawn" is completed*/
+            else if ((player->GetQuestStatus(QUEST_LIGHT_OF_DAWN) == QUEST_STATUS_REWARDED) && (player->GetQuestStatus(QUEST_SCARLET_ARMIES_APPROACH) == QUEST_STATUS_REWARDED))
+            {
+                player->TeleportTo(0, 2368.0444f, -5656.1748f, 382.2804f, 3.735f); // final phase of classic ebon hold
+            }
+        }
     }
 
     void Register() override

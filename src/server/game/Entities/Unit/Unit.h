@@ -2059,6 +2059,8 @@ class TC_GAME_API Unit : public WorldObject
         TargetAuraContainer m_targetAuras;
         typedef std::vector<AuraApplication*> AuraApplicationVector;
         Unit::AuraApplicationVector GetTargetAuraApplications(uint32 spellId) const;
+
+        bool IsAlliedRace();
 };
 
 #endif
