@@ -28,6 +28,9 @@
 #include "RBAC.h"
 #include "MotionMaster.h"
 #include "Map.h"
+#include "World.h"
+#include "WorldPacket.h"
+#include "GameTime.h"
 
 class free_share_scripts : public CommandScript
 {
@@ -44,6 +47,7 @@ public:
             { "npcmoveto",       rbac::RBAC_PERM_COMMAND_NPC_MOVE,      false,      &HandleNpcMoveTo,           ""},
             { "npcguidsay",      rbac::RBAC_PERM_COMMAND_NPC_SAY,       false,      &HandleNpcGuidSay,          ""},
             { "npcguidyell",     rbac::RBAC_PERM_COMMAND_NPC_YELL,      false,      &HandleNpcGuidYell,         ""},
+            { "settime",         rbac::RBAC_PERM_COMMAND_NPC_YELL,      false,      &HandleSetTimeCommand,      ""},
         };
 
         return commandTable;
@@ -261,6 +265,152 @@ public:
             creature->HandleEmoteCommand(EMOTE_ONESHOT_SHOUT);
         }
 
+        return true;
+    }
+
+    class StaticTimeManager
+    {
+    private:
+        static inline uint32 m_staticHour = 12;
+        static inline uint32 m_staticMinute = 0;
+        static inline bool m_timeFreezed = false;
+
+    public:
+
+        static void Initialize()
+        {
+            LoadStaticTimeFromDB();
+        }
+
+        static void SaveStaticTimeToDB()
+        {
+            CharacterDatabase.Execute("DELETE FROM server_settings WHERE setting_name IN ('static_hour', 'static_minute', 'time_freezed')");
+
+            CharacterDatabase.Execute("INSERT INTO server_settings (setting_name, setting_value) VALUES "
+                "('static_hour', '{}')", std::to_string(m_staticHour));
+            CharacterDatabase.Execute("INSERT INTO server_settings (setting_name, setting_value) VALUES "
+                "('static_minute', '{}')", std::to_string(m_staticMinute));
+            CharacterDatabase.Execute("INSERT INTO server_settings (setting_name, setting_value) VALUES "
+                "('time_freezed', '{}')", std::to_string(m_timeFreezed ? 1 : 0));
+        }
+
+        static void LoadStaticTimeFromDB()
+        {
+            auto result = CharacterDatabase.Query(
+                "SELECT setting_name, setting_value FROM server_settings "
+                "WHERE setting_name IN ('static_hour', 'static_minute', 'time_freezed')"
+            );
+
+            // ???? ????????? ??????, ?????????? ????? ?? ?????????
+            if (!result)
+            {
+                ResetToServerTime();
+                return;
+            }
+
+            bool hourSet = false, minuteSet = false, freezeSet = false;
+
+            do
+            {
+                std::string settingName = result->Fetch()[0].GetString();
+                std::string settingValue = result->Fetch()[1].GetString();
+
+                if (settingName == "static_hour")
+                {
+                    m_staticHour = std::stoi(settingValue);
+                    hourSet = true;
+                }
+                else if (settingName == "static_minute")
+                {
+                    m_staticMinute = std::stoi(settingValue);
+                    minuteSet = true;
+                }
+                else if (settingName == "time_freezed")
+                {
+                    m_timeFreezed = (settingValue == "1");
+                    freezeSet = true;
+                }
+
+            } while (result->NextRow());
+
+            if (!hourSet || !minuteSet || !freezeSet)
+            {
+                ResetToServerTime();
+            }
+
+            SendTimeSync();
+        }
+
+        static void SetStaticTime(uint32 hour, uint32 minute, bool freeze = false)
+        {
+            m_staticHour = hour;
+            m_staticMinute = minute;
+            m_timeFreezed = freeze;
+
+            SaveStaticTimeToDB();
+            SendTimeSync();
+        }
+
+        static void ResetToServerTime()
+        {
+            time_t now = time(nullptr);
+            struct tm* localTime = localtime(&now);
+
+            m_staticHour = localTime->tm_hour;
+            m_staticMinute = localTime->tm_min;
+            m_timeFreezed = false;
+
+            CharacterDatabase.Execute("DELETE FROM server_settings WHERE setting_name IN ('static_hour', 'static_minute', 'time_freezed')");
+
+            SendTimeSync();
+        }
+
+        static void SendTimeSync()
+        {
+            WowTime custom;
+            WorldPackets::Misc::LoginSetTimeSpeed timePacket;
+
+            TC_LOG_INFO("server", "StaticTimeManager: Hour %u, Minute %u", m_staticHour, m_staticMinute);
+
+            custom.SetHour(m_staticHour);
+            custom.SetMinute(m_staticMinute);
+            timePacket.GameTime = custom;
+            timePacket.ServerTime = custom;
+
+            if (m_timeFreezed == true)
+            {
+                timePacket.NewSpeed = 0.0f;
+            }
+            else
+            {
+                timePacket.NewSpeed = 0.01666667f;
+            }
+
+            sWorld->SendGlobalMessage(timePacket.Write());
+        }
+    };
+
+    static bool HandleSetTimeCommand(ChatHandler* handler, Optional<uint32> hour, Optional<uint32> minute)
+    {
+        if (hour && *hour == 999)
+        {
+            StaticTimeManager::ResetToServerTime();
+            handler->PSendSysMessage("Time reset");
+            return true;
+        }
+
+        uint32 setHour = hour && *hour >= 0 ? *hour : 15;
+        uint32 setMinute = minute && *minute >= 0 ? *minute : 30;
+
+        if (setHour > 23 || setMinute > 59)
+        {
+            handler->SendSysMessage("Incorrect time. Use hours 0-23, minutes 0-59.");
+            return false;
+        }
+
+        StaticTimeManager::SetStaticTime(setHour, setMinute, true);
+
+        handler->PSendSysMessage("Server time is set to %02u:%02u (frozen)", setHour, setMinute);
         return true;
     }
 };
