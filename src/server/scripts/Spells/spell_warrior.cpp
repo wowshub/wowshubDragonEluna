@@ -912,7 +912,6 @@ public:
 
     class spell_warr_spell_reflect_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_warr_spell_reflect_AuraScript);
 
         void OnApply(const AuraEffect* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
@@ -999,7 +998,6 @@ private:
 // Ravager - 228920
 class spell_warr_ravager : public SpellScript
 {
-
     void InitializeVisualStalker()
     {
         if (Aura* aura = GetHitAura())
@@ -1026,7 +1024,6 @@ class spell_warr_ravager : public SpellScript
 // Ravager Damage - 156287
 class spell_warr_ravager_damage : public SpellScript
 {
-    PrepareSpellScript(spell_warr_ravager_damage);
 
     void HandleOnHitTarget(SpellEffIndex /*effIndex*/)
     {
@@ -1096,7 +1093,6 @@ struct npc_warr_ravager : public ScriptedAI
 //190456 - Ignore Pain
 class spell_warr_ignore_pain : public SpellScript
 {
-    PrepareSpellScript(spell_warr_ignore_pain);
 
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
@@ -1123,7 +1119,6 @@ class spell_warr_ignore_pain : public SpellScript
 //190456 - Ignore Pain
 class aura_warr_ignore_pain : public AuraScript
 {
-    PrepareAuraScript(aura_warr_ignore_pain);
 
     int32 m_ExtraSpellCost;
 
@@ -1182,7 +1177,6 @@ public:
 
     class spell_warr_last_stand_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_warr_last_stand_SpellScript);
 
         bool Validate(SpellInfo const* /*spellInfo*/) override
         {
@@ -1218,7 +1212,6 @@ public:
 
     class spell_warr_shattering_throw_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_warr_shattering_throw_SpellScript);
 
         enum eSpells
         {
@@ -1263,7 +1256,6 @@ public:
 
     class spell_warr_shout_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_warr_shout_AuraScript);
 
         enum eSpells
         {
@@ -1310,7 +1302,6 @@ public:
 // 1680 Whirlwind
 class spell_warr_wirlwind_dmg : public SpellScript
 {
-    PrepareSpellScript(spell_warr_wirlwind_dmg);
 
     void HandleOnHitTarget(SpellEffIndex /*effIndex*/)
     {
@@ -1341,7 +1332,6 @@ class spell_warr_wirlwind_dmg : public SpellScript
 // 281000  - Execute
 class spell_warr_execute : public SpellScript
 {
-    PrepareSpellScript(spell_warr_execute);
 
     float m_powerTaken = 0.f;
 
@@ -1369,7 +1359,6 @@ class spell_warr_execute : public SpellScript
 // 260798  - Executes damages
 class spell_warr_execute_damages : public SpellScript
 {
-    PrepareSpellScript(spell_warr_execute_damages);
 
     void HandleDamage(SpellEffIndex /*effIndex*/)
     {
@@ -1387,7 +1376,6 @@ class spell_warr_execute_damages : public SpellScript
 //385952 - Shield Charge
 class spell_warr_shiel_charge : public SpellScript
 {
-    PrepareSpellScript(spell_warr_shiel_charge);
 
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
@@ -1412,7 +1400,6 @@ class spell_warr_shiel_charge : public SpellScript
 // Whirlwind - 190411
 class spell_warr_whirlwind : public SpellScript
 {
-    PrepareSpellScript(spell_warr_whirlwind);
 
     void HandleAfterCast()
     {
@@ -1479,7 +1466,6 @@ public:
 
     class spell_warr_unshackled_fury_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_warr_unshackled_fury_AuraScript);
 
         void CalculateAmount(const AuraEffect* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
         {
@@ -1508,7 +1494,6 @@ public:
 
     class spell_warr_enrage_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_warr_enrage_AuraScript);
 
         bool CheckProc(ProcEventInfo& eventInfo)
         {
@@ -1534,7 +1519,6 @@ public:
 // Enrage Aura - 184362
 class spell_warr_enrage_aura : public AuraScript
 {
-    PrepareAuraScript(spell_warr_enrage_aura);
 
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
@@ -1564,7 +1548,6 @@ public:
 
     class spell_warr_frothing_berserker_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_warr_frothing_berserker_AuraScript);
 
         void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
         {
@@ -1594,7 +1577,6 @@ public:
 
     class spell_warr_odyns_fury_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_warr_odyns_fury_AuraScript);
 
         void Absorb(AuraEffect* /* aurEff */, DamageInfo& /*dmgInfo*/, uint32& absorbAmount)
         {
@@ -1616,7 +1598,6 @@ public:
 //Second wind - 29838
 class spell_warr_second_wind_proc : public AuraScript
 {
-    PrepareAuraScript(spell_warr_second_wind_proc);
 
     void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
     {
@@ -1648,7 +1629,6 @@ class spell_warr_second_wind_proc : public AuraScript
 //Second wind (triggered) - 202149
 class spell_warr_second_wind_damaged : public AuraScript
 {
-    PrepareAuraScript(spell_warr_second_wind_damaged);
 
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
@@ -1729,7 +1709,6 @@ public:
 
     class spell_warr_overpower_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_warr_overpower_SpellScript);
 
         void HandleEffect(SpellEffIndex /*effIndex*/)
         {

@@ -497,7 +497,7 @@ class spell_evo_cosmic_visage : public SpellScript
 // 359073 - Eternity Surge
 class spell_evo_eternity_surge : public SpellScript
 {
-    void OnComplete(int32 completedStageCount) const
+    void OnComplete(int32 /*completedStageCount*/) const
     {
         GetCaster()->CastSpell(GetExplTargetUnit(), 359077, CastSpellExtraArgs()
             .SetTriggeringSpell(GetSpell())
