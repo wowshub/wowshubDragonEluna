@@ -24720,47 +24720,14 @@ void Player::SendInitialPacketsBeforeAddToMap()
     m_questObjectiveCriteriaMgr->SendAllData(this);
 
     /// SMSG_LOGIN_SETTIMESPEED
-    if (sConfigMgr->GetBoolDefault("TimeIsTime.Enable", true))
-    {
-        static float  stimeistime_speed_rate, stimeistime_hour_offset;
-        static uint32 stimeistime_time_start;
-
-        stimeistime_speed_rate = sConfigMgr->GetFloatDefault("TimeIsTime.SpeedRate", 1.0);
-        stimeistime_hour_offset = sConfigMgr->GetFloatDefault("TimeIsTime.HourOffset", 0.0);
-        stimeistime_time_start = sConfigMgr->GetIntDefault("TimeIsTime.TimeStart", 0);
-
-        static float const TimeSpeed = 0.01666667f * stimeistime_speed_rate;
-        float  hour_offset = stimeistime_hour_offset * 3600;
-        uint32 time_start = stimeistime_time_start + hour_offset;
-        WowTime custom;
-
-        WorldPackets::Misc::LoginSetTimeSpeed loginSetTimeSpeed;
-        loginSetTimeSpeed.NewSpeed = TimeSpeed;
-        loginSetTimeSpeed.GameTime = *GameTime::GetWowTime();
-        if (time_start == 0)
-        {
-            loginSetTimeSpeed.ServerTime = *GameTime::GetWowTime();
-        }
-        else if (time_start != 0)
-        {
-            custom.SetPackedTime(time_start); //Maybe bugged
-            loginSetTimeSpeed.ServerTime = custom;
-        }
-        loginSetTimeSpeed.GameTimeHolidayOffset = 0; /// @todo
-        loginSetTimeSpeed.ServerTimeHolidayOffset = 0; /// @todo
-        SendDirectMessage(loginSetTimeSpeed.Write());
-    }
-    else
-    {
-        static float const TimeSpeed = 0.01666667f;
-        WorldPackets::Misc::LoginSetTimeSpeed loginSetTimeSpeed;
-        loginSetTimeSpeed.NewSpeed = TimeSpeed;
-        loginSetTimeSpeed.GameTime = *GameTime::GetWowTime();
-        loginSetTimeSpeed.ServerTime = *GameTime::GetWowTime();
-        loginSetTimeSpeed.GameTimeHolidayOffset = 0; /// @todo
-        loginSetTimeSpeed.ServerTimeHolidayOffset = 0; /// @todo
-        SendDirectMessage(loginSetTimeSpeed.Write());
-    }
+    static float const TimeSpeed = 0.01666667f;
+    WorldPackets::Misc::LoginSetTimeSpeed loginSetTimeSpeed;
+    loginSetTimeSpeed.NewSpeed = TimeSpeed;
+    loginSetTimeSpeed.GameTime = *GameTime::GetWowTime();
+    loginSetTimeSpeed.ServerTime = *GameTime::GetWowTime();
+    loginSetTimeSpeed.GameTimeHolidayOffset = 0; /// @todo
+    loginSetTimeSpeed.ServerTimeHolidayOffset = 0; /// @todo
+    SendDirectMessage(loginSetTimeSpeed.Write());
 
     /// SMSG_WORLD_SERVER_INFO
     WorldPackets::Misc::WorldServerInfo worldServerInfo;
