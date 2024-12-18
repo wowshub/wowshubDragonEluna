@@ -124,6 +124,11 @@ enum DeathKnightSpells
     SPELL_DK_DARK_INFUSION_STACKS               = 91342,
     SPELL_DK_EPIDEMIC_DAMAGE_SINGLE             = 212739,
     SPELL_DK_EPIDEMIC_DAMAGE_AOE                = 215969,
+    SPELL_DK_ALL_WILL_SERVE                     = 194916,
+    SPELL_DK_ALL_WILL_SERVE_SUMMON              = 196910,
+    SPELL_DK_ARMY_OF_THE_DAMNED                 = 276837,
+    SPELL_DK_ARMY_OF_THE_DEAD                   = 42650,
+    SPELL_DK_APOCALYPSE                         = 275699,
 };
 
 enum Misc
@@ -512,6 +517,15 @@ class spell_dk_death_coil : public SpellScript
         caster->CastSpell(GetHitUnit(), SPELL_DK_DEATH_COIL_DAMAGE, true);
         if (AuraEffect const* unholyAura = caster->GetAuraEffect(SPELL_DK_UNHOLY, EFFECT_6)) // can be any effect, just here to send SPELL_FAILED_DONT_REPORT on failure
             caster->CastSpell(caster, SPELL_DK_UNHOLY_VIGOR, unholyAura);
+
+        if (GetCaster()->HasAura(SPELL_DK_ARMY_OF_THE_DAMNED))
+        {
+            if (GetCaster()->GetSpellHistory()->HasCooldown(SPELL_DK_ARMY_OF_THE_DEAD))
+                GetCaster()->GetSpellHistory()->ModifyCooldown(SPELL_DK_ARMY_OF_THE_DEAD, -5000ms);
+
+            if (GetCaster()->GetSpellHistory()->HasCooldown(SPELL_DK_APOCALYPSE))
+                GetCaster()->GetSpellHistory()->ModifyCooldown(SPELL_DK_APOCALYPSE, -1000ms);
+        }
     }
 
     void Register() override
@@ -1104,6 +1118,9 @@ class spell_dk_raise_dead : public SpellScript
             spellId = SPELL_DK_SLUDGE_BELCHER_SUMMON;
 
         GetCaster()->CastSpell(nullptr, spellId, true);
+
+        if (GetCaster()->HasAura(SPELL_DK_ALL_WILL_SERVE))
+            GetCaster()->CastSpell(GetCaster(), SPELL_DK_ALL_WILL_SERVE_SUMMON, true);
     }
 
     void Register() override
@@ -1354,7 +1371,6 @@ public:
 
     class spell_dk_icebound_fortitude_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_dk_icebound_fortitude_AuraScript);
 
         void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
         {
@@ -1377,7 +1393,6 @@ public:
 // Outbreak - 77575
 class spell_dk_outbreak : public SpellScript
 {
-    PrepareSpellScript(spell_dk_outbreak);
 
     void HandleOnHit(SpellEffIndex /*effIndex*/)
     {
@@ -1395,7 +1410,6 @@ class spell_dk_outbreak : public SpellScript
 // Outbreak - 196782
 class aura_dk_outbreak_periodic : public AuraScript
 {
-    PrepareAuraScript(aura_dk_outbreak_periodic);
 
     void HandleDummyTick(AuraEffect const* /*aurEff*/)
     {
@@ -1419,7 +1433,6 @@ class aura_dk_outbreak_periodic : public AuraScript
 // 115994 - Unholy Blight, triggered by 115989
 class spell_dk_unholy_blight : public AuraScript
 {
-    PrepareAuraScript(spell_dk_unholy_blight);
 
     void HandlePeriodic(AuraEffect const* /*aurEff*/)
     {
@@ -1434,7 +1447,6 @@ class spell_dk_unholy_blight : public AuraScript
 // 55090 - Scourge Strike
 class spell_dk_scourge_strike : public SpellScript
 {
-    PrepareSpellScript(spell_dk_scourge_strike);
 
     void HandleOnHit(SpellEffIndex /*effIndex*/)
     {
@@ -1474,7 +1486,6 @@ class spell_dk_scourge_strike : public SpellScript
 // 152280 - Defile
 class aura_dk_defile : public AuraScript
 {
-    PrepareAuraScript(aura_dk_defile);
 
     void HandlePeriodic(AuraEffect const* /*aurEff*/)
     {
@@ -1520,7 +1531,6 @@ struct at_dk_defile : AreaTriggerAI
 //156004
 class spell_dk_defile_aura : public AuraScript
 {
-    PrepareAuraScript(spell_dk_defile_aura);
 
     void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
@@ -1574,7 +1584,6 @@ public:
 
     class spell_dk_dark_transformation_form_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_dk_dark_transformation_form_SpellScript);
 
         void HandleOnHit()
         {
@@ -1606,7 +1615,6 @@ public:
 // 207317 - Epidemic
 class spell_dk_epidemic : public SpellScript
 {
-    PrepareSpellScript(spell_dk_epidemic);
 
     void HandleHit(SpellEffIndex /*effIndex*/)
     {
@@ -1632,7 +1640,6 @@ class spell_dk_epidemic : public SpellScript
 // 215969 - Epidemic AOE
 class spell_dk_epidemic_aoe : public SpellScript
 {
-    PrepareSpellScript(spell_dk_epidemic_aoe);
 
     void HandleOnHitMain(SpellEffIndex /*effIndex*/)
     {
