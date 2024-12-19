@@ -27627,9 +27627,9 @@ void Player::DisablePetControlsOnMount(ReactStates reactState, CommandStates com
 
     WorldPackets::Pet::PetMode petMode;
     petMode.PetGUID = pet->GetGUID();
-    petMode._reactState = reactState;
-    petMode._commandState = commandState;
-    petMode._flag = 0;
+    petMode.ReactState = reactState;
+    petMode.CommandState = commandState;
+    petMode.Flag = 0;
     SendDirectMessage(petMode.Write());
 }
 
@@ -27641,14 +27641,14 @@ void Player::EnablePetControlsOnDismount()
         petMode.PetGUID = pet->GetGUID();
         if (m_temporaryPetReactState)
         {
-            petMode._reactState = *m_temporaryPetReactState;
+            petMode.ReactState = *m_temporaryPetReactState;
             pet->SetReactState(*m_temporaryPetReactState);
         }
 
         if (CharmInfo* charmInfo = pet->GetCharmInfo())
-            petMode._commandState = charmInfo->GetCommandState();
+            petMode.CommandState = charmInfo->GetCommandState();
 
-        petMode._flag = 0;
+        petMode.Flag = 0;
         SendDirectMessage(petMode.Write());
     }
 

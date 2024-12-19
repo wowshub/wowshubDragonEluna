@@ -278,10 +278,9 @@ namespace WorldPackets
             ObjectGuid PetGUID;
             uint32 PetModeFlag = 0;
 
-            //! not in jam data
-            uint8 _reactState = 0;
-            uint8 _commandState = 0;
-            uint16 _flag = 0;
+            ReactStates ReactState = REACT_PASSIVE;
+            CommandStates CommandState = COMMAND_STAY;
+            uint16 Flag = 0;
         };
 
         class Guids final : public ServerPacket
