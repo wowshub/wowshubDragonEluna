@@ -132,6 +132,9 @@ public:
         m_staticMinute = localTime->tm_min;
         m_timeFreezed = false;
 
+        RoleplayDatabasePreparedStatement* stmt = RoleplayDatabase.GetPreparedStatement(Roleplay_DEL_SERVER_SETTINGS);
+        RoleplayDatabase.Execute(stmt);
+
         SendTimeSync();
     }
 
@@ -147,18 +150,7 @@ public:
         timePacket.GameTime = custom;
         timePacket.ServerTime = custom;
         static float const TimeSpeed = 0.01666667f;
-        static float const TimeSpeedFreeze = 0.0f;
-
-        if (m_timeFreezed == true)
-        {
-            TC_LOG_INFO("server", "Time is freeze 0000000000000000000000000000000000000000");
-            timePacket.NewSpeed = TimeSpeedFreeze; // Until I find a way to freeze time, I'm gonna have to use this.
-        }
-        else
-        {
-            TC_LOG_INFO("server", "Time is unfreeze 0000000000000000000000000000000000000000");
-            timePacket.NewSpeed = TimeSpeed;
-        }
+        timePacket.NewSpeed = TimeSpeed;
 
         sWorld->SendGlobalMessage(timePacket.Write());
     }
@@ -400,6 +392,7 @@ public:
         return true;
     }
 
+    // custom command .settime
     static bool HandleSetTimeCommand(ChatHandler* handler, Optional<uint32> hour, Optional<uint32> minute)
     {
         if (hour && *hour == 999)
@@ -425,20 +418,43 @@ public:
     }
 };
 
-    class PlayerScript_TimeSync : public PlayerScript
-    {
-    public:
-        PlayerScript_TimeSync() : PlayerScript("PlayerScript_TimeSync") {}
+class PlayerScript_TimeSync : public PlayerScript
+{
+public:
+    PlayerScript_TimeSync() : PlayerScript("PlayerScript_TimeSync") {}
 
-        void OnLogin(Player* /*player*/, bool /*firstLogin*/) override
+    void OnLogin(Player* /*player*/, bool /*firstLogin*/) override
+    {
+        StaticTimeManager::LoadStaticTimeFromDB();
+    }
+};
+
+class WorldScript_TimeSync : public WorldScript
+{
+public:
+    WorldScript_TimeSync() : WorldScript("WorldScript_TimeSync") {}
+
+    void OnUpdate(uint32 diff) override
+    {
+        static uint32 timeCheckTimer = 0;
+        timeCheckTimer += diff;
+
+        if (timeCheckTimer >= 30 * IN_MILLISECONDS)
         {
-            StaticTimeManager::LoadStaticTimeFromDB();
+            if (StaticTimeManager::IsTimeFreezed())
+            {
+                StaticTimeManager::SendTimeSync();
+            }
+
+            timeCheckTimer = 0;
         }
-    };
+    }
+};
 
 void AddSC_free_share_scripts()
 {
     new free_share_scripts();
     new PlayerScript_TimeSync();
+    new WorldScript_TimeSync();
 }
 
