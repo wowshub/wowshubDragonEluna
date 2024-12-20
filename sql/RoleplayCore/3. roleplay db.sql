@@ -28,10 +28,6 @@ CREATE TABLE `creature_extra`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of creature_extra
--- ----------------------------
-
--- ----------------------------
 -- Table structure for creature_template_extra
 -- ----------------------------
 DROP TABLE IF EXISTS `creature_template_extra`;
@@ -42,10 +38,6 @@ CREATE TABLE `creature_template_extra`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of creature_template_extra
--- ----------------------------
-
--- ----------------------------
 -- Table structure for custom_npcs
 -- ----------------------------
 DROP TABLE IF EXISTS `custom_npcs`;
@@ -54,3 +46,13 @@ CREATE TABLE `custom_npcs`  (
   `Entry` int UNSIGNED NOT NULL,
   PRIMARY KEY (`Key`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for server_settings
+-- ----------------------------
+DROP TABLE IF EXISTS `server_settings`;
+CREATE TABLE `server_settings`  (
+    `setting_name` VARCHAR(50) NOT NULL,
+    `setting_value` VARCHAR(255) NOT NULL,
+    PRIMARY KEY (`setting_name`)
+); ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;

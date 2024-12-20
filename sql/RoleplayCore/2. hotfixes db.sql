@@ -11,10 +11,6 @@ CREATE TABLE `chr_customization_material`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
--- Records of chr_customization_material
--- ----------------------------
-
--- ----------------------------
 -- Table structure for creature_display_info_option
 -- ----------------------------
 DROP TABLE IF EXISTS `creature_display_info_option`;
@@ -26,10 +22,6 @@ CREATE TABLE `creature_display_info_option`  (
   `VerifiedBuild` int NOT NULL DEFAULT 0,
   PRIMARY KEY (`ID`, `VerifiedBuild`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of creature_display_info_option
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for game_tips
@@ -47,10 +39,6 @@ CREATE TABLE `game_tips`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
--- Records of game_tips
--- ----------------------------
-
--- ----------------------------
 -- Table structure for game_tips_locale
 -- ----------------------------
 DROP TABLE IF EXISTS `game_tips_locale`;
@@ -61,10 +49,6 @@ CREATE TABLE `game_tips_locale`  (
   `VerifiedBuild` int NOT NULL DEFAULT 0,
   PRIMARY KEY (`ID`, `locale`, `VerifiedBuild`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of game_tips_locale
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for light_params
@@ -90,10 +74,6 @@ CREATE TABLE `light_params`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of light_params
--- ----------------------------
-
--- ----------------------------
 -- Table structure for light_skybox
 -- ----------------------------
 DROP TABLE IF EXISTS `light_skybox`;
@@ -106,10 +86,6 @@ CREATE TABLE `light_skybox`  (
   `VerifiedBuild` int NOT NULL DEFAULT 0,
   PRIMARY KEY (`Id`, `VerifiedBuild`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of light_skybox
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for model_file_data
@@ -132,10 +108,6 @@ CREATE TABLE `model_file_data`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of model_file_data
--- ----------------------------
-
--- ----------------------------
 -- Table structure for npc_model_item_slot_display_info
 -- ----------------------------
 DROP TABLE IF EXISTS `npc_model_item_slot_display_info`;
@@ -147,10 +119,6 @@ CREATE TABLE `npc_model_item_slot_display_info`  (
   `VerifiedBuild` int NOT NULL DEFAULT 0,
   PRIMARY KEY (`ID`, `VerifiedBuild`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of npc_model_item_slot_display_info
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for screen_effect
@@ -176,10 +144,6 @@ CREATE TABLE `screen_effect`  (
   `VerifiedBuild` int NOT NULL DEFAULT 0,
   PRIMARY KEY (`ID`, `VerifiedBuild`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of screen_effect
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for sound_kit_advanced
@@ -248,10 +212,6 @@ CREATE TABLE `sound_kit_advanced`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of sound_kit_advanced
--- ----------------------------
-
--- ----------------------------
 -- Table structure for sound_kit_entry
 -- ----------------------------
 DROP TABLE IF EXISTS `sound_kit_entry`;
@@ -265,10 +225,6 @@ CREATE TABLE `sound_kit_entry`  (
   `VerifiedBuild` int NOT NULL DEFAULT 0,
   PRIMARY KEY (`ID`, `VerifiedBuild`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of sound_kit_entry
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for specialization_spells_display
@@ -288,10 +244,6 @@ CREATE TABLE `specialization_spells_display`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of specialization_spells_display
--- ----------------------------
-
--- ----------------------------
 -- Table structure for spell
 -- ----------------------------
 DROP TABLE IF EXISTS `spell`;
@@ -303,10 +255,6 @@ CREATE TABLE `spell`  (
   `VerifiedBuild` int NOT NULL DEFAULT 0,
   PRIMARY KEY (`ID`, `VerifiedBuild`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of spell
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for spell_locale
@@ -323,10 +271,6 @@ CREATE TABLE `spell_locale`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of spell_locale
--- ----------------------------
-
--- ----------------------------
 -- Table structure for texture_file_data
 -- ----------------------------
 DROP TABLE IF EXISTS `texture_file_data`;
@@ -337,10 +281,6 @@ CREATE TABLE `texture_file_data`  (
   `VerifiedBuild` int NOT NULL DEFAULT 0,
   PRIMARY KEY (`ID`, `VerifiedBuild`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of texture_file_data
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for vehicle_poi_type
@@ -358,9 +298,8 @@ CREATE TABLE `vehicle_poi_type`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of vehicle_poi_type
+-- Table structure for sound_ambience
 -- ----------------------------
-
 CREATE TABLE `sound_ambience`  (
   `ID` int UNSIGNED NOT NULL DEFAULT 0,
   `Flags` int NOT NULL DEFAULT 0,
@@ -377,6 +316,9 @@ CREATE TABLE `sound_ambience`  (
   PRIMARY KEY (`ID`, `VerifiedBuild`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
+-- ----------------------------
+-- Table structure for zone_music
+-- ----------------------------
 CREATE TABLE `zone_music`  (
   `ID` int UNSIGNED NOT NULL DEFAULT 0,
   `SetName` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
@@ -390,6 +332,9 @@ CREATE TABLE `zone_music`  (
   PRIMARY KEY (`ID`, `VerifiedBuild`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
+-- ----------------------------
+-- Table structure for zone_music_locale
+-- ----------------------------
 CREATE TABLE `zone_music_locale`  (
   `ID` int UNSIGNED NOT NULL DEFAULT 0,
   `locale` varchar(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -409,6 +354,9 @@ PARTITION `ruRU` ENGINE = InnoDB MAX_ROWS = 0 MIN_ROWS = 0 ,
 PARTITION `zhCN` ENGINE = InnoDB MAX_ROWS = 0 MIN_ROWS = 0 ,
 PARTITION `zhTW` ENGINE = InnoDB MAX_ROWS = 0 MIN_ROWS = 0 );
 
+-- ----------------------------
+-- Table structure for npc_sounds
+-- ----------------------------
 CREATE TABLE `npc_sounds` (
 	`ID` INT(10) UNSIGNED NOT NULL,
 	`hello` INT(10) UNSIGNED NOT NULL DEFAULT '0',

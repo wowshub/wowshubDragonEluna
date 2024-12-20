@@ -449,6 +449,79 @@ REPLACE INTO `spell_script_names` VALUES (123154, 'spell_monk_fists_of_fury_visu
 REPLACE INTO `spell_script_names` VALUES (117418, 'spell_monk_fists_of_fury_visual_filter');
 --REPLACE INTO `spell_script_names` VALUES (152175, 'spell_monk_whirling_dragon_punch');
 REPLACE INTO `spell_script_names` VALUES (115057, 'spell_monk_flying_serpent_kick');
+REPLACE INTO `spell_script_names` VALUES (148022, 'spell_mage_icicle_damage');
+REPLACE INTO `spell_script_names` VALUES (76613, 'spell_mastery_icicles_proc');
+REPLACE INTO `spell_script_names` VALUES (214124, 'spell_mastery_icicles_mod_aura');
+REPLACE INTO `spell_script_names` VALUES (214125, 'spell_mastery_icicles_mod_aura');
+REPLACE INTO `spell_script_names` VALUES (214126, 'spell_mastery_icicles_mod_aura');
+REPLACE INTO `spell_script_names` VALUES (214127, 'spell_mastery_icicles_mod_aura');
+REPLACE INTO `spell_script_names` VALUES (214130, 'spell_mastery_icicles_mod_aura');
+REPLACE INTO `spell_script_names` VALUES (148023, 'spell_mastery_icicles_periodic');
+REPLACE INTO `spell_script_names` VALUES (199786, 'spell_mastery_icicles_glacial_spike');
+REPLACE INTO `spell_script_names` VALUES (359073, 'spell_evo_eternity_surge');
+REPLACE INTO `spell_script_names` VALUES (195072, 'spell_dh_fel_rush');
+REPLACE INTO `spell_script_names` VALUES (197923, 'spell_dh_fel_rush_dash');
+REPLACE INTO `spell_script_names` VALUES (197922, 'spell_dh_fel_rush_dash_ground');
+REPLACE INTO `spell_script_names` VALUES (223107, 'spell_dh_fel_rush_damage');
+REPLACE INTO `spell_script_names` VALUES (203556, 'spell_dh_master_of_the_glaive');
+REPLACE INTO `spell_script_names` VALUES (211881, 'spell_dh_fel_eruption');
+REPLACE INTO `spell_script_names` VALUES (209258, 'spell_dh_last_resort');
+REPLACE INTO `spell_script_names` VALUES (191427, 'spell_dh_metamorphosis');
+REPLACE INTO `spell_script_names` VALUES (201453, 'spell_dh_metamorphosis_immunity');
+REPLACE INTO `spell_script_names` VALUES (206473, 'spell_dh_bloodlet');
+REPLACE INTO `spell_script_names` VALUES (211053, 'spell_dh_fel_barrage');
+REPLACE INTO `spell_script_names` VALUES (222703, 'spell_dh_fel_barrage_damage');
+REPLACE INTO `spell_script_names` VALUES (222703, 'spell_dh_fel_barrage_aura');
+REPLACE INTO `spell_script_names` VALUES (206491, 'spell_dh_nemesis');
+REPLACE INTO `spell_script_names` VALUES (189110, 'spell_dh_infernal_strike');
+REPLACE INTO `spell_script_names` VALUES (228477, 'spell_dh_soul_cleave');
+REPLACE INTO `spell_script_names` VALUES (228478, 'spell_dh_soul_cleave_damage');
+REPLACE INTO `spell_script_names` VALUES (204021, 'spell_dh_fiery_brand');
+REPLACE INTO `spell_script_names` VALUES (207771, 'spell_dh_fiery_brand_dot');
+REPLACE INTO `spell_script_names` VALUES (209400, 'spell_dh_razor_spikes');
+REPLACE INTO `spell_script_names` VALUES (263648, 'spell_dh_soul_barrier');
+REPLACE INTO `spell_script_names` VALUES (207810, 'spell_dh_nether_bond');
+REPLACE INTO `spell_script_names` VALUES (207811, 'spell_dh_nether_bond_periodic');
+REPLACE INTO `spell_script_names` VALUES (211509, 'spell_dh_solitude');
+REPLACE INTO `spell_script_names` VALUES (205598, 'spell_dh_awaken_the_demon');
+REPLACE INTO `spell_script_names` VALUES (205604, 'spell_dh_reverse_magic');
+REPLACE INTO `spell_script_names` VALUES (206649, 'spell_dh_eye_of_leotheras');
+REPLACE INTO `spell_script_names` VALUES (258920, 'spell_dh_immolation_aura');
+REPLACE INTO `spell_script_names` VALUES (258922, 'spell_dh_immolation_aura_damage');
+REPLACE INTO `spell_script_names` VALUES (208796, 'spell_dh_jagged_spikes');
+REPLACE INTO `spell_script_names` VALUES (206966, 'spell_dh_fel_lance');
+REPLACE INTO `spell_script_names` VALUES (206891, 'spell_dh_intimidated');
+REPLACE INTO `spell_script_names` VALUES (203753, 'spell_dh_blade_turning');
+REPLACE INTO `spell_script_names` VALUES (209651, 'spell_dh_shattered_souls_missile');
+REPLACE INTO `spell_script_names` VALUES (203783, 'spell_dh_shear_proc');
+REPLACE INTO `spell_script_names` VALUES (210047, 'spell_dh_consume_soul_missile');
+REPLACE INTO `spell_script_names` VALUES (209426, 'spell_dh_darkness_absorb');
+REPLACE INTO `spell_script_names` VALUES (203650, 'spell_dh_prepared');
+REPLACE INTO `spell_script_names` VALUES (206478, 'spell_dh_demonic_appetite');
+REPLACE INTO `spell_script_names` VALUES (228532, 'spell_dh_soul_fragment_heals');
+REPLACE INTO `spell_script_names` VALUES (206475, 'spell_dh_chaos_cleave');
+REPLACE INTO `spell_script_names` VALUES (205411, 'spell_dh_desperate_instincts');
+REPLACE INTO `spell_script_names` VALUES (209795, 'spell_dh_fracture');
+REPLACE INTO `spell_script_names` VALUES (224509, 'spell_dh_frailty');
+REPLACE INTO `spell_script_names` VALUES (247454, 'spell_dh_spirit_bomb');
+REPLACE INTO `spell_script_names` VALUES (236189, 'spell_dh_demonic_infusion');
+REPLACE INTO `spell_script_names` VALUES (206803, 'spell_demon_hunter_rain_from_above');
+REPLACE INTO `spell_script_names` VALUES (162264, 'spell_demon_hunter_metamorphosis_buffs');
+REPLACE INTO `spell_script_names` VALUES (212105, 'spell_dh_fel_devastation_damage');
+REPLACE INTO `spell_script_names` VALUES (162794, 'spell_demon_hunter_chaos_strike');
+REPLACE INTO `spell_script_names` VALUES (185244, 'spell_demon_hunter_pain');
+REPLACE INTO `spell_script_names` VALUES (203704, 'spell_demon_hunter_mana_break');
+REPLACE INTO `spell_script_names` VALUES (258881, 'spell_demon_hunter_trail_of_ruin');
+REPLACE INTO `spell_script_names` VALUES (213480, 'spell_demon_hunter_unending_hatred');
+REPLACE INTO `spell_script_names` VALUES (203720, 'spell_dh_demon_spikes');
+REPLACE INTO `spell_script_names` VALUES (201427, 'spell_dh_annihilation');
+REPLACE INTO `spell_script_names` VALUES (344862, 'spell_dh_chaos_strike_specless');
+REPLACE INTO `spell_script_names` VALUES (344865, 'spell_dh_fel_rush_specless');
+REPLACE INTO `spell_script_names` VALUES (259495, 'spell_hunter_wildfire_bomb');
+REPLACE INTO `spell_script_names` VALUES (271014, 'spell_hunter_wildfire_infusion_talent');
+REPLACE INTO `spell_script_names` VALUES (271615, 'spell_hunter_wildfire_infusion_dummy');
+
+REPLACE INTO `spell_linked_spell` VALUES (113656, 165144, 0, 'Fists of Fury visual fix');
 
 
 REPLACE INTO `creature_template` VALUES (59262, 0, 0, 'Demonic Gateway', '', NULL, '', 'interact', 0, 0, 35, 16777216, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 512, 67108896, 17825793, 0, 0, 11, 0, '', 0, 1, 0, 0, 0, 0, 1, 0, 0, 'npc_warl_demonic_gateway', NULL, 53040);
@@ -476,6 +549,14 @@ REPLACE INTO `areatrigger_scripts` VALUES (6212, 'at_dk_defile');
 REPLACE INTO `areatrigger_scripts` VALUES (3983, 'at_monk_ring_of_peace');
 REPLACE INTO `areatrigger_scripts` VALUES (5484, 'at_monk_song_of_chi_ji');
 REPLACE INTO `areatrigger_scripts` VALUES (5300, 'at_monk_chi_burst');
+REPLACE INTO `areatrigger_scripts` VALUES (8661,'at_mage_frozen_orb');
+REPLACE INTO `areatrigger_scripts` VALUES (6615, 'at_dh_darkness');
+REPLACE INTO `areatrigger_scripts` VALUES (9695, 'at_demon_hunter_mana_rift');
+REPLACE INTO `areatrigger_scripts` VALUES (6482, 'at_demon_hunter_demonic_trample');
+REPLACE INTO `areatrigger_scripts` VALUES (10666, 'at_shattered_soul_fragment');
+REPLACE INTO `areatrigger_scripts` VALUES (12863,'at_hunter_wildfire_bomb');
+
+REPLACE INTO `areatrigger_template` VALUES (265163, 0, 0, 0, 0, 0);
 
 REPLACE INTO `areatrigger_create_properties` VALUES (177345, 1, 8089, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 3000, 4, 8, 8, 4, 4, 0.3, 0.3, 0, 0, 'at_mage_meteor_timer', 27101);
 REPLACE INTO `areatrigger_create_properties` VALUES (4424, 0, 9170, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 60000, 4, 3, 3, 4, 4, 1, 1, 0, 0, 'at_hun_freezing_trap', 48999);
@@ -488,92 +569,8 @@ REPLACE INTO `areatrigger_create_properties` VALUES (9810, 0, 14725, 0, 0, 0, 0,
 REPLACE INTO `areatrigger_create_properties` VALUES (5484, 0, 10191, 0, 0, 0, 1656, 0, 0, -1, 0, 0, 0, 5716, 5000, 0, 5, 5, 0, 0, 0, 0, 0, 0, 'at_monk_song_of_chi_ji', 48838);
 REPLACE INTO `areatrigger_create_properties` VALUES (1316, 0, 5300, 0, 0, 392, 0, 0, 0, -1, 0, 0, 0, 931, 1000, 0, 5, 5, 0, 0, 0, 0, 0, 0, 'at_monk_chi_burst', 40120);
 REPLACE INTO `areatrigger_create_properties` VALUES (718, 0, 3983, 0, 0, 0, 0, 0, 0, -256, 255, 0, 0, 0, 5000, 0, 8, 8, 0, 0, 0, 0, 0, 0, 'at_monk_ring_of_peace', 40120);
+REPLACE INTO `areatrigger_create_properties` VALUES (6482, 1, 11107, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'at_demon_hunter_demonic_trample', 40120);
+REPLACE INTO `areatrigger_create_properties` VALUES (6007, 1, 10666, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 20000, 0, 1, 1, 0, 0, 0, 0, 0, 0, 'at_shattered_soul_fragment', 32750);
+REPLACE INTO `areatrigger_create_properties` VALUES (12863, 0, 265163, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0, 'at_hunter_wildfire_bomb', 0);
 
 ALTER TABLE `scrapping_loot_template` ADD `ItemType` tinyint NOT NULL DEFAULT 0 AFTER `Entry`;
-
---Aquadeus part 
-DELETE FROM `spell_script_names` WHERE `ScriptName` = 'spell_warl_backdraft';
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
-(17962, 'spell_warl_backdraft');
-
-DELETE FROM `spell_proc` WHERE `SpellId` IN (117828);
-INSERT INTO `spell_proc` (`SpellId`,`SchoolMask`,`SpellFamilyName`,`SpellFamilyMask0`,`SpellFamilyMask1`,`SpellFamilyMask2`,`SpellFamilyMask3`,`ProcFlags`,`ProcFlags2`,`SpellTypeMask`,`SpellPhaseMask`,`HitMask`,`AttributesMask`,`DisableEffectsMask`,`ProcsPerMinute`,`Chance`,`Cooldown`,`Charges`) VALUES
-(117828,0x00,5,0x00000000,0x00002040,0x00000002,0x00000000,0x0,0x0,0x1,0x2,0x0,0x10,0x0,0,0,0,0); -- Backdraft
-
-DELETE FROM `spell_script_names` WHERE `ScriptName` = 'spell_warl_cataclysm';
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
-(152108, 'spell_warl_cataclysm');
-
-DELETE FROM `spell_script_names` WHERE `ScriptName` = 'spell_warl_roaring_blaze';
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
-(17962, 'spell_warl_roaring_blaze');
-
-DELETE FROM `spell_script_names` WHERE `ScriptName` = 'spell_warl_conflagrate';
-DELETE FROM `spell_script_names` WHERE `ScriptName` = 'spell_warl_conflagrate_aura';
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
-(17962, 'spell_warl_conflagrate');
-
-SET @ATID := 100000;
-
--- Serverside Areatrigger
-DELETE FROM `areatrigger_create_properties` WHERE `Id`=34472 AND `IsCustom`=0;
-INSERT INTO `areatrigger_create_properties` (`Id`, `IsCustom`, `AreaTriggerId`, `IsAreatriggerCustom`, `Flags`, `MoveCurveId`, `ScaleCurveId`, `MorphCurveId`, `FacingCurveId`, `AnimId`, `AnimKitId`, `DecalPropertiesId`, `SpellForVisuals`, `TimeToTarget`, `TimeToTargetScale`, `Shape`, `ShapeData0`, `ShapeData1`, `ShapeData2`, `ShapeData3`, `ShapeData4`, `ShapeData5`, `ShapeData6`, `ShapeData7`, `ScriptName`, `VerifiedBuild`) VALUES
-(34472, 0, @ATID, 1, 4, 0, 0, 0, 0, -1, 0, 0, NULL, 0, 0, 0, 10, 10, 0, 0, 0, 0, 0, 0, 'areatrigger_sha_arctic_snowstorm', 0);
-
-DELETE FROM `areatrigger_template` WHERE `Id`=@ATID AND `IsCustom`=1;
-INSERT INTO `areatrigger_template` (`Id`, `IsCustom`, `Flags`, `ActionSetId`, `ActionSetFlags`, `VerifiedBuild`) VALUES
-(@ATID, 1, 1, 0, 0, 0);
-
--- Proc
-DELETE FROM `spell_proc` WHERE `SpellId` IN (462764);
-INSERT INTO `spell_proc` (`SpellId`,`SchoolMask`,`SpellFamilyName`,`SpellFamilyMask0`,`SpellFamilyMask1`,`SpellFamilyMask2`,`SpellFamilyMask3`,`ProcFlags`,`ProcFlags2`,`SpellTypeMask`,`SpellPhaseMask`,`HitMask`,`AttributesMask`,`DisableEffectsMask`,`ProcsPerMinute`,`Chance`,`Cooldown`,`Charges`) VALUES
-(462764,0x10,11,0x80000000,0x00000000,0x00000000,0x00000000,0x0,0x0,0x1,0x2,0x0,0x0,0x0,0,0,0,0); -- Arctic Snowstorm
-
--- Spells
-DELETE FROM `spell_script_names` WHERE `ScriptName` = 'spell_sha_arctic_snowstorm';
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
-(462764, 'spell_sha_arctic_snowstorm');
-
-DELETE FROM `spell_script_names` WHERE `spell_id` IN (324540, 980, 146739, 316099) AND `ScriptName`='spell_warl_deaths_embrace';
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
-(324540, 'spell_warl_deaths_embrace'),
-(980, 'spell_warl_deaths_embrace'),
-(146739, 'spell_warl_deaths_embrace'),
-(316099, 'spell_warl_deaths_embrace');
-
-DELETE FROM `spell_script_names` WHERE `spell_id`=234153 AND `ScriptName`='spell_warlock_drain_life';
-DELETE FROM `spell_script_names` WHERE `spell_id`=234153 AND `ScriptName`='spell_warl_drain_life';
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
-(234153, 'spell_warl_drain_life');
-
-DELETE FROM `spell_script_names` WHERE `spell_id`= 195182;
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
-(195182, 'spell_dk_marrowrend');
-
-DELETE FROM `spell_script_names` WHERE `spell_id`=316099 AND `ScriptName`='spell_warl_perpetual_unstability';
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
-(316099, 'spell_warl_perpetual_unstability');
-
-DELETE FROM `spell_script_names` WHERE `spell_id`=980 AND `ScriptName`='spell_warl_volatile_agony';
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
-(980, 'spell_warl_volatile_agony');
-
-DELETE FROM `spell_proc` WHERE `SpellId` IN (452999);
-INSERT INTO `spell_proc` (`SpellId`,`SchoolMask`,`SpellFamilyName`,`SpellFamilyMask0`,`SpellFamilyMask1`,`SpellFamilyMask2`,`SpellFamilyMask3`,`ProcFlags`,`ProcFlags2`,`SpellTypeMask`,`SpellPhaseMask`,`HitMask`,`AttributesMask`,`DisableEffectsMask`,`ProcsPerMinute`,`Chance`,`Cooldown`,`Charges`) VALUES
-(452999,0x20,5,0x00000002,0x00000000,0x00000000,0x00000000,0x0,0x0,0x1,0x2,0x0,0x0,0x0,0,0,0,0); -- Siphon Life
-
-DELETE FROM `spell_script_names` WHERE `spell_id`=452999;
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
-(452999, 'spell_warl_siphon_life');
-
-DELETE FROM `spell_script_names` WHERE `spell_id`=278350;
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
-(278350, 'spell_warl_vile_taint');
-
-DELETE FROM `spell_script_names` WHERE `spell_id`=146739 AND `ScriptName`='spell_warl_absolute_corruption';
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
-(146739, 'spell_warl_absolute_corruption');
-
-DELETE FROM `spell_script_names` WHERE `ScriptName`='spell_warl_unstable_affliction';
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
-(316099, 'spell_warl_unstable_affliction');
