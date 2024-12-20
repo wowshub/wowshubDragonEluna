@@ -1119,6 +1119,7 @@ class spell_dk_raise_dead : public SpellScript
 
         GetCaster()->CastSpell(nullptr, spellId, true);
 
+        // The skeleton does not disappear after you release the pet
         if (GetCaster()->HasAura(SPELL_DK_ALL_WILL_SERVE))
             GetCaster()->CastSpell(GetCaster(), SPELL_DK_ALL_WILL_SERVE_SUMMON, true);
     }
