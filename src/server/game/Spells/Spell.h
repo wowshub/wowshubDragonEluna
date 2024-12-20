@@ -441,6 +441,7 @@ class TC_GAME_API Spell
         void EffectCreateTraitTreeConfig();
         void EffectChangeActiveCombatTraitConfig();
         void EffectTeleportGraveyard();
+        void EffectUpdateInteractions();
 
         //NEW
         void EffectApplyAreaAura();
