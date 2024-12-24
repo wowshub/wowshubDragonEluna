@@ -3591,22 +3591,6 @@ public:
     }
 };
 
-//203720 - Demon Spikes
-class spell_dh_demon_spikes : public SpellScript
-{
-
-    void HandleDummy()
-    {
-        Unit* caster = GetCaster();
-        caster->CastSpell(nullptr, SPELL_DH_DEMON_SPIKES, true);
-    }
-
-    void Register() override
-    {
-        OnCast += SpellCastFn(spell_dh_demon_spikes::HandleDummy);
-    }
-};
-
 // 196718 - Darkness
 // MiscId - 6615
 struct at_dh_darkness : AreaTriggerAI
@@ -4021,7 +4005,6 @@ void AddSC_demon_hunter_spell_scripts()
     new spell_demon_hunter_mana_break();
     new spell_demon_hunter_trail_of_ruin();
     new spell_demon_hunter_unending_hatred();
-    RegisterSpellScript(spell_dh_demon_spikes);
     RegisterAreaTriggerAI(at_dh_darkness);
     RegisterAreaTriggerAI(at_demon_hunter_mana_rift);
     RegisterAreaTriggerAI(at_demon_hunter_demonic_trample);
