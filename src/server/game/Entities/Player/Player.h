@@ -655,6 +655,7 @@ static_assert(UF::size<decltype(UF::ActivePlayerData::InvSlots)>() == PLAYER_SLO
 
 #define INVENTORY_SLOT_BAG_0    255
 #define INVENTORY_DEFAULT_SIZE  20
+#define INVENTORY_SECURED_SIZE  24
 
 enum EquipmentSlots : uint8                                 // 19 slots
 {

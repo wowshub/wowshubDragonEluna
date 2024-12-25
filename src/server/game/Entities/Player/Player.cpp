@@ -488,7 +488,15 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
     SetRestState(REST_TYPE_XP, (GetSession()->IsARecruiter() || GetSession()->GetRecruiterId() != 0) ? REST_STATE_RAF_LINKED : REST_STATE_NORMAL);
     SetRestState(REST_TYPE_HONOR, REST_STATE_NORMAL);
     SetNativeGender(Gender(createInfo->Sex));
-    SetInventorySlotCount(INVENTORY_DEFAULT_SIZE);
+
+    if (HasPlayerLocalFlag(PLAYER_LOCAL_FLAG_ACCOUNT_SECURED))
+    {
+        SetInventorySlotCount(INVENTORY_SECURED_SIZE);
+    }
+    else
+    {
+        SetInventorySlotCount(INVENTORY_DEFAULT_SIZE);
+    }
 
     // set starting level
     SetLevel(GetStartLevel(createInfo->Race, createInfo->Class, createInfo->TemplateSet));
@@ -20199,6 +20207,13 @@ void Player::SaveToDB(LoginDatabaseTransaction loginTransaction, CharacterDataba
     if (IsBeingTeleportedFar())
     {
         ScheduleDelayedOperation(DELAYED_SAVE_PLAYER);
+        return;
+    }
+
+    // adding extra inventory cells to existing characters
+    if (HasPlayerLocalFlag(PLAYER_LOCAL_FLAG_ACCOUNT_SECURED) && GetInventorySlotCount() == INVENTORY_DEFAULT_SIZE)
+    {
+        SetInventorySlotCount(INVENTORY_SECURED_SIZE);
         return;
     }
 

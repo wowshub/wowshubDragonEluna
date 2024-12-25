@@ -38,7 +38,11 @@ class StaticTimeManager
 private:
     static inline uint32 m_staticHour = 12;
     static inline uint32 m_staticMinute = 0;
+    static inline uint32 m_staticYear = 1900;
+    static inline uint32 m_staticMonth = 1;
+    static inline uint32 m_staticMonthDay = 1;
     static inline bool m_timeFreezed = false;
+
 
 public:
 
@@ -145,8 +149,20 @@ public:
 
         TC_LOG_INFO("server", "StaticTimeManager: Hour {}, Minute {}", m_staticHour, m_staticMinute);
 
+        time_t nowYM = time(nullptr);
+        struct tm* localTimeYM = localtime(&nowYM);
+
+        m_staticYear = (localTimeYM->tm_year + 1900) % 100;
+        m_staticMonth = localTimeYM->tm_mon;
+        m_staticMonthDay = localTimeYM->tm_mday;
+
+        TC_LOG_INFO("server", "Invalid date values: Year: {}, Month: {}, Day: {}", m_staticYear, m_staticMonth, m_staticMonthDay);
+
         custom.SetHour(m_staticHour);
         custom.SetMinute(m_staticMinute);
+        custom.SetYear(m_staticYear);
+        custom.SetMonth(m_staticMonth);
+        custom.SetMonthDay(m_staticMonthDay);
         timePacket.GameTime = custom;
         timePacket.ServerTime = custom;
         static float const TimeSpeed = 0.01666667f;
