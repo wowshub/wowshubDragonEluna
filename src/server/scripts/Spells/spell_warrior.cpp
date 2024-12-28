@@ -1578,14 +1578,14 @@ public:
     class spell_warr_odyns_fury_AuraScript : public AuraScript
     {
 
-        void Absorb(AuraEffect* /* aurEff */, DamageInfo& /*dmgInfo*/, uint32& absorbAmount)
+        void Absorb(AuraEffect* /*aurEff*/, DamageInfo& /*dmgInfo*/, uint32& absorbAmount)
         {
             absorbAmount = 0;
         }
 
         void Register() override
         {
-            OnEffectAbsorb += AuraEffectAbsorbFn(spell_warr_odyns_fury_AuraScript::Absorb, EFFECT_0, SPELL_AURA_DUMMY);
+            OnEffectAbsorb += AuraEffectAbsorbFn(spell_warr_odyns_fury_AuraScript::Absorb, EFFECT_0);
         }
     };
 

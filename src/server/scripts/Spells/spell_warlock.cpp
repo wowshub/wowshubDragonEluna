@@ -1578,7 +1578,6 @@ public:
 
     class spell_warl_fear_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_warl_fear_SpellScript);
 
         bool  Validate(SpellInfo const* /*spellInfo*/) override
         {
@@ -1622,7 +1621,6 @@ public:
 
     class spell_warl_fear_buff_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_warl_fear_buff_SpellScript);
 
         bool  Validate(SpellInfo const* /*spellInfo*/) override
         {
@@ -1656,7 +1654,6 @@ public:
 //146739 - Corruption effect
 class spell_warl_corruption_effect : public AuraScript
 {
-    PrepareAuraScript(spell_warl_corruption_effect);
 
     bool  Validate(SpellInfo const* /*spellInfo*/) override
     {
@@ -1756,7 +1753,6 @@ class aura_warl_phantomatic_singularity : public AuraScript
 // 48181 - Haunt
 class aura_warl_haunt : public AuraScript
 {
-    PrepareAuraScript(aura_warl_haunt);
 
     void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
@@ -1836,7 +1832,6 @@ public:
 
     class spell_warlock_unending_breath_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_warlock_unending_breath_SpellScript);
 
         void HandleHit(SpellEffIndex effIndex)
         {
@@ -2028,7 +2023,6 @@ public:
 // Hand of Gul'Dan - 105174
 class spell_warl_hand_of_guldan : public SpellScript
 {
-    PrepareSpellScript(spell_warl_hand_of_guldan);
 
     void HandleOnHit()
     {
@@ -2065,7 +2059,6 @@ public:
 
     class spell_warl_hand_of_guldan_damage_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_warl_hand_of_guldan_damage_SpellScript);
 
     public:
         spell_warl_hand_of_guldan_damage_SpellScript()
@@ -2280,7 +2273,6 @@ public:
 
     class spell_warlock_demonbolt_new_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_warlock_demonbolt_new_SpellScript);
 
         void HandleHit(SpellEffIndex /*effIndex*/)
         {
@@ -2417,7 +2409,6 @@ public:
 
     class spell_warlock_doom_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_warlock_doom_AuraScript);
 
         void PeriodicTick(AuraEffect const* aurEff)
         {
@@ -2453,7 +2444,6 @@ public:
 
     class spell_warlock_soul_fire_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_warlock_soul_fire_SpellScript);
 
         void HandleHit(SpellEffIndex /*effIndex*/)
         {
@@ -2524,7 +2514,6 @@ public:
 
     class spell_warl_soul_conduit_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_warl_soul_conduit_AuraScript);
 
         int32 refund = 0;
 
@@ -2576,7 +2565,6 @@ public:
 //232670
 class spell_warr_shadowbolt_affliction : public SpellScript
 {
-    PrepareSpellScript(spell_warr_shadowbolt_affliction);
 
     void HandleOnHit()
     {
@@ -2714,7 +2702,6 @@ class spell_warlock_inquisitors_gaze : public SpellScript
 // Incinerate - 29722
 class spell_warl_incinerate : public SpellScript
 {
-    PrepareSpellScript(spell_warl_incinerate);
 
     void HandleOnHitMainTarget(SpellEffIndex /*effIndex*/)
     {
