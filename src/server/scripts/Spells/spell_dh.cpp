@@ -2099,57 +2099,6 @@ class spell_dh_soul_cleave_damage : public SpellScript
     }
 };
 
-// Fiery Brand - 204021
-class spell_dh_fiery_brand : public SpellScript
-{
-
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        return ValidateSpellInfo({ SPELL_DH_FIERY_BRAND_DOT, SPELL_DH_FIERY_BRAND_DMG_REDUCTION_DEBUFF });
-    }
-
-    void HandleDamage(SpellEffIndex /*effIndex*/)
-    {
-        if (Unit* target = GetHitUnit())
-            GetCaster()->CastSpell(target, SPELL_DH_FIERY_BRAND_DOT, true);
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_dh_fiery_brand::HandleDamage, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
-    }
-};
-
-// Fiery Brand Dot - 207771
-class spell_dh_fiery_brand_dot : public AuraScript
-{
-
-    void PeriodicTick(AuraEffect const* /*aurEff*/)
-    {
-        Unit* caster = GetCaster();
-        if (!caster || !caster->HasAura(SPELL_DH_BURNING_ALIVE))
-            return;
-
-        std::list<Unit*> unitList;
-        GetTarget()->GetAnyUnitListInRange(unitList, 8.f);
-        for (Unit* target : unitList)
-        {
-            if (!target->HasAura(SPELL_DH_FIERY_BRAND_DOT) &&
-                !target->HasAura(SPELL_DH_FIERY_BRAND_DMG_REDUCTION_DEBUFF) &&
-                !caster->IsFriendlyTo(target))
-            {
-                caster->CastSpell(target, SPELL_DH_FIERY_BRAND_DMG_REDUCTION_DEBUFF, true);
-                break;
-            }
-        }
-    }
-
-    void Register() override
-    {
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_dh_fiery_brand_dot::PeriodicTick, EFFECT_2, SPELL_AURA_PERIODIC_DAMAGE);
-    }
-};
-
 // Razor Spikes - 209400
 class spell_dh_razor_spikes : public SpellScriptLoader
 {
@@ -2742,8 +2691,8 @@ class spell_dh_immolation_aura_damage : public SpellScript
     {
         return ValidateSpellInfo({
             SPELL_DH_CHARRED_FLESH,
-            SPELL_DH_FIERY_BRAND_DOT,
-            SPELL_DH_FIERY_BRAND_DMG_REDUCTION_DEBUFF,
+            SPELL_DH_FIERY_BRAND_DEBUFF_RANK_2,
+            SPELL_DH_FIERY_BRAND_DEBUFF_RANK_1,
             });
     }
 
@@ -2753,7 +2702,7 @@ class spell_dh_immolation_aura_damage : public SpellScript
         {
             if (GetCaster()->HasAura(SPELL_DH_CHARRED_FLESH))
             {
-                for (uint32 spellId : { SPELL_DH_FIERY_BRAND_DOT, SPELL_DH_FIERY_BRAND_DMG_REDUCTION_DEBUFF })
+                for (uint32 spellId : { SPELL_DH_FIERY_BRAND_DEBUFF_RANK_2, SPELL_DH_FIERY_BRAND_DEBUFF_RANK_1 })
                 {
                     if (Aura* fieryBrand = target->GetAura(spellId))
                     {
@@ -4092,8 +4041,6 @@ void AddSC_demon_hunter_spell_scripts()
     RegisterSpellScript(spell_dh_infernal_strike);
     new spell_dh_soul_cleave();
     RegisterSpellScript(spell_dh_soul_cleave_damage);
-    RegisterSpellScript(spell_dh_fiery_brand);
-    RegisterSpellScript(spell_dh_fiery_brand_dot);
     new spell_dh_razor_spikes();
     new spell_dh_soul_barrier();
     new spell_dh_nether_bond();
