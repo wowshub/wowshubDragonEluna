@@ -725,7 +725,7 @@ void Spell::EffectTriggerSpell()
         targets.Update(caster); // refresh pointers stored in targets
 
         // original caster guid only for GO cast
-        CastSpellExtraArgs args(TRIGGERED_FULL_MASK);
+        CastSpellExtraArgs args(TRIGGERED_FULL_MASK & ~(TRIGGERED_IGNORE_POWER_COST | TRIGGERED_IGNORE_REAGENT_COST));
         args.SetOriginalCaster(originalCaster);
         args.OriginalCastId = originalCastId;
         args.OriginalCastItemLevel = itemLevel;
@@ -794,7 +794,7 @@ void Spell::EffectTriggerMissileSpell()
             targets.SetGOTarget(go);
     }
 
-    CastSpellExtraArgs args(TRIGGERED_FULL_MASK);
+    CastSpellExtraArgs args(TRIGGERED_FULL_MASK & ~(TRIGGERED_IGNORE_POWER_COST | TRIGGERED_IGNORE_REAGENT_COST));
     args.SetOriginalCaster(m_originalCasterGUID);
     args.SetTriggeringSpell(this);
     args.SetCustomArg(m_customArg);
@@ -868,7 +868,7 @@ void Spell::EffectForceCast()
             return;
     }
 
-    CastSpellExtraArgs args(TRIGGERED_FULL_MASK);
+    CastSpellExtraArgs args(TRIGGERED_FULL_MASK & ~(TRIGGERED_IGNORE_POWER_COST | TRIGGERED_IGNORE_REAGENT_COST));
     args.SetTriggeringSpell(this);
     if (effectInfo->Effect == SPELL_EFFECT_FORCE_CAST_WITH_VALUE)
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
