@@ -147,16 +147,12 @@ public:
         WowTime custom;
         WorldPackets::Misc::LoginSetTimeSpeed timePacket;
 
-        TC_LOG_INFO("server", "StaticTimeManager: Hour {}, Minute {}", m_staticHour, m_staticMinute);
-
         time_t nowYM = time(nullptr);
         struct tm* localTimeYM = localtime(&nowYM);
 
         m_staticYear = (localTimeYM->tm_year + 1900) % 100;
         m_staticMonth = localTimeYM->tm_mon;
         m_staticMonthDay = localTimeYM->tm_mday;
-
-        TC_LOG_INFO("server", "Invalid date values: Year: {}, Month: {}, Day: {}", m_staticYear, m_staticMonth, m_staticMonthDay);
 
         custom.SetHour(m_staticHour);
         custom.SetMinute(m_staticMinute);
