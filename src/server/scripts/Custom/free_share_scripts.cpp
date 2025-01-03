@@ -48,21 +48,23 @@ public:
 
     static void SaveStaticTimeToDB()
     {
+        using namespace std::string_view_literals;
+
         RoleplayDatabasePreparedStatement* stmt = RoleplayDatabase.GetPreparedStatement(Roleplay_DEL_SERVER_SETTINGS);
         RoleplayDatabase.Execute(stmt);
 
         stmt = RoleplayDatabase.GetPreparedStatement(Roleplay_REP_SERVER_SETTINGS);
-        stmt->setString(0, "static_hour");
+        stmt->setString(0, "static_hour"sv);
         stmt->setString(1, std::to_string(m_staticHour));
         RoleplayDatabase.Execute(stmt);
 
         stmt = RoleplayDatabase.GetPreparedStatement(Roleplay_REP_SERVER_SETTINGS);
-        stmt->setString(0, "static_minute");
+        stmt->setString(0, "static_minute"sv);
         stmt->setString(1, std::to_string(m_staticMinute));
         RoleplayDatabase.Execute(stmt);
 
         stmt = RoleplayDatabase.GetPreparedStatement(Roleplay_REP_SERVER_SETTINGS);
-        stmt->setString(0, "time_freezed");
+        stmt->setString(0, "time_freezed"sv);
         stmt->setString(1, std::to_string(m_timeFreezed ? 1 : 0));
         RoleplayDatabase.Execute(stmt);
     }
