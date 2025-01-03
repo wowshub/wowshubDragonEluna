@@ -408,7 +408,7 @@ class spell_warr_fueled_by_violence : public AuraScript
     {
         PreventDefaultAction();
 
-        _nextHealAmount += CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), GetEffectInfo(EFFECT_0).CalcValue(GetTarget()));
+        _nextHealAmount += CalculatePct(eventInfo.GetDamageInfo() ? eventInfo.GetDamageInfo()->GetDamage() : 0, GetEffectInfo(EFFECT_0).CalcValue(GetTarget()));
     }
 
     void HandlePeriodic(AuraEffect const* /*aurEff*/)
@@ -644,7 +644,7 @@ class spell_warr_shield_block : public SpellScript
 
     void HandleHitTarget(SpellEffIndex /*effIndex*/)
     {
-        GetCaster()->CastSpell(nullptr, SPELL_WARRIOR_SHIELD_BLOCK_AURA, true);
+        GetCaster()->CastSpell(GetCaster(), SPELL_WARRIOR_SHIELD_BLOCK_AURA, true);
     }
 
     void Register() override
@@ -1772,8 +1772,16 @@ public:
                     if (Aura* aura = target->GetAura(SPELL_WARRIOR_WEAKENED_BLOWS))
                         aura->SetDuration(4000);
 
-                    if (_player->HasSpell(772))
-                        _player->CastSpell(target, 772, true);
+                    if (_player->GetPrimarySpecialization() == ChrSpecialization::WarriorFury)
+                    {
+                        if (_player->HasSpell(772))
+                            _player->CastSpell(target, 772, true);
+                    }
+                    else if (_player->GetPrimarySpecialization() == ChrSpecialization::WarriorProtection)
+                    {
+                        if (_player->HasSpell(394062))
+                            _player->CastSpell(target, 394062, true);
+                    }
                 }
             }
         }
@@ -1787,6 +1795,33 @@ public:
     SpellScript* GetSpellScript() const override
     {
         return new spell_warr_thunder_clap_SpellScript();
+    }
+};
+
+// 845 - Cleave
+class spell_warr_cleave_dmg : public SpellScript
+{
+
+    void HandleOnHitTarget(SpellEffIndex /*effIndex*/)
+    {
+        if (Player* caster = GetCaster()->ToPlayer())
+        {
+            if (caster->HasAura(202316)) // Fervor of Battle
+            {
+                if (Unit* target = caster->GetSelectedUnit())
+                {
+                    if (caster->IsValidAttackTarget(target))
+                    {
+                        caster->CastSpell(target, SPELL_WARRIOR_SLAM_ARMS, true);
+                    }
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_warr_cleave_dmg::HandleOnHitTarget, EFFECT_0, SPELL_EFFECT_TRIGGER_SPELL);
     }
 };
 
@@ -1842,4 +1877,5 @@ void AddSC_warrior_spell_scripts()
     new anger_management();
     new spell_warr_overpower();
     new spell_warr_thunder_clap();
+    RegisterSpellScript(spell_warr_cleave_dmg);
 }
