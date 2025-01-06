@@ -1594,6 +1594,12 @@ bool WorldObject::CanSeeOrDetect(WorldObject const* obj, bool implicitDetect, bo
         }
     }
 
+    // Spawn tracking
+    if (Player const* player = ToPlayer())
+        if (SpawnTrackingStateData const* spawnTrackingStateData = obj->GetSpawnTrackingStateDataForPlayer(player))
+            if (!spawnTrackingStateData->Visible)
+                return false;
+
     bool corpseVisibility = false;
     if (distanceCheck)
     {

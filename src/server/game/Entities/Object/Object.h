@@ -74,6 +74,7 @@ class Eluna;
 struct FactionTemplateEntry;
 struct Loot;
 struct QuaternionData;
+struct SpawnTrackingStateData;
 struct SpellPowerCost;
 
 namespace WorldPackets
@@ -321,6 +322,8 @@ class TC_GAME_API Object
         Trinity::unique_weak_ptr<Object> GetWeakPtr() const { return m_scriptRef; }
 
         virtual Loot* GetLootForPlayer([[maybe_unused]] Player const* player) const { return nullptr; }
+
+        virtual SpawnTrackingStateData const* GetSpawnTrackingStateDataForPlayer([[maybe_unused]] Player const* player) const { return nullptr; }
 
     protected:
         Object();
