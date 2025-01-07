@@ -989,7 +989,7 @@ void GameObject::RemoveFromWorld()
         if (m_spawnId)
             Trinity::Containers::MultimapErasePair(GetMap()->GetGameObjectBySpawnIdStore(), m_spawnId, this);
 
-        GetMap()->RemoveInfiniteGameObject(this);
+        GetMap()->RemoveInfiniteGameObject(this->GetGUID());
         GetMap()->GetObjectsStore().Remove<GameObject>(this);
     }
 }

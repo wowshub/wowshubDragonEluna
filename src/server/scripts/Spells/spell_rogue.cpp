@@ -105,8 +105,6 @@ enum RogueSpells
     SPELL_ROGUE_WOUND_POISON_DEBUFF                 = 8680,
     SPELL_ROGUE_SPELL_NIGHTSTALKER_AURA             = 14062,
     SPELL_ROGUE_SPELL_NIGHTSTALKER_DAMAGE_DONE      = 130493,
-    SPELL_ROGUE_DEADLY_POISON_DOT                   = 2818,
-    SPELL_ROGUE_DEADLY_POISON_INSTANT_DAMAGE        = 113780,
     SPELL_ROGUE_FAN_OF_KNIVES                       = 51723,
     SPELL_ROGUE_GARROTE_DOT                         = 703,
     SPELL_ROGUE_GARROTE_SILENCE                     = 1330,
@@ -1524,7 +1522,7 @@ public:
         {
             if (Player* _player = GetCaster()->ToPlayer())
                 if (Unit* target = GetExplTargetUnit())
-                    if (target->HasAura(SPELL_ROGUE_DEADLY_POISON_DOT, _player->GetGUID()))
+                    if (target->HasAura(SPELL_ROGUE_DEADLY_POISON_DEBUFF, _player->GetGUID()))
                         _player->CastSpell(target, SPELL_ROGUE_DEADLY_POISON_INSTANT_DAMAGE, true);
         }
 

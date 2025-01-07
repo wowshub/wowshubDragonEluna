@@ -2573,6 +2573,19 @@ void ScriptMgr::OnPlayerUpdate(Player* player, uint32 diff)
     FOREACH_SCRIPT(PlayerScript)->OnUpdate(player, diff);
 }
 
+bool ScriptMgr::OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+{
+    ASSERT(player);
+    ASSERT(creature);
+    ASSERT(quest);
+
+    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
+    player->PlayerTalkClass->ClearMenus();
+    return tmpscript->OnQuestAccept(player, creature, quest);
+
+    player->PlayerTalkClass->SendCloseGossip();
+}
+
 // Account
 void ScriptMgr::OnAccountLogin(uint32 accountId)
 {

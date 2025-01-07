@@ -493,20 +493,14 @@ void Roleplay::CreatureRefresh(Creature* creature)
     if (!creature)
         return;
 
-    // ObjectGuid::LowType guidLow = creature->GetSpawnId();
     Map* map = creature->GetMap();
-    map->GetObjectsStore().Remove<Creature>(creature->GetGUID());
+    map->GetObjectsStore().Remove<Creature>(creature);
     creature->DestroyForNearbyPlayers();
 
     auto newGuidLow = map->GenerateLowGuid<HighGuid::Creature>();
     auto newObjectGuid = ObjectGuid::Create<HighGuid::Creature>(map->GetId(), creature->GetEntry(), newGuidLow);
 
-    // TODO: Test this
-    creature->SetGuid(newObjectGuid);
-    // No longer works
-    //creature->SetGuidValue(OBJECT_FIELD_GUID, newObjectGuid);
-    //creature->SetPackGUID(newObjectGuid);
-    map->GetObjectsStore().Insert(newObjectGuid, creature);
+    map->GetObjectsStore().Insert(creature);
 }
 
 CreatureExtraData const* Roleplay::GetCreatureExtraData(uint64 guid)

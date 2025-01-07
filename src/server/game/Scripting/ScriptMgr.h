@@ -447,6 +447,15 @@ class TC_GAME_API CreatureScript : public ScriptObject
 
         ~CreatureScript();
 
+        // Called when an unit exits a vehicle
+        virtual void ModifyVehiclePassengerExitPos(Unit* /*passenger*/, Vehicle* /*vehicle*/, Position& /*pos*/) { }
+
+        // Called when a player completes a quest and is rewarded, opt is the selected item's index or 0
+        virtual bool OnQuestReward(Player* /*player*/, Creature* /*creature*/, Quest const* /*quest*/, uint32 /*opt*/) { return false; }
+
+        // Called when a player accepts a quest from the creature.
+        virtual bool OnQuestAccept(Player* /*player*/, Creature* /*creature*/, Quest const* /*quest*/) { return false; }
+
         // Called when a CreatureAI object is needed for the creature.
         virtual CreatureAI* GetAI(Creature* creature) const = 0;
 };
@@ -1351,6 +1360,9 @@ class TC_GAME_API ScriptMgr
         ScriptLoaderCallbackType _script_loader_callback;
 
         std::string _currentContext;
+
+    public:
+        bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest);
 };
 
 namespace Trinity::SpellScripts
