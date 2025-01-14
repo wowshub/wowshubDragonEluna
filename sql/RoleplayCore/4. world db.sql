@@ -315,6 +315,10 @@ REPLACE INTO `creature_model_info` VALUES (106003, 0, 0, 0, 0);
 REPLACE INTO `creature_model_info` VALUES (107058, 0, 0, 0, 0);
 REPLACE INTO `creature_model_info` VALUES (107056, 0, 0, 0, 0);
 REPLACE INTO `creature_model_info` VALUES (105268, 0, 0, 0, 0);
+REPLACE INTO `creature_model_info` VALUES (115279, 0, 0, 0, 0);
+REPLACE INTO `creature_model_info` VALUES (115281, 0, 0, 0, 0);
+REPLACE INTO `creature_model_info` VALUES (116539, 0, 0, 0, 0);
+REPLACE INTO `creature_model_info` VALUES (116687, 0, 0, 0, 0);
 
 REPLACE INTO `spell_script_names` VALUES (5782, 'spell_warl_fear');
 REPLACE INTO `spell_script_names` VALUES (204730, 'spell_warl_fear_buff');
