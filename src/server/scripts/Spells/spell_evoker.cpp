@@ -701,17 +701,6 @@ class spell_evo_eternity_surge : public SpellScript
     }
 };
 
-// areatrigger 23318 - need sniff data on db
-struct at_evo_emerald_blossom : AreaTriggerAI
-{
-    at_evo_emerald_blossom(AreaTrigger* at) : AreaTriggerAI(at) { }
-    void OnRemove() override
-    {
-        if (Unit* caster = at->GetCaster())
-            caster->CastSpell(at->GetPosition(), 355916);
-    }
-};
-
 void AddSC_evoker_spell_scripts()
 {
     RegisterSpellScript(spell_evo_azure_strike);
@@ -739,5 +728,4 @@ void AddSC_evoker_spell_scripts()
     RegisterSpellScript(spell_evo_soar);
     RegisterSpellScript(spell_evo_cosmic_visage);
     RegisterSpellScript(spell_evo_eternity_surge);
-    RegisterAreaTriggerAI(at_evo_emerald_blossom);
 }
