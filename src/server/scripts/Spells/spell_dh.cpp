@@ -4310,39 +4310,6 @@ public:
     }
 };
 
-// 209651 - Shattered Souls missile
-class spell_dh_shattered_souls_missile : public SpellScriptLoader
-{
-public:
-    spell_dh_shattered_souls_missile() : SpellScriptLoader("spell_dh_shattered_souls_missile") { }
-
-    class spell_dh_shattered_souls_missile_SpellScript : public SpellScript
-    {
-
-        void HandleHit(SpellEffIndex effIndex)
-        {
-            PreventHitDefaultEffect(effIndex);
-            Unit* caster = GetCaster();
-            if (!caster)
-                return;
-
-            int32 spellToCast = GetSpellValue()->EffectBasePoints[0];
-            if (WorldLocation* dest = GetHitDest())
-                caster->CastSpell(Position(dest->GetPositionX(), dest->GetPositionY(), dest->GetPositionZ()), spellToCast, true);
-        }
-
-        void Register()
-        {
-            OnEffectHit += SpellEffectFn(spell_dh_shattered_souls_missile_SpellScript::HandleHit, EFFECT_1, SPELL_EFFECT_TRIGGER_MISSILE);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_dh_shattered_souls_missile_SpellScript();
-    }
-};
-
 // 178940 - Shattered Souls (havoc)
 // 204254 - Shattered Souls (vengeance)
 class spell_dh_shattered_souls_havoc : public SpellScriptLoader
@@ -4387,64 +4354,6 @@ public:
     AuraScript* GetAuraScript() const override
     {
         return new spell_dh_shattered_souls_havoc_AuraScript();
-    }
-};
-
-// Fel Rush Damage - 192611
-class spell_dh_fel_rush_damage : public SpellScriptLoader
-{
-public:
-    spell_dh_fel_rush_damage() : SpellScriptLoader("spell_dh_fel_rush_damage") {}
-
-    class spell_dh_fel_rush_damage_SpellScript : public SpellScript
-    {
-        bool targetHit;
-
-        bool Validate(SpellInfo const* /*spellInfo*/) override
-        {
-            if (!sSpellMgr->GetSpellInfo(SPELL_DH_FEL_MASTERY_FURY, DIFFICULTY_NONE))
-                return false;
-
-            return true;
-        }
-
-        void CountTargets(std::list<WorldObject*>& targets)
-        {
-            Unit* caster = GetCaster();
-            if (!caster)
-                return;
-
-            targets.clear();
-            std::list<Unit*> units;
-            caster->GetAttackableUnitListInRange(units, 25.f);
-            units.remove_if([caster](Unit* unit)
-                {
-                    return !caster->HasInLine(unit, 6.f, caster->GetObjectScale());
-                });
-
-            for (Unit* unit : units)
-                targets.push_back(unit);
-
-            targetHit = !targets.empty();
-        }
-
-        void HandleCast()
-        {
-            if (Unit* caster = GetCaster())
-                if (caster->HasAura(SPELL_DH_FEL_MASTERY) && targetHit)
-                    caster->CastSpell(caster, SPELL_DH_FEL_MASTERY_FURY, true);
-        }
-
-        void Register() override
-        {
-            OnCast += SpellCastFn(spell_dh_fel_rush_damage_SpellScript::HandleCast);
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dh_fel_rush_damage_SpellScript::CountTargets, EFFECT_0, TARGET_UNIT_LINE_CASTER_TO_DEST_ENEMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_dh_fel_rush_damage_SpellScript();
     }
 };
 
@@ -4649,8 +4558,6 @@ void AddSC_demon_hunter_spell_scripts()
     new spell_dh_fel_rush_specless();
     RegisterPlayerScript(DH_DisableDoubleJump_OnMount);
     new DemonHunterAllowSpec();
-    new spell_dh_shattered_souls_missile();
     new spell_dh_shattered_souls_havoc();
-    new spell_dh_fel_rush_damage();
     RegisterAreaTriggerAI(at_dh_soul_fragment_havoc);
 }
