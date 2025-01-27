@@ -754,7 +754,7 @@ void Spell::SelectSpellTargets()
         {
             if (m_spellInfo->HasAttribute(SPELL_ATTR1_REQUIRE_ALL_TARGETS))
             {
-                bool noTargetFound = std::none_of(m_UniqueTargetInfo.begin(), m_UniqueTargetInfo.end(), [effectMask = 1u << spellEffectInfo.EffectIndex](TargetInfo const& target)
+                bool noTargetFound = std::ranges::none_of(m_UniqueTargetInfo, [effectMask = 1u << spellEffectInfo.EffectIndex](TargetInfo const& target)
                 {
                     return target.EffectMask & effectMask;
                 });
@@ -763,20 +763,6 @@ void Spell::SelectSpellTargets()
                 {
                     SendCastResult(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
                     finish(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
-                    return;
-                }
-            }
-            if (m_spellInfo->HasAttribute(SPELL_ATTR2_FAIL_ON_ALL_TARGETS_IMMUNE))
-            {
-                bool anyNonImmuneTargetFound = std::any_of(m_UniqueTargetInfo.begin(), m_UniqueTargetInfo.end(), [effectMask = 1u << spellEffectInfo.EffectIndex](TargetInfo const& target)
-                {
-                    return target.EffectMask & effectMask && target.MissCondition != SPELL_MISS_IMMUNE && target.MissCondition != SPELL_MISS_IMMUNE2;
-                });
-
-                if (!anyNonImmuneTargetFound)
-                {
-                    SendCastResult(SPELL_FAILED_IMMUNE);
-                    finish(SPELL_FAILED_IMMUNE);
                     return;
                 }
             }
@@ -801,6 +787,21 @@ void Spell::SelectSpellTargets()
                     break;
                 }
             }
+        }
+    }
+
+    if (m_spellInfo->HasAttribute(SPELL_ATTR2_FAIL_ON_ALL_TARGETS_IMMUNE))
+    {
+        bool anyNonImmuneTargetFound = std::ranges::any_of(m_UniqueTargetInfo, [](TargetInfo const& target)
+        {
+            return target.MissCondition != SPELL_MISS_IMMUNE && target.MissCondition != SPELL_MISS_IMMUNE2;
+        });
+
+        if (!anyNonImmuneTargetFound)
+        {
+            SendCastResult(SPELL_FAILED_IMMUNE);
+            finish(SPELL_FAILED_IMMUNE);
+            return;
         }
     }
 
@@ -3030,7 +3031,7 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
                 if (effMask)
                     _spellHitTarget->_ApplyAura(aurApp, effMask);
 
-                if (aurApp->GetSlot() < MAX_AURAS && aurApp->IsNeedClientUpdate() && aurApp->GetRemoveMode() == AURA_REMOVE_NONE)
+                if (aurApp->IsNeedClientUpdate() && aurApp->GetRemoveMode() == AURA_REMOVE_NONE)
                 {
                     aurApp->ClientUpdate(false);
                     _spellHitTarget->RemoveVisibleAuraUpdate(aurApp);
@@ -5489,23 +5490,24 @@ void Spell::TakeCastItem()
 
     for (ItemEffectEntry const* itemEffect : m_CastItem->GetEffects())
     {
-        if (itemEffect->LegacySlotIndex >= m_CastItem->m_itemData->SpellCharges.size())
-            continue;
-
         // item has limited charges
         if (itemEffect->Charges)
         {
             if (itemEffect->Charges < 0)
                 expendable = true;
 
-            int32 charges = m_CastItem->GetSpellCharges(itemEffect->LegacySlotIndex);
+            int32 charges = m_CastItem->GetSpellCharges(itemEffect);
 
             // item has charges left for this slot
             if (charges && itemEffect->SpellID == int32(m_spellInfo->Id))
             {
-                (charges > 0) ? --charges : ++charges;  // abs(charges) less at 1 after use
+                if (charges > 0)
+                    --charges;
+                else
+                    ++charges;
+
                 if (proto->GetMaxStackSize() == 1)
-                    m_CastItem->SetSpellCharges(itemEffect->LegacySlotIndex, charges);
+                    m_CastItem->SetSpellCharges(itemEffect, charges);
                 m_CastItem->SetState(ITEM_CHANGED, player);
             }
 
@@ -5723,11 +5725,8 @@ void Spell::TakeReagents()
         {
             for (ItemEffectEntry const* itemEffect : m_CastItem->GetEffects())
             {
-                if (itemEffect->LegacySlotIndex >= m_CastItem->m_itemData->SpellCharges.size())
-                    continue;
-
                 // CastItem will be used up and does not count as reagent
-                int32 charges = m_CastItem->GetSpellCharges(itemEffect->LegacySlotIndex);
+                int32 charges = m_CastItem->GetSpellCharges(itemEffect);
                 if (itemEffect->Charges < 0 && abs(charges) < 2)
                 {
                     ++itemcount;
@@ -7538,9 +7537,8 @@ SpellCastResult Spell::CheckItems(int32* param1 /*= nullptr*/, int32* param2 /*=
             return SPELL_FAILED_ITEM_NOT_READY;
 
         for (ItemEffectEntry const* itemEffect : m_CastItem->GetEffects())
-            if (itemEffect->LegacySlotIndex < m_CastItem->m_itemData->SpellCharges.size() && itemEffect->Charges)
-                if (m_CastItem->GetSpellCharges(itemEffect->LegacySlotIndex) == 0)
-                    return SPELL_FAILED_NO_CHARGES_REMAIN;
+            if (itemEffect->Charges && m_CastItem->GetSpellCharges(itemEffect) == 0)
+                return SPELL_FAILED_NO_CHARGES_REMAIN;
 
         // consumable cast item checks
         if (proto->GetClass() == ITEM_CLASS_CONSUMABLE && m_targets.GetUnitTarget())
@@ -7642,11 +7640,8 @@ SpellCastResult Spell::CheckItems(int32* param1 /*= nullptr*/, int32* param2 /*=
 
                     for (ItemEffectEntry const* itemEffect : m_CastItem->GetEffects())
                     {
-                        if (itemEffect->LegacySlotIndex >= m_CastItem->m_itemData->SpellCharges.size())
-                            continue;
-
                         // CastItem will be used up and does not count as reagent
-                        int32 charges = m_CastItem->GetSpellCharges(itemEffect->LegacySlotIndex);
+                        int32 charges = m_CastItem->GetSpellCharges(itemEffect);
                         if (itemEffect->Charges < 0 && abs(charges) < 2)
                         {
                             ++itemcount;
@@ -8002,9 +7997,7 @@ SpellCastResult Spell::CheckItems(int32* param1 /*= nullptr*/, int32* param2 /*=
 
                  if (Item* item = player->GetItemByEntry(itemId))
                      for (ItemEffectEntry const* itemEffect : item->GetEffects())
-                         if (itemEffect->LegacySlotIndex <= item->m_itemData->SpellCharges.size()
-                             && itemEffect->Charges != 0
-                             && item->GetSpellCharges(itemEffect->LegacySlotIndex) == itemEffect->Charges)
+                         if (itemEffect->Charges != 0 && item->GetSpellCharges(itemEffect) == itemEffect->Charges)
                              return SPELL_FAILED_ITEM_AT_MAX_CHARGES;
                  break;
             }
