@@ -3469,8 +3469,6 @@ void BattlegroundMap::InitScriptData()
         else
             _battlegroundScript = std::make_unique<BattlegroundScript>(this);
     }
-
-    _battlegroundScript->OnInit();
 }
 
 TransferAbortParams BattlegroundMap::CannotEnter(Player* player)

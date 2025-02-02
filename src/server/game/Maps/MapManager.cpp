@@ -18,6 +18,7 @@
 #include "MapManager.h"
 #include "BattlefieldMgr.h"
 #include "Battleground.h"
+#include "BattlegroundScript.h"
 #include "CharacterCache.h"
 #include "Containers.h"
 #include "DatabaseEnv.h"
@@ -37,6 +38,7 @@
 #include "LuaEngine.h"
 #include "ElunaConfig.h"
 #endif
+
 #include <boost/dynamic_bitset.hpp>
 #include <numeric>
 
@@ -145,6 +147,7 @@ BattlegroundMap* MapManager::CreateBattleground(uint32 mapId, uint32 instanceId,
     bg->SetBgMap(map);
     map->InitScriptData();
     map->InitSpawnGroupState();
+    map->GetBattlegroundScript()->OnInit();
 
     if (sWorld->getBoolConfig(CONFIG_BATTLEGROUNDMAP_LOAD_GRIDS))
         map->LoadAllCells();
