@@ -46,6 +46,8 @@ enum PaladinSpells
     SPELL_PALADIN_BEACON_OF_LIGHT                = 53563,
     SPELL_PALADIN_BEACON_OF_LIGHT_HEAL           = 53652,
     SPELL_PALADIN_BLADE_OF_JUSTICE               = 184575,
+    SPELL_PALADIN_BLADE_OF_VENGEANCE             = 403826,
+    SPELL_PALADIN_BLESSING_OF_FREEDOM            = 1044,
     SPELL_PALADIN_BLINDING_LIGHT_EFFECT          = 105421,
     SPELL_PALADIN_CONCENTRACTION_AURA            = 19746,
     SPELL_PALADIN_CONSECRATED_GROUND_PASSIVE     = 204054,
@@ -93,7 +95,7 @@ enum PaladinSpells
     SPELL_PALADIN_HOLY_SHOCK_HEALING             = 25914,
     SPELL_PALADIN_HOLY_LIGHT                     = 82326,
     SPELL_PALADIN_INFUSION_OF_LIGHT_ENERGIZE     = 356717,
-    SPELL_PALADIN_IMMUNE_SHIELD_MARKER           = 61988,
+    SPELL_PALADIN_IMMUNE_SHIELD_MARKER           = 61988, // Serverside
     SPELL_PALADIN_ITEM_HEALING_TRANCE            = 37706,
     SPELL_PALADIN_JUDGMENT_GAIN_HOLY_POWER       = 220637,
     SPELL_PALADIN_JUDGMENT_HOLY_R3               = 231644,
@@ -309,6 +311,46 @@ class spell_pal_awakening : public AuraScript
     }
 };
 
+// Called by 184575 - Blade of Justice
+class spell_pal_blade_of_vengeance : public SpellScript
+{
+    bool Validate(SpellInfo const* spellInfo) override
+    {
+        return ValidateSpellInfo({ SPELL_PALADIN_BLADE_OF_VENGEANCE })
+            && ValidateSpellEffect({ { spellInfo->Id, EFFECT_2 } })
+            && spellInfo->GetEffect(EFFECT_2).IsEffect(SPELL_EFFECT_TRIGGER_SPELL);
+    }
+
+    bool Load() override
+    {
+        return !GetCaster()->HasAura(SPELL_PALADIN_BLADE_OF_VENGEANCE);
+    }
+
+    static void PreventProc(WorldObject*& target)
+    {
+        target = nullptr;
+    }
+
+    void Register() override
+    {
+        OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_pal_blade_of_vengeance::PreventProc, EFFECT_2, TARGET_UNIT_TARGET_ENEMY);
+    }
+};
+
+// 404358 - Blade of Justice
+class spell_pal_blade_of_vengeance_aoe_target_selector : public SpellScript
+{
+    void RemoveExplicitTarget(std::list<WorldObject*>& targets) const
+    {
+        targets.remove(GetExplTargetWorldObject());
+    }
+
+    void Register() override
+    {
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pal_blade_of_vengeance_aoe_target_selector::RemoveExplicitTarget, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+    }
+};
+
 // 1022 - Blessing of Protection
 // 204018 - Blessing of Spellwarding
 class spell_pal_blessing_of_protection : public SpellScript
@@ -318,32 +360,20 @@ class spell_pal_blessing_of_protection : public SpellScript
         return ValidateSpellInfo(
         {
             SPELL_PALADIN_FORBEARANCE,
-            // uncomment when we have serverside only spells
-            //SPELL_PALADIN_IMMUNE_SHIELD_MARKER
+            SPELL_PALADIN_IMMUNE_SHIELD_MARKER
         }) && spellInfo->ExcludeTargetAuraSpell == SPELL_PALADIN_IMMUNE_SHIELD_MARKER;
     }
 
-    SpellCastResult CheckForbearance()
+    void TriggerForbearance() const
     {
-        Unit* target = GetExplTargetUnit();
-        if (!target || target->HasAura(SPELL_PALADIN_FORBEARANCE))
-            return SPELL_FAILED_TARGET_AURASTATE;
-
-        return SPELL_CAST_OK;
-    }
-
-    void TriggerForbearance()
-    {
-        if (Unit* target = GetHitUnit())
-        {
-            GetCaster()->CastSpell(target, SPELL_PALADIN_FORBEARANCE, true);
-            GetCaster()->CastSpell(target, SPELL_PALADIN_IMMUNE_SHIELD_MARKER, true);
-        }
+        GetCaster()->CastSpell(GetHitUnit(), SPELL_PALADIN_FORBEARANCE, CastSpellExtraArgsInit{
+            .TriggerFlags = TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_DONT_REPORT_CAST_ERROR,
+            .TriggeringSpell = GetSpell()
+        });
     }
 
     void Register() override
     {
-        OnCheckCast += SpellCheckCastFn(spell_pal_blessing_of_protection::CheckForbearance);
         AfterHit += SpellHitFn(spell_pal_blessing_of_protection::TriggerForbearance);
     }
 };
@@ -511,17 +541,8 @@ class spell_pal_divine_shield : public SpellScript
             SPELL_PALADIN_FINAL_STAND,
             SPELL_PALADIN_FINAL_STAND_EFFECT,
             SPELL_PALADIN_FORBEARANCE,
-            // uncomment when we have serverside only spells
-            //SPELL_PALADIN_IMMUNE_SHIELD_MARKER
+            SPELL_PALADIN_IMMUNE_SHIELD_MARKER
         }) && spellInfo->ExcludeCasterAuraSpell == SPELL_PALADIN_IMMUNE_SHIELD_MARKER;
-    }
-
-    SpellCastResult CheckForbearance()
-    {
-        if (GetCaster()->HasAura(SPELL_PALADIN_FORBEARANCE))
-            return SPELL_FAILED_TARGET_AURASTATE;
-
-        return SPELL_CAST_OK;
     }
 
     void HandleFinalStand()
@@ -530,18 +551,18 @@ class spell_pal_divine_shield : public SpellScript
             GetCaster()->CastSpell(nullptr, SPELL_PALADIN_FINAL_STAND_EFFECT, true);
     }
 
-    void TriggerForbearance()
+    void TriggerForbearance() const
     {
-        Unit* caster = GetCaster();
-        caster->CastSpell(caster, SPELL_PALADIN_FORBEARANCE, true);
-        caster->CastSpell(caster, SPELL_PALADIN_IMMUNE_SHIELD_MARKER, true);
+        GetCaster()->CastSpell(GetHitUnit(), SPELL_PALADIN_FORBEARANCE, CastSpellExtraArgsInit{
+            .TriggerFlags = TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_DONT_REPORT_CAST_ERROR,
+            .TriggeringSpell = GetSpell()
+        });
     }
 
     void Register() override
     {
-        OnCheckCast += SpellCheckCastFn(spell_pal_divine_shield::CheckForbearance);
         AfterCast += SpellCastFn(spell_pal_divine_shield::HandleFinalStand);
-        AfterCast += SpellCastFn(spell_pal_divine_shield::TriggerForbearance);
+        AfterHit += SpellHitFn(spell_pal_divine_shield::TriggerForbearance);
     }
 };
 
@@ -961,6 +982,26 @@ class spell_pal_judgment : public SpellScript
     }
 };
 
+// 215661 - Justicar's Vengeance
+class spell_pal_justicars_vengeance : public SpellScript
+{
+    bool Validate(SpellInfo const* spellInfo) override
+    {
+        return ValidateSpellEffect({ { spellInfo->Id, EFFECT_1 } });
+    }
+
+    void HandleDamage(SpellEffectInfo const& /*spellEffectInfo*/, Unit const* victim, int32& /*damage*/, int32& /*flatMod*/, float& pctMod) const
+    {
+        if (victim->HasUnitState(UNIT_STATE_STUNNED))
+            AddPct(pctMod, GetEffectInfo(EFFECT_1).CalcValue(GetCaster()));
+    }
+
+    void Register() override
+    {
+        CalcDamage += SpellCalcDamageFn(spell_pal_justicars_vengeance::HandleDamage);
+    }
+};
+
 // 114165 - Holy Prism
 class spell_pal_holy_prism : public SpellScript
 {
@@ -1208,39 +1249,25 @@ class spell_pal_item_t6_trinket : public AuraScript
 };
 
 // 633 - Lay on Hands
+// 471195 - Lay on Hands (from 387791 - Empyreal Ward)
 class spell_pal_lay_on_hands : public SpellScript
 {
     bool Validate(SpellInfo const* spellInfo) override
     {
-        return ValidateSpellInfo(
-        {
-            SPELL_PALADIN_FORBEARANCE,
-            // uncomment when we have serverside only spells
-            //SPELL_PALADIN_IMMUNE_SHIELD_MARKER
-        }) && spellInfo->ExcludeTargetAuraSpell == SPELL_PALADIN_IMMUNE_SHIELD_MARKER;
+        return ValidateSpellInfo({ SPELL_PALADIN_FORBEARANCE })
+            && spellInfo->ExcludeTargetAuraSpell == SPELL_PALADIN_IMMUNE_SHIELD_MARKER;
     }
 
-    SpellCastResult CheckForbearance()
+    void TriggerForbearance() const
     {
-        Unit* target = GetExplTargetUnit();
-        if (!target || target->HasAura(SPELL_PALADIN_FORBEARANCE))
-            return SPELL_FAILED_TARGET_AURASTATE;
-
-        return SPELL_CAST_OK;
-    }
-
-    void TriggerForbearance()
-    {
-        if (Unit* target = GetHitUnit())
-        {
-            GetCaster()->CastSpell(target, SPELL_PALADIN_FORBEARANCE, true);
-            GetCaster()->CastSpell(target, SPELL_PALADIN_IMMUNE_SHIELD_MARKER, true);
-        }
+        GetCaster()->CastSpell(GetHitUnit(), SPELL_PALADIN_FORBEARANCE, CastSpellExtraArgsInit{
+            .TriggerFlags = TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_DONT_REPORT_CAST_ERROR,
+            .TriggeringSpell = GetSpell()
+        });
     }
 
     void Register() override
     {
-        OnCheckCast += SpellCheckCastFn(spell_pal_lay_on_hands::CheckForbearance);
         AfterHit += SpellHitFn(spell_pal_lay_on_hands::TriggerForbearance);
     }
 };
@@ -1477,6 +1504,30 @@ class spell_pal_shield_of_vengeance : public AuraScript
     }
 
     int32 _initialAmount = 0;
+};
+
+// 469304 - Steed of Liberty
+class spell_pal_steed_of_liberty : public AuraScript
+{
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_PALADIN_BLESSING_OF_FREEDOM });
+    }
+
+    void HandleProc(AuraEffect const* aurEff, ProcEventInfo const& /*eventInfo*/) const
+    {
+        Unit* target = GetTarget();
+        target->CastSpell(target, SPELL_PALADIN_BLESSING_OF_FREEDOM, CastSpellExtraArgsInit{
+            .TriggerFlags = TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_DONT_REPORT_CAST_ERROR,
+            .TriggeringAura = aurEff,
+            .SpellValueOverrides = { { SPELLVALUE_DURATION, aurEff->GetAmount() } }
+        });
+    }
+
+    void Register() override
+    {
+        OnEffectProc += AuraEffectProcFn(spell_pal_steed_of_liberty::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+    }
 };
 
 // 85256 - Templar's Verdict
@@ -1790,6 +1841,8 @@ void AddSC_paladin_spell_scripts()
     RegisterSpellScript(spell_pal_art_of_war);
     RegisterAreaTriggerAI(areatrigger_pal_ashen_hallow);
     RegisterSpellScript(spell_pal_awakening);
+    RegisterSpellScript(spell_pal_blade_of_vengeance);
+    RegisterSpellScript(spell_pal_blade_of_vengeance_aoe_target_selector);
     RegisterSpellScript(spell_pal_blessing_of_protection);
     RegisterSpellScript(spell_pal_blinding_light);
     RegisterSpellScript(spell_pal_crusader_might);
@@ -1811,6 +1864,7 @@ void AddSC_paladin_spell_scripts()
     RegisterSpellScript(spell_pal_infusion_of_light);
     RegisterSpellScript(spell_pal_moment_of_glory);
     RegisterSpellScript(spell_pal_judgment);
+    RegisterSpellScript(spell_pal_justicars_vengeance);
     RegisterSpellScript(spell_pal_holy_prism);
     RegisterSpellScript(spell_pal_holy_prism_selector);
     RegisterSpellScript(spell_pal_holy_shock);
@@ -1827,6 +1881,7 @@ void AddSC_paladin_spell_scripts()
     RegisterSpellScript(spell_pal_selfless_healer);
     RegisterSpellScript(spell_pal_shield_of_the_righteous);
     RegisterSpellScript(spell_pal_shield_of_vengeance);
+    RegisterSpellScript(spell_pal_steed_of_liberty);
     RegisterSpellScript(spell_pal_templar_s_verdict);
     RegisterSpellScript(spell_pal_t3_6p_bonus);
     RegisterSpellScript(spell_pal_t8_2p_bonus);
