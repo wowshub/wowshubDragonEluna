@@ -1897,7 +1897,7 @@ namespace Trinity
     template<typename Localizer>
     class LocalizedDo
     {
-        using LocalizedAction = std::remove_pointer_t<decltype(std::declval<Localizer>()(LocaleConstant{}))>;
+        using LocalizedAction = std::remove_pointer_t<decltype(std::declval<Localizer>()(LocaleConstant{})) > ;
 
     public:
         explicit LocalizedDo(Localizer& localizer) : _localizer(localizer) { }
@@ -1909,27 +1909,7 @@ namespace Trinity
         std::vector<std::unique_ptr<LocalizedAction>> _localizedCache;         // 0 = default, i => i-1 locale index
     };
 
-    // AttackableUnitInObjectRangeCheck
-    class AttackableUnitInObjectRangeCheck
-    {
-    public:
-        AttackableUnitInObjectRangeCheck(WorldObject const* obj, float range, bool check3D = true) : i_obj(obj), i_range(range), i_check3D(check3D) { }
-
-        bool operator()(Unit* u) const
-        {
-            if (i_obj->IsUnit())
-                if (u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range, i_check3D) && i_obj->ToUnit()->IsValidAttackTarget(u))
-                    return true;
-
-            return false;
-        }
-
-    private:
-        WorldObject const* i_obj;
-        float i_range;
-        bool i_check3D;
-    };
-
+    // AreaTriggers searchers
     class AnyAreatriggerInObjectRangeCheck
     {
     public:
@@ -1970,44 +1950,65 @@ namespace Trinity
     };
 
     template<class Check>
-    struct AreaTriggerListSearcher
+    struct AreaTriggerListSearcherC
     {
         WorldObject const* i_searcher;
         std::list<AreaTrigger*>& m_AreaTriggers;
         Check& i_check;
 
-        AreaTriggerListSearcher(WorldObject const* searcher, std::list<AreaTrigger*>& areaTriggers, Check& check)
+        AreaTriggerListSearcherC(WorldObject const* searcher, std::list<AreaTrigger*>& areaTriggers, Check& check)
             : i_searcher(searcher), m_AreaTriggers(areaTriggers), i_check(check) {}
 
-        void Visit(AreaTriggerMapType& p_AreaTriggerMap);
+        void VisitC(AreaTriggerMapType& p_AreaTriggerMap);
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED>&) {}
+        template<class NOT_INTERESTED> void VisitC(GridRefManager<NOT_INTERESTED>&) {}
     };
 
     template<class Check>
-    struct AreaTriggerSearcher
+    struct AreaTriggerSearcherC
     {
         WorldObject const* i_searcher;
         AreaTrigger*& i_object;
         Check& i_check;
 
-        AreaTriggerSearcher(WorldObject const* searcher, AreaTrigger*& result, Check& check)
+        AreaTriggerSearcherC(WorldObject const* searcher, AreaTrigger*& result, Check& check)
             : i_searcher(searcher), i_object(result), i_check(check) {}
 
-        void Visit(AreaTriggerMapType& m);
+        void VisitC(AreaTriggerMapType& m);
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED>&) {}
+        template<class NOT_INTERESTED> void VisitC(GridRefManager<NOT_INTERESTED>&) {}
     };
 
     template<class Check>
-    inline void AreaTriggerSearcher<Check>::Visit(AreaTriggerMapType&)
+    inline void AreaTriggerSearcherC<Check>::VisitC(AreaTriggerMapType&)
     {
     }
 
     template<class Check>
-    inline void AreaTriggerListSearcher<Check>::Visit(AreaTriggerMapType&)
+    inline void AreaTriggerListSearcherC<Check>::VisitC(AreaTriggerMapType&)
     {
     }
+
+    // AttackableUnitInObjectRangeCheck
+    class AttackableUnitInObjectRangeCheck
+    {
+    public:
+        AttackableUnitInObjectRangeCheck(WorldObject const* obj, float range, bool check3D = true) : i_obj(obj), i_range(range), i_check3D(check3D) { }
+
+        bool operator()(Unit* u) const
+        {
+            if (i_obj->IsUnit())
+                if (u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range, i_check3D) && i_obj->ToUnit()->IsValidAttackTarget(u))
+                    return true;
+
+            return false;
+        }
+
+    private:
+        WorldObject const* i_obj;
+        float i_range;
+        bool i_check3D;
+    };
 
     // AllCreaturesInRange
     class AllCreaturesInRange
