@@ -171,6 +171,7 @@ namespace WorldPackets
             bool HasTimeMod = false;
             std::vector<float> Points;
             std::vector<float> EstimatedPoints;
+            TaggedPosition<Position::XYZ> DstLocation;
             bool HasContentTuning = false;
             Optional<ContentTuningParams> ContentTuning;
             Optional<ObjectGuid> CastUnit;
@@ -181,7 +182,7 @@ namespace WorldPackets
 
         struct AuraInfo
         {
-            uint8 Slot = 0;
+            uint16 Slot = 0;
             bool HasAura = false;
             Optional<AuraDataInfo> AuraData;
         };
