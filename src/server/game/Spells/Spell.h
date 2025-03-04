@@ -442,6 +442,7 @@ class TC_GAME_API Spell
         void EffectChangeActiveCombatTraitConfig();
         void EffectTeleportGraveyard();
         void EffectUpdateInteractions();
+        void EffectLearnWarbandScene();
 
         //NEW
         void EffectApplyAreaAura();

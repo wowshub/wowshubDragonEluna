@@ -1050,6 +1050,16 @@ namespace WorldPackets
 
             int32 ChoiceID;
             bool Status;
+
+        class AccountWarbandSceneUpdate final : public ServerPacket
+        {
+        public:
+            AccountWarbandSceneUpdate() : ServerPacket(SMSG_ACCOUNT_WARBAND_SCENE_UPDATE) { }
+
+            WorldPacket const* Write() override;
+
+            bool IsFullUpdate = false;
+            WarbandSceneCollectionContainer const* WarbandScenes = nullptr;
         };
     }
 }

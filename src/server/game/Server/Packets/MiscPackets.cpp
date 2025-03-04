@@ -817,6 +817,7 @@ WorldPacket const* WorldPackets::Misc::DisplayToast::Write()
     return &_worldPacket;
 }
 
+
 WorldPacket const* WorldPackets::Misc::LegendaryCraftingOpenNpc::Write()
 {
     _worldPacket << ObjGUID;
@@ -834,6 +835,24 @@ WorldPacket const* WorldPackets::Misc::PlayerChoiceClear::Write()
 {
     _worldPacket << int32(ChoiceID);
     _worldPacket << Status;
+
+WorldPacket const* WorldPackets::Misc::AccountWarbandSceneUpdate::Write()
+{
+    _worldPacket << Bits<1>(IsFullUpdate);
+    _worldPacket << uint32(WarbandScenes->size());
+    _worldPacket << uint32(WarbandScenes->size());
+    _worldPacket << uint32(WarbandScenes->size());
+
+    for (auto [warbandSceneId, _] : *WarbandScenes)
+        _worldPacket << uint32(warbandSceneId);
+
+    for (auto [_, data] : *WarbandScenes)
+        _worldPacket << Bits<1>(data.Flags.HasFlag(WarbandSceneCollectionFlags::Favorite));
+
+    for (auto [_, data] : *WarbandScenes)
+        _worldPacket << Bits<1>(data.Flags.HasFlag(WarbandSceneCollectionFlags::HasFanfare));
+
+    _worldPacket.FlushBits();
 
     return &_worldPacket;
 }
