@@ -5103,7 +5103,7 @@ struct ScreenEffectLoadInfo
         { false, FT_INT, "ZoneMusicID" },
         { true, FT_SHORT, "TimeOfDayOverride" },
         { true, FT_BYTE, "EffectMask" },
-        { false, FT_INT, "LightFlags" },
+        { true, FT_INT, "LightFlags" },
     };
 
     static constexpr DB2LoadInfo Instance{ Fields, 16, &ScreenEffectMeta::Instance, HOTFIX_SEL_SCREEN_EFFECT };
