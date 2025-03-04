@@ -3706,7 +3706,7 @@ struct ScreenEffectEntry
     uint32 ZoneMusicID;
     int16 TimeOfDayOverride;
     int8 EffectMask;
-    uint8 LightFlags;
+    uint32 LightFlags;
 };
 
 struct SkillLineEntry
