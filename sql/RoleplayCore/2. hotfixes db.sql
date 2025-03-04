@@ -147,7 +147,7 @@ CREATE TABLE `screen_effect`  (
   `ZoneMusicID` int UNSIGNED NOT NULL DEFAULT 0,
   `TimeOfDayOverride` smallint NOT NULL DEFAULT 0,
   `EffectMask` tinyint NOT NULL DEFAULT 0,
-  `LightFlags` tinyint UNSIGNED NOT NULL DEFAULT 0,
+  `LightFlags` int UNSIGNED NOT NULL DEFAULT 0,
   `VerifiedBuild` int NOT NULL DEFAULT 0,
   PRIMARY KEY (`ID`, `VerifiedBuild`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
