@@ -1050,6 +1050,7 @@ namespace WorldPackets
 
             int32 ChoiceID;
             bool Status;
+        };
 
         class AccountWarbandSceneUpdate final : public ServerPacket
         {

@@ -836,6 +836,9 @@ WorldPacket const* WorldPackets::Misc::PlayerChoiceClear::Write()
     _worldPacket << int32(ChoiceID);
     _worldPacket << Status;
 
+    return &_worldPacket;
+}
+
 WorldPacket const* WorldPackets::Misc::AccountWarbandSceneUpdate::Write()
 {
     _worldPacket << Bits<1>(IsFullUpdate);
