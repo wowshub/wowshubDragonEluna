@@ -655,6 +655,7 @@ class TC_GAME_API Spell
         bool IsChannelActive() const;
         bool IsAutoActionResetSpell() const;
         bool IsPositive() const;
+        bool IsCritForTarget(Unit* target) const;
 
         bool IsEmpowerSpell() const { return m_empower != nullptr; }
         void SetEmpowerReleasedByClient(bool release);

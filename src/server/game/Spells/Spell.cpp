@@ -9318,6 +9318,18 @@ void Spell::CancelGlobalCooldown()
     m_caster->ToUnit()->GetSpellHistory()->CancelGlobalCooldown(m_spellInfo);
 }
 
+bool Spell::IsCritForTarget(Unit* target) const
+{
+    if (!target)
+        return false;
+
+    for (const auto& itr : m_UniqueTargetInfo)
+        if (itr.TargetGUID == target->GetGUID() && itr.ProcHitMask(PROC_HIT_CRITICAL))
+            return true;
+
+    return false;
+}
+
 std::string Spell::GetDebugInfo() const
 {
     std::stringstream sstr;
