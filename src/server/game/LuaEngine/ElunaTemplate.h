@@ -437,8 +437,8 @@ public:
         return 1;
     }
 
-    static int ArithmeticError(lua_State* L) { return luaL_error(L, "attempt to perform arithmetic on a {} value", tname); }
-    static int CompareError(lua_State* L) { return luaL_error(L, "attempt to compare {}", tname); }
+    static int ArithmeticError(lua_State* L) { return luaL_error(L, "attempt to perform arithmetic on a %d value", tname); }
+    static int CompareError(lua_State* L) { return luaL_error(L, "attempt to compare %d", tname); }
     static int Add(lua_State* L) { return ArithmeticError(L); }
     static int Substract(lua_State* L) { return ArithmeticError(L); }
     static int Multiply(lua_State* L) { return ArithmeticError(L); }
@@ -446,14 +446,14 @@ public:
     static int Mod(lua_State* L) { return ArithmeticError(L); }
     static int Pow(lua_State* L) { return ArithmeticError(L); }
     static int UnaryMinus(lua_State* L) { return ArithmeticError(L); }
-    static int Concat(lua_State* L) { return luaL_error(L, "attempt to concatenate a {} value", tname); }
-    static int Length(lua_State* L) { return luaL_error(L, "attempt to get length of a {} value", tname); }
+    static int Concat(lua_State* L) { return luaL_error(L, "attempt to concatenate a %d value", tname); }
+    static int Length(lua_State* L) { return luaL_error(L, "attempt to get length of a %d value", tname); }
     static int Equal(lua_State* L) { Eluna* E = Eluna::GetEluna(L); E->Push(E->CHECKOBJ<T>(1) == E->CHECKOBJ<T>(2)); return 1; }
     static int Less(lua_State* L) { return CompareError(L); }
     static int LessOrEqual(lua_State* L) { return CompareError(L); }
-    static int Call(lua_State* L) { return luaL_error(L, "attempt to call a {} value", tname); }
+    static int Call(lua_State* L) { return luaL_error(L, "attempt to call a %d value", tname); }
 
-    static int MethodWrongState(lua_State* L) { luaL_error(L, "attempt to call a method that does not exist for state: {}", Eluna::GetEluna(L)->GetBoundMapId()); return 0; }
+    static int MethodWrongState(lua_State* L) { luaL_error(L, "attempt to call a method that does not exist for state: %d", Eluna::GetEluna(L)->GetBoundMapId()); return 0; }
     static int MethodUnimpl(lua_State* L) { luaL_error(L, "attempt to call a method that is not implemented for this emulator"); return 0; }
 };
 
