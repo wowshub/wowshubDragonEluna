@@ -9324,7 +9324,7 @@ bool Spell::IsCritForTarget(Unit* target) const
         return false;
 
     for (const auto& itr : m_UniqueTargetInfo)
-        if (itr.TargetGUID == target->GetGUID() && itr.ProcHitMask(PROC_HIT_CRITICAL))
+        if (itr.TargetGUID == target->GetGUID() && itr.ProcHitMask == PROC_HIT_CRITICAL)
             return true;
 
     return false;
