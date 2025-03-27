@@ -472,6 +472,15 @@ class TC_GAME_API GameObjectScript : public ScriptObject
 
         // Called when a GameObjectAI object is needed for the gameobject.
         virtual GameObjectAI* GetAI(GameObject* go) const = 0;
+
+        // Called when a player opens a gossip dialog with the gameobject.
+        virtual bool OnGossipHello(Player* /*player*/, GameObject* /*go*/) { return false; }
+
+        // Called when a player selects a gossip item in the gameobject's gossip menu.
+        virtual bool OnGossipSelect(Player* /*player*/, GameObject* /*go*/, uint32 /*sender*/, uint32 /*action*/) { return false; }
+
+        // Called when a player selects a gossip with a code in the gameobject's gossip menu.
+        virtual bool OnGossipSelectCode(Player* /*player*/, GameObject* /*go*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { return false; }
 };
 
 class TC_GAME_API AreaTriggerScript : public ScriptObject
@@ -1170,6 +1179,10 @@ class TC_GAME_API ScriptMgr
 
         bool CanCreateGameObjectAI(uint32 scriptId) const;
         GameObjectAI* GetGameObjectAI(GameObject* go);
+
+        bool OnGossipHello(Player* player, GameObject* go);
+        bool OnGossipSelect(Player* player, GameObject* go, uint32 sender, uint32 action);
+        bool OnGossipSelectCode(Player* player, GameObject* go, uint32 sender, uint32 action, const char* code);
 
     public: /* AreaTriggerScript */
 

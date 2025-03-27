@@ -23,6 +23,7 @@
 #include "CinematicMgr.h"
 #include "CombatLogPackets.h"
 #include "Common.h"
+#include "Containers.h"
 #include "Creature.h"
 #include "CreatureGroups.h"
 #include "DB2Stores.h"
@@ -4051,6 +4052,16 @@ std::list<Player*> WorldObject::SelectNearestPlayers(float range, bool alive)
     Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, PlayerList, checker);
     Cell::VisitGridObjects(this, searcher, range);
     return PlayerList;
+}
+
+Player* WorldObject::SelectRandomPlayerInRange(float range, bool alive)
+{
+    std::list<Player*> pList = SelectNearestPlayers(range, alive);
+
+    if (pList.empty())
+        return nullptr;
+
+    return Trinity::Containers::SelectRandomContainerElement(pList);
 }
 
 template <typename Container>
