@@ -590,23 +590,39 @@ class spell_warl_deaths_embrace_drain_life : public AuraScript
 {
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
-        return ValidateSpellEffect({ { SPELL_WARLOCK_DEATHS_EMBRACE, EFFECT_1 } });
+        return ValidateSpellInfo({ SPELL_WARLOCK_DEATHS_EMBRACE });
     }
 
-    void CalculateHeal(AuraEffect const* /*aurEff*/, Unit const* victim, int32& /*damage*/, int32& /*flatMod*/, float& pctMod) const
+    void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
     {
-        Unit const* caster = GetCaster();
-        if (!caster)
+        amount = 500;
+    }
+
+    void CalculateHeal(AuraEffect const* aurEff, int32& amount, Unit* victim, Unit* caster)
+    {
+        if (!caster || !victim)
             return;
 
-        if (caster != victim)   // check who is being targeted, this hook is called for both damage and healing of PERIODIC_LEECH
-            return;
+        if (caster == victim)
+        {
+            if (AuraEffect const* deathsEmbraceAura = caster->GetAuraEffect(SPELL_WARLOCK_DEATHS_EMBRACE, EFFECT_1))
+            {
+                float healthPct = caster->GetHealthPct();
 
-        spell_warl_deaths_embrace_impl::HandleDamageOrHealingCalculation(caster, caster, pctMod, EFFECT_0, EFFECT_1);
+                int32 bonusPct = deathsEmbraceAura->GetAmount();
+
+                if (healthPct <= 35.0f)
+                {
+                    float bonusMultiplier = bonusPct / 100.0f;
+                    amount = int32(amount * (1.0f + bonusMultiplier));
+                }
+            }
+        }
     }
 
     void Register() override
     {
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_deaths_embrace_drain_life::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_LEECH);
         DoEffectCalcDamageAndHealing += AuraEffectCalcHealingFn(spell_warl_deaths_embrace_drain_life::CalculateHeal, EFFECT_0, SPELL_AURA_PERIODIC_LEECH);
     }
 };
