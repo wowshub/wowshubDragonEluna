@@ -1793,39 +1793,82 @@ class spell_warl_corruption_effect : public AuraScript
     }
 };
 
-// 234153 - Drain Life
+// 234153 - Drain Life (simplified approach)
 class spell_warl_drain_life : public AuraScript
 {
+
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
         return ValidateSpellInfo({ SPELL_WARLOCK_DEATHS_EMBRACE });
     }
 
-    void CalculateHeal(AuraEffect const* /*aurEff*/, Unit* /*victim*/, int32& /*damage*/, int32& /*flatMod*/, float& pctMod) const
+    bool Load() override
     {
-        if (Unit* caster = GetCaster())
+        _caster = GetCaster();
+        return _caster != nullptr;
+    }
+
+    void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+    {
+        if (!_caster)
+            return;
+
+        amount = 5;
+
+        //TC_LOG_DEBUG("spell", "Drain Life: Base damage per tick set to %d", amount);
+    }
+
+    void HandlePeriodic(AuraEffect const* aurEff)
+    {
+        if (!_caster || !GetTarget())
+            return;
+
+        int32 damage = aurEff->GetAmount();
+
+        int32 baseHeal = damage * 5;
+        int32 additionalHeal = 0;
+
+        if (AuraEffect const* deathsEmbraceEffect = _caster->GetAuraEffect(SPELL_WARLOCK_DEATHS_EMBRACE, EFFECT_1))
         {
-            if (AuraEffect const* deathsEmbraceHealthPct = caster->GetAuraEffect(SPELL_WARLOCK_DEATHS_EMBRACE, EFFECT_1))
+            if (_caster->HealthBelowPct(deathsEmbraceEffect->GetAmount()))
             {
-                if (caster->HealthBelowPct(deathsEmbraceHealthPct->GetAmount()))
+                if (AuraEffect const* deathsEmbraceHealBonus = _caster->GetAuraEffect(SPELL_WARLOCK_DEATHS_EMBRACE, EFFECT_0))
                 {
-                    AuraEffect const* deathsEmbraceHealBonus = caster->GetAuraEffect(SPELL_WARLOCK_DEATHS_EMBRACE, EFFECT_0);
-                    AddPct(pctMod, deathsEmbraceHealBonus->GetAmount());
+                    additionalHeal = CalculatePct(baseHeal, deathsEmbraceHealBonus->GetAmount());
+                    //TC_LOG_DEBUG("spell", "Drain Life: Deaths Embrace bonus: %d additional healing", additionalHeal);
                 }
             }
+        }
+
+        if (additionalHeal > 0)
+        {
+            CastSpellExtraArgs args;
+            args.AddSpellBP0(additionalHeal);
+            args.SetTriggerFlags(TRIGGERED_FULL_MASK);
+            _caster->CastSpell(_caster, 63106, args); // TODO: Nahooya?
+
+            //TC_LOG_DEBUG("spell", "Drain Life: Applied additional healing of %d", additionalHeal);
+        }
+
+        if (Aura* aura = GetAura())
+        {
+            aura->SetNeedClientUpdateForTargets();
         }
     }
 
     void Register() override
     {
-        DoEffectCalcDamageAndHealing += AuraEffectCalcDamageFn(spell_warl_drain_life::CalculateHeal, EFFECT_0, SPELL_AURA_PERIODIC_LEECH);
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_drain_life::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_LEECH);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_drain_life::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_LEECH);
     }
+
+private:
+    Unit* _caster = nullptr;
 };
 
 // 205179
 class aura_warl_phantomatic_singularity : public AuraScript
 {
-    PrepareAuraScript(aura_warl_phantomatic_singularity);
 
     void OnTick(const AuraEffect* /*aurEff*/)
     {
