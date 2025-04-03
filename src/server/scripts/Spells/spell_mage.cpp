@@ -138,6 +138,7 @@ enum MageSpells
     SPELL_MAGE_GLACIAL_SPIKE_PROC                = 199844,
     SPELL_MAGE_GLACIAL_SPIKE                     = 199786,
     SPELL_MAGE_GLACIAL_SPIKE_DAMAGE              = 228600,
+    SPELL_MAGE_PRISMATIC_BARRIER                 = 235450,
 
 };
 
@@ -2192,6 +2193,47 @@ class spell_mastery_icicles_glacial_spike : public SpellScript
     }
 };
 
+// Prismatic Barrier Visual fix - 235450
+class spell_mage_prismatic_barrier : public SpellScriptLoader
+{
+public:
+    spell_mage_prismatic_barrier() : SpellScriptLoader("spell_mage_prismatic_barrier") { }
+
+    class spell_mage_prismatic_barrier_AuraScript : public AuraScript
+    {
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return ValidateSpellInfo({ SPELL_MAGE_PRISMATIC_BARRIER });
+        }
+
+        void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+        {
+            if (Unit* caster = GetCaster())
+            {
+                int32 totalHealth = caster->GetMaxHealth();
+
+                float versatility = 0.0f;
+                if (caster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    versatility = static_cast<Player*>(caster)->GetRatingBonusValue(CR_VERSATILITY_DAMAGE_DONE) / 100.0f;
+                }
+
+                amount = int32(totalHealth * 0.20f * (1.0f + versatility));
+            }
+        }
+
+        void Register() override
+        {
+            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_prismatic_barrier_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_mage_prismatic_barrier_AuraScript();
+    }
+};
+
 void AddSC_mage_spell_scripts()
 {
     RegisterSpellScript(spell_mage_alter_time_aura);
@@ -2253,4 +2295,5 @@ void AddSC_mage_spell_scripts()
     RegisterAuraScript(spell_mastery_icicles_periodic);
     RegisterAuraScript(spell_mastery_icicles_mod_aura);
     RegisterSpellScript(spell_mastery_icicles_glacial_spike);
+    new spell_mage_prismatic_barrier();
 }
