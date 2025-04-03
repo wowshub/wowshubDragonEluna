@@ -273,7 +273,7 @@ class spell_monk_life_cocoon : public SpellScript
             calmingCoalescence->GetBase()->Remove();
         }
 
-        GetSpell()->SetSpellValue(SPELLVALUE_BASE_POINT0, absorb);
+        GetSpell()->SetSpellValue({ SPELLVALUE_BASE_POINT0, absorb });
     }
 
     void Register() override
