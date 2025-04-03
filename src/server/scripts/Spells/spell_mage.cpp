@@ -1261,38 +1261,36 @@ uint32 const spell_mage_polymorph_visual::PolymorhForms[6] =
 // 235450 - Prismatic Barrier
 class spell_mage_prismatic_barrier : public AuraScript
 {
-    bool Validate(SpellInfo const* spellInfo) override
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
     {
-        return ValidateSpellEffect({ { spellInfo->Id, EFFECT_5 } });
+        return ValidateSpellInfo({ SPELL_MAGE_PRISMATIC_BARRIER });
     }
 
     void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
     {
         canBeRecalculated = false;
         if (Unit* caster = GetCaster())
-            amount = int32(CalculatePct(caster->GetMaxHealth(), GetEffectInfo(EFFECT_5).CalcValue(caster)));
-    }
-
-    void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        if (Unit* target = GetTarget())
         {
-            if (Aura* aura = target->GetAura(SPELL_MAGE_PRISMATIC_BARRIER))
-            {
-                if (AuraEffect* absorbEffect = aura->GetEffect(EFFECT_0))
-                {
-                    absorbEffect->RecalculateAmount();
+            int32 pct = 20;
 
-                    aura->SetNeedClientUpdateForTargets();
+            SpellInfo const* spellInfo = GetSpellInfo();
+
+            if (spellInfo->GetEffects().size() > 1)
+            {
+                SpellEffectInfo const& effectInfo = spellInfo->GetEffect(EFFECT_1);
+                if (effectInfo.CalcValue(caster) > 0)
+                {
+                    pct = effectInfo.CalcValue(caster);
                 }
             }
+
+            amount = int32(CalculatePct(caster->GetMaxHealth(), pct));
         }
     }
 
-    void HandleAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+    void HandleAfterApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
-        absorbAmount = std::min(uint32(aurEff->GetAmount()), dmgInfo.GetDamage());
-
         if (Unit* target = GetTarget())
         {
             if (Aura* aura = target->GetAura(GetId()))
@@ -1302,10 +1300,26 @@ class spell_mage_prismatic_barrier : public AuraScript
         }
     }
 
+    void HandleAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+    {
+        if (!(GetSpellInfo()->GetSchoolMask() & dmgInfo.GetSchoolMask()))
+            return;
+
+        absorbAmount = std::min(uint32(aurEff->GetAmount()), dmgInfo.GetDamage());
+
+        if (absorbAmount > 0 && GetTarget())
+        {
+            if (Aura* aura = GetTarget()->GetAura(GetId()))
+            {
+                aura->SetNeedClientUpdateForTargets();
+            }
+        }
+    }
+
     void Register() override
     {
         DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_prismatic_barrier::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-        AfterEffectApply += AuraEffectApplyFn(spell_mage_prismatic_barrier::OnApply, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
+        AfterEffectApply += AuraEffectApplyFn(spell_mage_prismatic_barrier::HandleAfterApply, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
         OnEffectAbsorb += AuraEffectAbsorbFn(spell_mage_prismatic_barrier::HandleAbsorb, EFFECT_0);
     }
 };
