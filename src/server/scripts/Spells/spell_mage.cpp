@@ -1273,9 +1273,40 @@ class spell_mage_prismatic_barrier : public AuraScript
             amount = int32(CalculatePct(caster->GetMaxHealth(), GetEffectInfo(EFFECT_5).CalcValue(caster)));
     }
 
+    void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Unit* target = GetTarget())
+        {
+            if (Aura* aura = target->GetAura(SPELL_MAGE_PRISMATIC_BARRIER))
+            {
+                if (AuraEffect* absorbEffect = aura->GetEffect(EFFECT_0))
+                {
+                    absorbEffect->RecalculateAmount();
+
+                    aura->SetNeedClientUpdateForTargets();
+                }
+            }
+        }
+    }
+
+    void HandleAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+    {
+        absorbAmount = std::min(uint32(aurEff->GetAmount()), dmgInfo.GetDamage());
+
+        if (Unit* target = GetTarget())
+        {
+            if (Aura* aura = target->GetAura(GetId()))
+            {
+                aura->SetNeedClientUpdateForTargets();
+            }
+        }
+    }
+
     void Register() override
     {
         DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_prismatic_barrier::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+        AfterEffectApply += AuraEffectApplyFn(spell_mage_prismatic_barrier::OnApply, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
+        OnEffectAbsorb += AuraEffectAbsorbFn(spell_mage_prismatic_barrier::HandleAbsorb, EFFECT_0);
     }
 };
 
@@ -2193,47 +2224,6 @@ class spell_mastery_icicles_glacial_spike : public SpellScript
     }
 };
 
-// Prismatic Barrier Visual fix - 235450
-class spell_mage_prismatic_barrier : public SpellScriptLoader
-{
-public:
-    spell_mage_prismatic_barrier() : SpellScriptLoader("spell_mage_prismatic_barrier") { }
-
-    class spell_mage_prismatic_barrier_AuraScript : public AuraScript
-    {
-        bool Validate(SpellInfo const* /*spellInfo*/) override
-        {
-            return ValidateSpellInfo({ SPELL_MAGE_PRISMATIC_BARRIER });
-        }
-
-        void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
-        {
-            if (Unit* caster = GetCaster())
-            {
-                int32 totalHealth = caster->GetMaxHealth();
-
-                float versatility = 0.0f;
-                if (caster->GetTypeId() == TYPEID_PLAYER)
-                {
-                    versatility = static_cast<Player*>(caster)->GetRatingBonusValue(CR_VERSATILITY_DAMAGE_DONE) / 100.0f;
-                }
-
-                amount = int32(totalHealth * 0.20f * (1.0f + versatility));
-            }
-        }
-
-        void Register() override
-        {
-            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_prismatic_barrier_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-        }
-    };
-
-    AuraScript* GetAuraScript() const override
-    {
-        return new spell_mage_prismatic_barrier_AuraScript();
-    }
-};
-
 void AddSC_mage_spell_scripts()
 {
     RegisterSpellScript(spell_mage_alter_time_aura);
@@ -2295,5 +2285,4 @@ void AddSC_mage_spell_scripts()
     RegisterAuraScript(spell_mastery_icicles_periodic);
     RegisterAuraScript(spell_mastery_icicles_mod_aura);
     RegisterSpellScript(spell_mastery_icicles_glacial_spike);
-    new spell_mage_prismatic_barrier();
 }
