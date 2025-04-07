@@ -205,7 +205,6 @@ public:
 
     class spell_darkmoon_firebird_challenge_allow_fly_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_darkmoon_firebird_challenge_allow_fly_AuraScript);
 
         void HandleRemove(AuraEffect const*, AuraEffectHandleModes)
         {
@@ -243,7 +242,6 @@ public:
 
     class spell_darkmoon_firebird_challenge_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_darkmoon_firebird_challenge_AuraScript);
 
         bool isTriggered = false;
 

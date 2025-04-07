@@ -134,7 +134,6 @@ public:
 
     class spell_darkmoon_carousel_whee_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_darkmoon_carousel_whee_AuraScript);
 
         uint32 update;
 
@@ -193,7 +192,6 @@ public:
 
     class spell_darkmoon_staging_area_teleport_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_darkmoon_staging_area_teleport_SpellScript);
 
         bool Load() override
         {
@@ -264,7 +262,6 @@ public:
 
     class spell_gen_repair_damaged_tonk_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_gen_repair_damaged_tonk_SpellScript);
 
         SpellCastResult CheckRequirement()
         {
@@ -309,7 +306,6 @@ public:
 
     class spell_gen_shoe_baby_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_gen_shoe_baby_SpellScript);
 
         SpellCastResult CheckRequirement()
         {
@@ -345,7 +341,6 @@ public:
 
     class spell_cook_crunchy_frog_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_cook_crunchy_frog_SpellScript);
 
         SpellCastResult CheckRequirement()
         {
@@ -390,7 +385,6 @@ public:
 
     class spell_heal_injuried_carnie_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_heal_injuried_carnie_SpellScript);
 
         SpellCastResult CheckRequirement()
         {
@@ -465,7 +459,6 @@ public:
 
     class spell_put_up_darkmoon_banner_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_put_up_darkmoon_banner_SpellScript);
 
         SpellCastResult CheckRequirement()
         {
@@ -507,7 +500,6 @@ public:
 
     class spell_darkmoon_deathmatch_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_darkmoon_deathmatch_SpellScript);
 
         SpellCastResult CheckRequirement()
         {
