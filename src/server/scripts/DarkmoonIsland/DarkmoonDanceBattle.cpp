@@ -28,17 +28,12 @@
 #include "Transport.h"
 #include "DarkmoonIsland.h"
 #include "AchievementMgr.h"
-#include "ScriptMgr.h"
-#include "ScriptedGossip.h"
 #include "ScriptedCreature.h"
-#include "DarkmoonIsland.h"
 #include "Player.h"
-#include "GameObject.h"
 #include "GameObjectAI.h"
 #include "InstanceScript.h"
 #include "Log.h"
 #include "ObjectAccessor.h"
-#include "Player.h"
 #include "ScriptedEscortAI.h"
 #include "WorldSession.h"
 #include "Item.h"
@@ -48,12 +43,10 @@
 #include "AchievementPackets.h"
 #include "DB2HotfixGenerator.h"
 #include "DB2Stores.h"
-#include "CellImpl.h"
 #include "ChatTextBuilder.h"
 #include "Containers.h"
 #include "DatabaseEnv.h"
 #include "GameTime.h"
-#include "GridNotifiersImpl.h"
 #include "Group.h"
 #include "Guild.h"
 #include "GuildMgr.h"
@@ -67,10 +60,7 @@
 #include "AreaTriggerAI.h"
 #include "CreatureAI.h"
 #include "CreatureAIImpl.h"
-#include "SpellScript.h"
-#include "SpellAuras.h"
 #include "SharedDefines.h"
-#include "ObjectAccessor.h"
 #include "TemporarySummon.h"
 #include <sstream>
 
@@ -106,25 +96,36 @@ public:
                 //Info
             case GOSSIP_ACTION_INFO_DEF + 1:
                 AddGossipItemFor(player, 16972, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-                    SendGossipMenuFor(player, 42769, me->GetGUID());
+                    SendGossipMenuFor(player, 42770, me->GetGUID());
                 break;
                 // Ready to play
             case GOSSIP_ACTION_INFO_DEF + 2:
-                /*AddGossipItemFor(player, 26888, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-                    player->CastSpell(player, 349094, true);
-                AddGossipItemFor(player, 26888, 1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-                    player->CastSpell(player, 351278, true);
-                AddGossipItemFor(player, 26888, 2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-                    player->CastSpell(player, 351277, true);
-                AddGossipItemFor(player, 26888, 3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-                    player->PlayerTalkClass->ClearMenus();
-                    return OnGossipHello(player);*/
+                AddGossipItemFor(player, 26888, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);                   
+                AddGossipItemFor(player, 26888, 1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);                   
+                AddGossipItemFor(player, 26888, 2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);                   
+                AddGossipItemFor(player, 26888, 3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+                    SendGossipMenuFor(player, 42798, me->GetGUID());
+                break;
                 // Understand
             case GOSSIP_ACTION_INFO_DEF + 3:
                 player->PlayerTalkClass->ClearMenus();
                 return OnGossipHello(player);
                 break;
+            case GOSSIP_ACTION_INFO_DEF + 4:
+                player->CastSpell(player, 349094, true);
+                break;
+            case GOSSIP_ACTION_INFO_DEF + 5:
+                player->CastSpell(player, 351278, true);
+                break;
+            case GOSSIP_ACTION_INFO_DEF + 6:
+                player->CastSpell(player, 351277, true);
+                break;
+            case GOSSIP_ACTION_INFO_DEF + 7:
+                player->PlayerTalkClass->ClearMenus();
+                return OnGossipHello(player);
+                break;
             }
+
             return true;
         }
     };
@@ -143,56 +144,50 @@ public:
 
     void OnSceneTriggerEvent(Player* player, uint32 /*sceneInstanceID*/, SceneTemplate const* /*sceneTemplate*/, std::string const& triggerName) override
     {
-        if (triggerName == "DanceGameSuccess")
+        if (triggerName == "Game Over Easy Victory")
         {
-            if (triggerName == "Game Over Easy Victory")
-            {
-                player->KilledMonsterCredit(181137);
+            player->KilledMonsterCredit(181137);
 
-                if (!player->HasAchieved(ACHIEVEMENT_YOU_GOT_THE_BEAT))
-                {
-                    AchievementEntry const* achiev = sAchievementStore.LookupEntry(ACHIEVEMENT_YOU_GOT_THE_BEAT);
-                    if (player)
-                        player->CompletedAchievement(achiev);
-                }
-            }
-            else if (triggerName == "Game Over Medium Victory")
+            if (!player->HasAchieved(ACHIEVEMENT_YOU_GOT_THE_BEAT))
             {
-                player->KilledMonsterCredit(181139);
-
-                if (!player->HasAchieved(ACHIEVEMENT_WHAT_A_FEELING))
-                {
-                    AchievementEntry const* achiev = sAchievementStore.LookupEntry(ACHIEVEMENT_WHAT_A_FEELING);
-                    if (player)
-                        player->CompletedAchievement(achiev);
-                }
-            }
-            else if (triggerName == "Game Over Hard Victory")
-            {
-                player->KilledMonsterCredit(181141);
-
-                if (!player->HasAchieved(ACHIEVEMENT_MAKE_YOU_SWEAT))
-                {
-                    AchievementEntry const* achiev = sAchievementStore.LookupEntry(ACHIEVEMENT_MAKE_YOU_SWEAT);
-                    if (player)
-                        player->CompletedAchievement(achiev);
-                }
+                AchievementEntry const* achiev = sAchievementStore.LookupEntry(ACHIEVEMENT_YOU_GOT_THE_BEAT);
+                if (player)
+                    player->CompletedAchievement(achiev);
             }
         }
-        else if (triggerName == "DanceGamePass")
+        else if (triggerName == "Game Over Medium Victory")
         {
-            if (triggerName == "Game Over Easy Pass")
+            player->KilledMonsterCredit(181139);
+
+            if (!player->HasAchieved(ACHIEVEMENT_WHAT_A_FEELING))
             {
-                player->KilledMonsterCredit(181136);
+                AchievementEntry const* achiev = sAchievementStore.LookupEntry(ACHIEVEMENT_WHAT_A_FEELING);
+                if (player)
+                    player->CompletedAchievement(achiev);
             }
-            else if (triggerName == "Game Over Medium Pass")
+        }
+        else if (triggerName == "Game Over Hard Victory")
+        {
+            player->KilledMonsterCredit(181141);
+
+            if (!player->HasAchieved(ACHIEVEMENT_MAKE_YOU_SWEAT))
             {
-                player->KilledMonsterCredit(181138);
+                AchievementEntry const* achiev = sAchievementStore.LookupEntry(ACHIEVEMENT_MAKE_YOU_SWEAT);
+                if (player)
+                    player->CompletedAchievement(achiev);
             }
-            else if (triggerName == "Game Over Hard Pass")
-            {
-                player->KilledMonsterCredit(181140);
-            }
+        }
+        else if (triggerName == "Game Over Easy Pass")
+        {
+            player->KilledMonsterCredit(181136);
+        }
+        else if (triggerName == "Game Over Medium Pass")
+        {
+            player->KilledMonsterCredit(181138);
+        }
+        else if (triggerName == "Game Over Hard Pass")
+        {
+            player->KilledMonsterCredit(181140);
         }
         else if (triggerName == "Eject")
         {

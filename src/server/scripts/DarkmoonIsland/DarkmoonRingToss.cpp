@@ -137,8 +137,8 @@ public:
                 }
                 break;
             case GOSSIP_ACTION_INFO_DEF + 3:
-                AddGossipItemFor(player, GOSSIP_BUTTON_1, GOSSIP_BUTTON_1_ID, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-                AddGossipItemFor(player, GOSSIP_BUTTON_2, GOSSIP_BUTTON_2_ID, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+                player->PlayerTalkClass->ClearMenus();
+                return OnGossipHello(player);
                 break;
             }
             return true;
