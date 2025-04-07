@@ -105,7 +105,7 @@ public:
 
         void Reset()
         {
-            nextQuoteTimer = urand(1, 60) * 1000;
+            nextQuoteTimer = 40000 + urand(0, 15) * 10000;
             nextQuote = 0;
             nextTargetChangeTimer = 0;
             targetIndex = -1;
@@ -141,7 +141,7 @@ public:
                 if (creature_bunny)
                     creature_bunny->CastSpell(creature_bunny, SPELL_HESHOOTS_TARGET_INDICATOR, true);
 
-                nextTargetChangeTimer = 6500 + urand(0, 1000);
+                nextTargetChangeTimer = 4500 + urand(0, 1000);
             }
             else
                 nextTargetChangeTimer -= diff;
@@ -153,9 +153,7 @@ public:
                 player->PrepareQuestMenu(me->GetGUID());
 
             AddGossipItemFor(player, 6225, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-
-            if (player->GetQuestStatus(QUEST_HE_SHOOTS_HE_SCORES) == QUEST_STATUS_INCOMPLETE)
-                AddGossipItemFor(player, 6225, 2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            AddGossipItemFor(player, 6225, 2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
             player->PlayerTalkClass->SendGossipMenu(player->GetGossipTextId(me), me->GetGUID());
             return true;
@@ -170,9 +168,8 @@ public:
             {
                 // Info
             case GOSSIP_ACTION_INFO_DEF + 1:
-                    player->PlayerTalkClass->ClearMenus();
+                AddGossipItemFor(player, 16972, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3); 
                     SendGossipMenuFor(player, 18353, me->GetGUID());
-                    return OnGossipHello(player);
                 break;
                 // Ready to play
             case  GOSSIP_ACTION_INFO_DEF + 2:
@@ -181,7 +178,7 @@ public:
                     CloseGossipMenuFor(player);
 
                     player->DestroyItemCount(ITEM_DARKMOON_TOKEN, 1, true);
-                    player->CastSpell(player, SPELL_HESHOOTS_CRACKSHOT_ENABLE, true);
+                    player->CastSpell(player, SPELL_HESHOOTS_CRACKSHOT_ENABLE, TRIGGERED_FULL_MASK);
 
                     int16 progress = player->GetReqKillOrCastCurrentCount(QUEST_HE_SHOOTS_HE_SCORES, 54231);
                     if (progress > 0)
@@ -189,6 +186,10 @@ public:
 
                     return true;
                 }
+                break;
+            case GOSSIP_ACTION_INFO_DEF + 3:
+                player->PlayerTalkClass->ClearMenus();
+                return OnGossipHello(player);
                 break;
             }
 
@@ -210,7 +211,6 @@ public:
 
     class spell_heshoots_shoot_hit_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_heshoots_shoot_hit_SpellScript);
 
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
@@ -264,7 +264,6 @@ public:
 
     class spell_heshoots_indicator_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_heshoots_indicator_AuraScript);
 
         void EffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*modes*/)
         {

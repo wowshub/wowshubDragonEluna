@@ -247,24 +247,48 @@ public:
             if (me->IsQuestGiver())
                 player->PrepareQuestMenu(me->GetGUID());
 
-            if (player->GetQuestStatus(QUEST_WHACK_A_GNOLL) == QUEST_STATUS_INCOMPLETE)
-                AddGossipItemFor(player, GossipOptionNpc::None, "I want to play Whack-a-Gnoll! |cFF0000FF(Darkmoon Game Token)|", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            AddGossipItemFor(player, 13018, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            AddGossipItemFor(player, 13018, 1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
             player->PlayerTalkClass->SendGossipMenu(player->GetGossipTextId(me), me->GetGUID());
             return true;
         }
 
-        bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 /*gossipListId*/) override
+        bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipListId) override
         {
-            player->DestroyItemCount(ITEM_DARKMOON_TOKEN, 1, true);
-            player->NearTeleportTo(-3994.28f, 6283.58f, 13.12f, 0.727784f, true);
+            uint32 const action = player->PlayerTalkClass->GetGossipOptionAction(gossipListId);
+            ClearGossipMenuFor(player);
 
-            me->AddAura(SPELL_OVERRIDE_ACTION, player);
-            me->AddAura(SPELL_ENABLE_POWERBAR, player);
-            player->SetPower(POWER_ALTERNATE_POWER, player->GetReqKillOrCastCurrentCount(QUEST_WHACK_A_GNOLL, 54505));
+            switch (action)
+            {
+                // Info
+            case GOSSIP_ACTION_INFO_DEF + 1:
+                player->PlayerTalkClass->ClearMenus();
+                AddGossipItemFor(player, 16972, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+                    SendGossipMenuFor(player, 18350, me->GetGUID());
+                break;
+                // Ready to play
+            case  GOSSIP_ACTION_INFO_DEF + 2:
+                if (player->HasItemCount(ITEM_DARKMOON_TOKEN))
+                {
+                    CloseGossipMenuFor(player);
 
-            CloseGossipMenuFor(player);
-            return true;
+                    player->DestroyItemCount(ITEM_DARKMOON_TOKEN, 1, true);
+                    player->NearTeleportTo(-3994.28f, 6283.58f, 13.12f, 0.727784f, true);
+
+                    me->AddAura(SPELL_OVERRIDE_ACTION, player);
+                    me->AddAura(SPELL_ENABLE_POWERBAR, player);
+                    player->SetPower(POWER_ALTERNATE_POWER, player->GetReqKillOrCastCurrentCount(QUEST_WHACK_A_GNOLL, 54505));
+                }
+                break;
+                // I understand
+            case GOSSIP_ACTION_INFO_DEF + 3:
+                player->PlayerTalkClass->ClearMenus();
+                return OnGossipHello(player);
+                break;
+            }
+
+            return false;
         }
     };
 
@@ -318,7 +342,6 @@ class spell_whack_gnoll_whack : public SpellScriptLoader
 
         class spell_whack_gnoll_whack_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_whack_gnoll_whack_SpellScript);
 
             SpellCastResult CheckCast()
             {
@@ -386,7 +409,6 @@ public:
 
     class spell_whack_gnoll_override_action_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_whack_gnoll_override_action_AuraScript);
 
         bool Validate(SpellInfo const* /*entry*/) override
         {

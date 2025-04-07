@@ -323,38 +323,58 @@ public:
             if (me->IsQuestGiver())
                 player->PrepareQuestMenu(me->GetGUID());
 
-            if (player->GetQuestStatus(QUEST_TONK_COMMANDER) == QUEST_STATUS_INCOMPLETE)
-                AddGossipItemFor(player, 13019, 1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            AddGossipItemFor(player, 13019, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            AddGossipItemFor(player, 13019, 1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
             player->PlayerTalkClass->SendGossipMenu(player->GetGossipTextId(me), me->GetGUID());
             return true;
         }
 
-        bool OnGossipSelect(Player* player, uint32 /*uiSender*/, uint32 /*action*/) override
+        bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipListId) override
         {
-            if (player->HasItemCount(ITEM_DARKMOON_TOKEN))
+            uint32 const action = player->PlayerTalkClass->GetGossipOptionAction(gossipListId);
+            ClearGossipMenuFor(player);
+
+            switch (action)
             {
-                CloseGossipMenuFor(player);
-
-                player->DestroyItemCount(ITEM_DARKMOON_TOKEN, 1, true);
-                player->RemoveAurasByType(SPELL_AURA_MOUNTED);
-                player->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
-
-                player->AddAura(102178, player);
-                player->SetImmuneToAll(true);
-                player->SetPower(POWER_ALTERNATE_POWER, player->GetReqKillOrCastCurrentCount(QUEST_TONK_COMMANDER, 33081));
-
-                if (Creature* summon = me->SummonCreature(54588, -4131.37f, 6317.32f, 13.11f, 4.31f, TEMPSUMMON_TIMED_DESPAWN, 60s))
+                // Info
+            case GOSSIP_ACTION_INFO_DEF + 1:
+                player->PlayerTalkClass->ClearMenus();
+                AddGossipItemFor(player, 16972, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+                    SendGossipMenuFor(player, 18352, me->GetGUID());
+                break;
+                // Ready to play
+            case  GOSSIP_ACTION_INFO_DEF + 2:
+                if (player->HasItemCount(ITEM_DARKMOON_TOKEN))
                 {
-                    player->CastSpell(summon, 46598, false);
-                    summon->ApplySpellImmune(102292, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_NORMAL, true);
-                }
+                    CloseGossipMenuFor(player);
 
-                CAST_AI(npc_finlay_coolshot::npc_finlay_coolshotAI, me->AI())->StartGame();
-                CAST_AI(npc_finlay_coolshot::npc_finlay_coolshotAI, me->AI())->Active = true;
+                    player->DestroyItemCount(ITEM_DARKMOON_TOKEN, 1, true);
+                    player->RemoveAurasByType(SPELL_AURA_MOUNTED);
+                    player->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
+
+                    player->AddAura(102178, player);
+                    player->SetImmuneToAll(true);
+                    player->SetPower(POWER_ALTERNATE_POWER, player->GetReqKillOrCastCurrentCount(QUEST_TONK_COMMANDER, 33081));
+
+                    if (Creature* summon = me->SummonCreature(54588, -4131.37f, 6317.32f, 13.11f, 4.31f, TEMPSUMMON_TIMED_DESPAWN, 60s))
+                    {
+                        player->CastSpell(summon, 46598, false);
+                        summon->ApplySpellImmune(102292, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_NORMAL, true);
+                    }
+
+                    CAST_AI(npc_finlay_coolshot::npc_finlay_coolshotAI, me->AI())->StartGame();
+                    CAST_AI(npc_finlay_coolshot::npc_finlay_coolshotAI, me->AI())->Active = true;
+                }
+                break;
+                // I understand
+            case GOSSIP_ACTION_INFO_DEF + 3:
+                player->PlayerTalkClass->ClearMenus();
+                return OnGossipHello(player);
+                break;
             }
 
-            return true;
+            return false;
         }
     };
 
@@ -477,7 +497,6 @@ public:
 
     class spell_tonk_override_action_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_tonk_override_action_AuraScript);
 
         bool Validate(SpellInfo const* /*entry*/) override
         {
@@ -532,7 +551,6 @@ public:
 
     class spell_tonk_shoot_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_tonk_shoot_SpellScript);
 
         SpellCastResult CheckCast()
         {
