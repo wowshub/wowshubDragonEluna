@@ -317,6 +317,16 @@ public:
                             pl->CompletedAchievement(achiev);
                     }
                 }
+                else if (shootAura->GetStackAmount() >= 10)
+                {
+                    if (!pl->HasAchieved(9250))
+                    {
+
+                        AchievementEntry const* achiev = sAchievementStore.LookupEntry(9250);
+                        if (pl)
+                            pl->CompletedAchievement(achiev);
+                    }
+                }
             }
         }
     };

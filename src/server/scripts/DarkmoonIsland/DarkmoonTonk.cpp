@@ -18,6 +18,7 @@
 #include "ScriptMgr.h"
 #include "Cell.h"
 #include "CellImpl.h"
+#include "ScriptedCreature.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "SpellScript.h"
@@ -345,7 +346,7 @@ public:
                 break;
                 // Ready to play
             case  GOSSIP_ACTION_INFO_DEF + 2:
-                if (player->HasItemCount(ITEM_DARKMOON_TOKEN))
+                if (player->HasItemCount(ITEM_DARKMOON_TOKEN, 1))
                 {
                     CloseGossipMenuFor(player);
 
@@ -355,9 +356,9 @@ public:
 
                     player->AddAura(102178, player);
                     player->SetImmuneToAll(true);
-                    player->SetPower(POWER_ALTERNATE_POWER, player->GetReqKillOrCastCurrentCount(QUEST_TONK_COMMANDER, 33081));
+                    player->SetPower(POWER_ALTERNATE_POWER, 0);
 
-                    if (Creature* summon = me->SummonCreature(54588, -4131.37f, 6317.32f, 13.11f, 4.31f, TEMPSUMMON_TIMED_DESPAWN, 60s))
+                    if (Creature* summon = me->SummonCreature(15328, -4131.37f, 6317.32f, 13.11f, 4.31f, TEMPSUMMON_TIMED_DESPAWN, 60s))
                     {
                         player->CastSpell(summon, 46598, false);
                         summon->ApplySpellImmune(102292, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_NORMAL, true);
@@ -365,6 +366,11 @@ public:
 
                     CAST_AI(npc_finlay_coolshot::npc_finlay_coolshotAI, me->AI())->StartGame();
                     CAST_AI(npc_finlay_coolshot::npc_finlay_coolshotAI, me->AI())->Active = true;
+                }
+                else
+                {
+                    player->PlayerTalkClass->ClearMenus();
+                    return OnGossipHello(player);
                 }
                 break;
                 // I understand
@@ -381,6 +387,64 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_finlay_coolshotAI(creature);
+    }
+};
+
+// npc - 15328
+class npc_darkmoon_player_tonk : public CreatureScript
+{
+public:
+    npc_darkmoon_player_tonk() : CreatureScript("npc_darkmoon_player_tonk") {}
+
+    struct npc_darkmoon_player_tonkAI : public ScriptedAI
+    {
+        npc_darkmoon_player_tonkAI(Creature* c) : ScriptedAI(c) {}
+
+        void JustDied(Unit* /*killer*/) override
+        {
+            RemovePlayerFromVehicle();
+        }
+
+        void OnCharmed(bool /*apply*/) override
+        {
+            if (!me->IsCharmed() && me->IsAlive())
+                RemovePlayerFromVehicle();
+        }
+
+        void PassengerBoarded(Unit* passenger, int8 /*seatId*/, bool apply) override
+        {
+            if (!apply && passenger && passenger->IsPlayer())
+            {
+                passenger->RemoveAurasDueToSpell(102178);
+                passenger->ToPlayer()->SetImmuneToAll(false);
+            }
+        }
+
+    private:
+        void RemovePlayerFromVehicle()
+        {
+            if (Vehicle* vehicle = me->GetVehicleKit())
+            {
+                for (SeatMap::iterator itr = vehicle->Seats.begin(); itr != vehicle->Seats.end(); ++itr)
+                {
+                    if (Unit* passenger = ObjectAccessor::GetUnit(*me, itr->second.Passenger.Guid))
+                    {
+                        if (passenger->IsPlayer())
+                        {
+                            passenger->RemoveAurasDueToSpell(102178);
+                            passenger->ToPlayer()->SetImmuneToAll(false);
+                            passenger->ExitVehicle();
+                            passenger->CastSpell(passenger, 109976, true);
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* c) const override
+    {
+        return new npc_darkmoon_player_tonkAI(c);
     }
 };
 
@@ -445,7 +509,7 @@ public:
                 if (!target)
                 {
                     std::vector<Creature*> crList;
-                    GetCreatureListWithEntryInGrid(crList, me, 54588, 4.5f);
+                    GetCreatureListWithEntryInGrid(crList, me, 15328, 4.5f);
                     for (auto& creature : crList)
                     {
                         if (creature->isInFront(me, 3.14f/1.5f) && !creature->HasAura(102341))
@@ -457,7 +521,7 @@ public:
                             me->SetFacingToObject(creature);
                             me->CastSpell(creature, 102341, TRIGGERED_FULL_MASK);
                             me->CastSpell(creature, 102227, false);
-                            pathCheckTimer = 3000; // 2s spellcast + 1s delay
+                            pathCheckTimer = 2000; // 2s spellcast + 1s delay
                             break;
                         }
                     }
@@ -470,7 +534,7 @@ public:
                 else
                 {
                     Unit* targetUnit = ObjectAccessor::GetUnit(*me, target);
-                    if (targetUnit && targetUnit->IsWithinDist(me, 7.0f, true) && targetUnit->isInFront(me, 3.14f/1.5f))
+                    if (targetUnit && targetUnit->IsWithinDist(me, 7.0f, true) && targetUnit->isInFront(me, 3.14f / 1.5f))
                     {
                         targetUnit->CastSpell(targetUnit, 100626, true);
                         me->DealDamage(me, targetUnit, (targetUnit->GetMaxHealth() / 2) + 1);
@@ -527,71 +591,86 @@ public:
     }
 };
 
-class PositionCheck
-{
-public:
-    PositionCheck(Unit* caster) : _caster(caster) {}
-
-    bool operator()(WorldObject* unit)
-    {
-        bool isTooFar = _caster->GetDistance2d(unit) >= 2.5f;
-        bool isNotInFront = !_caster->isInFront(unit, 90.0f);
-        return isTooFar || isNotInFront;
-    }
-
-private:
-    Unit* _caster;
-};
-
 // SPELL_SHOOT : 102292
 class spell_tonk_shoot : public SpellScriptLoader
 {
 public:
-    spell_tonk_shoot() : SpellScriptLoader("spell_tonk_shoot") { }
+    spell_tonk_shoot() : SpellScriptLoader("spell_tonk_shoot") {}
 
     class spell_tonk_shoot_SpellScript : public SpellScript
     {
 
-        SpellCastResult CheckCast()
+        bool Validate(SpellInfo const* /*spellInfo*/) override
+        {
+            return true;
+        }
+
+        void FilterTargets(std::list<WorldObject*>& targets)
         {
             Unit* caster = GetCaster();
-
             if (!caster)
-                return SPELL_CAST_OK;
-
-            std::list<Creature*> targetList;
-            caster->GetCreatureListWithEntryInGrid(targetList, 54642, 2.5f);
-            caster->GetCreatureListWithEntryInGrid(targetList, 33081, 2.5f);
-
-            targetList.remove_if(PositionCheck(GetCaster()));
-
-            if (targetList.empty())
-                return SPELL_CAST_OK;
-
-            Creature* target = targetList.front();
-
-            switch (target->GetEntry())
             {
-            case 54642:
+                targets.clear();
+                return;
+            }
+
+            targets.remove_if([caster](WorldObject* obj) -> bool {
+                if (!obj->ToCreature())
+                    return true;
+
+                Creature* creature = obj->ToCreature();
+
+                if (creature->GetEntry() != 54642 && creature->GetEntry() != 33081)
+                    return true;
+
+                if (!caster->isInFront(creature, M_PI / 2))
+                    return true;
+
+                if (caster->GetDistance2d(creature) > 2.5f)
+                    return true;
+
+                if (!creature->GetCharmerOrOwnerGUID().IsEmpty())
+                    return true;
+
+                return false;
+            });
+
+            if (!targets.empty())
             {
-                caster->CastSpell(caster, 110162, true);
-                break;
+                Creature* target = targets.front()->ToCreature();
+
+                while (targets.size() > 1)
+                    targets.pop_back();
+
+                switch (target->GetEntry())
+                {
+                    case 54642:
+                    {
+                        break;
+                    }
+                    case 33081:
+                    {
+                        if (Player* player = caster->GetCharmerOrOwnerPlayerOrPlayerItself())
+                        {
+                            player->SetPower(POWER_ALTERNATE_POWER, (player->GetPower(POWER_ALTERNATE_POWER) + 1));
+                            int8 score = player->GetPower(POWER_ALTERNATE_POWER);
+
+                            if (score >= 45)
+                                if (AchievementEntry const* achiev = sAchievementStore.LookupEntry(9885))
+                                    player->CompletedAchievement(achiev);
+                        }
+                        break;
+                    }
+                }
+
+                caster->Kill(caster, target);
             }
-            case 33081:
-            {
-                caster->SetPower(POWER_ALTERNATE_POWER, (caster->GetPower(POWER_ALTERNATE_POWER) + 1));
-                break;
-            }
-            }
-            caster->Kill(caster, target);
-            return SPELL_CAST_OK;
         }
 
         void Register() override
         {
-            OnCheckCast += SpellCheckCastFn(spell_tonk_shoot_SpellScript::CheckCast);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_tonk_shoot_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
         }
-
     };
 
     SpellScript* GetSpellScript() const override
@@ -619,6 +698,7 @@ void AddSC_darkmoon_tonk()
     //npc
     new npc_finlay_coolshot();
     new npc_darkmoon_enemy_tonk();
+    new npc_darkmoon_player_tonk();
     //spell
     new spell_tonk_override_action();
     new spell_tonk_shoot();

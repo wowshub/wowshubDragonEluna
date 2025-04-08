@@ -98,7 +98,7 @@ public:
                     SendGossipMenuFor(player, 18286, me->GetGUID());
                 break;
             case GOSSIP_ACTION_INFO_DEF + 2:
-                if (player->HasItemCount(ITEM_DARKMOON_TOKEN))
+                if (player->HasItemCount(ITEM_DARKMOON_TOKEN, 1))
                 {
                     CloseGossipMenuFor(player);
 
@@ -109,6 +109,11 @@ public:
                     player->SetPower(POWER_ALTERNATE_POWER, 10);
 
                     return true;
+                }
+                else
+                {
+                    player->PlayerTalkClass->ClearMenus();
+                    return OnGossipHello(player);
                 }
                 break;
             case GOSSIP_ACTION_INFO_DEF + 3:
@@ -146,7 +151,6 @@ public:
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             Unit* caster = GetCaster();
-            Player* player = GetCaster()->ToPlayer();
 
             WorldLocation* loc = GetHitDest();
 
@@ -165,13 +169,7 @@ public:
                     dubenko->CastSpell(dubenko, SPELL_RINGTOSS_TURTLE_CIRCLE_1, true);
 
                 caster->CastSpell(dubenko, SPELL_RINGTOSS_HIT, false);
-            }
-
-            if (player)
-            {
-                if (player->GetReqKillOrCastCurrentCount(QUEST_TARGET_TURTLE, 54495) >= 3)
-                    player->RemoveAurasDueToSpell(SPELL_RINGTOSS_ENABLE);
-            }            
+            }          
         }
                         
 

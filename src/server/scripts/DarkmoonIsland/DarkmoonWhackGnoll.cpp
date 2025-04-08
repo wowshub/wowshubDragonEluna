@@ -269,7 +269,7 @@ public:
                 break;
                 // Ready to play
             case  GOSSIP_ACTION_INFO_DEF + 2:
-                if (player->HasItemCount(ITEM_DARKMOON_TOKEN))
+                if (player->HasItemCount(ITEM_DARKMOON_TOKEN, 1))
                 {
                     CloseGossipMenuFor(player);
 
@@ -279,6 +279,11 @@ public:
                     me->AddAura(SPELL_OVERRIDE_ACTION, player);
                     me->AddAura(SPELL_ENABLE_POWERBAR, player);
                     player->SetPower(POWER_ALTERNATE_POWER, player->GetReqKillOrCastCurrentCount(QUEST_WHACK_A_GNOLL, 54505));
+                }
+                else
+                {
+                    player->PlayerTalkClass->ClearMenus();
+                    return OnGossipHello(player);
                 }
                 break;
                 // I understand
@@ -347,14 +352,17 @@ class spell_whack_gnoll_whack : public SpellScriptLoader
             {
                 Unit* caster = GetCaster();
 
+                Player* player = caster->ToPlayer();
+
                 if (!caster)
                     return SPELL_CAST_OK;
 
+
                 // Todo : On peut rendre le code plus propre en changant la TargetA du spell par 46 et ajouter des conditions, mais perso j'ai la flemme
                 std::list<Creature*> targetList;
-                caster->GetCreatureListWithEntryInGrid(targetList, NPC_GNOLL, 3.0f);
-                caster->GetCreatureListWithEntryInGridAppend(targetList, NPC_DOLL, 3.0f);
-                caster->GetCreatureListWithEntryInGridAppend(targetList, NPC_BOSS, 3.0f);
+                caster->GetCreatureListWithEntryInGrid(targetList, NPC_GNOLL, 2.0f);
+                caster->GetCreatureListWithEntryInGridAppend(targetList, NPC_DOLL, 2.0f);
+                caster->GetCreatureListWithEntryInGridAppend(targetList, NPC_BOSS, 2.0f);
 
                 targetList.remove_if(PositionCheck(GetCaster()));
 
@@ -363,26 +371,38 @@ class spell_whack_gnoll_whack : public SpellScriptLoader
 
                 Creature* target = targetList.front();
 
+                if (!caster->isInFront(target, M_PI / 2))
+                    return SPELL_FAILED_UNIT_NOT_INFRONT;
+
+                int8 score;
+
                 switch (target->GetEntry())
                 {
                     case NPC_GNOLL:
                     {
                         caster->CastSpell(caster, SPELL_KILL_CREDIT, true);
+                        score = caster->GetPower(POWER_ALTERNATE_POWER);
                         break;
                     }
                     case NPC_DOLL:
                     {
                         caster->CastSpell(caster, SPELL_DOLL_STUN, true);
+                        score = caster->GetPower(POWER_ALTERNATE_POWER);
                         break;
                     }
                     case NPC_BOSS:
                     {
                         for (uint8 i = 0; i < 3; ++i)
                             caster->CastSpell(caster, SPELL_KILL_CREDIT, true);
+                            score = caster->GetPower(POWER_ALTERNATE_POWER);
 
                         break;
                     }
                 }
+
+                if (score >= 45)
+                    if (AchievementEntry const* achiev = sAchievementStore.LookupEntry(9983))
+                        player->CompletedAchievement(achiev);
 
                 caster->Kill(caster, target);
                 return SPELL_CAST_OK;

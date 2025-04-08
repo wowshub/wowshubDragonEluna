@@ -115,7 +115,7 @@ public:
                 break;
                 // Ready to play
             case  GOSSIP_ACTION_INFO_DEF + 2:
-                if (player->HasItemCount(ITEM_DARKMOON_TOKEN))
+                if (player->HasItemCount(ITEM_DARKMOON_TOKEN, 1))
                 {
                     CloseGossipMenuFor(player);
 
@@ -126,6 +126,11 @@ public:
                         flyAura->SetDuration(5000);
                     player->CastSpell(player, SPELL_CANON_PREPARATION, true);
 
+                }
+                else
+                {
+                    player->PlayerTalkClass->ClearMenus();
+                    return OnGossipHello(player);
                 }
                 break;
                 // I understand
