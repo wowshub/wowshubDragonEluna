@@ -288,9 +288,6 @@ public:
                     if (AchievementEntry const* achiev = sAchievementStore.LookupEntry(6022))
                         player->CompletedAchievement(achiev);
                 }
-
-                if (player->GetReqKillOrCastCurrentCount(QUEST_HE_SHOOTS_HE_SCORES, 54231) >= 25)
-                    player->RemoveAurasDueToSpell(SPELL_HESHOOTS_CRACKSHOT_ENABLE);
             }
         }
 

@@ -374,7 +374,7 @@ class spell_whack_gnoll_whack : public SpellScriptLoader
                 if (!caster->isInFront(target, M_PI / 2))
                     return SPELL_FAILED_UNIT_NOT_INFRONT;
 
-                int8 score;
+                int8 score{};
 
                 switch (target->GetEntry())
                 {
