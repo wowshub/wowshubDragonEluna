@@ -2003,11 +2003,6 @@ namespace LuaGlobalFunctions
                     return luaL_argerror(E->L, 2, "invalid character name");
                 mode = BanMode::BAN_CHARACTER;
                 break;
-            case BAN_IP:
-                if (!IsIPAddress(nameOrIP.c_str()))
-                    return luaL_argerror(E->L, 2, "invalid ip");
-                mode = BanMode::BAN_IP;
-                break;
             default:
                 return luaL_argerror(E->L, 1, "unknown banmode");
         }
