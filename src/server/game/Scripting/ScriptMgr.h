@@ -819,6 +819,9 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called when a player completes a movie
         virtual void OnMovieComplete(Player* player, uint32 movieId);
 
+        // Called when a player take damage
+        virtual void OnTakeDamage(Player* /*player*/, uint32 /*damage*/, SpellSchoolMask /*schoolMask*/) { }
+
         // Called when a player choose a response from a PlayerChoice
         virtual void OnPlayerChoiceResponse(Player* player, uint32 choiceId, uint32 responseId);
 
@@ -1376,6 +1379,7 @@ class TC_GAME_API ScriptMgr
 
     public:
         bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest);
+        void OnPlayerTakeDamage(Player* player, uint32 damage, SpellSchoolMask schoolMask);
 };
 
 namespace Trinity::SpellScripts

@@ -2567,6 +2567,11 @@ void ScriptMgr::OnPlayerChoiceResponse(Player* player, uint32 choiceId, uint32 r
     FOREACH_SCRIPT(PlayerScript)->OnPlayerChoiceResponse(player, choiceId, responseId);
 }
 
+void ScriptMgr::OnPlayerTakeDamage(Player* player, uint32 damage, SpellSchoolMask schoolMask)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnTakeDamage(player, damage, schoolMask);
+}
+
 void ScriptMgr::OnPlayerSuccessfulSpellCast(Player* player, Spell* spell)
 {
     FOREACH_SCRIPT(PlayerScript)->OnSuccessfulSpellCast(player, spell);
