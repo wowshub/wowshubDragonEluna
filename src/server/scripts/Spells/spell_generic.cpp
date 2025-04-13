@@ -41,6 +41,7 @@
 #include "NPCPackets.h"
 #include "ObjectMgr.h"
 #include "Pet.h"
+#include "PhasingHandler.h"
 #include "ReputationMgr.h"
 #include "PathGenerator.h"
 #include "SkillDiscovery.h"
@@ -5555,173 +5556,22 @@ struct at_gen_spatial_rift : AreaTriggerAI
     }
 };
 
-//Allied Race SpellFix
-
-// Arcane Pulse (Nightborne racial) - 260364
-class spell_arcane_pulse : public SpellScript
+class spell_gen_force_phase_update : public AuraScript
 {
-    void HandleDamage(SpellEffIndex /*effIndex*/)
+    void AfterApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/) const
     {
-        float damage = GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK) * 2.f;
+        PhasingHandler::OnConditionChange(GetTarget());
+    }
 
-        if (!damage)
-            damage = float(GetCaster()->GetTotalSpellPowerValue(SPELL_SCHOOL_MASK_ALL, false)) * 0.75f;
-
-        SetHitDamage(damage);
+    void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/) const
+    {
+        PhasingHandler::OnConditionChange(GetTarget());
     }
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_arcane_pulse::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-    }
-};
-
-// Light's Judgement - 256893  (Lightforged Draenei Racial)
-class spell_light_judgement : public SpellScript
-{
-
-    void HandleDamage(SpellEffIndex /*effIndex*/)
-    {
-        if (Unit* caster = GetCaster())
-            SetHitDamage(6.25f * caster->m_unitData->AttackPower);
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_light_judgement::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-    }
-};
-
-//312372
-// 9.0.5
-class spell_back_camp : public SpellScript
-{
-
-    SpellCastResult CheckRequirement()
-    {
-        if (Unit* caster = GetCaster())
-            if (Player* player = caster->ToPlayer())
-                if (!player->GetStoredAuraTeleportLocation(313055))
-                {
-                    SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_YOU_CANNOT_MAKE_YOUR_CAMP_HERE);
-                    return SPELL_FAILED_CUSTOM_ERROR;
-                }
-
-        return SPELL_CAST_OK;
-    }
-
-    void HandleTeleport()
-    {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
-        Player* player = caster->ToPlayer();
-        if (!player)
-            return;
-        player->RemoveMovementImpairingAuras(false);
-
-        // Tente: 292769
-        // Sac: 276247
-        // campfire: 301125
-     //   if (WorldLocation const* dest = player->GetStoredAuraTeleportLocation(GetEffectInfo()->MiscValue))
-        {
-            uint32 spawntm = 300;
-            if (GameObject* tempGob = player->SummonGameObject(292769, *player, QuaternionData::fromEulerAnglesZYX(player->GetOrientation(), 0.0f, 0.0f), Seconds(spawntm)))
-                player->SetLastTargetedGO(tempGob->GetGUID().GetCounter());
-
-            if (GameObject* tempGob = player->SummonGameObject(276247, Position(player->GetPositionX() + 2.0f, player->GetPositionY() + 2.0f, player->GetPositionZ(), player->GetOrientation()), QuaternionData::fromEulerAnglesZYX(player->GetOrientation(), 0.0f, 0.0f), Seconds(spawntm)))
-                player->SetLastTargetedGO(tempGob->GetGUID().GetCounter());
-
-            if (GameObject* tempGob = player->SummonGameObject(301125, Position(player->GetPositionX() + -2.0f, player->GetPositionY() + -2.0f, player->GetPositionZ(), player->GetOrientation()), QuaternionData::fromEulerAnglesZYX(player->GetOrientation(), 0.0f, 0.0f), Seconds(spawntm)))
-                player->SetLastTargetedGO(tempGob->GetGUID().GetCounter());
-        }
-    }
-
-    void Register() override
-    {
-        OnCheckCast += SpellCheckCastFn(spell_back_camp::CheckRequirement);
-        AfterCast += SpellCastFn(spell_back_camp::HandleTeleport);
-    }
-};
-
-//312370
-class spell_make_camp : public SpellScript
-{
-
-    void Oncast()
-    {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
-        float x = caster->GetPositionX();
-        float y = caster->GetPositionY();
-        float z = caster->GetPositionZ();
-        float o = caster->GetOrientation();
-
-        // Tente: 292769
-        // Sac: 276247
-        // campfire: 301125
-        Player* player = caster->ToPlayer();
-        if (!player)
-            return;
-
-        uint32 spawntm = 300;
-        if (GameObject* tempGob = player->SummonGameObject(292769, *player, QuaternionData::fromEulerAnglesZYX(player->GetOrientation(), 0.0f, 0.0f), Seconds(spawntm)))
-            player->SetLastTargetedGO(tempGob->GetGUID().GetCounter());
-
-        if (GameObject* tempGob = player->SummonGameObject(276247, Position(x + 2.0f, y + 2.0f, z, o), QuaternionData::fromEulerAnglesZYX(player->GetOrientation(), 0.0f, 0.0f), Seconds(spawntm)))
-            player->SetLastTargetedGO(tempGob->GetGUID().GetCounter());
-
-        if (GameObject* tempGob = player->SummonGameObject(301125, Position(x + -2.0f, y + -2.0f, z, o), QuaternionData::fromEulerAnglesZYX(player->GetOrientation(), 0.0f, 0.0f), Seconds(spawntm)))
-            player->SetLastTargetedGO(tempGob->GetGUID().GetCounter());
-    }
-
-    void Register()
-    {
-        OnCast += SpellCastFn(spell_make_camp::Oncast);
-    }
-};
-
-//274738
-class spell_maghar_orc_racial_ancestors_call : public SpellScript
-{
-
-    void Oncast()
-    {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
-
-        uint32 RandomStats = urand(0, 3);
-
-        switch (RandomStats)
-        {
-        case 0:
-            //mastery
-            caster->CastSpell(nullptr, 274741, true);
-            break;
-
-        case 1:
-
-            //versatility
-            caster->CastSpell(nullptr, 274742, true);
-            break;
-
-        case 2:
-            //haste
-            caster->CastSpell(nullptr, 274740, true);
-            break;
-
-        case 3:
-            //crit
-            caster->CastSpell(nullptr, 274739, true);
-            break;
-        }
-    }
-
-    void Register() override
-    {
-        OnCast += SpellCastFn(spell_maghar_orc_racial_ancestors_call::Oncast);
+        AfterEffectApply += AuraEffectApplyFn(spell_gen_force_phase_update::AfterApply, EFFECT_FIRST_FOUND, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
+        AfterEffectRemove += AuraEffectRemoveFn(spell_gen_force_phase_update::AfterRemove, EFFECT_FIRST_FOUND, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
@@ -5910,11 +5760,5 @@ void AddSC_generic_spell_scripts()
     RegisterSpellScript(spell_gen_saddlechute);
     RegisterSpellScript(spell_gen_spatial_rift);
     RegisterAreaTriggerAI(at_gen_spatial_rift);
-
-    //Allied Race Spells
-    RegisterSpellScript(spell_arcane_pulse);
-    RegisterSpellScript(spell_light_judgement);
-    RegisterSpellScript(spell_make_camp);
-    RegisterSpellScript(spell_back_camp);
-    RegisterSpellScript(spell_maghar_orc_racial_ancestors_call);
+    RegisterSpellScript(spell_gen_force_phase_update);
 }
