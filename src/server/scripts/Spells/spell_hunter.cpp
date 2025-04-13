@@ -1978,85 +1978,6 @@ class spell_hun_spearhead : public SpellScript
     }
 };
 
-// Exposive Trap - 236775
-// AreaTriggerID - 9810
-class at_hun_explosive_trap : public AreaTriggerEntityScript
-{
-public:
-
-    at_hun_explosive_trap() : AreaTriggerEntityScript("at_hun_explosive_trap") { }
-
-    struct at_hun_explosive_trapAI : AreaTriggerAI
-    {
-        int32 timeInterval;
-
-        enum UsedSpells
-        {
-            SPELL_HUNTER_EXPLOSIVE_TRAP_DAMAGE = 236777
-        };
-
-        at_hun_explosive_trapAI(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
-        {
-            timeInterval = 200;
-        }
-
-        void OnCreate(Spell const* /*creatingSpell*/) override
-        {
-            Unit* caster = at->GetCaster();
-
-            if (!caster)
-                return;
-
-            if (!caster->ToPlayer())
-                return;
-
-            for (auto itr : at->GetInsideUnits())
-            {
-                Unit* target = ObjectAccessor::GetUnit(*caster, itr);
-                if (!caster->IsFriendlyTo(target))
-                {
-                    if (TempSummon* tempSumm = caster->SummonCreature(WORLD_TRIGGER, at->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 200ms))
-                    {
-                        tempSumm->SetFaction(caster->GetFaction());
-                        tempSumm->SetSummonerGUID(caster->GetGUID());
-                        PhasingHandler::InheritPhaseShift(tempSumm, caster);
-                        caster->CastSpell(tempSumm, SPELL_HUNTER_EXPLOSIVE_TRAP_DAMAGE, true);
-                        at->Remove();
-                    }
-                }
-            }
-        }
-
-        void OnUnitEnter(Unit* unit) override
-        {
-            Unit* caster = at->GetCaster();
-
-            if (!caster || !unit)
-                return;
-
-            if (!caster->ToPlayer())
-                return;
-
-            if (!caster->IsFriendlyTo(unit))
-            {
-                if (TempSummon* tempSumm = caster->SummonCreature(WORLD_TRIGGER, at->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 200ms))
-                {
-                    tempSumm->SetFaction(caster->GetFaction());
-                    tempSumm->SetSummonerGUID(caster->GetGUID());
-                    PhasingHandler::InheritPhaseShift(tempSumm, caster);
-                    caster->CastSpell(tempSumm, SPELL_HUNTER_EXPLOSIVE_TRAP_DAMAGE, true);
-                    at->Remove();
-                }
-            }
-        }
-    };
-
-    AreaTriggerAI* GetAI(AreaTrigger* areatrigger) const override
-    {
-        return new at_hun_explosive_trapAI(areatrigger);
-    }
-};
-
 // 259495 - Wildfire Bomb
 class spell_hunter_wildfire_bomb : public SpellScript
 {
@@ -2384,7 +2305,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_barrage();
     RegisterSpellScript(spell_hun_flanking_strike);
     RegisterSpellScript(spell_hun_spearhead);
-    new at_hun_explosive_trap();
     RegisterSpellScript(spell_hunter_wildfire_bomb);
     RegisterSpellScript(spell_hunter_wildfire_infusion_talent);
     RegisterSpellScript(spell_hunter_wildfire_infusion_dummy);
