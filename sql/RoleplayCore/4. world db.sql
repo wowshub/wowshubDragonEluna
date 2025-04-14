@@ -576,6 +576,11 @@ REPLACE INTO `spell_script_names` VALUES (115057, 'spell_monk_flying_serpent_kic
 
 REPLACE INTO `spell_linked_spell` VALUES (113656, 165144, 0, 'Fists of Fury visual fix');
 REPLACE INTO `spell_linked_spell` VALUES (324312, 324383, 0, 'Monk Clash spell fix');
+REPLACE INTO `spell_linked_spell` VALUES (152175, 158221, 0, 'Monk Whirling Dragon Punch Damage');
+
+REPLACE INTO `spell_script_names` VALUES (113656, 'spell_fist_of_fury_proc');
+REPLACE INTO `spell_script_names` VALUES (107428, 'spell_rising_sun_kick_proc');
+REPLACE INTO `spell_script_names` VALUES (152175, 'spell_monk_whirling_dragon_punch');
 
 -- ----------------------------
 -- DH spell fixes

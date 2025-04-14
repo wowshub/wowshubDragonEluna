@@ -2603,6 +2603,100 @@ struct npc_monk_xuen : public ScriptedAI
     }
 };
 
+// Fists of Fury - 113656
+class spell_fist_of_fury_proc : public SpellScriptLoader
+{
+public:
+    spell_fist_of_fury_proc() : SpellScriptLoader("spell_fist_of_fury_proc") {}
+
+    class spell_fist_of_fury_proc_SpellScript : public SpellScript
+    {
+        void DragonPunchProc()
+        {
+            Player* caster = GetCaster()->ToPlayer();
+            if (!caster)
+                return;
+            if (caster->GetSpellHistory()->HasCooldown(113656) && caster->GetSpellHistory()->HasCooldown(107428))
+            {
+                if (!caster->HasAura(196742))
+                    caster->CastSpell(caster, 196742, true);
+            }
+        }
+
+        void Register() override
+        {
+            AfterCast += SpellCastFn(spell_fist_of_fury_proc_SpellScript::DragonPunchProc);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_fist_of_fury_proc_SpellScript();
+    }
+};
+
+// Rising Sun Kick - 107428
+class spell_rising_sun_kick_proc : public SpellScriptLoader
+{
+public:
+    spell_rising_sun_kick_proc() : SpellScriptLoader("spell_rising_sun_kick_proc") {}
+
+    class spell_rising_sun_kick_proc_SpellScript : public SpellScript
+    {
+        void DragonPunchProc()
+        {
+            Player* caster = GetCaster()->ToPlayer();
+            if (!caster)
+                return;
+            if (caster->GetSpellHistory()->HasCooldown(113656) && caster->GetSpellHistory()->HasCooldown(107428))
+            {
+                if (!caster->HasAura(196742))
+                    caster->CastSpell(caster, 196742, true);
+            }
+        }
+
+        void Register() override
+        {
+            AfterCast += SpellCastFn(spell_rising_sun_kick_proc_SpellScript::DragonPunchProc);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_rising_sun_kick_proc_SpellScript();
+    }
+};
+
+// Whirling Dragon Punch - 152175
+class spell_monk_whirling_dragon_punch : public SpellScriptLoader
+{
+public:
+    spell_monk_whirling_dragon_punch() : SpellScriptLoader("spell_monk_whirling_dragon_punch") {}
+
+    class spell_monk_whirling_dragon_punch_SpellScript : public SpellScript
+    {
+        void DragonPunchProc()
+        {
+            Player* caster = GetCaster()->ToPlayer();
+            if (!caster)
+                return;
+
+            if (caster->HasAura(196742))
+                caster->RemoveAurasDueToSpell(196742);
+        }
+
+        void Register() override
+        {
+            AfterCast += SpellCastFn(spell_monk_whirling_dragon_punch_SpellScript::DragonPunchProc);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_monk_whirling_dragon_punch_SpellScript();
+    }
+};
+
 // Flying Serpent Kick - 115057
 class spell_monk_flying_serpent_kick : public SpellScriptLoader
 {
@@ -2716,5 +2810,8 @@ void AddSC_monk_spell_scripts()
     new spell_monk_fists_of_fury_visual();
     new spell_monk_fists_of_fury_visual_filter();
     RegisterCreatureAI(npc_monk_xuen);
+    new spell_fist_of_fury_proc();
+    new spell_rising_sun_kick_proc();
+    new spell_monk_whirling_dragon_punch();
     new spell_monk_flying_serpent_kick();
 }
