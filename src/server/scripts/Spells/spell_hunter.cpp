@@ -2309,8 +2309,8 @@ void AddSC_hunter_spell_scripts()
     RegisterSpellScript(spell_hunter_wildfire_infusion_talent);
     RegisterSpellScript(spell_hunter_wildfire_infusion_dummy);
     RegisterAreaTriggerAI(at_hunter_wildfire_bomb);
-    RegisterAreaTriggerAI(at_hunter_pheromone_bomb);
-    RegisterAreaTriggerAI(at_hunter_shrapnel_bomb);
-    RegisterAreaTriggerAI(at_hunter_volatile_bomb);
+    RegisterAreaTriggerAI(at_hunter_pheromone_bomb); //unused
+    RegisterAreaTriggerAI(at_hunter_shrapnel_bomb); //unused
+    RegisterAreaTriggerAI(at_hunter_volatile_bomb); //unused
     RegisterSpellScript(spell_hun_call_pet);
 }

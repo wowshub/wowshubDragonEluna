@@ -2633,7 +2633,7 @@ void AddSC_monk_spell_scripts()
     new spell_monk_chi_wave_damage_missile();
     new spell_monk_chi_wave_heal_missile();
     new spell_monk_chi_wave_healing_bolt();
-    RegisterSpellScript(spell_monk_chi_wave_target_selector);
+    RegisterSpellScript(spell_monk_chi_wave_target_selector); //unused
     RegisterAreaTriggerAI(at_monk_chi_burst);
     new spell_monk_chi_burst_heal();
     new spell_monk_black_ox_brew(); // ??  NEED FIX
