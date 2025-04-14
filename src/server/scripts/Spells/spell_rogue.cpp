@@ -1492,7 +1492,6 @@ class spell_rog_poisons : public SpellScript
 // 385616 - Echoing Reprimand
 class spell_rog_echoing_reprimand : public SpellScript
 {
-    PrepareSpellScript(spell_rog_echoing_reprimand);
 
     void HandleOnHit()
     {

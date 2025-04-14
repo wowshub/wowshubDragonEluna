@@ -3448,7 +3448,7 @@ public:
     class spell_dh_demonic_appetite_AuraScript : public AuraScript
     {
 
-        bool CheckProc(ProcEventInfo& eventInfo)
+        bool CheckProc(ProcEventInfo& /*eventInfo*/)
         {
             return true;
         }

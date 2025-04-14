@@ -1488,7 +1488,6 @@ class spell_pal_selfless_healer : public AuraScript
 // 53600 - Shield of the Righteous
 class spell_pal_shield_of_the_righteous : public SpellScript
 {
-    PrepareSpellScript(spell_pal_shield_of_the_righteous);
 
     void HandleOnHit(SpellEffIndex /*effIndex*/)
     {

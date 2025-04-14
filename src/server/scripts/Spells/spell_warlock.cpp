@@ -1904,7 +1904,6 @@ class aura_warl_haunt : public AuraScript
 // Summon Darkglare - 205180
 class spell_warlock_summon_darkglare : public SpellScript
 {
-    PrepareSpellScript(spell_warlock_summon_darkglare);
 
     void HandleOnHitTarget(SpellEffIndex /*effIndex*/)
     {
@@ -1994,7 +1993,6 @@ public:
 
     class spell_warl_demonic_gateway_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_warl_demonic_gateway_SpellScript);
 
         void HandleLaunch(SpellEffIndex /*effIndex*/)
         {
@@ -2251,7 +2249,6 @@ public:
 
     class spell_warlock_call_dreadstalkers_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_warlock_call_dreadstalkers_SpellScript);
 
         void HandleHit(SpellEffIndex /*effIndex*/)
         {
@@ -2371,7 +2368,6 @@ public:
 
     class spell_warl_eye_laser_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_warl_eye_laser_SpellScript);
 
         void HandleTargets(std::list<WorldObject*>& targets)
         {
@@ -2435,7 +2431,6 @@ public:
 
     class spell_warl_demonic_calling_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_warl_demonic_calling_AuraScript);
 
         bool Validate(SpellInfo const* /*spellInfo*/) override
         {
@@ -2493,7 +2488,6 @@ public:
 
     class spell_warl_implosion_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_warl_implosion_SpellScript);
 
         void HandleHit(SpellEffIndex /*effIndex*/)
         {
@@ -2606,7 +2600,6 @@ public:
 
     class spell_warl_channel_demonfire_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_warl_channel_demonfire_AuraScript);
 
         void HandlePeriodic(AuraEffect const* /*aurEff*/)
         {
@@ -2723,7 +2716,6 @@ public:
 
     class spell_warlock_fel_firebolt_wild_imp_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_warlock_fel_firebolt_wild_imp_SpellScript);
 
         void HandleHit(SpellEffIndex /*effIndex*/)
         {
@@ -2814,7 +2806,6 @@ private:
 // Inquisitor's Gaze - 386344
 class spell_warlock_inquisitors_gaze : public SpellScript
 {
-    PrepareSpellScript(spell_warlock_inquisitors_gaze);
 
     void HandleOnHit(SpellEffIndex /*effIndex*/)
     {
@@ -2863,7 +2854,6 @@ public:
 
     class spell_warlock_agony_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_warlock_agony_AuraScript);
 
         void HandleDummyPeriodic(AuraEffect const* auraEffect)
         {
@@ -2921,7 +2911,6 @@ public:
 
     class spell_warlock_imp_firebolt_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_warlock_imp_firebolt_SpellScript);
 
         void HandleHit(SpellEffIndex /*effIndex*/)
         {

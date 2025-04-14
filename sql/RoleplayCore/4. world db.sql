@@ -574,6 +574,7 @@ REPLACE INTO `creature_template` VALUES (63508, 0, 0, 'Xuen', '', NULL, NULL, NU
 REPLACE INTO `spell_script_names` VALUES (115057, 'spell_monk_flying_serpent_kick');
 
 REPLACE INTO `spell_linked_spell` VALUES (113656, 165144, 0, 'Fists of Fury visual fix');
+REPLACE INTO `spell_linked_spell` VALUES (324312, 324383, 0, 'Monk Clash spell fix');
 
 -- ----------------------------
 -- DH spell fixes

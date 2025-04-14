@@ -2663,7 +2663,6 @@ public:
             for (std::list<Player*>::const_iterator itr = pList.begin(); itr != pList.end(); itr++)
             {
                 Player* player = (*itr);
-                bool isOutdoor;
                 player->GetMap()->GetAreaId(player->GetPhaseShift(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
                 if (player->GetQuestStatus(QUEST_THE_REBEL_LORDS_ARSENAL) != QUEST_STATUS_COMPLETE)
                 {
