@@ -544,6 +544,7 @@ REPLACE INTO `areatrigger_scripts` VALUES (5300, 'at_monk_chi_burst');
 REPLACE INTO `areatrigger_create_properties` VALUES (1316, 0, 5300, 0, 0, 392, 0, 0, 0, -1, 0, 0, 0, 931, 1000, 0, 5, 5, 0, 0, 0, 0, 0, 0, 'at_monk_chi_burst', 40120);
 
 REPLACE INTO `spell_script_names` VALUES (130654, 'spell_monk_chi_burst_heal');
+REPLACE INTO `spell_script_names` VALUES (115399, 'spell_monk_black_ox_brew');
 REPLACE INTO `spell_script_names` VALUES (115313, 'spell_monk_jade_serpent_statue');
 
 REPLACE INTO `creature_template` VALUES (60849, 0, 0, 'Jade Serpent Statue', '', '', NULL, '', 0, 0, 5, 0, 1, 1.14286, 1, 0, 0, 1798, 2000, 1, 1, 1, 512, 32800, 0, 0, 0, 11, 0, '', 0, 1, 0, 0, 0, 0, 1, 0, 0, 'npc_monk_jade_serpent_statue', NULL, 53040);

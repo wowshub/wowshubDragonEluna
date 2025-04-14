@@ -2603,60 +2603,6 @@ struct npc_monk_xuen : public ScriptedAI
     }
 };
 
-// Whirling Dragon Punch - 152175
-class playerScript_monk_whirling_dragon_punch : public PlayerScript
-{
-public:
-    playerScript_monk_whirling_dragon_punch() : PlayerScript("playerScript_monk_whirling_dragon_punch") { }
-
-    void OnCooldownStart(Player* player, SpellInfo const* spellInfo, uint32 /*itemId*/, int32& cooldown, uint32& /*categoryId*/, int32& /*categoryCooldown*/) override
-    {
-        if (spellInfo->Id == SPELL_MONK_FISTS_OF_FURY)
-        {
-            SpellInfo const* risingSunKickInfo = sSpellMgr->GetSpellInfo(SPELL_MONK_RISING_SUN_KICK, DIFFICULTY_NONE);
-            ApplyCasterAura(player, cooldown, player->GetSpellHistory()->GetChargeRecoveryTime(risingSunKickInfo->ChargeCategoryId));
-        }
-    }
-
-    void OnChargeRecoveryTimeStart(Player* player, uint32 chargeCategoryId, int32& chargeRecoveryTime) override
-    {
-        SpellInfo const* risingSunKickInfo = sSpellMgr->GetSpellInfo(SPELL_MONK_RISING_SUN_KICK, DIFFICULTY_NONE);
-        if (risingSunKickInfo->ChargeCategoryId == chargeCategoryId)
-        {
-            SpellInfo const* fistsOfFuryInfo = sSpellMgr->GetSpellInfo(SPELL_MONK_RISING_SUN_KICK, DIFFICULTY_NONE);
-            ApplyCasterAura(player, chargeRecoveryTime, player->GetSpellHistory()->GetRemainingCooldown(fistsOfFuryInfo) == 0s);
-        }
-    }
-
-private:
-
-    void ApplyCasterAura(Player* player, int32 cooldown1, int32 cooldown2)
-    {
-        if (cooldown1 > 0 && cooldown2 > 0)
-        {
-            uint32 whirlingDragonPunchAuraDuration = std::min(cooldown1, cooldown2);
-            player->CastSpell(player, SPELL_MONK_WHIRLING_DRAGON_PUNCH_CASTER_AURA, true);
-            if (Aura* aura = player->GetAura(SPELL_MONK_WHIRLING_DRAGON_PUNCH_CASTER_AURA))
-                aura->SetDuration(whirlingDragonPunchAuraDuration);
-        }
-    }
-};
-
-// Whirling Dragon Punch - 152175
-class spell_monk_whirling_dragon_punch : public AuraScript
-{
-    void OnTick(AuraEffect const* /*aurEff*/)
-    {
-        if (GetCaster())
-            GetCaster()->CastSpell(GetCaster(), SPELL_MONK_WHIRLING_DRAGON_PUNCH_DAMAGE, true);
-    }
-
-    void Register() override
-    {
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_whirling_dragon_punch::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-    }
-};
-
 // Flying Serpent Kick - 115057
 class spell_monk_flying_serpent_kick : public SpellScriptLoader
 {
@@ -2742,7 +2688,7 @@ void AddSC_monk_spell_scripts()
     RegisterSpellScript(spell_monk_chi_wave_target_selector); //unused
     RegisterAreaTriggerAI(at_monk_chi_burst);
     new spell_monk_chi_burst_heal();
-    new spell_monk_black_ox_brew(); // ??  NEED FIX
+    new spell_monk_black_ox_brew();
     new spell_monk_jade_serpent_statue();
     RegisterCreatureAI(npc_monk_jade_serpent_statue);
     RegisterSpellScript(spell_monk_transcendence);
@@ -2770,7 +2716,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_fists_of_fury_visual();
     new spell_monk_fists_of_fury_visual_filter();
     RegisterCreatureAI(npc_monk_xuen);
-    new playerScript_monk_whirling_dragon_punch(); //need testing    NEED FIX
-    RegisterSpellScript(spell_monk_whirling_dragon_punch); //not check NEED FIX
     new spell_monk_flying_serpent_kick();
 }
