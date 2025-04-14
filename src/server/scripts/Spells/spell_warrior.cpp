@@ -121,8 +121,6 @@ enum WarriorSpells
     SPELL_WARRIOR_FROTHING_BERSERKER                = 215572,
     SPELL_WARRIOR_FRESH_MEAT                        = 215568,
     SPELL_WARRIOR_SUDDEN_DEATH_PROCS                = 280776,
-    SPELL_WARRIOR_SECOND_WIND_DAMAGED               = 202149,
-    SPELL_WARRIOR_SECOND_WIND_HEAL                  = 202147,
     SPELL_WARRIOR_ANGER_MANAGEMENT                  = 152278,
     SPELL_WARRIOR_UNRELENTING_ASSAULT_RANK_1        = 46859,
     SPELL_WARRIOR_UNRELENTING_ASSAULT_RANK_2        = 46860,
@@ -1641,8 +1639,6 @@ public:
         return new spell_warr_odyns_fury_AuraScript();
     }
 };
-
-//Second wind - 29838
 
 //152278 Anger Management
 class anger_management : public PlayerScript
