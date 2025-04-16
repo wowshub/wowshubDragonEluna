@@ -1036,6 +1036,58 @@ void WorldSession::SetPlayer(Player* player)
         m_GUIDLow = _player->GetGUID().GetCounter();
 }
 
+void WorldSession::HandleCommentatorModeOpcode(WorldPackets::Chat::CommentatorModeEnable& packet)
+{
+    packet.Read();
+    TC_LOG_ERROR("network.opcodes", "Received action {} from HandleCommentatorModeOpcode", packet.Action);
+    switch (packet.Action)
+    {
+    case 0:
+        _player->RemovePlayerFlag(PLAYER_FLAGS_UBER);
+        _player->RemovePlayerFlag(PLAYER_FLAGS_COMMENTATOR2);
+        //_player->RemovePlayerFlag(PLAYER_FLAGS_COMMENTATOR_CAMERA);
+        break;
+    case 1:
+        _player->SetPlayerFlag(PLAYER_FLAGS_UBER);
+        _player->SetPlayerFlag(PLAYER_FLAGS_COMMENTATOR2);
+        //_player->SetPlayerFlag(PLAYER_FLAGS_COMMENTATOR_CAMERA);
+        break;
+    case 2:
+        if (_player->HasPlayerFlag(PLAYER_FLAGS_UBER))
+        {
+            _player->RemovePlayerFlag(PLAYER_FLAGS_UBER);
+        }
+        else
+        {
+            _player->SetPlayerFlag(PLAYER_FLAGS_UBER);
+        }
+
+        if (_player->HasPlayerFlag(PLAYER_FLAGS_COMMENTATOR2))
+        {
+            _player->RemovePlayerFlag(PLAYER_FLAGS_COMMENTATOR2);
+        }
+        else
+        {
+            _player->SetPlayerFlag(PLAYER_FLAGS_COMMENTATOR2);
+        }
+
+        /*
+        if (_player->HasPlayerFlag(PLAYER_FLAGS_COMMENTATOR_CAMERA))
+        {
+            _player->RemovePlayerFlag(PLAYER_FLAGS_COMMENTATOR_CAMERA);
+        }
+        else
+        {
+            _player->SetPlayerFlag(PLAYER_FLAGS_COMMENTATOR_CAMERA);
+        }
+        */
+        break;
+    default:
+        TC_LOG_ERROR("network.commands", "Received invalid action {} from HandleCommentatorModeOpcode", packet.Action);
+        break;
+    }
+}
+
 void WorldSession::ProcessQueryCallbacks()
 {
     _queryProcessor.ProcessReadyCallbacks();

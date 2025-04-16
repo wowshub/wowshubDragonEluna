@@ -40,6 +40,26 @@ namespace WorldPackets
 {
     namespace Misc
     {
+        class PreloadWorld final : public ServerPacket
+        {
+        public:
+            PreloadWorld() : ServerPacket(SMSG_PRELOAD_WORLD) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 MapID = 0;
+            float x = 0.f;
+            float y = 0.f;
+            float z = 0.f;
+            float o = 0.f;
+            uint32 unk1 = -1;
+            uint32 unk2 = -1;
+            uint32 unk3 = 21;
+            uint32 unk4 = 0;
+            uint32 unk5 = 0;
+            uint32 unk6 = 0;
+        };
+
         class BindPointUpdate final : public ServerPacket
         {
         public:

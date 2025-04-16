@@ -26,6 +26,7 @@
 #include "AsyncCallbackProcessor.h"
 #include "AuthDefines.h"
 #include "ClientBuildInfo.h"
+#include "ChatPackets.h"
 #include "DatabaseEnvFwd.h"
 #include "Duration.h"
 #include "IteratorPair.h"
@@ -1204,6 +1205,7 @@ class TC_GAME_API WorldSession
         void HandleCharDeleteOpcode(WorldPackets::Character::CharDelete& charDelete);
         void HandleCharCreateOpcode(WorldPackets::Character::CreateCharacter& charCreate);
         void HandlePlayerLoginOpcode(WorldPackets::Character::PlayerLogin& playerLogin);
+        void HandleCommentatorModeOpcode(WorldPackets::Chat::CommentatorModeEnable& packet);
 
         void SendConnectToInstance(WorldPackets::Auth::ConnectToSerial serial);
         void HandleContinuePlayerLogin();

@@ -18,6 +18,22 @@
 #include "MiscPackets.h"
 #include "Common.h"
 
+WorldPacket const* WorldPackets::Misc::PreloadWorld::Write()
+{
+    _worldPacket << uint32(MapID);
+    _worldPacket << x;
+    _worldPacket << y;
+    _worldPacket << z;
+    _worldPacket << o;
+    _worldPacket << uint32(unk1);
+    _worldPacket << uint32(unk2);
+    _worldPacket << uint32(unk3);
+    _worldPacket << uint32(unk4);
+    _worldPacket << uint32(unk5);
+    _worldPacket << uint32(unk6);
+    return &_worldPacket;
+}
+
 WorldPacket const* WorldPackets::Misc::BindPointUpdate::Write()
 {
     _worldPacket << BindPosition;
