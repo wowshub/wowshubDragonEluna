@@ -882,3 +882,34 @@ void WorldPackets::Misc::AccountNotificationAcknowledge::Read()
     _worldPacket >> unk2;
     _worldPacket >> unk3;
 }
+
+WorldPacket const* WorldPackets::Misc::ShowTradeSkillResponse::Write()
+{
+    _worldPacket << PlayerGUID;
+    _worldPacket << SpellId;
+    _worldPacket << static_cast<uint32>(SkillLineIDs.size());
+    _worldPacket << static_cast<uint32>(SkillRanks.size());
+    _worldPacket << static_cast<uint32>(SkillMaxRanks.size());
+    _worldPacket << static_cast<uint32>(KnownAbilitySpellIDs.size());
+
+    for (auto const& v : SkillLineIDs)
+        _worldPacket << v;
+
+    for (auto const& c : SkillRanks)
+        _worldPacket << c;
+
+    for (auto const& z : SkillMaxRanks)
+        _worldPacket << z;
+
+    for (auto const& t : KnownAbilitySpellIDs)
+        _worldPacket << t;
+
+    return &_worldPacket;
+}
+
+void WorldPackets::Misc::ShowTradeSkill::Read()
+{
+    _worldPacket >> PlayerGUID;
+    _worldPacket >> SpellID;
+    _worldPacket >> SkillLineID;
+}
