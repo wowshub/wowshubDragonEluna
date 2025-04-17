@@ -24,6 +24,7 @@
 #include "BattlegroundQueue.h"
 #include "UniqueTrackablePtr.h"
 #include <unordered_map>
+#include "FunctionProcessor.h"
 
 class Battleground;
 struct BattlemasterListEntry;
@@ -162,6 +163,9 @@ class TC_GAME_API BattlegroundMgr
         void LoadBattlegroundScriptTemplate();
         BattlegroundScriptTemplate const* FindBattlegroundScriptTemplate(uint32 mapId, BattlegroundTypeId bgTypeId) const;
 
+        void AddDelayedEvent(uint64 timeOffset, std::function<void()>&& function);
+        void InitWargame(Player* player, ObjectGuid opposingPartyMember, uint64 queueID, bool accept);
+
     private:
         uint32 CreateClientVisibleInstanceId(BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id);
         static bool IsArenaType(BattlegroundTypeId bgTypeId);
@@ -203,6 +207,8 @@ class TC_GAME_API BattlegroundMgr
         BattlegroundMapTemplateContainer _battlegroundMapTemplates;
 
         std::map<std::pair<int32, uint32>, BattlegroundScriptTemplate> _battlegroundScriptTemplates;
+
+        FunctionProcessor m_Functions;
 };
 
 #define sBattlegroundMgr BattlegroundMgr::instance()

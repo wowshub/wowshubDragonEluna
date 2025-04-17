@@ -3377,6 +3377,19 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
 
         bool _justPassedBarberChecks;
 
+    public:
+        struct WargameRequest
+        {
+            ObjectGuid OpposingPartyMemberGUID;
+            uint64 QueueID;
+            time_t CreationDate;
+            bool TournamentRules;
+        };
+
+        bool HasWargameRequest() const { return _wargameRequest != nullptr; }
+        WargameRequest* GetWargameRequest() const { return _wargameRequest; }
+        WargameRequest* _wargameRequest;
+
         // Spell cast request handling
     public:
         // Queues up a spell cast request that has been received via packet and processes it whenever possible.

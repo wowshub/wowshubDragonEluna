@@ -720,3 +720,77 @@ void WorldSession::HandleHearthAndResurrect(WorldPackets::Battleground::HearthAn
     _player->ResurrectPlayer(1.0f);
     _player->TeleportTo(_player->m_homebind);
 }
+
+void WorldSession::HandleAcceptWargameInvite(WorldPackets::Battleground::AcceptWargameInvite& packet)
+{
+    ObjectGuid playerGUID = _player->GetGUID();
+    ObjectGuid opposingPartyMember = packet.OpposingPartyMember;
+    uint64 queueID = packet.QueueID;
+    bool accept = packet.Accept;
+    sBattlegroundMgr->AddDelayedEvent(100, [playerGUID, opposingPartyMember, queueID, accept]() -> void
+        {
+            if (auto player = ObjectAccessor::FindPlayer(playerGUID))
+                sBattlegroundMgr->InitWargame(player, opposingPartyMember, queueID, accept);
+        });
+}
+
+void WorldSession::JoinBracket(uint8 slot, uint8 rolesMask /*= ROLES_DEFAULT*/)
+{
+    Player* player = GetPlayer();
+    if (!player)
+        return;
+
+    if (player->InBattleground())
+        return;
+
+    BattlegroundTypeId bgTypeId = slot < BRACKET_TYPE_RATED_BG ? BATTLEGROUND_AA : BATTLEGROUND_RATED_10_VS_10;
+    if (slot == BRACKET_TYPE_BRAWL_BATTLEGROUND)
+        bgTypeId = BATTLEGROUND_AB;
+
+    uint32 matchmakerRating = 0;
+
+    BattlegroundTemplate const* bg = sBattlegroundMgr->GetBattlegroundTemplateByTypeId(bgTypeId);
+    if (!bg)
+    {
+        return;
+    }
+
+    bgTypeId = bg->Id;
+
+    uint32 joinTime = 0;
+    uint32 avgTime = 0;
+    GroupQueueInfo* ginfo;
+    GroupJoinBattlegroundResult err = ERR_BATTLEGROUND_NONE;
+    Group* grp = player->GetGroup();
+    if (!grp || grp->GetLeaderGUID() != player->GetGUID())
+        return;
+
+    ObjectGuid errorGuid;
+    if (!err)
+    {
+        joinTime = ginfo->JoinTime;
+    }
+    else
+    {
+        WorldPackets::Battleground::BattlefieldStatusFailed failed;
+        SendPacket(failed.Write());
+
+        return;
+    }
+
+    for (GroupReference* itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
+    {
+        Player* member = itr->GetSource();
+        if (!member)
+            continue;
+
+        WorldPackets::Battleground::BattlefieldStatusQueued queued;
+
+        member->SendDirectMessage(queued.Write());
+    }
+}
+
+void WorldSession::HandleBattlemasterJoinBrawl(WorldPackets::Battleground::BattlemasterJoinBrawl& packet)
+{
+    JoinBracket(BRACKET_TYPE_BRAWL_BATTLEGROUND, packet.RolesMask);
+}

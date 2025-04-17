@@ -570,6 +570,28 @@ namespace WorldPackets
 
             ObjectGuid CapturePointGUID;
         };
+
+        class AcceptWargameInvite final : public ClientPacket
+        {
+        public:
+            AcceptWargameInvite(WorldPacket&& packet) : ClientPacket(CMSG_ACCEPT_WARGAME_INVITE, std::move(packet)) { }
+
+            void Read() override;
+
+            ObjectGuid OpposingPartyMember;
+            int64 QueueID = 0;
+            bool Accept = false;
+        };
+
+        class BattlemasterJoinBrawl final : public ClientPacket
+        {
+        public:
+            BattlemasterJoinBrawl(WorldPacket&& packet) : ClientPacket(CMSG_BATTLEMASTER_JOIN_BRAWL, std::move(packet)) { }
+
+            void Read() override;
+
+            uint8 RolesMask = 0;
+        };
     }
 }
 

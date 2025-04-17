@@ -434,3 +434,15 @@ WorldPacket const* WorldPackets::Battleground::CapturePointRemoved::Write()
     _worldPacket << CapturePointGUID;
     return &_worldPacket;
 }
+
+void WorldPackets::Battleground::AcceptWargameInvite::Read()
+{
+    _worldPacket >> OpposingPartyMember;
+    _worldPacket >> QueueID;
+    _worldPacket >> Accept;
+}
+
+void WorldPackets::Battleground::BattlemasterJoinBrawl::Read()
+{
+    _worldPacket >> RolesMask;
+}

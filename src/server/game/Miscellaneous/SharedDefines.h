@@ -8465,4 +8465,18 @@ enum class SoundKitPlayType : uint8
     Max         = 2
 };
 
+enum BracketType
+{
+    BRACKET_TYPE_ARENA_2 = 0,
+    BRACKET_TYPE_ARENA_3 = 1,
+    BRACKET_TYPE_ARENA_5 = 2,
+    BRACKET_TYPE_RATED_BG = 3,
+    BRACKET_TYPE_SKIRMISH_2 = 4,
+    BRACKET_TYPE_SKIRMISH_3 = 5,
+    BRACKET_TYPE_BRAWL_BATTLEGROUND = 6,
+    BRACKET_TYPE_BRAWL_ARENA = 7,
+
+    BRACKET_TYPE_MAX
+};
+
 #endif

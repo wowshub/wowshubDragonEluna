@@ -1082,6 +1082,18 @@ namespace WorldPackets
             bool IsFullUpdate = false;
             WarbandSceneCollectionContainer const* WarbandScenes = nullptr;
         };
+
+        class AccountNotificationAcknowledge final : public ClientPacket
+        {
+        public:
+            AccountNotificationAcknowledge(WorldPacket&& packet) : ClientPacket(CMSG_ACCOUNT_NOTIFICATION_ACKNOWLEDGED, std::move(packet)) { }
+
+            void Read() override;
+
+            int64 unk;
+            int32 unk2;
+            int32 unk3;
+        };
     }
 }
 

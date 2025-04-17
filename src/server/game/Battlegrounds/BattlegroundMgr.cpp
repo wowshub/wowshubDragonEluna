@@ -22,6 +22,7 @@
 #include "DB2Stores.h"
 #include "DatabaseEnv.h"
 #include "DisableMgr.h"
+#include "FunctionProcessor.h"
 #include "GameEventMgr.h"
 #include "Language.h"
 #include "Log.h"
@@ -31,6 +32,7 @@
 #include "Player.h"
 #include "SharedDefines.h"
 #include "World.h"
+#include <ObjectAccessor.h>
 
 bool BattlegroundTemplate::IsArena() const
 {
@@ -724,4 +726,50 @@ void BattlegroundMgr::AddBattleground(Battleground* bg)
         ptr.reset(bg);
         bg->SetWeakPtr(ptr);
     }
+}
+
+void BattlegroundMgr::AddDelayedEvent(uint64 timeOffset, std::function<void()>&& function)
+{
+    m_Functions.AddDelayedEvent(timeOffset, std::move(function));
+}
+
+void BattlegroundMgr::InitWargame(Player* player, ObjectGuid opposingPartyMember, uint64 queueID, bool accept)
+{
+    if (player->InBattleground())
+        return;
+
+    auto group = player->GetGroup();
+    if (!group)
+        return;
+
+    auto opposingPartyLeader = ObjectAccessor::FindPlayer(opposingPartyMember);
+    if (!opposingPartyLeader)
+        return;
+
+    auto opposingGroup = opposingPartyLeader->GetGroup();
+    if (!opposingGroup)
+        return;
+
+    if (!opposingPartyLeader->HasWargameRequest())
+        return;
+
+    auto request = opposingPartyLeader->GetWargameRequest();
+    if (request->QueueID != queueID || request->OpposingPartyMemberGUID != player->GetGUID())
+        return;
+
+    if (accept)
+    {
+        ///@TODO: Send notification to opposing party ?
+        return;
+    }
+
+    BattlegroundTypeId bgTypeId = GetRandomBG(BattlegroundTypeId());
+
+    auto battlegroundTemplate = GetBattlegroundTemplateByTypeId(bgTypeId);
+    if (!battlegroundTemplate)
+        return;
+
+    auto bracketEntry = sDB2Manager.GetBattlegroundBracketByLevel(battlegroundTemplate->MapIDs.front(), MAX_LEVEL);
+    if (!bracketEntry)
+        return;
 }

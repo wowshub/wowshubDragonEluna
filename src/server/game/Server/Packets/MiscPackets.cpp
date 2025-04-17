@@ -875,3 +875,10 @@ WorldPacket const* WorldPackets::Misc::AccountWarbandSceneUpdate::Write()
 
     return &_worldPacket;
 }
+
+void WorldPackets::Misc::AccountNotificationAcknowledge::Read()
+{
+    _worldPacket >> unk;
+    _worldPacket >> unk2;
+    _worldPacket >> unk3;
+}

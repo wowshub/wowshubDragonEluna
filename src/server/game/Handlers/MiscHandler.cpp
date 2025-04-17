@@ -1223,3 +1223,7 @@ void WorldSession::HandleQueryCountdownTimer(WorldPackets::Misc::QueryCountdownT
 
     _player->SendDirectMessage(startTimer.Write());
 }
+
+void WorldSession::HandleAccountNotificationAcknowledge(WorldPackets::Misc::AccountNotificationAcknowledge& packet)
+{
+}
