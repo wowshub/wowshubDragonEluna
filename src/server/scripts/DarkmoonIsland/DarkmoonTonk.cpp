@@ -274,7 +274,7 @@ public:
             return true;
         }
 
-        bool OnGossipSelect(Player* player, uint32 menuId, uint32 gossipListId) override
+        bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipListId) override
         {
             uint32 const action = player->PlayerTalkClass->GetGossipOptionAction(gossipListId);
             ClearGossipMenuFor(player);
@@ -583,7 +583,7 @@ class spell_tonk_cannon : public SpellScript
         });
     }
 
-    void HandleDamage(SpellEffIndex effIndex)
+    void HandleDamage(SpellEffIndex /*effIndex*/)
     {
         if (Unit* target = GetHitUnit())
         {

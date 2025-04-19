@@ -734,7 +734,7 @@ void WorldSession::HandleAcceptWargameInvite(WorldPackets::Battleground::AcceptW
         });
 }
 
-void WorldSession::JoinBracket(uint8 slot, uint8 rolesMask /*= ROLES_DEFAULT*/)
+void WorldSession::JoinBracket(uint8 slot, uint8 /*rolesMask*/ /*= ROLES_DEFAULT*/)
 {
     Player* player = GetPlayer();
     if (!player)
@@ -746,8 +746,6 @@ void WorldSession::JoinBracket(uint8 slot, uint8 rolesMask /*= ROLES_DEFAULT*/)
     BattlegroundTypeId bgTypeId = slot < BRACKET_TYPE_RATED_BG ? BATTLEGROUND_AA : BATTLEGROUND_RATED_10_VS_10;
     if (slot == BRACKET_TYPE_BRAWL_BATTLEGROUND)
         bgTypeId = BATTLEGROUND_AB;
-
-    uint32 matchmakerRating = 0;
 
     BattlegroundTemplate const* bg = sBattlegroundMgr->GetBattlegroundTemplateByTypeId(bgTypeId);
     if (!bg)
