@@ -50,7 +50,7 @@
 enum TonkSpells
 {
     SPELL_TONK_ENABLE                   = 102178,
-    SPELL_TONK_SHOOT                    = 27766,
+    SPELL_TONK_SHOOT                    = 24933, //27766
     SPELL_TONK_NITRO_BOOST              = 102297,
     SPELL_TONK_KILL_CREDIT              = 110162,
     SPELL_TONK_STAY_OUT                 = 109976,
