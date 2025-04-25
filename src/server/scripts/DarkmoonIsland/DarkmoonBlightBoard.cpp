@@ -75,6 +75,11 @@ enum eCreatures
     NPC_GHOUL                                           = 122943
 };
 
+enum eGameobjects
+{
+    GOB_STAGE_GRAVE = 269654,
+};
+
 enum eSpells
 {
     //DEATH METAL KNIGHT
@@ -139,7 +144,9 @@ enum eEvents
     EVENT_ARMY_OF_THE_DEAD                              = 12,
     //DEVLYNN STYX
     EVENT_JUMP_SCREAM                                   = 13,
-    EVENT_WHOOOOOOAH                                    = 14
+    EVENT_WHOOOOOOAH                                    = 14,
+
+    EVENT_DESPAWN_ALL                                   = 15
 };
 
 static Position destSummon[10] =
@@ -371,9 +378,9 @@ public:
                     startEvent = false;
                     DoCast(SPELL_ACHIEVEMENT);
                     DoCast(SPELL_END_SONG);
-                    events.RescheduleEvent(2, 2000ms);
+                    events.RescheduleEvent(EVENT_DESPAWN_ALL, 2000ms);
                     break;
-                case 2:
+                case EVENT_DESPAWN_ALL:
                     me->DespawnOrUnsummon();
                     break;
                 }
