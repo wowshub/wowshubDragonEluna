@@ -1750,6 +1750,7 @@ class TC_GAME_API Unit : public WorldObject
         void SetExtraUnitMovementFlags2(uint32 f) { m_movementInfo.SetExtraMovementFlags2(f); }
 
         bool IsSplineEnabled() const;
+        bool IsSplineFinished() const;
 
         void SetControlled(bool apply, UnitState state);
         void ApplyControlStatesIfNeeded();

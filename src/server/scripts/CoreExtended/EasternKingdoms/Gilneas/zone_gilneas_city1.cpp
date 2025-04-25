@@ -1417,7 +1417,7 @@ public:
     {
         npc_wounded_guard_47091AI(Creature* creature) : ScriptedAI(creature) {}
 
-        void SpellHit(WorldObject* caster, SpellInfo const* spellInfo) override
+        void SpellHit(WorldObject* caster, SpellInfo const* /*spellInfo*/) override
         {
             if (Player* player = caster->ToPlayer())
             {

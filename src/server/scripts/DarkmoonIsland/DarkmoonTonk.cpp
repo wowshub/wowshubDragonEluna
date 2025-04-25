@@ -465,7 +465,7 @@ public:
             targetCheckTimer = 1000;
         }
 
-        void MovementInform(uint32 type, uint32 id)
+        void MovementInform(uint32 /*type*/, uint32 id)
         {
             if (id == 0)
                 changePath = true;

@@ -14019,6 +14019,11 @@ bool Unit::IsSplineEnabled() const
     return movespline->Initialized() && !movespline->Finalized();
 }
 
+bool Unit::IsSplineFinished() const
+{
+    return movespline->Finalized();
+}
+
 UF::UpdateFieldFlag Unit::GetUpdateFieldFlagsFor(Player const* target) const
 {
     UF::UpdateFieldFlag flags = UF::UpdateFieldFlag::None;
