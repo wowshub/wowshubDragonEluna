@@ -62,6 +62,7 @@ class TC_DATABASE_API ResultSet
         Field const& operator[](Trinity::DB::FieldLookupByAliasKey const& alias) const;
 
         QueryResultFieldMetadata const& GetFieldMetadata(std::size_t index) const;
+        QueryResultFieldMetadata const& GetFieldMetadata(Trinity::DB::FieldLookupByAliasKey const& alias) const;
 
     protected:
         std::vector<QueryResultFieldMetadata> _fieldMetadata;
@@ -94,6 +95,7 @@ class TC_DATABASE_API PreparedResultSet
         Field const& operator[](Trinity::DB::FieldLookupByAliasKey const& alias) const;
 
         QueryResultFieldMetadata const& GetFieldMetadata(std::size_t index) const;
+        QueryResultFieldMetadata const& GetFieldMetadata(Trinity::DB::FieldLookupByAliasKey const& alias) const;
 
     protected:
         std::vector<QueryResultFieldMetadata> m_fieldMetadata;

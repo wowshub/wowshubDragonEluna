@@ -700,7 +700,7 @@ struct ChrClassesEntry
     uint16 CinematicSequenceID;
     uint16 DefaultSpec;
     uint8 ID;
-    uint8 PrimaryStatPriority;
+    int8 PrimaryStatPriority;
     int8 DisplayPower;
     uint8 RangedAttackPowerPerAgility;
     uint8 AttackPowerPerAgility;
@@ -1197,7 +1197,7 @@ struct CreatureModelDataEntry
     uint32 FootstepCameraEffectID;
     uint32 DeathThudCameraEffectID;
     uint32 SoundID;
-    uint32 SizeClass;
+    int8 SizeClass;
     float CollisionWidth;
     float CollisionHeight;
     float WorldEffectScale;
@@ -1626,6 +1626,7 @@ struct DungeonEncounterEntry
     int32 Flags;
     int32 SpellIconFileID;
     int32 Faction;
+    int32 Unknown1115;
 };
 
 struct DurabilityCostsEntry
@@ -2202,7 +2203,7 @@ struct HeirloomEntry
     int32 LegacyUpgradedItemID;
     int32 StaticUpgradedItemID;
     int8 SourceTypeEnum;
-    uint8 Flags;
+    int32 Flags;
     int32 LegacyItemID;
     std::array<int32, 6> UpgradeItemID;
     std::array<uint16, 6> UpgradeItemBonusListID;
@@ -2381,7 +2382,7 @@ struct ItemClassEntry
     LocalizedString ClassName;
     int8 ClassID;
     float PriceModifier;
-    uint8 Flags;
+    int32 Flags;
 };
 
 struct ItemContextPickerEntryEntry
@@ -2470,7 +2471,7 @@ struct ItemExtendedCostEntry
     uint32 ID;
     uint16 RequiredArenaRating;
     int8 ArenaBracket;                                             // arena slot restrictions (min slot value)
-    uint8 Flags;
+    int32 Flags;
     uint8 MinFactionID;
     int32 MinReputation;
     uint8 RequiredAchievement;                                      // required personal arena rating
@@ -3249,6 +3250,7 @@ struct NumTalentsAtLevelEntry
     int32 NumTalents;
     int32 NumTalentsDeathKnight;
     int32 NumTalentsDemonHunter;
+    float Unknown1115;
 };
 
 #define MAX_OVERRIDE_SPELL 10
@@ -3943,7 +3945,7 @@ struct SpellCastingRequirementsEntry
 {
     uint32 ID;
     int32 SpellID;
-    uint8 FacingCasterFlags;
+    int32 FacingCasterFlags;
     uint16 MinFactionID;
     int32 MinReputation;
     uint16 RequiredAreasID;
@@ -4457,11 +4459,16 @@ struct TalentEntry
     uint8 TierID;
     uint8 Flags;
     uint8 ColumnIndex;
+    uint16 TabID;
     int8 ClassID;
     uint16 SpecID;
     uint32 SpellID;
     uint32 OverridesSpellID;
-    std::array<uint8, 2> CategoryMask;
+    uint32 RequiredSpellID;
+    std::array<int32, 2> CategoryMask;
+    std::array<uint32, 9> SpellRank;
+    std::array<uint32, 3> PrereqTalent;
+    std::array<uint8, 3> PrereqRank;
 };
 
 struct TaxiNodesEntry
@@ -4541,7 +4548,7 @@ struct ToyEntry
     LocalizedString SourceText;
     uint32 ID;
     int32 ItemID;
-    uint8 Flags;
+    int32 Flags;
     int8 SourceTypeEnum;
 };
 
@@ -5036,12 +5043,12 @@ struct VehicleSeatEntry
     float CameraEnteringZoom;
     float CameraSeatZoomMin;
     float CameraSeatZoomMax;
-    int16 EnterAnimKitID;
-    int16 RideAnimKitID;
-    int16 ExitAnimKitID;
-    int16 VehicleEnterAnimKitID;
-    int16 VehicleRideAnimKitID;
-    int16 VehicleExitAnimKitID;
+    int32 EnterAnimKitID;
+    int32 RideAnimKitID;
+    int32 ExitAnimKitID;
+    int32 VehicleEnterAnimKitID;
+    int32 VehicleRideAnimKitID;
+    int32 VehicleExitAnimKitID;
     int16 CameraModeID;
 
     inline bool HasFlag(VehicleSeatFlags flag) const { return !!(Flags & flag); }

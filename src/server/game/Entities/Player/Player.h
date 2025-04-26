@@ -160,6 +160,8 @@ enum PlayerDataFlagConstants
     PLAYER_DATA_FLAG_ACCOUNT_COMBINED_QUEST_REWARDS_INDEX   = 7,
     PLAYER_DATA_FLAG_CHARACTER_CONTENTPUSH_INDEX            = 8,
     PLAYER_DATA_FLAG_CHARACTER_QUEST_COMPLETED_INDEX        = 9,
+
+    // = 12 stores quests completed under ctrOptions & 0x2000
 };
 
 enum SpellModType : uint8
@@ -602,8 +604,7 @@ typedef std::map<uint32, QuestSaveType> QuestStatusSaveMap;
 // Size of client completed quests bit map
 enum PlayerQuestCompletedConstants
 {
-    QUESTS_COMPLETED_BITS_SIZE      = UF::size<decltype(UF::ActivePlayerData::QuestCompleted)>(),
-    QUESTS_COMPLETED_BITS_PER_BLOCK = UF::size_of_value_type<decltype(UF::ActivePlayerData::QuestCompleted)>() * 8
+    QUESTS_COMPLETED_BITS_PER_BLOCK = UF::size_of_value_type<decltype(UF::BitVector::Values)>() * 8
 };
 
 enum PlayerQuestLogConstants
