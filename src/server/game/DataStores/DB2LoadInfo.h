@@ -1048,18 +1048,6 @@ struct ChrCustomizationElementLoadInfo
     static constexpr DB2LoadInfo Instance{ Fields, 14, &ChrCustomizationElementMeta::Instance, HOTFIX_SEL_CHR_CUSTOMIZATION_ELEMENT };
 };
 
-struct ChrCustomizationMaterialLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[3] =
-    {
-        { false, FT_INT, "ID" },
-        { true, FT_INT, "ChrModelTextureTargetID" },
-        { true, FT_INT, "MaterialResourcesID" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 3, &ChrCustomizationMaterialMeta::Instance, HOTFIX_SEL_CHR_CUSTOMIZATION_MATERIAL };
-};
-
 struct ChrCustomizationOptionLoadInfo
 {
     static constexpr DB2FieldMeta Fields[13] =
@@ -1399,99 +1387,15 @@ struct CorruptionEffectsLoadInfo
     static constexpr DB2LoadInfo Instance{ Fields, 5, &CorruptionEffectsMeta::Instance, HOTFIX_SEL_CORRUPTION_EFFECTS };
 };
 
-struct CraftingDataLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[16] =
-    {
-        { false, FT_INT, "ID" },
-        { true, FT_INT, "Type" },
-        { true, FT_INT, "CraftingDifficultyID" },
-        { true, FT_INT, "CraftedItemID" },
-        { true, FT_INT, "ItemBonusTreeID" },
-        { true, FT_INT, "CraftingDifficulty" },
-        { false, FT_FLOAT, "Field_10_0_0_44649_005" },
-        { false, FT_FLOAT, "CraftSkillBonusPercent" },
-        { false, FT_FLOAT, "ReCraftSkillBonusPercent" },
-        { false, FT_FLOAT, "InspirationSkillBonusPercent" },
-        { false, FT_FLOAT, "Field_10_0_0_44649_009" },
-        { false, FT_FLOAT, "Field_10_0_0_45141_011" },
-        { true, FT_INT, "FirstCraftFlagQuestID" },
-        { true, FT_INT, "FirstCraftTreasureID" },
-        { true, FT_INT, "Field_10_2_5_52432_014" },
-        { true, FT_INT, "CraftedTreasureID" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 16, &CraftingDataMeta::Instance, HOTFIX_SEL_CRAFTING_DATA };
-};
-
-struct CraftingDataItemQualityLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[3] =
-    {
-        { false, FT_INT, "ID" },
-        { true, FT_INT, "ItemID" },
-        { false, FT_INT, "CraftingDataID" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 3, &CraftingDataItemQualityMeta::Instance, HOTFIX_SEL_CRAFTING_DATA_ITEM_QUALITY };
-};
-
-struct CraftingDifficultyLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[8] =
-    {
-        { false, FT_INT, "ID" },
-        { false, FT_FLOAT, "MaxRandomSkillBonusPercent" },
-        { false, FT_FLOAT, "CraftSkillBonusPercent" },
-        { false, FT_FLOAT, "ReCraftSkillBonusPercent" },
-        { false, FT_FLOAT, "InspirationSkillBonusPercent" },
-        { false, FT_FLOAT, "Field_10_0_0_44649_004" },
-        { true, FT_INT, "ConcentrationSkillCurveID" },
-        { true, FT_INT, "ConcentrationDifficultyCurveID" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 8, &CraftingDifficultyMeta::Instance, HOTFIX_SEL_CRAFTING_DIFFICULTY };
-};
-
-struct CraftingDifficultyQualityLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[6] =
-    {
-        { false, FT_INT, "ID" },
-        { true, FT_INT, "Order" },
-        { true, FT_INT, "CraftingQualityID" },
-        { false, FT_FLOAT, "QualityPercentage" },
-        { false, FT_FLOAT, "Field_10_0_0_44895_004" },
-        { false, FT_INT, "CraftingDifficultyID" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 6, &CraftingDifficultyQualityMeta::Instance, HOTFIX_SEL_CRAFTING_DIFFICULTY_QUALITY };
-};
-
 struct CraftingQualityLoadInfo
 {
     static constexpr DB2FieldMeta Fields[2] =
     {
-        { false, FT_INT, "ID" },
-        { true, FT_INT, "QualityTier" },
+        { .IsSigned = false, .Type = FT_INT, .Name = "ID" },
+        { .IsSigned = true, .Type = FT_INT, .Name = "QualityTier" },
     };
 
     static constexpr DB2LoadInfo Instance{ Fields, 2, &CraftingQualityMeta::Instance, HOTFIX_SEL_CRAFTING_QUALITY };
-};
-
-struct CraftingReagentQualityLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[6] =
-    {
-        { false, FT_INT, "ID" },
-        { true, FT_INT, "OrderIndex" },
-        { true, FT_INT, "ItemID" },
-        { false, FT_FLOAT, "MaxDifficultyAdjustment" },
-        { false, FT_FLOAT, "ReagentEffectPct" },
-        { false, FT_INT, "ModifiedCraftingCategoryID" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 6, &CraftingReagentQualityMeta::Instance, HOTFIX_SEL_CRAFTING_REAGENT_QUALITY };
 };
 
 struct CreatureDisplayInfoLoadInfo
@@ -1548,19 +1452,6 @@ struct CreatureDisplayInfoExtraLoadInfo
     };
 
     static constexpr DB2LoadInfo Instance{ Fields, 7, &CreatureDisplayInfoExtraMeta::Instance, HOTFIX_SEL_CREATURE_DISPLAY_INFO_EXTRA };
-};
-
-struct CreatureDisplayInfoOptionLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[4] =
-    {
-        { false, FT_INT, "ID" },
-        { true, FT_INT, "ChrCustomizationOptionID" },
-        { true, FT_INT, "ChrCustomizationChoiceID" },
-        { false, FT_INT, "CreatureDisplayInfoExtraID" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 4, &CreatureDisplayInfoOptionMeta::Instance, HOTFIX_SEL_CREATURE_DISPLAY_INFO_OPTION };
 };
 
 struct CreatureFamilyLoadInfo
@@ -2205,21 +2096,6 @@ struct GameobjectsLoadInfo
     };
 
     static constexpr DB2LoadInfo Instance{ Fields, 25, &GameObjectsMeta::Instance, HOTFIX_SEL_GAMEOBJECTS };
-};
-
-struct GameTipsLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[6] =
-    {
-        { false, FT_INT, "ID" },
-        { false, FT_STRING, "Text" },
-        { false, FT_BYTE, "SortIndex" },
-        { true, FT_INT, "MinLevel" },
-        { true, FT_INT, "MaxLevel" },
-        { true, FT_INT, "ContentTuningID" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 6, &GameTipsMeta::Instance, HOTFIX_SEL_GAME_TIPS };
 };
 
 struct GarrAbilityLoadInfo
@@ -3756,50 +3632,6 @@ struct LightLoadInfo
     static constexpr DB2LoadInfo Instance{ Fields, 15, &LightMeta::Instance, HOTFIX_SEL_LIGHT };
 };
 
-struct LightParamsLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[21] =
-    {
-        { false, FT_INT, "ID" },
-        { false, FT_FLOAT, "OverrideCelestialSphere1" },
-        { false, FT_FLOAT, "OverrideCelestialSphere2" },
-        { false, FT_FLOAT, "OverrideCelestialSphere3" },
-        { false, FT_FLOAT, "Field_11_0_0_54210_0011" },
-        { false, FT_FLOAT, "Field_11_0_0_54210_0012" },
-        { false, FT_FLOAT, "Field_11_0_0_54210_0013" },
-        { false, FT_BYTE, "HighlightSky" },
-        { false, FT_SHORT, "LightSkyboxID" },
-        { false, FT_BYTE, "CloudTypeID" },
-        { false, FT_FLOAT, "Glow" },
-        { false, FT_FLOAT, "WaterShallowAlpha" },
-        { false, FT_FLOAT, "WaterDeepAlpha" },
-        { false, FT_FLOAT, "OceanShallowAlpha" },
-        { false, FT_FLOAT, "OceanDeepAlpha" },
-        { true, FT_INT, "Flags" },
-        { true, FT_INT, "SsaoSettingsID" },
-        { false, FT_FLOAT, "Field_11_0_0_54210_012" },
-        { false, FT_FLOAT, "Field_11_0_0_54210_013" },
-        { false, FT_FLOAT, "Field_11_0_0_54210_014" },
-        { false, FT_FLOAT, "Field_11_0_0_54210_015" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 21, &LightParamsMeta::Instance, HOTFIX_SEL_LIGHT_PARAMS };
-};
-
-struct LightSkyboxLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[5] =
-    {
-        { false, FT_INT, "ID" },
-        { false, FT_STRING_NOT_LOCALIZED, "Name" },
-        { false, FT_BYTE, "Flags" },
-        { true, FT_INT, "SkyboxFileDataID" },
-        { true, FT_INT, "CelestialSkyboxFileDataID" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 5, &LightSkyboxMeta::Instance, HOTFIX_SEL_LIGHT_SKYBOX };
-};
-
 struct LiquidTypeLoadInfo
 {
     static constexpr DB2FieldMeta Fields[56] =
@@ -4012,25 +3844,6 @@ struct MapDifficultyLoadInfo
     static constexpr DB2LoadInfo Instance{ Fields, 12, &MapDifficultyMeta::Instance, HOTFIX_SEL_MAP_DIFFICULTY };
 };
 
-struct ModelFileDataLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[10] =
-    {
-        { false, FT_FLOAT, "Geobox0" },
-        { false, FT_FLOAT, "Geobox1" },
-        { false, FT_FLOAT, "Geobox2" },
-        { false, FT_FLOAT, "Geobox3" },
-        { false, FT_FLOAT, "Geobox4" },
-        { false, FT_FLOAT, "Geobox5" },
-        { false, FT_INT, "ID" },
-        { false, FT_BYTE, "Flags" },
-        { false, FT_BYTE, "LogCount" },
-        { false, FT_INT, "ModelResourcesID" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 10, &ModelFileDataMeta::Instance, HOTFIX_SEL_MODEL_FILE_DATA };
-};
-
 struct MapDifficultyXConditionLoadInfo
 {
     static constexpr DB2FieldMeta Fields[5] =
@@ -4057,79 +3870,16 @@ struct MawPowerLoadInfo
     static constexpr DB2LoadInfo Instance{ Fields, 3, &MawPowerMeta::Instance, HOTFIX_SEL_MAW_POWER };
 };
 
-struct MCRSlotXMCRCategoryLoadInfo
+struct ModifiedCraftingItemLoadInfo
 {
-    static constexpr DB2FieldMeta Fields[4] =
+    static constexpr DB2FieldMeta Fields[3] =
     {
-        { false, FT_INT, "ID" },
-        { true, FT_INT, "ModifiedCraftingCategoryID" },
-        { true, FT_INT, "Order" },
-        { false, FT_INT, "ModifiedCraftingReagentSlotID" },
+        { .IsSigned = false, .Type = FT_INT, .Name = "ID" },
+        { .IsSigned = true, .Type = FT_INT, .Name = "ModifiedCraftingReagentItemID" },
+        { .IsSigned = true, .Type = FT_INT, .Name = "CraftingQualityID" },
     };
 
-    static constexpr DB2LoadInfo Instance{ Fields, 4, &MCRSlotXMCRCategoryMeta::Instance, HOTFIX_SEL_MCR_SLOT_X_MCR_CATEGORY };
-};
-
-struct ModifiedCraftingCategoryLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[6] =
-    {
-        { false, FT_INT, "ID" },
-        { false, FT_STRING, "DisplayName" },
-        { false, FT_STRING, "Description" },
-        { true, FT_INT, "Field_9_0_1_33978_001" },
-        { false, FT_FLOAT, "MatQualityWeight" },
-        { true, FT_INT, "Field_10_0_0_44649_004" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 6, &ModifiedCraftingCategoryMeta::Instance, HOTFIX_SEL_MODIFIED_CRAFTING_CATEGORY };
-};
-
-struct ModifiedCraftingReagentItemLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[7] =
-    {
-        { false, FT_INT, "ID" },
-        { false, FT_STRING, "Description" },
-        { true, FT_INT, "ModifiedCraftingCategoryID" },
-        { true, FT_INT, "ItemBonusTreeID" },
-        { true, FT_INT, "Flags" },
-        { true, FT_INT, "Field_9_1_0_38511_004" },
-        { true, FT_INT, "ItemContextOffset" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 7, &ModifiedCraftingReagentItemMeta::Instance, HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_ITEM };
-};
-
-struct ModifiedCraftingReagentSlotLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[6] =
-    {
-        { false, FT_STRING, "Name" },
-        { false, FT_INT, "ID" },
-        { true, FT_INT, "Field_9_0_1_33978_001" },
-        { true, FT_INT, "PlayerConditionID" },
-        { true, FT_INT, "ReagentType" },
-        { false, FT_BYTE, "Field_10_0_2_46091_005" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 6, &ModifiedCraftingReagentSlotMeta::Instance, HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_SLOT };
-};
-
-struct ModifiedCraftingSpellSlotLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[7] =
-    {
-        { false, FT_INT, "ID" },
-        { false, FT_INT, "SpellID" },
-        { true, FT_INT, "Slot" },
-        { true, FT_INT, "ModifiedCraftingReagentSlotID" },
-        { true, FT_INT, "Field_9_0_1_35679_003" },
-        { true, FT_INT, "ReagentCount" },
-        { true, FT_INT, "ReagentReCraftCount" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 7, &ModifiedCraftingSpellSlotMeta::Instance, HOTFIX_SEL_MODIFIED_CRAFTING_SPELL_SLOT };
+    static constexpr DB2LoadInfo Instance{ Fields, 3, &ModifiedCraftingItemMeta::Instance, HOTFIX_SEL_MODIFIED_CRAFTING_ITEM };
 };
 
 struct ModifierTreeLoadInfo
@@ -4309,33 +4059,6 @@ struct NamesReservedLocaleLoadInfo
     static constexpr DB2LoadInfo Instance{ Fields, 3, &NamesReservedLocaleMeta::Instance, HOTFIX_SEL_NAMES_RESERVED };
 };
 
-struct NPCModelItemSlotDisplayInfoLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[4] =
-    {
-        { false, FT_INT, "ID" },
-        { true, FT_INT, "DisplayID" },
-        { true, FT_BYTE, "Slot" },
-        { false, FT_INT, "ExtendedDisplayID" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 4, &NPCModelItemSlotDisplayInfoMeta::Instance, HOTFIX_SEL_NPC_MODEL_ITEM_SLOT_DISPLAY_INFO };
-};
-
-struct NPCSoundsLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[5] =
-    {
-        { false, FT_INT, "ID" },
-        { false, FT_INT, "hello" },
-        { false, FT_INT, "goodbye" },
-        { false, FT_INT, "pissed" },
-        { false, FT_INT, "ack" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 5, &NPCSoundsMeta::Instance, HOTFIX_SEL_NPC_SOUNDS };
-};
-
 struct NumTalentsAtLevelLoadInfo
 {
     static constexpr DB2FieldMeta Fields[5] =
@@ -4426,6 +4149,22 @@ struct PathPropertyLoadInfo
     };
 
     static constexpr DB2LoadInfo Instance{ Fields, 4, &PathPropertyMeta::Instance, HOTFIX_SEL_PATH_PROPERTY };
+};
+
+struct PerksActivityLoadInfo
+{
+    static constexpr DB2FieldMeta Fields[7] =
+    {
+        { .IsSigned = false, .Type = FT_STRING, .Name = "ActivityName" },
+        { .IsSigned = false, .Type = FT_STRING, .Name = "Description" },
+        { .IsSigned = false, .Type = FT_INT, .Name = "ID" },
+        { .IsSigned = true, .Type = FT_INT, .Name = "CriteriaTreeID" },
+        { .IsSigned = true, .Type = FT_INT, .Name = "ThresholdContributionAmount" },
+        { .IsSigned = true, .Type = FT_INT, .Name = "Supersedes" },
+        { .IsSigned = true, .Type = FT_INT, .Name = "Priority" },
+    };
+
+    static constexpr DB2LoadInfo Instance{ Fields, 7, &PerksActivityMeta::Instance, HOTFIX_SEL_PERKS_ACTIVITY };
 };
 
 struct PhaseLoadInfo
@@ -5086,31 +4825,6 @@ struct SceneScriptTextLoadInfo
     static constexpr DB2LoadInfo Instance{ Fields, 3, &SceneScriptTextMeta::Instance, HOTFIX_SEL_SCENE_SCRIPT_TEXT };
 };
 
-struct ScreenEffectLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[16] =
-    {
-        { false, FT_INT, "ID" },
-        { false, FT_STRING_NOT_LOCALIZED, "DisplayName" },
-        { true, FT_INT, "Param1" },
-        { true, FT_INT, "Param2" },
-        { true, FT_INT, "Param3" },
-        { true, FT_INT, "Param4" },
-        { true, FT_BYTE, "Effect" },
-        { false, FT_INT, "FullScreenEffectID" },
-        { false, FT_SHORT, "LightParamsID" },
-        { false, FT_SHORT, "LightParamsFadeIn" },
-        { false, FT_SHORT, "LightParamsFadeOut" },
-        { false, FT_INT, "SoundAmbienceID" },
-        { false, FT_INT, "ZoneMusicID" },
-        { true, FT_SHORT, "TimeOfDayOverride" },
-        { true, FT_BYTE, "EffectMask" },
-        { true, FT_INT, "LightFlags" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 16, &ScreenEffectMeta::Instance, HOTFIX_SEL_SCREEN_EFFECT };
-};
-
 struct ServerMessagesLoadInfo
 {
     static constexpr DB2FieldMeta Fields[2] =
@@ -5242,87 +4956,6 @@ struct SoundKitLoadInfo
     static constexpr DB2LoadInfo Instance{ Fields, 17, &SoundKitMeta::Instance, HOTFIX_SEL_SOUND_KIT };
 };
 
-struct SoundKitEntryLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[6] =
-    {
-        { false, FT_INT, "ID" },
-        { false, FT_INT, "SoundKitID" },
-        { true, FT_INT, "FileDataID" },
-        { false, FT_BYTE, "Frequency" },
-        { false, FT_FLOAT, "Volume" },
-        { true, FT_INT, "PlayerConditionID" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 6, &SoundKitEntryMeta::Instance, HOTFIX_SEL_SOUND_KIT_ENTRY };
-};
-
-struct SoundKitAdvancedLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[57] =
-    {
-        { false, FT_INT, "ID" },
-        { false, FT_INT, "SoundKitID" },
-        { false, FT_FLOAT, "InnerRadius2D" },
-        { false, FT_FLOAT, "OuterRadius2D" },
-        { false, FT_INT, "TimeA" },
-        { false, FT_INT, "TimeB" },
-        { false, FT_INT, "TimeC" },
-        { false, FT_INT, "TimeD" },
-        { true, FT_INT, "RandomOffsetRange" },
-        { true, FT_BYTE, "Usage" },
-        { false, FT_INT, "TimeIntervalMin" },
-        { false, FT_INT, "TimeIntervalMax" },
-        { false, FT_INT, "DelayMin" },
-        { false, FT_INT, "DelayMax" },
-        { false, FT_BYTE, "VolumeSliderCategory" },
-        { false, FT_FLOAT, "DuckToSFX" },
-        { false, FT_FLOAT, "DuckToMusic" },
-        { false, FT_FLOAT, "DuckToAmbience" },
-        { false, FT_FLOAT, "DuckToDialog" },
-        { false, FT_FLOAT, "DuckToSuppressors" },
-        { false, FT_FLOAT, "DuckToCinematicSFX" },
-        { false, FT_FLOAT, "DuckToCinematicMusic" },
-        { false, FT_FLOAT, "InnerRadiusOfInfluence" },
-        { false, FT_FLOAT, "OuterRadiusOfInfluence" },
-        { false, FT_INT, "TimeToDuck" },
-        { false, FT_INT, "TimeToUnduck" },
-        { false, FT_FLOAT, "InsideAngle" },
-        { false, FT_FLOAT, "OutsideAngle" },
-        { false, FT_FLOAT, "OutsideVolume" },
-        { false, FT_BYTE, "MinRandomPosOffset" },
-        { false, FT_SHORT, "MaxRandomPosOffset" },
-        { true, FT_INT, "MsOffset" },
-        { false, FT_INT, "TimeCooldownMin" },
-        { false, FT_INT, "TimeCooldownMax" },
-        { false, FT_BYTE, "MaxInstancesBehavior" },
-        { false, FT_BYTE, "VolumeControlType" },
-        { true, FT_INT, "VolumeFadeInTimeMin" },
-        { true, FT_INT, "VolumeFadeInTimeMax" },
-        { false, FT_INT, "VolumeFadeInCurveID" },
-        { true, FT_INT, "VolumeFadeOutTimeMin" },
-        { true, FT_INT, "VolumeFadeOutTimeMax" },
-        { false, FT_INT, "VolumeFadeOutCurveID" },
-        { false, FT_FLOAT, "ChanceToPlay" },
-        { true, FT_INT, "RolloffType" },
-        { false, FT_FLOAT, "RolloffParam0" },
-        { false, FT_FLOAT, "Field_8_2_0_30080_045" },
-        { false, FT_FLOAT, "Field_8_2_0_30080_046" },
-        { true, FT_INT, "Field_8_2_0_30080_047" },
-        { true, FT_INT, "Field_8_2_0_30080_048" },
-        { false, FT_FLOAT, "Field_8_2_0_30080_049" },
-        { false, FT_FLOAT, "Field_8_2_0_30080_050" },
-        { false, FT_FLOAT, "Field_8_2_0_30080_051" },
-        { false, FT_FLOAT, "Field_8_2_0_30080_052" },
-        { false, FT_FLOAT, "Field_8_2_0_30080_053" },
-        { false, FT_FLOAT, "Field_8_2_0_30080_054" },
-        { false, FT_FLOAT, "Field_9_1_0_38312_055" },
-        { false, FT_FLOAT, "Field_9_1_0_38312_056" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 57, &SoundKitAdvancedMeta::Instance, HOTFIX_SEL_SOUND_KIT_ADVANCED };
-};
-
 struct SpecializationSpellsLoadInfo
 {
     static constexpr DB2FieldMeta Fields[6] =
@@ -5336,23 +4969,6 @@ struct SpecializationSpellsLoadInfo
     };
 
     static constexpr DB2LoadInfo Instance{ Fields, 6, &SpecializationSpellsMeta::Instance, HOTFIX_SEL_SPECIALIZATION_SPELLS };
-};
-
-struct SpecializationSpellsDisplayLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[8] =
-    {
-        { false, FT_INT, "ID" },
-        { false, FT_SHORT, "SpecializationID" },
-        { false, FT_INT, "SpecllID1" },
-        { false, FT_INT, "SpecllID2" },
-        { false, FT_INT, "SpecllID3" },
-        { false, FT_INT, "SpecllID4" },
-        { false, FT_INT, "SpecllID5" },
-        { false, FT_INT, "SpecllID6" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 8, &SpecializationSpellsDisplayMeta::Instance, HOTFIX_SEL_SPECIALIZATION_SPELLS_DISPLAY };
 };
 
 struct SpecSetMemberLoadInfo
@@ -5562,19 +5178,6 @@ struct SpellEffectLoadInfo
     };
 
     static constexpr DB2LoadInfo Instance{ Fields, 36, &SpellEffectMeta::Instance, HOTFIX_SEL_SPELL_EFFECT };
-};
-
-struct SpellLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[4] =
-    {
-        { false, FT_INT, "ID" },
-        { false, FT_STRING, "NameSubtext" },
-        { false, FT_STRING, "Description" },
-        { false, FT_STRING, "AuraDescription" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 4, &SpellMeta::Instance, HOTFIX_SEL_SPELL };
 };
 
 struct SpellEmpowerLoadInfo
@@ -6339,18 +5942,6 @@ struct TaxiPathNodeLoadInfo
     static constexpr DB2LoadInfo Instance{ Fields, 11, &TaxiPathNodeMeta::Instance, HOTFIX_SEL_TAXI_PATH_NODE };
 };
 
-struct TextureFileDataLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[3] =
-    {
-        { false, FT_INT, "ID" },
-        { false, FT_BYTE, "UsageType" },
-        { false, FT_INT, "TextureID" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 3, &TextureFileDataMeta::Instance, HOTFIX_SEL_TEXTURE_FILE_DATA };
-};
-
 struct TotemCategoryLoadInfo
 {
     static constexpr DB2FieldMeta Fields[4] =
@@ -7113,21 +6704,6 @@ struct VehicleSeatLoadInfo
     static constexpr DB2LoadInfo Instance{ Fields, 66, &VehicleSeatMeta::Instance, HOTFIX_SEL_VEHICLE_SEAT };
 };
 
-struct VehiclePoiTypeLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[6] =
-    {
-        { false, FT_INT, "ID" },
-        { true, FT_INT, "Flags" },
-        { true, FT_INT, "TextureWidth" },
-        { true, FT_INT, "TextureHeight" },
-        { true, FT_INT, "OccupiedTexture" },
-        { true, FT_INT, "UnoccupiedTexture" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 6, &VehiclePOITypeMeta::Instance, HOTFIX_SEL_VEHICLE_POI_TYPE };
-};
-
 struct VignetteLoadInfo
 {
     static constexpr DB2FieldMeta Fields[13] =
@@ -7252,43 +6828,6 @@ struct WorldStateExpressionLoadInfo
     };
 
     static constexpr DB2LoadInfo Instance{ Fields, 2, &WorldStateExpressionMeta::Instance, HOTFIX_SEL_WORLD_STATE_EXPRESSION };
-};
-
-struct SoundAmbienceLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[11] =
-    {
-        { false, FT_INT, "ID" },
-        { true, FT_INT, "Flags" },
-        { false, FT_INT, "FlavorSoundFilterID" },
-        { false, FT_INT, "AmbienceID1" },
-        { false, FT_INT, "AmbienceID2" },
-        { false, FT_INT, "AmbienceStartID1" },
-        { false, FT_INT, "AmbienceStartID2" },
-        { false, FT_INT, "AmbienceStopID1" },
-        { false, FT_INT, "AmbienceStopID2" },
-        { false, FT_INT, "SoundKitID1" },
-        { false, FT_INT, "SoundKitID2" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 11, &SoundAmbienceMeta::Instance, HOTFIX_SEL_SOUND_AMBIENCE };
-};
-
-struct ZoneMusicLoadInfo
-{
-    static constexpr DB2FieldMeta Fields[8] =
-    {
-        { false, FT_INT, "ID" },
-        { false, FT_STRING_NOT_LOCALIZED, "SetName" },
-        { false, FT_INT, "SilenceIntervalMin1" },
-        { false, FT_INT, "SilenceIntervalMin2" },
-        { false, FT_INT, "SilenceIntervalMax1" },
-        { false, FT_INT, "SilenceIntervalMax2" },
-        { false, FT_INT, "Sounds1" },
-        { false, FT_INT, "Sounds2" },
-    };
-
-    static constexpr DB2LoadInfo Instance{ Fields, 8, &ZoneMusicMeta::Instance, HOTFIX_SEL_ZONE_MUSIC };
 };
 
 #endif // TRINITYCORE_DB2_LOAD_INFO_H

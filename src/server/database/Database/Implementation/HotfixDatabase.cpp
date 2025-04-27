@@ -1279,6 +1279,11 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PREPARE_LOCALE_STMT(HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_ITEM, "SELECT ID, Description_lang FROM modified_crafting_reagent_item_locale WHERE (`VerifiedBuild` > 0) = ?"
         " AND locale = ?", CONNECTION_SYNCH);
 
+    // ModifiedCraftingItem.db2
+    PrepareStatement(HOTFIX_SEL_MODIFIED_CRAFTING_ITEM, "SELECT ID, ModifiedCraftingReagentItemID, CraftingQualityID FROM modified_crafting_item"
+        " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_MODIFIED_CRAFTING_ITEM, "SELECT MAX(ID) + 1 FROM modified_crafting_item", CONNECTION_SYNCH);
+
     // ModifierTree.db2
     PrepareStatement(HOTFIX_SEL_MODIFIER_TREE, "SELECT ID, Parent, Operator, Amount, Type, Asset, SecondaryAsset, TertiaryAsset FROM modifier_tree"
         " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
@@ -1371,6 +1376,13 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     // PathProperty.db2
     PrepareStatement(HOTFIX_SEL_PATH_PROPERTY, "SELECT ID, PathID, PropertyIndex, Value FROM path_property WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_PATH_PROPERTY, "SELECT MAX(ID) + 1 FROM path_property", CONNECTION_SYNCH);
+
+    // PerksActivity.db2
+    PrepareStatement(HOTFIX_SEL_PERKS_ACTIVITY, "SELECT ActivityName, Description, ID, CriteriaTreeID, ThresholdContributionAmount, Supersedes, "
+        "Priority FROM perks_activity WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_PERKS_ACTIVITY, "SELECT MAX(ID) + 1 FROM perks_activity", CONNECTION_SYNCH);
+    PREPARE_LOCALE_STMT(HOTFIX_SEL_PERKS_ACTIVITY, "SELECT ID, ActivityName_lang, Description_lang FROM perks_activity_locale"
+        " WHERE (`VerifiedBuild` > 0) = ? AND locale = ?", CONNECTION_SYNCH);
 
     // Phase.db2
     PrepareStatement(HOTFIX_SEL_PHASE, "SELECT ID, Flags FROM phase WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
