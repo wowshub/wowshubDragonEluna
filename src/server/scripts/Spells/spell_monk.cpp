@@ -2102,7 +2102,7 @@ class spell_monk_renewing_mist_jump : public SpellScript
                 if (Aura* newAura = caster->AddAura(SPELL_MONK_RENEWING_MIST_HOT, GetHitUnit()))
                 {
                     newAura->SetDuration(oldAura->GetDuration());
-                    previousTarget->SendPlaySpellVisual(GetHitUnit()->GetPosition(), previousTarget->GetOrientation(), SPELL_MONK_VISUAL_RENEWING_MIST, 0, 0, 50.f, false);
+                    previousTarget->SendPlaySpellVisual(GetHitUnit()->GetPosition(), SPELL_MONK_VISUAL_RENEWING_MIST, 0, 0, 50.f, false);
                     oldAura->Remove();
                 }
             }
