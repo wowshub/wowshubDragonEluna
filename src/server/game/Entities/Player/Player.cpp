@@ -31213,13 +31213,6 @@ void Player::ExecutePendingSpellCastRequest()
         return;
     }
 
-    // can't use our own spells when we're in possession of another unit
-    if (isPossessing())
-    {
-        CancelPendingCastRequest();
-        return;
-    }
-
     // Client is resending autoshot cast opcode when other spell is cast during shoot rotation
     // Skip it to prevent "interrupt" message
     // Also check targets! target may have changed and we need to interrupt current spell
