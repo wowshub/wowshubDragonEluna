@@ -553,6 +553,7 @@ namespace WorldPackets
         class MoveKnockBackAck;
         class SetActiveMover;
         class MoveSetCollisionHeightAck;
+        class DiscardedTimeSyncAcks;
         class MoveTimeSkipped;
         class SummonResponse;
         class MoveSplineDone;
@@ -1280,6 +1281,7 @@ class TC_GAME_API WorldSession
 
         // Movement forces
         void HandleMoveApplyMovementForceAck(WorldPackets::Movement::MoveApplyMovementForceAck& moveApplyMovementForceAck);
+        void HandleDiscardedTimeSyncAcks(WorldPackets::Movement::DiscardedTimeSyncAcks& packet);
         void HandleMoveRemoveMovementForceAck(WorldPackets::Movement::MoveRemoveMovementForceAck& moveRemoveMovementForceAck);
         void HandleMoveSetModMovementForceMagnitudeAck(WorldPackets::Movement::MovementSpeedAck& setModMovementForceMagnitudeAck);
 
