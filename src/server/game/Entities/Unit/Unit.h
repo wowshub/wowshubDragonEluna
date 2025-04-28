@@ -1758,6 +1758,7 @@ class TC_GAME_API Unit : public WorldObject
         ///----------Pet responses methods-----------------
         void SendPetActionFeedback(PetActionFeedback msg, uint32 spellId);
         void SendPetTalk(uint32 pettalk);
+        void SendPetDismissSound();
         void SendPetAIReaction(ObjectGuid guid);
         ///----------End of Pet responses methods----------
 

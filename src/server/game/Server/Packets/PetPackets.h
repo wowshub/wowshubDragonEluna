@@ -296,11 +296,12 @@ namespace WorldPackets
         class PetDismissSound final : public ServerPacket
         {
         public:
-            PetDismissSound() : ServerPacket(SMSG_PET_DISMISS_SOUND, 16) { }
+            PetDismissSound() : ServerPacket(SMSG_PET_DISMISS_SOUND) {}
 
             WorldPacket const* Write() override;
 
-            int32 ModelID = 0;
+            ObjectGuid PetGUID;
+            uint32 DisplayID = 0;
             TaggedPosition<Position::XYZ> ModelPosition;
         };
 

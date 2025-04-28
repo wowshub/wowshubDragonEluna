@@ -212,6 +212,15 @@ WorldPacket const* WorldPackets::Pet::PetMode::Write()
     return &_worldPacket;
 }
 
+WorldPacket const* WorldPackets::Pet::PetDismissSound::Write()
+{
+    _worldPacket << PetGUID;
+    _worldPacket << uint32(ModelID);
+    _worldPacket << ModelPosition;
+
+    return &_worldPacket;
+}
+
 WorldPacket const* WorldPackets::Pet::Guids::Write()
 {
     _worldPacket << static_cast<uint32>(PetGUIDs.size());

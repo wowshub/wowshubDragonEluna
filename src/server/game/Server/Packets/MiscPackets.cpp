@@ -844,7 +844,7 @@ WorldPacket const* WorldPackets::Misc::LegendaryCraftingOpenNpc::Write()
 
 void WorldPackets::Misc::OverrideScreenFlash::Read()
 {
-    _worldPacket >> BlackScreenOrRedScreen;
+    BlackScreenOrRedScreen = _worldPacket.ReadBit();
 }
 
 WorldPacket const* WorldPackets::Misc::PlayerChoiceClear::Write()

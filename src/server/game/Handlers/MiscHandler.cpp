@@ -1224,6 +1224,11 @@ void WorldSession::HandleQueryCountdownTimer(WorldPackets::Misc::QueryCountdownT
     _player->SendDirectMessage(startTimer.Write());
 }
 
+void WorldSession::HandleOverrideScreenFlash(WorldPackets::Misc::OverrideScreenFlash& overrideScreenFlash)
+{
+    _player->SetOverrideScreenFlash(overrideScreenFlash.BlackScreenOrRedScreen);
+}
+
 void WorldSession::HandleAccountNotificationAcknowledge(WorldPackets::Misc::AccountNotificationAcknowledge& packet)
 {
 }

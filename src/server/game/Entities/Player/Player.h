@@ -1286,6 +1286,10 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         void SetCommandStatusOn(uint32 command) { _activeCheats |= command; }
         void SetCommandStatusOff(uint32 command) { _activeCheats &= ~command; }
 
+        bool GetOverrideScreenFlash() const { return overrideScreenFlash; }
+        void SetOverrideScreenFlash(bool value) { overrideScreenFlash = value; }
+        bool IsOverrideScreenFlash() const { return overrideScreenFlash; }
+
         // Played Time Stuff
         time_t m_logintime;
         time_t m_Last_tick;
@@ -3352,6 +3356,8 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         uint32 _pendingBindTimer;
 
         uint32 _activeCheats;
+
+        bool overrideScreenFlash;
 
         uint32 _lastTargetedGO;
 

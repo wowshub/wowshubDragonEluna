@@ -338,6 +338,9 @@ Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this)
     SetPendingBind(0, 0);
 
     _activeCheats = CHEAT_NONE;
+
+    overrideScreenFlash = false;
+
     healthBeforeDuel = 0;
     manaBeforeDuel = 0;
 

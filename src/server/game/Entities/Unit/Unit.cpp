@@ -10531,9 +10531,22 @@ void Unit::SendPetTalk(uint32 pettalk)
         return;
 
     WorldPackets::Pet::PetActionSound petActionSound;
-    petActionSound.UnitGUID = GetGUID();
+    petActionSound.PetGUID = GetGUID();
     petActionSound.Action = pettalk;
     owner->ToPlayer()->SendDirectMessage(petActionSound.Write());
+}
+
+void Unit::SendPetDismissSound()
+{
+    Unit* owner = GetOwner();
+    if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    WorldPackets::Pet::PetDismissSound petDismissSound;
+    petDismissSound.PetGUID = GetGUID();
+    petDismissSound.DisplayID = GetDisplayId();
+    petDismissSound.ModelPosition = GetPosition();
+    owner->ToPlayer()->SendDirectMessage(petDismissSound.Write());
 }
 
 void Unit::SendPetAIReaction(ObjectGuid guid)
