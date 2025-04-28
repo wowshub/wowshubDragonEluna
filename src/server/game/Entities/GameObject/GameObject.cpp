@@ -3284,6 +3284,12 @@ void GameObject::Use(Unit* user, bool ignoreCastInProgress /*= false*/)
 
             Player* player = user->ToPlayer();
 
+            if (player->HasAuraType(SPELL_AURA_MOD_SHAPESHIFT))
+            {
+                player->SendDirectMessage(WorldPackets::Misc::DisplayGameError(GameError::ERR_NOT_WHILE_SHAPESHIFTED).Write());
+                return;
+            }
+
             WorldPackets::Misc::EnableBarberShop enableBarberShop;
             enableBarberShop.CustomizationFeatureMask = info->barberChair.CustomizationFeatureMask;
             player->SendDirectMessage(enableBarberShop.Write());
