@@ -148,6 +148,7 @@ class TC_GAME_API Aura
         uint32 GetSpellXSpellVisualId() const { return m_spellXSpellVisualId; }
         void SetSpellXSpellVisualId(uint32 visual) { m_spellXSpellVisualId = visual; }
         SpellCastVisual GetSpellVisual() const { return m_spellVisual; }
+        void SetSpellVisual(SpellCastVisual visual) { m_spellVisual = visual; }
         Unit* GetCaster() const;
         WorldObject* GetWorldObjectCaster() const;
         WorldObject* GetOwner() const { return m_owner; }
@@ -354,7 +355,7 @@ class TC_GAME_API Aura
         uint32 m_castItemId;
         int32 m_castItemLevel;
         uint32 m_spellXSpellVisualId;
-        SpellCastVisual const m_spellVisual;
+        SpellCastVisual m_spellVisual;
         time_t const m_applyTime;
         WorldObject* const m_owner;
 

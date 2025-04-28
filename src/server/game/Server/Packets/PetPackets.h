@@ -254,7 +254,7 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            ObjectGuid UnitGUID;
+            ObjectGuid PetGUID;
             int32 Action = 0;
         };
 

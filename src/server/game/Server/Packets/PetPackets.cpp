@@ -189,7 +189,7 @@ WorldPacket const* WorldPackets::Pet::PetActionFeedback::Write()
 
 WorldPacket const* WorldPackets::Pet::PetActionSound::Write()
 {
-    _worldPacket << UnitGUID;
+    _worldPacket << PetGUID;
     _worldPacket << int32(Action);
 
     return &_worldPacket;

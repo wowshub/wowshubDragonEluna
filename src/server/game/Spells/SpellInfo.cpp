@@ -4468,12 +4468,7 @@ uint32 SpellInfo::GetSpellXSpellVisualId(WorldObject const* caster /*= nullptr*/
 uint32 SpellInfo::GetSpellVisual(WorldObject const* caster /*= nullptr*/, WorldObject const* viewer /*= nullptr*/) const
 {
     if (SpellXSpellVisualEntry const* visual = sSpellXSpellVisualStore.LookupEntry(GetSpellXSpellVisualId(caster, viewer)))
-    {
-        //if (visual->LowViolenceSpellVisualID && forPlayer->GetViolenceLevel() operator 2)
-        //    return visual->LowViolenceSpellVisualID;
-
         return visual->SpellVisualID;
-    }
 
     return 0;
 }

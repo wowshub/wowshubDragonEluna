@@ -646,9 +646,14 @@ void WorldSession::HandleKeyboundOverride(WorldPackets::Spells::KeyboundOverride
 
 void WorldSession::HandleUpdateSpellVisualOpcode(WorldPackets::Spells::UpdateSpellVisual& packet)
 {
-    if (Aura* aura = GetPlayer()->GetAura(packet.SpellID))
-    {
-        aura->SetSpellXSpellVisualId(packet.SpellXSpellVisualId);
-        aura->SetNeedClientUpdateForTargets();
-    }
+    Unit* target = ObjectAccessor::GetUnit(*_player, packet.TargetGUID);
+    if (!target)
+        return;
+
+    Aura* aura = target->GetAura(packet.SpellID);
+    if (!aura)
+        return;
+
+    aura->SetSpellVisual({ .SpellXSpellVisualID = packet.Visual.SpellXSpellVisualID, .ScriptVisualID = packet.Visual.ScriptVisualID });
+    aura->SetNeedClientUpdateForTargets();
 }
