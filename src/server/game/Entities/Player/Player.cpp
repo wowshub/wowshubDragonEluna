@@ -18623,14 +18623,19 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
 
             if (BattlegroundPlayer const* bgPlayer = currentBg->GetBattlegroundPlayerData(GetGUID()))
             {
-                AddBattlegroundQueueId(bgPlayer->queueTypeId);
-                m_bgData.bgTypeID = BattlegroundTypeId(bgPlayer->queueTypeId.BattlemasterListId);
+                BattlegroundQueue& bgQueue = sBattlegroundMgr->GetBattlegroundQueue(bgPlayer->queueTypeId);
+                GroupQueueInfo ginfo;
+                if (bgQueue.GetPlayerGroupInfoData(GetGUID(), &ginfo))
+                {
+                    AddBattlegroundQueueId(bgPlayer->queueTypeId, ginfo.JoinTime, ginfo.IsInvitedToBGInstanceGUID);
+                    m_bgData.bgTypeID = BattlegroundTypeId(bgPlayer->queueTypeId.BattlemasterListId);
 
-                //join player to battleground group
-                currentBg->EventPlayerLoggedIn(this);
+                    //join player to battleground group
+                    currentBg->EventPlayerLoggedIn(this);
 
-                SetInviteForBattlegroundQueueType(bgPlayer->queueTypeId, currentBg->GetInstanceID());
-                SetMercenaryForBattlegroundQueueType(bgPlayer->queueTypeId, currentBg->IsPlayerMercenaryInBattleground(GetGUID()));
+                    SetInviteForBattlegroundQueueType(bgPlayer->queueTypeId, currentBg->GetInstanceID());
+                    SetMercenaryForBattlegroundQueueType(bgPlayer->queueTypeId, currentBg->IsPlayerMercenaryInBattleground(GetGUID()));
+                }
             }
         }
         // Bg was not found - go to Entry Point
@@ -26051,15 +26056,15 @@ void Player::SetBattlegroundId(uint32 val, BattlegroundTypeId bgTypeId, Battlegr
     m_bgData.queueId = queueId;
 }
 
-uint32 Player::AddBattlegroundQueueId(BattlegroundQueueTypeId val)
+uint32 Player::AddBattlegroundQueueId(BattlegroundQueueTypeId val, uint32 joinTime, uint32 IsInvitedToBGInstanceGUID)
 {
     for (uint8 i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
     {
         if (m_bgBattlegroundQueueID[i].bgQueueTypeId == BATTLEGROUND_QUEUE_NONE || m_bgBattlegroundQueueID[i].bgQueueTypeId == val)
         {
             m_bgBattlegroundQueueID[i].bgQueueTypeId = val;
-            m_bgBattlegroundQueueID[i].invitedToInstance = 0;
-            m_bgBattlegroundQueueID[i].joinTime = GameTime::GetGameTime();
+            m_bgBattlegroundQueueID[i].invitedToInstance = IsInvitedToBGInstanceGUID;
+            m_bgBattlegroundQueueID[i].joinTime = joinTime;
             m_bgBattlegroundQueueID[i].mercenary = HasAura(SPELL_MERCENARY_CONTRACT_HORDE) || HasAura(SPELL_MERCENARY_CONTRACT_ALLIANCE);
             return i;
         }

@@ -251,7 +251,7 @@ namespace WorldPackets
 
             void Read() override;
 
-            Array<uint64, 1> QueueIDs;
+            std::vector<uint64> QueueIDs;
             uint8 Roles = 0;
             int32 BlacklistMap[2] = { };
         };
@@ -265,6 +265,18 @@ namespace WorldPackets
 
             uint8 TeamSizeIndex = 0;
             uint8 Roles = 0;
+        };
+
+        class JoinSkirmish final : public ClientPacket
+        {
+        public:
+            JoinSkirmish(WorldPacket&& packet) : ClientPacket(CMSG_BATTLEMASTER_JOIN_SKIRMISH, std::move(packet)) {}
+
+            void Read() override;
+
+            uint8 Roles = 0;
+            uint8 Bracket = 0;
+            bool IsRequeue = false;
         };
 
         class BattlefieldLeave final : public ClientPacket

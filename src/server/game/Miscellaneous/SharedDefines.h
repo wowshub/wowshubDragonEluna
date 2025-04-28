@@ -6903,6 +6903,7 @@ enum GroupJoinBattlegroundResult
     ERR_BATTLEFIELD_TEAM_PARTY_SIZE                 = 22,       // Incorrect party size for this battlefield.
     ERR_NOT_ON_TOURNAMENT_REALM                     = 23,       // Not available on a Tournament Realm.
     ERR_BATTLEGROUND_PLAYERS_FROM_DIFFERENT_REALMS  = 24,       // You cannot queue for a battleground while players from different realms are in your party.
+    ERR_BATTLEGROUND_LEAVE_QUEUE                    = 30,       // Leave queue
     ERR_BATTLEGROUND_JOIN_LEVELUP                   = 33,       // You have been removed from a PvP queue because you have gained a level.
     ERR_REMOVE_FROM_PVP_QUEUE_FACTION_CHANGE        = 34,       // You have been removed from a PvP Queue because you changed your faction.
     ERR_BATTLEGROUND_JOIN_FAILED                    = 35,       // Join as a group failed

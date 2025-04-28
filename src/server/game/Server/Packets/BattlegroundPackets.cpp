@@ -165,6 +165,13 @@ void WorldPackets::Battleground::BattlemasterJoinArena::Read()
     _worldPacket >> Roles;
 }
 
+void WorldPackets::Battleground::JoinSkirmish::Read()
+{
+    _worldPacket >> Roles;
+    _worldPacket >> Bracket;
+    IsRequeue = _worldPacket.ReadBit();
+}
+
 ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Battleground::BattlefieldStatusHeader const& header)
 {
     data << header.Ticket;
@@ -446,3 +453,4 @@ void WorldPackets::Battleground::BattlemasterJoinBrawl::Read()
 {
     _worldPacket >> RolesMask;
 }
+
