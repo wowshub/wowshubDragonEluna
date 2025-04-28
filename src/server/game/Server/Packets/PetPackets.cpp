@@ -215,7 +215,7 @@ WorldPacket const* WorldPackets::Pet::PetMode::Write()
 WorldPacket const* WorldPackets::Pet::PetDismissSound::Write()
 {
     _worldPacket << PetGUID;
-    _worldPacket << uint32(ModelID);
+    _worldPacket << uint32(DisplayID);
     _worldPacket << ModelPosition;
 
     return &_worldPacket;
@@ -227,13 +227,5 @@ WorldPacket const* WorldPackets::Pet::Guids::Write()
     for (auto const& map : PetGUIDs)
         _worldPacket << map;
 
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Pet::PetDismissSound::Write()
-{
-    _worldPacket << ModelID;
-    _worldPacket << ModelPosition;
-	
     return &_worldPacket;
 }
