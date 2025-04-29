@@ -424,7 +424,7 @@ Creature* Roleplay::CreatureCreate(Player* creator, CreatureTemplate const* crea
         data.spawnPoint.Relocate(creator->GetTransOffsetX(), creator->GetTransOffsetY(), creator->GetTransOffsetZ(), creator->GetTransOffsetO());
         if (Creature* creature = trans->CreateNPCPassenger(guid, &data))
         {
-            creature->SaveToDB(trans->GetGOInfo()->moTransport.SpawnMap, { map->GetDifficultyID() });
+            creature->SaveToDB(trans->GetGOInfo()->GetSpawnMap(), { map->GetDifficultyID() });
             sObjectMgr->AddCreatureToGrid(&data);
             return creature;
         }

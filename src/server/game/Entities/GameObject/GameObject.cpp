@@ -486,7 +486,7 @@ public:
 
     int32 GetMapIdForSpawning() const override
     {
-        return _owner.GetGOInfo()->transport.SpawnMap;
+        return _owner.GetGOInfo()->GetSpawnMap();
     }
 
     void SetAutoCycleBetweenStopFrames(bool on)
