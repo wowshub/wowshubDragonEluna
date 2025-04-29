@@ -321,6 +321,7 @@ namespace WorldPackets
     namespace Collections
     {
         class CollectionItemSetFavorite;
+        class MountClearFanfare;
     }
 
     namespace Combat
@@ -1783,6 +1784,7 @@ class TC_GAME_API WorldSession
 
         // Collections
         void HandleCollectionItemSetFavorite(WorldPackets::Collections::CollectionItemSetFavorite& collectionItemSetFavorite);
+        void HandleMountClearFanfare(WorldPackets::Collections::MountClearFanfare& packet);
 
         // Transmogrification
         void HandleTransmogrifyItems(WorldPackets::Transmogrification::TransmogrifyItems& transmogrifyItems);

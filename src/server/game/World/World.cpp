@@ -22,6 +22,7 @@
 #include "World.h"
 #include "AccountMgr.h"
 #include "AchievementMgr.h"
+#include "ArchaeologyMgr.h"
 #include "AreaTriggerDataStore.h"
 #include "ArenaTeamMgr.h"
 #include "AuctionHouseBot.h"
@@ -2612,6 +2613,9 @@ bool World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading phase names...");
     sObjectMgr->LoadPhaseNames();
+
+    TC_LOG_INFO("server.loading", "Loading Archaeology Digsites...");
+    sArchaeologyMgr->LoadDigsites();
 
     uint32 startupDuration = GetMSTimeDiffToNow(startupBegin);
 

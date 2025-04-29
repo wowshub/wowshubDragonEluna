@@ -160,7 +160,7 @@ static uint32 copseReclaimDelay[MAX_DEATH_COUNT] = { 30, 60, 120 };
 
 uint64 const MAX_MONEY_AMOUNT = 99999999999ULL;
 
-Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this)
+Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this), m_archaeologyPlayerMgr(this)
 {
     m_objectType |= TYPEMASK_PLAYER;
     m_objectTypeId = TYPEID_PLAYER;
@@ -6944,6 +6944,7 @@ bool Player::RewardHonor(Unit* victim, uint32 groupsize, int32 honor, bool pvpto
 
         // apply honor multiplier from aura (not stacking-get highest)
         AddPct(honor_f, GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HONOR_GAIN_PCT));
+        AddPct(honor_f, GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HONOR_GAIN_PCT_2));
         honor_f += _restMgr->GetRestBonusFor(REST_TYPE_HONOR, honor_f);
     }
 
@@ -21113,6 +21114,10 @@ void Player::SaveToDB(LoginDatabaseTransaction loginTransaction, CharacterDataba
     if (_garrison)
         _garrison->SaveToDB(trans);
 
+    GetArchaeologyMgr().SaveArchaeologyDigSites(trans);
+    GetArchaeologyMgr().SaveArchaeologyBranchs(trans);
+    GetArchaeologyMgr().SaveArchaeologyHistory(trans);
+
     // check if stats should only be saved on logout
     // save stats can be out of transaction
     if (m_session->isLogingOut() || !sWorld->getBoolConfig(CONFIG_STATS_SAVE_ONLY_ON_LOGOUT))
@@ -22528,10 +22533,12 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
     pet->AddObjectToRemoveList();
     pet->m_removed = true;
 
+    WorldPackets::Pet::PetGuids guids;
+    SendDirectMessage(guids.Write());
+
     if (pet->isControlled())
     {
-        WorldPackets::Pet::PetSpells petSpellsPacket;
-        SendDirectMessage(petSpellsPacket.Write());
+        SendRemoveControlBar();
 
         if (GetGroup())
             SetGroupUpdateFlag(GROUP_UPDATE_FLAG_PET);
@@ -22982,10 +22989,18 @@ void Player::CharmSpellInitialize()
     SendDirectMessage(petSpells.Write());
 }
 
-void Player::SendRemoveControlBar() const
+void Player::SendRemoveControlBar()
 {
-    WorldPackets::Pet::PetSpells packet;
-    SendDirectMessage(packet.Write());
+    WorldPackets::Pet::PetClearSpells petClearSpells;
+    SendDirectMessage(petClearSpells.Write());
+}
+
+void Player::SendPetGuids()
+{
+    WorldPackets::Pet::PetGuids guids;
+    for (Unit* unit : m_Controlled)
+        guids.PetGUIDs.push_back(unit->GetGUID());
+    SendDirectMessage(guids.Write());
 }
 
 uint32 Player::IsAffectedBySpellmod(SpellInfo const* spellInfo, SpellModifier const* mod, Spell const* spell)
@@ -30689,14 +30704,16 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
         return nullptr;
     }
 
+    SendPetGuids();
+
     if (petStable.GetCurrentPet())
         RemovePet(nullptr, PET_SAVE_NOT_IN_SLOT);
 
     PhasingHandler::InheritPhaseShift(pet, this);
 
     pet->SetCreatorGUID(GetGUID());
-    pet->SetFaction(GetFaction());
 
+    pet->SetFaction(GetFaction());
     pet->ReplaceAllNpcFlags(UNIT_NPC_FLAG_NONE);
     pet->ReplaceAllNpcFlags2(UNIT_NPC_FLAG_2_NONE);
     pet->InitStatsForLevel(GetLevel());
@@ -31740,4 +31757,19 @@ void Player::AddMoveImpulse(Position direction)
     addImpulse.SequenceIndex = m_movementCounter++;
     addImpulse.Direction = direction;
     SendMessageToSet(addImpulse.Write(), true);
+}
+
+void Player::SetResearchValue(uint32 value)
+{
+    //AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::Research)) = value;
+}
+
+void Player::AddResearchSiteValue(uint32 value)
+{
+    //AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ResearchSites)) = value;
+}
+
+void Player::AddResearchSiteProgressValue(uint32 value)
+{
+    //AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ResearchSiteProgress)) = value;
 }

@@ -4898,6 +4898,21 @@ struct QuestPackageItemLoadInfo
     static constexpr DB2LoadInfo Instance{ Fields, 5, &QuestPackageItemMeta::Instance, HOTFIX_SEL_QUEST_PACKAGE_ITEM };
 };
 
+struct QuestPOIPointLoadInfo
+{
+
+    static constexpr DB2FieldMeta Fields[5] =
+    {
+        { false, FT_INT, "ID" },
+        { true, FT_SHORT, "X" },
+        { true, FT_SHORT, "Y" },
+        { true, FT_SHORT, "Z" },
+        { false, FT_INT, "QuestPOIBlobID" },
+    };
+    static constexpr DB2LoadInfo Instance{ Fields,5, &QuestPOIPointMeta::Instance, HOTFIX_SEL_QUEST_P_O_I_POINT };
+
+};
+
 struct QuestSortLoadInfo
 {
     static constexpr DB2FieldMeta Fields[4] =
@@ -4985,6 +5000,51 @@ struct RandPropPointsLoadInfo
     };
 
     static constexpr DB2LoadInfo Instance{ Fields, 35, &RandPropPointsMeta::Instance, HOTFIX_SEL_RAND_PROP_POINTS };
+};
+
+struct ResearchBranchLoadInfo
+{
+    static constexpr DB2FieldMeta Fields[7] =
+    {
+        { false, FT_INT, "Id" },
+        { false, FT_STRING, "Name" },
+        { false, FT_BYTE, "ResearchFieldId" },
+        { false, FT_SHORT, "CurrencyId" },
+        { true, FT_INT, "TextureFileId" },
+        { true, FT_INT, "BigTextureFileId" },
+        { true, FT_INT, "ItemId" },
+    };
+    static constexpr DB2LoadInfo Instance{ Fields,7, &ResearchBranchMeta::Instance, HOTFIX_SEL_RESEARCH_BRANCH };
+};
+
+struct ResearchProjectLoadInfo
+{
+    static constexpr DB2FieldMeta Fields[9] =
+    {
+        { false, FT_INT, "Id" },
+        { false, FT_STRING, "Name" },
+        { false, FT_STRING, "Description" },
+        { false, FT_BYTE, "Rarity" },
+        { true, FT_INT, "SpellId" },
+        { false, FT_SHORT, "ResearchBranchId" },
+        { false, FT_BYTE, "NumSockets" },
+        { true, FT_INT, "TextureFileId" },
+        { false, FT_INT, "RequiredWeight" },
+    };
+    static constexpr DB2LoadInfo Instance{ Fields,9, &ResearchProjectMeta::Instance, HOTFIX_SEL_RESEARCH_PROJECT };
+};
+
+struct ResearchSiteLoadInfo
+{
+    static constexpr DB2FieldMeta Fields[5] =
+    {
+        { false, FT_INT, "Id" },
+        { false, FT_STRING, "Name" },
+        { true, FT_SHORT, "MapId" },
+        { true, FT_INT, "QuestPoiBlobId" },
+        { false, FT_INT, "AreaPOIIconEnum" },
+    };
+    static constexpr DB2LoadInfo Instance{ Fields,5, &ResearchSiteMeta::Instance, HOTFIX_SEL_RESEARCH_SITE };
 };
 
 struct RewardPackLoadInfo

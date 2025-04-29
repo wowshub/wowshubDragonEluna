@@ -280,7 +280,7 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectReputation,                               //184 SPELL_EFFECT_REPUTATION_2
     &Spell::SendScene,                                      //185 SPELL_EFFECT_185
     &Spell::SendScene,                                      //186 SPELL_EFFECT_186
-    &Spell::EffectNULL,                                     //187 SPELL_EFFECT_RANDOMIZE_ARCHAEOLOGY_DIGSITES
+    &Spell::EffectRandomizeDigsites,                        //187 SPELL_EFFECT_RANDOMIZE_ARCHAEOLOGY_DIGSITES
     &Spell::EffectNULL,                                     //188 SPELL_EFFECT_SUMMON_STABLED_PET_AS_GUARDIAN
     &Spell::EffectLootWithToast,                            //189 SPELL_EFFECT_LOOT
     &Spell::EffectJoinOrLeavePlayerParty,                   //190 SPELL_EFFECT_CHANGE_PARTY_MEMBERS
@@ -6370,12 +6370,23 @@ void Spell::EffectTeleportToDigsite()
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-
     Player* player = m_caster->ToPlayer();
     if (!player || !player->GetSkillValue(SKILL_ARCHAEOLOGY))
         return;
 
     player->TeleportToDigsiteInMap(player->GetMapId());
+}
+
+void Spell::EffectRandomizeDigsites()
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    Player* player = m_caster->ToPlayer();
+    if (!player || !player->GetSkillValue(SKILL_ARCHAEOLOGY))
+        return;
+
+    // player->RandomizeSitesInMap(m_spellInfo->GetEffect(effIndex)->MiscValue, damage);
 }
 
 void Spell::EffectModReputation()

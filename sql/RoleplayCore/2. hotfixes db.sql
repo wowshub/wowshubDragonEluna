@@ -373,3 +373,81 @@ CREATE TABLE `npc_sounds` (
 	`VerifiedBuild` INT(11) NOT NULL DEFAULT '0',
 	PRIMARY KEY (`ID`, `VerifiedBuild`) USING BTREE
 ) ENGINE=InnoDB CHARACTER SET = utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `research_branch`;
+CREATE TABLE IF NOT EXISTS `research_branch` (
+  `Id` int unsigned NOT NULL DEFAULT '0',
+  `Name` text,
+  `ResearchFieldId` tinyint unsigned NOT NULL DEFAULT '0',
+  `CurrencyId` smallint unsigned NOT NULL DEFAULT '0',
+  `TextureFileId` int NOT NULL DEFAULT '0',
+  `BigTextureFileId` int NOT NULL DEFAULT '0',
+  `ItemId` int NOT NULL DEFAULT '0',
+  `VerifiedBuild` smallint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB CHARACTER SET = utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `research_branch_locale`;
+CREATE TABLE IF NOT EXISTS `research_branch_locale` (
+  `ID` int unsigned NOT NULL DEFAULT '0',
+  `locale` varchar(4) NOT NULL,
+  `Name_lang` text,
+  `VerifiedBuild` smallint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ID`,`locale`)
+) ENGINE=InnoDB CHARACTER SET = utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `research_project`;
+CREATE TABLE IF NOT EXISTS `research_project` (
+  `Name` text,
+  `Description` text,
+  `Id` int unsigned NOT NULL DEFAULT '0',
+  `Rarity` tinyint unsigned NOT NULL DEFAULT '0',
+  `SpellId` int NOT NULL DEFAULT '0',
+  `ResearchBranchId` smallint unsigned NOT NULL DEFAULT '0',
+  `NumSockets` tinyint unsigned NOT NULL DEFAULT '0',
+  `TextureFileId` int NOT NULL DEFAULT '0',
+  `RequiredWeight` int unsigned NOT NULL DEFAULT '0',
+  `VerifiedBuild` smallint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB CHARACTER SET = utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `research_project_locale`;
+CREATE TABLE IF NOT EXISTS `research_project_locale` (
+  `ID` int unsigned NOT NULL DEFAULT '0',
+  `locale` varchar(4) NOT NULL,
+  `Name_lang` text,
+  `Description_lang` text,
+  `VerifiedBuild` smallint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ID`,`locale`)
+) ENGINE=InnoDB CHARACTER SET = utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `research_site`;
+CREATE TABLE IF NOT EXISTS `research_site` (
+  `Id` int unsigned NOT NULL DEFAULT '0',
+  `Name` text,
+  `MapId` smallint NOT NULL DEFAULT '0',
+  `QuestPoiBlobId` int NOT NULL DEFAULT '0',
+  `AreaPOIIconEnum` int unsigned NOT NULL DEFAULT '0',
+  `VerifiedBuild` smallint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB CHARACTER SET = utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `research_site_locale`;
+CREATE TABLE IF NOT EXISTS `research_site_locale` (
+  `ID` int unsigned NOT NULL DEFAULT '0',
+  `locale` varchar(4) NOT NULL,
+  `Name_lang` text,
+  `VerifiedBuild` smallint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ID`,`locale`)
+) ENGINE=InnoDB CHARACTER SET = utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `quest_p_o_i_point`;
+CREATE TABLE IF NOT EXISTS `quest_p_o_i_point` (
+  `ID` int NOT NULL DEFAULT '0',
+  `X` smallint NOT NULL DEFAULT '0',
+  `Y` smallint NOT NULL DEFAULT '0',
+  `Z` smallint NOT NULL DEFAULT '0',
+  `QuestPOIBlobID` int NOT NULL DEFAULT '0',
+  `VerifiedBuild` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ID`,`VerifiedBuild`)
+) ENGINE=InnoDB CHARACTER SET = utf8mb4 COLLATE=utf8mb4_unicode_ci;

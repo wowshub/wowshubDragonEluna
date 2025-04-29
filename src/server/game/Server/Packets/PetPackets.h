@@ -283,14 +283,22 @@ namespace WorldPackets
             uint16 Flag = 0;
         };
 
-        class Guids final : public ServerPacket
+        class PetGuids final : public ServerPacket
         {
         public:
-            Guids() : ServerPacket(SMSG_PET_GUIDS, 4) { }
+            PetGuids() : ServerPacket(SMSG_PET_GUIDS, 4) { }
 
             WorldPacket const* Write() override;
 
             GuidVector PetGUIDs;
+        };
+
+        class PetClearSpells final : public ServerPacket
+        {
+        public:
+            PetClearSpells() : ServerPacket(SMSG_PET_CLEAR_SPELLS, 0) {}
+
+            WorldPacket const* Write() override { return &_worldPacket; }
         };
 
         class PetDismissSound final : public ServerPacket
@@ -303,14 +311,6 @@ namespace WorldPackets
             ObjectGuid PetGUID;
             uint32 DisplayID = 0;
             TaggedPosition<Position::XYZ> ModelPosition;
-        };
-
-        class PetClearSpells final : public ServerPacket
-        {
-        public:
-            PetClearSpells() : ServerPacket(SMSG_PET_CLEAR_SPELLS, 0) { }
-
-            WorldPacket const* Write() override { return &_worldPacket; }
         };
     }
 }

@@ -315,6 +315,7 @@ class TC_GAME_API AuraEffect
         void HandleLearnSpell(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleComprehendLanguage(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleModAlternativeDefaultLanguage(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleModAlternativeDefaultTeam(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraLinked(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraOpenStable(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraModFakeInebriation(AuraApplication const* aurApp, uint8 mode, bool apply) const;
@@ -350,7 +351,6 @@ class TC_GAME_API AuraEffect
 
         void HandleAuraTrackResources(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const;
         void HandleCancelEquipmentStats(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const;
-        void HandleSwitchTeam(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const;
         void HandleModNextSpell(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraModSpellPowerPercent(AuraApplication const* aurApp, uint8 mode, bool) const;
 

@@ -1121,6 +1121,19 @@ namespace WorldPackets
             uint32 SpellID = 0;
             uint32 SkillLineID = 0;
         };
+
+        class ArchaeologySurveryCast final : public ServerPacket
+        {
+        public:
+            ArchaeologySurveryCast() : ServerPacket(SMSG_ARCHAEOLOGY_SURVERY_CAST, 13) { }
+
+            WorldPacket const* Write() override;
+
+            int32 ResearchBranchID = 0;
+            uint32 TotalFinds = 0;
+            uint32 NumFindsCompleted = 0;
+            bool SuccessfulFind = false;
+        };
     }
 }
 

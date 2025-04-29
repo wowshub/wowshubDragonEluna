@@ -455,6 +455,7 @@ class TC_GAME_API Spell
         void EffectJoinOrLeavePlayerParty();
         uint8 m_diffMode;
         void EffectTeleportToDigsite();
+        void EffectRandomizeDigsites();
         void EffectModReputation();
         void EffectRemovePhase();
         void EffectIncreaseSkill();

@@ -106,6 +106,9 @@ void WorldDatabaseConnection::DoPrepareStatements()
     PrepareStatement(WORLD_DEL_DRESSNPC_OUTFIT, "DELETE FROM creature_template_outfits WHERE entry = ?", CONNECTION_ASYNC);
     PrepareStatement(WORLD_REP_CREATURE_TEMPLATE_ADDON, "REPLACE INTO creature_template_addon (entry, PathId, mount, emote, aiAnimKit, movementAnimKit, meleeAnimkit, visibilityDistanceType, auras) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(WORLD_DEL_CREATURE_TEMPLATE_ADDON, "DELETE FROM creature_template_addon WHERE entry = ?", CONNECTION_ASYNC);
+
+    PrepareStatement(WORLD_SEL_ARCHAEOLOGY_DIGSITES, "SELECT id, minLevel, minSkillLevel, currencyId FROM archaeology_digsites", CONNECTION_SYNCH);
+    PrepareStatement(WORLD_SEL_ARCHAEOLOGY_ARTIFACT, "SELECT minSkillValue FROM archaeology_artifacts WHERE spellId = ?", CONNECTION_SYNCH);
 }
 
 WorldDatabaseConnection::WorldDatabaseConnection(MySQLConnectionInfo& connInfo, ConnectionFlags connectionFlags) : MySQLConnection(connInfo, connectionFlags)

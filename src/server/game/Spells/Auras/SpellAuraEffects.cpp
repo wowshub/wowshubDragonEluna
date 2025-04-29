@@ -562,8 +562,8 @@ NonDefaultConstructible<pAuraEffectHandler> AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleCosmeticMounted,                           //487 SPELL_AURA_COSMETIC_MOUNTED
     &AuraEffect::HandleAuraDisableGravity,                        //488 SPELL_AURA_DISABLE_GRAVITY
     &AuraEffect::HandleModAlternativeDefaultLanguage,             //489 SPELL_AURA_MOD_ALTERNATIVE_DEFAULT_LANGUAGE
-    &AuraEffect::HandleSwitchTeam,                                //490 SPELL_AURA_SWITCH_TEAM
-    &AuraEffect::HandleNULL,                                      //491
+    &AuraEffect::HandleModAlternativeDefaultTeam,                 //490 SPELL_AURA_MOD_ALTERNATIVE_DEFAULT_TEAM
+    &AuraEffect::HandleNoImmediateEffect,                         //491 SPELL_AURA_MOD_HONOR_GAIN_PCT_2 implemented in Player::RewardHonor
     &AuraEffect::HandleNULL,                                      //492
     &AuraEffect::HandleNULL,                                      //493
     &AuraEffect::HandleNULL,                                      //494 SPELL_AURA_SET_POWER_POINT_CHARGE
@@ -6703,10 +6703,27 @@ void AuraEffect::HandleCancelEquipmentStats(AuraApplication const* aurApp, uint8
     playerTarget->UpdateItemSetAuras(false);
 }
 
-void AuraEffect::HandleSwitchTeam(AuraApplication const* /*aurApp*/, uint8 mode, bool /*apply*/) const
+void AuraEffect::HandleModAlternativeDefaultTeam(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
-    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+    if (!(mode & AURA_EFFECT_HANDLE_SEND_FOR_CLIENT_MASK))
         return;
+
+    Player* target = aurApp->GetTarget()->ToPlayer();
+    if (!target)
+        return;
+
+    Team nativeTeam = target->GetNativeTeam();
+    Team oppositeTeam = (target->GetTeam() == ALLIANCE) ? HORDE : ALLIANCE;
+
+    if (apply)
+        target->SetTeam(oppositeTeam);
+    else
+    {
+        if (target->HasAuraType(GetAuraType()))
+            return;
+
+        target->SetTeam(nativeTeam);
+    }
 }
 
 void AuraEffect::HandleModNextSpell(AuraApplication const* aurApp, uint8 mode, bool apply) const

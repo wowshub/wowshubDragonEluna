@@ -18,6 +18,7 @@
 #ifndef _PLAYER_H
 #define _PLAYER_H
 
+#include "ArchaeologyPlayerMgr.h"
 #include "GridObject.h"
 #include "Unit.h"
 #include "CUFProfile.h"
@@ -1903,7 +1904,8 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         void CharmSpellInitialize();
         void PossessSpellInitialize();
         void VehicleSpellInitialize();
-        void SendRemoveControlBar() const;
+        void SendRemoveControlBar();
+        void SendPetGuids();
         bool HasSpell(uint32 spell) const override;
         bool HasActiveSpell(uint32 spell) const;            // show in spellbook
         SpellInfo const* GetCastSpellInfo(SpellInfo const* spellInfo, TriggerCastFlags& triggerFlag, GetCastSpellInfoContext* context) const override;
@@ -2361,6 +2363,8 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         static TeamId TeamIdForRace(uint8 race);
         static uint8 GetFactionGroupForRace(uint8 race);
         Team GetTeam() const { return m_team; }
+        Team GetNativeTeam() const { return TeamForRace(GetRace()); }
+        void SetTeam(Team team) { m_team = team; }
         TeamId GetTeamId() const { return GetTeamIdForTeam(m_team); }
         void SetFactionForRace(uint8 race);
 
@@ -2961,6 +2965,8 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         void AddIllusionBlock(uint32 blockValue) { AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::TransmogIllusions)) = blockValue; }
         void AddIllusionFlag(uint32 slot, uint32 flag) { SetUpdateFieldFlagValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::TransmogIllusions, slot), flag); }
 
+        //void AddResearch(uint32 mpos, uint16 branch) { SetUpdateFieldFlagValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::Research, mpos), branch); }
+
         void AddWarbandScenesBlock(uint32 blockValue) { AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::WarbandScenes)) = blockValue; }
         void AddWarbandScenesFlag(uint32 slot, uint32 flag) { SetUpdateFieldFlagValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::WarbandScenes, slot), flag); }
 
@@ -3024,6 +3030,13 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         bool CanAcceptAreaSpiritHealFrom(Unit* spiritHealer) const { return spiritHealer->GetGUID() == _areaSpiritHealerGUID; }
         void SendAreaSpiritHealerTime(Unit* spiritHealer) const;
         void SendAreaSpiritHealerTime(ObjectGuid const& spiritHealerGUID, int32 timeLeft) const;
+
+        // Archaeology functions
+        void SetResearchValue(uint32 value);
+        void AddResearchSiteValue(uint32 value);
+        void AddResearchSiteProgressValue(uint32 value);
+
+        ArchaeologyPlayerMgr& GetArchaeologyMgr() { return m_archaeologyPlayerMgr; }
 
     protected:
         // Gamemaster whisper whitelist
@@ -3388,6 +3401,8 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         ObjectGuid _areaSpiritHealerGUID;
 
         bool _justPassedBarberChecks;
+
+        ArchaeologyPlayerMgr m_archaeologyPlayerMgr;
 
     public:
         struct WargameRequest

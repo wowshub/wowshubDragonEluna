@@ -17,6 +17,16 @@
 
 #include "PetPackets.h"
 
+
+WorldPacket const* WorldPackets::Pet::PetGuids::Write()
+{
+    _worldPacket << static_cast<uint32>(PetGUIDs.size());
+    for (ObjectGuid const& guid : PetGUIDs)
+        _worldPacket << guid;
+
+    return &_worldPacket;
+}
+
 WorldPacket const* WorldPackets::Pet::PetSpells::Write()
 {
     _worldPacket << PetGUID;
@@ -217,15 +227,6 @@ WorldPacket const* WorldPackets::Pet::PetDismissSound::Write()
     _worldPacket << PetGUID;
     _worldPacket << uint32(DisplayID);
     _worldPacket << ModelPosition;
-
-    return &_worldPacket;
-}
-
-WorldPacket const* WorldPackets::Pet::Guids::Write()
-{
-    _worldPacket << static_cast<uint32>(PetGUIDs.size());
-    for (auto const& map : PetGUIDs)
-        _worldPacket << map;
 
     return &_worldPacket;
 }
