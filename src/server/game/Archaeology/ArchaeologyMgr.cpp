@@ -123,9 +123,6 @@ void ArchaeologyMgr::ChangeDigsite(Player* player, uint8 memId)
 
         for (uint8 i = 0; i < 24; ++i)
         {
-         //   if (DigsiteInfo.id != *digsites[i].data())
-               // continue;
-
             isActiveDigsite = true;
         }
 
@@ -137,7 +134,6 @@ void ArchaeologyMgr::ChangeDigsite(Player* player, uint8 memId)
 
     uint16 selectDigsite = SitesInMap[urand(0, SitesInMap.size()-1)];
 
-    //player->SetDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE, memId, selectDigsite);
     player->GetArchaeologyMgr().SetDigsiteId(memId, selectDigsite);
 
     std::vector<uint32> tempContainer;
@@ -226,9 +222,8 @@ bool ArchaeologyMgr::IsActiveBranch(Player* /*player*/, uint32 currencyId)
 {
     for(uint32 i=0; i < 9; ++i)
     {
-       // if (player->GetUInt16Value(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH + i / 2, i % 2))
         {
-            uint16 projectId = 0;// = player->GetUInt16Value(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH + i / 2, i % 2);
+            uint16 projectId = 0;
 
             if (ResearchProjectEntry const* rs = sResearchProjectStore.LookupEntry(projectId))
                 if (ResearchBranchEntry const* ab = sResearchBranchStore.LookupEntry(rs->ResearchBranchId))
@@ -250,8 +245,6 @@ void ArchaeologyMgr::GenerateRandomPosition(Player* player, uint8 count)
         player->GetRandomPoint(treasurePos, 300.0f, x, y, z);
     }
     while (player->GetArchaeologyMgr().GetDigsite(x, y) == -1);
-
-    //std::vector<uint32> const& site_now = player->GetDynamicValues(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE);
 
     player->GetArchaeologyMgr().SetDigsitePosition(memId, x, y, count);
 }
