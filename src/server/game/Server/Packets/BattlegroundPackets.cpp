@@ -332,7 +332,7 @@ WorldPacket const* WorldPackets::Battleground::DestroyArenaUnit::Write()
     return &_worldPacket;
 }
 
-ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Battleground::RatedPvpInfo::BracketInfo const& bracketInfo)
+ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Battleground::BracketInfo const& bracketInfo)
 {
     data << int32(bracketInfo.PersonalRating);
     data << int32(bracketInfo.Ranking);
@@ -353,15 +353,16 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Battleground::RatedPvpInf
     data << int32(bracketInfo.SeasonPvpTier);
     data << int32(bracketInfo.BestWeeklyPvpTier);
     data << uint8(bracketInfo.BestSeasonPvpTierEnum);
+    data << int32(bracketInfo.Rank);
     data.WriteBit(bracketInfo.Disqualified);
     data.FlushBits();
 
     return data;
 }
 
-WorldPacket const* WorldPackets::Battleground::RatedPvpInfo::Write()
+WorldPacket const* WorldPackets::Battleground::RatedPVPInfo::Write()
 {
-    for (BracketInfo const& bracket : Bracket)
+    for (BracketInfo const& bracket : Brackets)
         _worldPacket << bracket;
 
     return &_worldPacket;

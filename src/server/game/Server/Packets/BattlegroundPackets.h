@@ -446,44 +446,47 @@ namespace WorldPackets
             void Read() override { }
         };
 
-        class RequestRatedPvpInfo final : public ClientPacket
+        class RequestRatedPVPInfo  final : public ClientPacket
         {
         public:
-            RequestRatedPvpInfo(WorldPacket&& packet) : ClientPacket(CMSG_REQUEST_RATED_PVP_INFO, std::move(packet)) { }
+            RequestRatedPVPInfo(WorldPacket&& packet) : ClientPacket(CMSG_REQUEST_RATED_PVP_INFO, std::move(packet)) { }
 
             void Read() override { }
         };
 
-        class RatedPvpInfo final : public ServerPacket
+        struct BracketInfo
+        {
+            int32 PersonalRating = 0;
+            int32 Ranking = 0;
+            int32 SeasonPlayed = 0;
+            int32 SeasonWon = 0;
+            int32 SeasonFactionPlayed = 0;
+            int32 SeasonFactionWon = 0;
+            int32 WeeklyPlayed = 0;
+            int32 WeeklyWon = 0;
+            int32 RoundsSeasonPlayed = 0;
+            int32 RoundsSeasonWon = 0;
+            int32 RoundsWeeklyPlayed = 0;
+            int32 RoundsWeeklyWon = 0;
+            int32 BestWeeklyRating = 0;
+            int32 LastWeeksBestRating = 0;
+            int32 BestSeasonRating = 0;
+            int32 PvpTierID = 0;
+            int32 SeasonPvpTier = 0;
+            int32 BestWeeklyPvpTier = 0;
+            int32 BestSeasonPvpTierEnum = 0;
+            int32 Rank = 0;
+            bool Disqualified = false;
+        };
+
+        class RatedPVPInfo final : public ServerPacket
         {
         public:
-            RatedPvpInfo() : ServerPacket(SMSG_RATED_PVP_INFO, 9 * sizeof(BracketInfo)) { }
+            RatedPVPInfo() : ServerPacket(SMSG_RATED_PVP_INFO, 9 * sizeof(BracketInfo)) { }
 
             WorldPacket const* Write() override;
 
-            struct BracketInfo
-            {
-                int32 PersonalRating = 0;
-                int32 Ranking = 0;
-                int32 SeasonPlayed = 0;
-                int32 SeasonWon = 0;
-                int32 SeasonFactionPlayed = 0;
-                int32 SeasonFactionWon = 0;
-                int32 WeeklyPlayed = 0;
-                int32 WeeklyWon = 0;
-                int32 RoundsSeasonPlayed = 0;
-                int32 RoundsSeasonWon = 0;
-                int32 RoundsWeeklyPlayed = 0;
-                int32 RoundsWeeklyWon = 0;
-                int32 BestWeeklyRating = 0;
-                int32 LastWeeksBestRating = 0;
-                int32 BestSeasonRating = 0;
-                int32 PvpTierID = 0;
-                int32 SeasonPvpTier = 0;
-                int32 BestWeeklyPvpTier = 0;
-                uint8 BestSeasonPvpTierEnum = 0;
-                bool Disqualified = false;
-            } Bracket[9];
+            std::array<BracketInfo, 9> Brackets = { };
         };
 
         struct RatedMatchDeserterPenalty
