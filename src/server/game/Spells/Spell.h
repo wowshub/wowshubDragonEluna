@@ -449,6 +449,7 @@ class TC_GAME_API Spell
         void EffectSurvey();
         void EffectCorpseLoot();
         void EffectSpecCount();
+        void EffectObliterateItem();
         void EffectDespawnAreatrigger();
         void SendScene();
         void EffectLootWithToast();

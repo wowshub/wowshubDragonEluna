@@ -256,7 +256,7 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectForceCast,                                //160 SPELL_EFFECT_FORCE_CAST_2
     &Spell::EffectSpecCount,                                //161 SPELL_EFFECT_TALENT_SPEC_COUNT        second talent spec (learn/revert)
     &Spell::EffectActivateSpec,                             //162 SPELL_EFFECT_TALENT_SPEC_SELECT       activate primary/secondary spec
-    &Spell::EffectNULL,                                     //163 SPELL_EFFECT_OBLITERATE_ITEM
+    &Spell::EffectObliterateItem,                           //163 SPELL_EFFECT_OBLITERATE_ITEM
     &Spell::EffectRemoveAura,                               //164 SPELL_EFFECT_REMOVE_AURA
     &Spell::EffectDamageFromMaxHealthPCT,                   //165 SPELL_EFFECT_DAMAGE_FROM_MAX_HEALTH_PCT
     &Spell::EffectGiveCurrency,                             //166 SPELL_EFFECT_GIVE_CURRENCY
@@ -6296,6 +6296,65 @@ void Spell::EffectCorpseLoot()
 
     m_caster->ToPlayer()->SendLoot(*creature->m_loot);
     creature->RemoveUnitFlag(UNIT_FLAG_LOOTING);
+}
+
+void Spell::EffectObliterateItem()
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    Player* player = m_caster->ToPlayer();
+    if (!player)
+        return;
+
+    Item* item = m_targets.GetItemTarget();
+    if (!item)
+        return;
+
+    ItemTemplate const* itemTemplate = item->GetTemplate();
+    if (!itemTemplate || !(itemTemplate->HasFlag(ITEM_FLAG3_OBLITERATABLE)))
+        return;
+
+    uint32 itemLevel = itemTemplate->GetBaseItemLevel();
+    uint32 currencyId = 0;
+    uint32 itemId = 0;
+    uint32 addCount = 0;
+
+    // Quest replace case
+    switch (itemTemplate->GetId())
+    {
+    case 146975: // For quest 46810, 46946
+    case 146976:
+    case 147417:
+        itemId = 146978;
+        addCount = 1;
+        break;
+    case 136352: // For quest 41778
+        itemId = 136351;
+        addCount = 1;
+        break;
+    }
+
+    if (!currencyId && !itemId)
+        return;
+
+    uint32 count = 1;
+    player->DestroyItemCount(item, count, true);
+
+    if (currencyId)
+        player->ModifyCurrency(currencyId, addCount, CurrencyGainSource::Spell, CurrencyDestroyReason::Spell);
+    else if (itemId)
+    {
+        ItemPosCountVec dest;
+        if (player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, addCount) == EQUIP_ERR_OK)
+        {
+            if (auto newItem = player->StoreNewItem(dest, itemId, true))
+            {
+                player->SendNewItem(newItem, addCount, true, false, true);
+                player->SendDisplayToast(itemId, DisplayToastType::NewItem, false, addCount, DisplayToastMethod::Loot, 0, newItem);
+            }
+        }
+    }
 }
 
 void Spell::EffectSpecCount()
