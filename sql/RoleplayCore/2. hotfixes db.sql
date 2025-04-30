@@ -451,3 +451,15 @@ CREATE TABLE IF NOT EXISTS `quest_p_o_i_point` (
   `VerifiedBuild` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`ID`,`VerifiedBuild`)
 ) ENGINE=InnoDB CHARACTER SET = utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `pvp_bracket_types`;
+CREATE TABLE `pvp_bracket_types` (
+  `ID` int unsigned NOT NULL DEFAULT '0',
+  `BracketID` tinyint NOT NULL DEFAULT '0',
+  `WeeklyQuestID_0` int NOT NULL DEFAULT '0',
+  `WeeklyQuestID_1` int NOT NULL DEFAULT '0',
+  `WeeklyQuestID_2` int NOT NULL DEFAULT '0',
+  `WeeklyQuestID_3` int NOT NULL DEFAULT '0',
+  `VerifiedBuild` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ID`, `VerifiedBuild`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

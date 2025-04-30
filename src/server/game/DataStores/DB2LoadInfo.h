@@ -4702,6 +4702,21 @@ struct PrestigeLevelInfoLoadInfo
     static constexpr DB2LoadInfo Instance{ Fields, 6, &PrestigeLevelInfoMeta::Instance, HOTFIX_SEL_PRESTIGE_LEVEL_INFO };
 };
 
+struct PvpBracketTypesLoadInfo
+{
+    static constexpr DB2FieldMeta Fields[6] =
+    {
+        { false, FT_BYTE,"ID" },
+        { true,  FT_BYTE,"BracketID" },
+        { false, FT_INT, "WeeklyQuestID_0" },
+        { false, FT_INT, "WeeklyQuestID_1" },
+        { false, FT_INT, "WeeklyQuestID_2" },
+        { false, FT_INT, "WeeklyQuestID_3" },
+    };
+
+    static constexpr DB2LoadInfo Instance{ Fields, 6, &PVPBracketTypesMeta::Instance, HOTFIX_SEL_PVP_BRACKET_TYPES };
+};
+
 struct PvpDifficultyLoadInfo
 {
     static constexpr DB2FieldMeta Fields[5] =

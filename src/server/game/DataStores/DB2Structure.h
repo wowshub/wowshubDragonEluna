@@ -3466,6 +3466,13 @@ struct PrestigeLevelInfoEntry
     bool IsDisabled() const { return (Flags & PRESTIGE_FLAG_DISABLED) != 0; }
 };
 
+struct PVPBracketTypesEntry
+{
+    int32 ID;
+    uint8 BracketID;
+    int32 WeeklyQuestID[4];
+};
+
 struct PVPDifficultyEntry
 {
     uint32 ID;

@@ -1433,6 +1433,11 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PREPARE_LOCALE_STMT(HOTFIX_SEL_PRESTIGE_LEVEL_INFO, "SELECT ID, Name_lang FROM prestige_level_info_locale WHERE (`VerifiedBuild` > 0) = ?"
         " AND locale = ?", CONNECTION_SYNCH);
 
+    // PVPBracketTypes.db2
+    PrepareStatement(HOTFIX_SEL_PVP_BRACKET_TYPES, "SELECT ID, BracketID, WeeklyQuestID_0, 	WeeklyQuestID_1, WeeklyQuestID_2, WeeklyQuestID_3 FROM pvp_bracket_types"
+        " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_PVP_BRACKET_TYPES, "SELECT MAX(ID) + 1 FROM pvp_bracket_types", CONNECTION_SYNCH);
+
     // PvpDifficulty.db2
     PrepareStatement(HOTFIX_SEL_PVP_DIFFICULTY, "SELECT ID, RangeIndex, MinLevel, MaxLevel, MapID FROM pvp_difficulty WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_PVP_DIFFICULTY, "SELECT MAX(ID) + 1 FROM pvp_difficulty", CONNECTION_SYNCH);

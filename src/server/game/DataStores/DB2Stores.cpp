@@ -284,6 +284,7 @@ DB2Storage<PlayerConditionEntry>                sPlayerConditionStore("PlayerCon
 DB2Storage<PowerDisplayEntry>                   sPowerDisplayStore("PowerDisplay.db2", &PowerDisplayLoadInfo::Instance);
 DB2Storage<PowerTypeEntry>                      sPowerTypeStore("PowerType.db2", &PowerTypeLoadInfo::Instance);
 DB2Storage<PrestigeLevelInfoEntry>              sPrestigeLevelInfoStore("PrestigeLevelInfo.db2", &PrestigeLevelInfoLoadInfo::Instance);
+DB2Storage<PVPBracketTypesEntry>                sPVPBracketTypesStore("PVPBracketTypes.db2", &PvpBracketTypesLoadInfo::Instance);
 DB2Storage<PVPDifficultyEntry>                  sPVPDifficultyStore("PVPDifficulty.db2", &PvpDifficultyLoadInfo::Instance);
 DB2Storage<PVPItemEntry>                        sPVPItemStore("PVPItem.db2", &PvpItemLoadInfo::Instance);
 DB2Storage<PVPStatEntry>                        sPVPStatStore("PVPStat.db2", &PvpStatLoadInfo::Instance);
@@ -948,6 +949,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sPowerDisplayStore);
     LOAD_DB2(sPowerTypeStore);
     LOAD_DB2(sPrestigeLevelInfoStore);
+    LOAD_DB2(sPVPBracketTypesStore);
     LOAD_DB2(sPVPDifficultyStore);
     LOAD_DB2(sPVPItemStore);
     LOAD_DB2(sPVPStatStore);
@@ -3096,6 +3098,15 @@ ParagonReputationEntry const* DB2Manager::GetParagonReputation(uint32 factionId)
 PathDb2 const* DB2Manager::GetPath(uint32 pathId) const
 {
     return Trinity::Containers::MapGetValuePtr(_paths, pathId);
+}
+
+PVPBracketTypesEntry const* DB2Manager::GetBattlegroundBracketTypeById(BattlegroundBracketId id)
+{
+    for (PVPBracketTypesEntry const* entry : sPVPBracketTypesStore)
+        if (entry->BracketID == id)
+            return entry;
+
+    return nullptr;
 }
 
 PVPDifficultyEntry const* DB2Manager::GetBattlegroundBracketByLevel(uint32 mapid, uint32 level)

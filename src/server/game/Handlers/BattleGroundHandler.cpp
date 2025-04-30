@@ -652,7 +652,7 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPackets::Battleground::Battl
 void WorldSession::HandleJoinSkirmish(WorldPackets::Battleground::JoinSkirmish& packet)
 {
     // ignore if we already in BG or BG queue
-    if (_player->InBattleground() || packet.Bracket != ARENA_SKIRMISH)
+    if (_player->InBattleground())
         return;
 
     BattlegroundTemplate const* bgTemplate = sBattlegroundMgr->GetBattlegroundTemplateByTypeId(BATTLEGROUND_AA);
