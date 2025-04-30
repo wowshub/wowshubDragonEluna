@@ -126,9 +126,9 @@ void ArchaeologyPlayerMgr::SaveArchaeologyBranchs(CharacterDatabaseTransaction& 
     }*/
 }
 
-void ArchaeologyPlayerMgr::SaveArchaeologyHistory(CharacterDatabaseTransaction& /*trans*/)
+void ArchaeologyPlayerMgr::SaveArchaeologyHistory(CharacterDatabaseTransaction& trans)
 {
-   /* CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ARCHAEOLOGY_HISTORY);
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ARCHAEOLOGY_HISTORY);
     stmt->setUInt64(0, GetPlayer()->GetGUID().GetCounter());
     trans->Append(stmt);
 
@@ -143,7 +143,7 @@ void ArchaeologyPlayerMgr::SaveArchaeologyHistory(CharacterDatabaseTransaction& 
             stmt->setUInt16(3, itr->second.count);
             trans->Append(stmt);
         }
-    }*/
+    }
 }
 
 Digsite ArchaeologyPlayerMgr::GetDigsitePosition(uint8 memId)
