@@ -603,6 +603,43 @@ namespace WorldPackets
             void Read() override;
 
             uint8 RolesMask = 0;
+            uint8 UnkField = 0;
+        };
+
+        class RequestScheduledPVPInfo final : public ClientPacket
+        {
+        public:
+            RequestScheduledPVPInfo(WorldPacket&& packet) : ClientPacket(CMSG_REQUEST_SCHEDULED_PVP_INFO, std::move(packet)) {}
+
+            void Read() override {}
+        };
+
+        struct SpecialEventInfo
+        {
+            int32 PvpBrawlID = 0;
+            int32 AchievementId = 0;
+            bool CanQueue = false;
+        };
+
+        struct BrawlInfo
+        {
+            int32 PvpBrawlID = 0;
+            int32 TimeToBrawl = 0;
+            bool IsActive = false;
+        };
+
+        class RequestScheduledPVPInfoResponse final : public ServerPacket
+        {
+        public:
+            RequestScheduledPVPInfoResponse() : ServerPacket(SMSG_REQUEST_SCHEDULED_PVP_INFO_RESPONSE) { }
+
+            WorldPacket const* Write() override;
+
+            bool HasBrawlInfo = false;
+            bool HasSpecialEventInfo = false;
+
+            Optional<BrawlInfo> Brawl;
+            Optional<SpecialEventInfo> SpecialEvent;
         };
     }
 }

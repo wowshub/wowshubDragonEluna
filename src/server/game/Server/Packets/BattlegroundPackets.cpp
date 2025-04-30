@@ -452,5 +452,30 @@ void WorldPackets::Battleground::AcceptWargameInvite::Read()
 void WorldPackets::Battleground::BattlemasterJoinBrawl::Read()
 {
     _worldPacket >> RolesMask;
+    _worldPacket >> UnkField;
 }
 
+WorldPacket const* WorldPackets::Battleground::RequestScheduledPVPInfoResponse::Write()
+{
+    _worldPacket.WriteBit(HasBrawlInfo);
+    _worldPacket.WriteBit(HasSpecialEventInfo);
+    _worldPacket.FlushBits();
+
+    if (HasBrawlInfo)
+    {
+        _worldPacket << Brawl->PvpBrawlID;
+        _worldPacket << Brawl->TimeToBrawl;
+        _worldPacket.WriteBit(Brawl->IsActive);
+        _worldPacket.FlushBits();
+    }
+
+    if (HasSpecialEventInfo)
+    {
+        _worldPacket << SpecialEvent->PvpBrawlID;
+        _worldPacket << SpecialEvent->AchievementId;
+        _worldPacket.WriteBit(SpecialEvent->CanQueue);
+        _worldPacket.FlushBits();
+    }
+
+    return &_worldPacket;
+}

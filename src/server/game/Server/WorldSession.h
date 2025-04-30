@@ -195,6 +195,8 @@ namespace WorldPackets
         class RequestRatedPvpInfo;
         class AcceptWargameInvite;
         class BattlemasterJoinBrawl;
+        class RequestScheduledPVPInfo;
+        class RequestScheduledPVPInfoResponse;
     }
 
     namespace Battlenet
@@ -1672,6 +1674,8 @@ class TC_GAME_API WorldSession
         void HandleAcceptWargameInvite(WorldPackets::Battleground::AcceptWargameInvite& packet);
         void JoinBracket(uint8 slot, uint8 rolesMask = 0);
         void HandleBattlemasterJoinBrawl(WorldPackets::Battleground::BattlemasterJoinBrawl& packet);
+        void HandleBattlemasterJoinBrawl(WorldPackets::Battleground::BattlemasterJoinBrawl& packet);
+        void HandleRequestScheduledPVPInfo(WorldPackets::Battleground::RequestScheduledPVPInfo& /*packet*/);
 
         void HandleMinimapPingOpcode(WorldPackets::Party::MinimapPingClient& packet);
         void HandleRandomRollOpcode(WorldPackets::Misc::RandomRollClient& packet);
