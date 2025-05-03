@@ -38,7 +38,8 @@ void ArchaeologyPlayerMgr::LoadArchaeologyDigSites(PreparedQueryResult result)
         float pos_y = fields[2].GetFloat();
         uint8 count = fields[3].GetUInt8();
 
-      //  std::vector<uint32> digsites = GetPlayer()->GetDynamicValues(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE);
+        auto const& digsites = GetPlayer()->m_activePlayerData->ResearchSites;
+
 
     //    GetPlayer()->AddDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE, digsite);
      //   GetPlayer()->AddDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE, 0);
@@ -83,18 +84,18 @@ void ArchaeologyPlayerMgr::LoadArchaeologyHistory(PreparedQueryResult result)
     while (result->NextRow());
 }
 
-void ArchaeologyPlayerMgr::SaveArchaeologyDigSites(CharacterDatabaseTransaction& /*trans*/)
+void ArchaeologyPlayerMgr::SaveArchaeologyDigSites(CharacterDatabaseTransaction& trans)
 {
-  /*  CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ARCHAEOLOGY_DIGSITES);
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ARCHAEOLOGY_DIGSITES);
     stmt->setUInt64(0, GetPlayer()->GetGUID().GetCounter());
     trans->Append(stmt);
-    std::vector<uint32> digsites = GetPlayer()->GetDynamicValues(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE);
+    auto const& digsites = GetPlayer()->m_activePlayerData->ResearchSites;
 
     for (uint8 i = 0; i < digsites.size(); ++i)
     {
-        uint16 digsiteId = digsites[i];
+        uint16 digsiteId = digsites[i].size();
         Digsite digsite = GetDigsitePosition(i);
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_ARCHAEOLOGY_DIGSITE);
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_ARCHAEOLOGY_DIGSITE);
 
         stmt->setUInt64(0, GetPlayer()->GetGUID().GetCounter());
         stmt->setUInt16(1, digsiteId);
@@ -103,27 +104,27 @@ void ArchaeologyPlayerMgr::SaveArchaeologyDigSites(CharacterDatabaseTransaction&
         stmt->setUInt8(4, digsite.digCount);
 
         trans->Append(stmt);
-    }*/
+    }
 }
 
-void ArchaeologyPlayerMgr::SaveArchaeologyBranchs(CharacterDatabaseTransaction& /*trans*/)
+void ArchaeologyPlayerMgr::SaveArchaeologyBranchs(CharacterDatabaseTransaction& trans)
 {
-    /*PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ARCHAEOLOGY_BRANCHS);
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ARCHAEOLOGY_BRANCHS);
     stmt->setUInt64(0, GetPlayer()->GetGUID().GetCounter());
     trans->Append(stmt);
 
     for(uint32 i=0; i < 9; ++i)
     {
-        uint16 projectId = GetPlayer()->GetDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH, i);
+        uint16 projectId = GetPlayer()->m_activePlayerData->Research[i].size();
 
         if (projectId)
         {
-            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_ARCHAEOLOGY_BRANCH);
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_ARCHAEOLOGY_BRANCH);
             stmt->setUInt64(0, GetPlayer()->GetGUID().GetCounter());
             stmt->setUInt16(1, projectId);
             trans->Append(stmt);
         }
-    }*/
+    }
 }
 
 void ArchaeologyPlayerMgr::SaveArchaeologyHistory(CharacterDatabaseTransaction& trans)
@@ -203,23 +204,23 @@ void ArchaeologyPlayerMgr::SetDigsiteId(uint8 memId, uint16 digsiteId)
     m_DigsiteMap.insert(DigsiteMap::value_type(memId, digsite));
 }
 
-int ArchaeologyPlayerMgr::GetDigsite(int32 /*x*/, int32 /*y*/)
+int ArchaeologyPlayerMgr::GetDigsite(int32 x, int32 y)
 {
     uint16 digsiteID = 0;
     std::vector<uint16> PlayerDigsites;
-    //std::vector<uint32> const& digsites; = GetPlayer()->GetDynamicValues(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE);
+    auto const& digsites = GetPlayer()->m_activePlayerData->ResearchSites;
 
-  //  for (uint32 memId = 0; memId < digsites.size(); ++memId)
+    for (uint32 memId = 0; memId < digsites.size(); ++memId)
     {
-      //  digsiteID = digsites[memId];
+        digsiteID = digsites[memId].size();
 
-      //  if (digsiteID <= 0)
-        //    continue;
+        if (digsiteID <= 0)
+            continue;
 
         ResearchSiteEntry const* site = sResearchSiteStore.LookupEntry(digsiteID);
 
-        //if (!site)
-          //  continue;
+        if (!site)
+            continue;
 
         for (uint32 i = 0; i < sQuestPOIPointStore.GetNumRows(); i++)
         {
@@ -234,48 +235,48 @@ int ArchaeologyPlayerMgr::GetDigsite(int32 /*x*/, int32 /*y*/)
             DigsitePolygon.push_back(std::make_pair(poi->X, poi->Y));
         }
 
-//        float x1, x2, y2;
-//        int crs = 0;
-//
-//      //  if (DigsitePolygon.size() == 0)
-//        //    continue;
-//
-//        for (int i = 0; i < (int)DigsitePolygon.size(); i++)
-//        {
-//            if (DigsitePolygon[i].first < DigsitePolygon[(i + 1) % DigsitePolygon.size()].first)
-//            {
-//                x1 = DigsitePolygon[i].first;
-//                x2 = DigsitePolygon[(i + 1) % DigsitePolygon.size()].first;
-//            }
-//            else
-//            {
-//                x1 = DigsitePolygon[(i + 1) % DigsitePolygon.size()].first;
-//                x2 = DigsitePolygon[i].first;
-//            }
-//
-//          /*  if (x > x1 && x <= x2 && (y < DigsitePolygon[i].second || y <= DigsitePolygon[(i + 1) % DigsitePolygon.size()].second))
-//            {
-//                float dx = DigsitePolygon[(i + 1) % DigsitePolygon.size()].first - DigsitePolygon[i].first;
-//                float dy = DigsitePolygon[(i + 1) % DigsitePolygon.size()].second - DigsitePolygon[i].second;
-//                float k;
-//
-//                if (fabs(dx) < 0.000001)
-//                    k = float(0xFFFFFFFF);
-//                else
-//                    k = dy / dx;
-//
-//                float m = DigsitePolygon[i].second - k * DigsitePolygon[i].first;
-//                y2 = k * x + m;
-//
-//                if (y <= y2)
-//                    crs++;
-//            }*/
-//        }
+        float x1, x2, y2;
+        int crs = 0;
+
+        if (DigsitePolygon.size() == 0)
+            continue;
+
+        for (int i = 0; i < (int)DigsitePolygon.size(); i++)
+        {
+            if (DigsitePolygon[i].first < DigsitePolygon[(i + 1) % DigsitePolygon.size()].first)
+            {
+                x1 = DigsitePolygon[i].first;
+                x2 = DigsitePolygon[(i + 1) % DigsitePolygon.size()].first;
+            }
+            else
+            {
+                x1 = DigsitePolygon[(i + 1) % DigsitePolygon.size()].first;
+                x2 = DigsitePolygon[i].first;
+            }
+
+            if (x > x1 && x <= x2 && (y < DigsitePolygon[i].second || y <= DigsitePolygon[(i + 1) % DigsitePolygon.size()].second))
+            {
+                float dx = DigsitePolygon[(i + 1) % DigsitePolygon.size()].first - DigsitePolygon[i].first;
+                float dy = DigsitePolygon[(i + 1) % DigsitePolygon.size()].second - DigsitePolygon[i].second;
+                float k;
+
+                if (fabs(dx) < 0.000001)
+                    k = float(0xFFFFFFFF);
+                else
+                    k = dy / dx;
+
+                float m = DigsitePolygon[i].second - k * DigsitePolygon[i].first;
+                y2 = k * x + m;
+
+                if (y <= y2)
+                    crs++;
+            }
+        }
 
         DigsitePolygon.clear();
 
-       // if (crs % 2)
-         //   return memId;
+        if (crs % 2)
+            return memId;
     }
 
     return -1;
@@ -285,7 +286,7 @@ bool ArchaeologyPlayerMgr::IsCurrentArtifactSpell(int32 spellId)
 {
     for (uint32 i = 0; i < 9; ++i)
     {
-       // if (GetPlayer()->GetDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH, i))
+        if (GetPlayer()->m_activePlayerData->Research[i].size())
         {
             for (uint32 j = 0; j < sResearchProjectStore.GetNumRows(); ++j)
             {
@@ -301,28 +302,29 @@ bool ArchaeologyPlayerMgr::IsCurrentArtifactSpell(int32 spellId)
     return false;
 }
 
-void ArchaeologyPlayerMgr::CompleteArtifact(uint32 /*spellId*/)
+void ArchaeologyPlayerMgr::CompleteArtifact(uint32 spellId)
 {
     uint32 ftime = time(NULL);
     uint32 count = 0;
 
     for (uint32 memId = 0; memId < 9; ++memId)
     {
-      //  uint16 artifactId = GetPlayer()->GetDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH, memId);
+        uint16 artifactId = GetPlayer()->m_activePlayerData->Research[memId].size();
 
-       // if (artifactId)
+        
+        if (artifactId)
         {
             for (auto const rs : sResearchProjectStore)
             {
-               // if (!rs || rs->Id != artifactId || rs->SpellId != int32(spellId))
-               //     continue;
+                if (!rs || rs->Id != artifactId || rs->SpellId != int32(spellId))
+                    continue;
 
                 for (auto const ab : sResearchProjectStore)
                 {
                     if (!ab || ab->Id != rs->ResearchBranchId)
                         continue;
 
-                 //   ArchaeologyHistoryMap::iterator itr = m_ArchaeologyHistoryMap.find(artifactId);
+                    ArchaeologyHistoryMap::iterator itr = m_ArchaeologyHistoryMap.find(artifactId);
                  /*   if (itr != m_ArchaeologyHistoryMap.end())
                     {
                         ftime = itr->second.time;
@@ -333,23 +335,23 @@ void ArchaeologyPlayerMgr::CompleteArtifact(uint32 /*spellId*/)
                     ArchaeologyHistory artifact{};
                     artifact.time = ftime;
                     artifact.count = count ? count : 1;
-                 //   m_ArchaeologyHistoryMap.insert(ArchaeologyHistoryMap::value_type(artifactId, artifact));
+                    m_ArchaeologyHistoryMap.insert(ArchaeologyHistoryMap::value_type(artifactId, artifact));
 
-                   // GetPlayer()->GetAchievementMgr()->UpdateCriteria(CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS, artifactId);
+                    GetPlayer()->UpdateCriteria(CriteriaType::CompleteResearchProject, artifactId);
 
-//                    std::vector<uint16> BranchProjects;
-//
-//                    for (auto const rs2 : sResearchProjectStore)
-//                    {
-//                        //   if (!rs2 || rs2->ResearchBranchId != ab->Id || rs2->Id == artifactId || sArchaeologyMgr->GetArtifactSkillReqLevel(uint32(rs2->SpellId)) > GetPlayer()->GetBaseSkillValue(SKILL_ARCHAEOLOGY))
-//                        //    continue;
-//
-//                        BranchProjects.push_back(rs2->Id);
-//                    }
-//
-////                    uint16 selectProject = BranchProjects[urand(0, BranchProjects.size() - 1)];
-//                //    GetPlayer()->SetDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH, memId, selectProject);
-//                    BranchProjects.clear();
+                    std::vector<uint16> BranchProjects;
+
+                    for (auto const rs2 : sResearchProjectStore)
+                    {
+                           if (!rs2 || rs2->ResearchBranchId != ab->Id || rs2->Id == artifactId || sArchaeologyMgr->GetArtifactSkillReqLevel(uint32(rs2->SpellId)) > GetPlayer()->GetBaseSkillValue(SKILL_ARCHAEOLOGY))
+                            continue;
+
+                        BranchProjects.push_back(rs2->Id);
+                    }
+
+//                    uint16 selectProject = BranchProjects[urand(0, BranchProjects.size() - 1)];
+                //    GetPlayer()->SetDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH, memId, selectProject);
+                    BranchProjects.clear();
                     return;
                 }
             }

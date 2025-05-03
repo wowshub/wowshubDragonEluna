@@ -31761,7 +31761,7 @@ void Player::AddMoveImpulse(Position direction)
 
 void Player::SetResearchValue(uint32 value)
 {
-    //AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::Research)) = value;
+    //AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::Research));
 }
 
 void Player::AddResearchSiteValue(uint32 value)

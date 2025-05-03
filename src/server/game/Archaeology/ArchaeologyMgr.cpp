@@ -110,7 +110,7 @@ void ArchaeologyMgr::InitBranch(Player* player, uint32 currencyId)
 void ArchaeologyMgr::ChangeDigsite(Player* player, uint8 memId)
 {
     std::vector<uint16> SitesInMap;
-    auto digsites = &player->m_activePlayerData->ResearchSites;
+    auto& digsites = player->m_activePlayerData->ResearchSites;
 
     for(DigsitesMap::iterator itr = mResearchDigsitesMap.begin(); itr != mResearchDigsitesMap.end(); ++itr)
     {
@@ -138,20 +138,20 @@ void ArchaeologyMgr::ChangeDigsite(Player* player, uint8 memId)
 
     std::vector<uint32> tempContainer;
 
- //   digsites.erase(digsites.begin()+memId);
- //   digsites.emplace(digsites.begin()+memId, selectDigsite);
+    //digsites.erase(digsites.begin()+memId);
+    //digsites.emplace(digsites.begin()+memId, selectDigsite);
 
- //   digsites.swap(tempContainer);
+    //digsites.swap(tempContainer);
 
-   // player->ClearDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE);
+    //player->ClearDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE);
 
-    //for (uint32 i = 0; i < tempContainer.size(); ++i)
-    //{
-    //   // player->AddDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE, tempContainer[i]);
-    //   // player->AddDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESEARCH_SITE_PROGRESS, 0);
+    for (uint32 i = 0; i < tempContainer.size(); ++i)
+    {
+       // player->AddDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE, tempContainer[i]);
+       // player->AddDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESEARCH_SITE_PROGRESS, 0);
 
-    //    player->GetArchaeologyMgr().SetDigsitePosition(i, 0, 0, 0);
-    //}
+       player->GetArchaeologyMgr().SetDigsitePosition(i, 0, 0, 0);
+    }
 
     tempContainer.clear();
 
@@ -164,16 +164,16 @@ void ArchaeologyMgr::AddDigsitesToMap(Player* player, uint32 mapId)
         return;
 
     std::vector<uint16> SitesInMap;
-//    uint8 count;
-//
-//    switch(mapId)
-//    {
-//        case 0:   count = 0; break;
-//        case 1:   count = 4; break;
-//        case 530: count = 8; break;
-//        case 571: count = 12; break;
-//        default:  return;
-//    }
+    uint8 count;
+
+    switch(mapId)
+    {
+        case 0:   count = 0; break;
+        case 1:   count = 4; break;
+        case 530: count = 8; break;
+        case 571: count = 12; break;
+        default:  return;
+    }
 
     for (auto& itr : mResearchDigsitesMap)
     {
@@ -188,32 +188,32 @@ void ArchaeologyMgr::AddDigsitesToMap(Player* player, uint32 mapId)
     if (SitesInMap.empty())
         return;
 
-//    for(uint32 addedsites = 0; addedsites < 4; ++addedsites)
-//    {
-//        bool isActiveDigsite = false;
-//        uint16 selectDigsite = 0;
-//
-//        do
-//        {
-//            isActiveDigsite = false;
-//            selectDigsite = SitesInMap[urand(0, SitesInMap.size()-1)];
-//           // std::vector<uint32> const& site_now = player->GetDynamicValues(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE);
-//            //uint32 offset = std::find(site_now.begin(), site_now.end(), selectDigsite) - site_now.begin();
-//
-//            for(uint32 i = 0; i < 16; ++i)
-//            {
-//               // if (offset != selectDigsite)
-//                    continue;
-//
-//                isActiveDigsite = true;
-//            }
-//        }
-//        while (isActiveDigsite);
-//
-//      //  player->AddDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE, selectDigsite);
-//      //  player->AddDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESEARCH_SITE_PROGRESS, 0);
-//        ++count;
-//    }
+    for(uint32 addedsites = 0; addedsites < 4; ++addedsites)
+    {
+        bool isActiveDigsite = false;
+        uint16 selectDigsite = 0;
+
+        do
+        {
+            isActiveDigsite = false;
+            selectDigsite = SitesInMap[urand(0, SitesInMap.size()-1)];
+           // std::vector<uint32> const& site_now = player->GetDynamicValues(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE);
+            //uint32 offset = std::find(site_now.begin(), site_now.end(), selectDigsite) - site_now.begin();
+
+            for(uint32 i = 0; i < 16; ++i)
+            {
+               //if (offset != selectDigsite)
+                    //continue;
+
+                isActiveDigsite = true;
+            }
+        }
+        while (isActiveDigsite);
+
+      //  player->AddDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESERACH_SITE, selectDigsite);
+      //  player->AddDynamicValue(ACTIVE_PLAYER_DYNAMIC_FIELD_RESEARCH_SITE_PROGRESS, 0);
+        ++count;
+    }
 
     SitesInMap.clear();
 }

@@ -6484,8 +6484,6 @@ void Spell::EffectRandomizeDigsites()
     Player* player = m_caster->ToPlayer();
     if (!player || !player->GetSkillValue(SKILL_ARCHAEOLOGY))
         return;
-
-    // player->RandomizeSitesInMap(m_spellInfo->GetEffect(effIndex)->MiscValue, damage);
 }
 
 void Spell::EffectModReputation()
