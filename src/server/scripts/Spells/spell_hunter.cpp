@@ -2257,8 +2257,6 @@ void AddSC_hunter_spell_scripts()
     RegisterSpellScript(spell_hun_wilderness_medicine);
 
     //new
-    new at_hun_tar_trap_activated();
-    new at_hun_tar_trap_not_activated();
     new at_hun_freezing_trap();
     new at_hun_flare();
     new spell_hun_kill_command();
