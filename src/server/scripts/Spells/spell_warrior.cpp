@@ -933,6 +933,9 @@ public:
 
     void OnCreatureKill(Player* killer, Creature* killed) override
     {
+        if (killer->GetClass() != CLASS_WARRIOR)
+            return;
+
         if (!killer->isHonorOrXPTarget(killed))
             return;
 
@@ -941,6 +944,9 @@ public:
 
     void OnPVPKill(Player* killer, Player* killed) override
     {
+        if (killer->GetClass() != CLASS_WARRIOR)
+            return;
+
         if (!killer->isHonorOrXPTarget(killed))
             return;
 
