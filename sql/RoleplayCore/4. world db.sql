@@ -1196,9 +1196,6 @@ REPLACE INTO `spell_script_names` VALUES (359073, 'spell_evo_eternity_surge');
 -- ----------------------------
 -- Hunter spell fixes
 -- ----------------------------
-
-REPLACE INTO `areatrigger_create_properties` VALUES (4436, 0, 3841, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 30000, 4, 8, 8, 10, 10, 5, 5, 0, 0, 'at_hun_tar_trap_activated', 40120);
-REPLACE INTO `areatrigger_create_properties` VALUES (4435, 0, 9181, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 60000, 4, 3, 3, 4, 4, 1, 1, 0, 0, 'at_hun_tar_trap_not_activated', 40120);
 REPLACE INTO `areatrigger_create_properties` VALUES (4424, 0, 9170, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 60000, 4, 3, 3, 4, 4, 1, 1, 0, 0, 'at_hun_freezing_trap', 48999);
 REPLACE INTO `areatrigger_create_properties` VALUES (510, 0, 3678, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 20000, 4, 10, 10, 7, 7, 3, 3, 0, 0, 'at_hun_flare', 40120);
 
