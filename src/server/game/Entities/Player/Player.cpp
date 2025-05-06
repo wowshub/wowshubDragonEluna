@@ -160,7 +160,7 @@ static uint32 copseReclaimDelay[MAX_DEATH_COUNT] = { 30, 60, 120 };
 
 uint64 const MAX_MONEY_AMOUNT = 99999999999ULL;
 
-Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this), m_archaeologyPlayerMgr(this)
+Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this)
 {
     m_objectType |= TYPEMASK_PLAYER;
     m_objectTypeId = TYPEID_PLAYER;
@@ -21114,10 +21114,6 @@ void Player::SaveToDB(LoginDatabaseTransaction loginTransaction, CharacterDataba
     if (_garrison)
         _garrison->SaveToDB(trans);
 
-    GetArchaeologyMgr().SaveArchaeologyDigSites(trans);
-    GetArchaeologyMgr().SaveArchaeologyBranchs(trans);
-    GetArchaeologyMgr().SaveArchaeologyHistory(trans);
-
     // check if stats should only be saved on logout
     // save stats can be out of transaction
     if (m_session->isLogingOut() || !sWorld->getBoolConfig(CONFIG_STATS_SAVE_ONLY_ON_LOGOUT))
@@ -31757,19 +31753,4 @@ void Player::AddMoveImpulse(Position direction)
     addImpulse.SequenceIndex = m_movementCounter++;
     addImpulse.Direction = direction;
     SendMessageToSet(addImpulse.Write(), true);
-}
-
-void Player::SetResearchValue(uint32 value)
-{
-    //AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::Research));
-}
-
-void Player::AddResearchSiteValue(uint32 value)
-{
-    //AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ResearchSites)) = value;
-}
-
-void Player::AddResearchSiteProgressValue(uint32 value)
-{
-    //AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ResearchSiteProgress)) = value;
 }

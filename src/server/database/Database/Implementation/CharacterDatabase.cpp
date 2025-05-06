@@ -746,15 +746,6 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_INS_PET, "INSERT INTO character_pet (id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization) "
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
 
-    // Archaeology
-    PrepareStatement(CHAR_INS_ARCHAEOLOGY_BRANCH, "INSERT INTO character_archaeology_branchs (guid, projectId) VALUES (?, ?)", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_INS_ARCHAEOLOGY_DIGSITE, "INSERT IGNORE INTO character_archaeology_digsites (guid, digsiteId, point_x, point_y, count) VALUES (?, ?, ?, ?, ?)", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_SEL_ARCHAEOLOGY_ARTIFACT, "SELECT time, projectId, count FROM character_archaeology_history WHERE guid = ? AND projectId = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_INS_ARCHAEOLOGY_HISTORY, "INSERT INTO character_archaeology_history (guid, projectId, time, count) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_DEL_ARCHAEOLOGY_DIGSITES, "DELETE FROM character_archaeology_digsites WHERE guid = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_DEL_ARCHAEOLOGY_BRANCHS, "DELETE FROM character_archaeology_branchs WHERE guid = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_DEL_ARCHAEOLOGY_HISTORY, "DELETE FROM character_archaeology_history WHERE guid = ?", CONNECTION_ASYNC);
-
     // PvPstats
     PrepareStatement(CHAR_SEL_PVPSTATS_MAXID, "SELECT MAX(id) FROM pvpstats_battlegrounds", CONNECTION_SYNCH);
     PrepareStatement(CHAR_INS_PVPSTATS_BATTLEGROUND, "INSERT INTO pvpstats_battlegrounds (id, winner_faction, bracket_id, type, date) VALUES (?, ?, ?, ?, NOW())", CONNECTION_ASYNC);

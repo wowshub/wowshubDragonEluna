@@ -18,7 +18,6 @@
 #ifndef _PLAYER_H
 #define _PLAYER_H
 
-#include "ArchaeologyPlayerMgr.h"
 #include "GridObject.h"
 #include "Unit.h"
 #include "CUFProfile.h"
@@ -2945,12 +2944,6 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         void SetHeirloom(uint32 slot, int32 itemId) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::Heirlooms, slot), itemId); }
         void SetHeirloomFlags(uint32 slot, uint32 flags) { SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::HeirloomFlags, slot), flags); }
 
-        void AddDigsite(std::vector<uint16> digsite)
-        {
-            //DoWithSuppressingObjectUpdates work (but not necessary)
-            //AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::ResearchSites)) = digsite; doesn't work
-        }
-
         void AddToy(int32 itemId, uint32 flags)
         {
             AddDynamicUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::Toys)) = itemId;
@@ -3034,13 +3027,6 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         bool CanAcceptAreaSpiritHealFrom(Unit* spiritHealer) const { return spiritHealer->GetGUID() == _areaSpiritHealerGUID; }
         void SendAreaSpiritHealerTime(Unit* spiritHealer) const;
         void SendAreaSpiritHealerTime(ObjectGuid const& spiritHealerGUID, int32 timeLeft) const;
-
-        // Archaeology functions
-        void SetResearchValue(uint32 value);
-        void AddResearchSiteValue(uint32 value);
-        void AddResearchSiteProgressValue(uint32 value);
-
-        ArchaeologyPlayerMgr& GetArchaeologyMgr() { return m_archaeologyPlayerMgr; }
 
     protected:
         // Gamemaster whisper whitelist
@@ -3405,8 +3391,6 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         ObjectGuid _areaSpiritHealerGUID;
 
         bool _justPassedBarberChecks;
-
-        ArchaeologyPlayerMgr m_archaeologyPlayerMgr;
 
     public:
         struct WargameRequest
