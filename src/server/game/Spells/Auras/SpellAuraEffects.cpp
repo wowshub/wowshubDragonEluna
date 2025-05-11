@@ -6703,9 +6703,6 @@ void AuraEffect::HandleCancelEquipmentStats(AuraApplication const* aurApp, uint8
             playerTarget->ApplyItemEquipSpell(item, false, true);
         }
     }
-
-    // apply / remove equiment set bonuses aswell
-    playerTarget->UpdateItemSetAuras(false);
 }
 
 void AuraEffect::HandleModAlternativeDefaultTeam(AuraApplication const* aurApp, uint8 mode, bool apply) const

@@ -3592,129 +3592,105 @@ class spell_pri_whispering_shadows_effect : public SpellScript
 };
 
 // 186723 - Penance
-class spell_pri_penance_620 : public SpellScriptLoader
+class spell_pri_penance_620 : public SpellScript
 {
-public:
-    spell_pri_penance_620() : SpellScriptLoader("spell_pri_penance_620") {}
-
-    class spell_pri_penance_620_SpellScript : public SpellScript
+    void HandleOnCast()
     {
+        Unit* caster = GetCaster();
+        if (!caster || !caster->IsPlayer())
+            return;
 
-        bool Validate(SpellInfo const* /*spellInfo*/) override
+        Player* player = caster->ToPlayer();
+        int32 numBolts = 3;
+
+        if (player->HasAura(193134))
+            numBolts += 1;
+
+        if (player->HasAura(373183))
+            numBolts += 3;
+
+        if (Aura* penanceAura = caster->GetAura(186723))
         {
-            return ValidateSpellInfo({
-                186723, // Penance
-                193134, // Castigation
-                198069, // Power of the Dark Side
-                373183, // Harsh Discipline
-                390706  // Twilight Equilibrium
-                });
-        }
-
-        void HandleOnCast()
-        {
-            Unit* caster = GetCaster();
-            if (!caster || !caster->IsPlayer())
-                return;
-
-            Player* player = caster->ToPlayer();
-            int32 numBolts = 3;
-
-            if (player->HasAura(193134))
-                numBolts += 1;
-
-            if (player->HasAura(373183))
-                numBolts += 3;
-
-            if (Aura* penanceAura = caster->GetAura(186723))
+            if (AuraEffect* aurEff = penanceAura->GetEffect(EFFECT_0))
             {
-                if (AuraEffect* aurEff = penanceAura->GetEffect(EFFECT_0))
-                {
-                    aurEff->SetAmount(numBolts);
-                }
+                aurEff->SetAmount(numBolts);
             }
         }
+    }
 
-        void HandleOnHit()
-        {
-            Unit* caster = GetCaster();
-            Unit* target = GetHitUnit();
-            if (!caster || !target)
-                return;
-
-            float damageModifier = 1.0f;
-            float healModifier = 1.0f;
-
-            //TODO: Need to test to see if it breaks the balance too much.
-            //Is it worth adding this? Or is it automatically included in the math of the formula?
-
-            if (caster->HasAura(198069))
-            {
-                damageModifier *= 1.3f;
-                healModifier *= 1.3f;
-            }
-
-            if (caster->HasAura(390706))
-            {
-                damageModifier *= 1.15f;
-            }
-
-            if (caster->IsHostileTo(target))
-            {
-                int32 damage = GetHitDamage();
-                SetHitDamage(int32(damage * damageModifier));
-            }
-            else
-            {
-                int32 healing = GetHitHeal();
-                SetHitHeal(int32(healing * healModifier));
-
-                ApplyAtonementHealing(caster);
-            }
-        }
-
-        void ApplyAtonementHealing(Unit* caster)
-        {
-            if (!caster || !caster->IsPlayer())
-                return;
-
-            Player* player = caster->ToPlayer();
-            float spellPower = player->GetStat(STAT_INTELLECT);
-            int32 atonementHealing = int32(spellPower * 0.1872f);
-
-            std::list<Unit*> targets;
-            Trinity::AnyFriendlyUnitInObjectRangeCheck check(caster, caster, 40.0f);
-            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(caster, targets, check);
-            Cell::VisitAllObjects(caster, searcher, 40.0f);
-
-            for (Unit* target : targets)
-            {
-                if (target->HasAura(194384, caster->GetGUID()))
-                {
-                    CastSpellExtraArgs args;
-                    args.TriggerFlags = TRIGGERED_FULL_MASK;
-                    args.AddSpellBP0(atonementHealing);
-                    caster->CastSpell(target, 81751, args);
-                }
-            }
-        }
-
-        void Register() override
-        {
-            OnCast += SpellCastFn(spell_pri_penance_620_SpellScript::HandleOnCast);
-            OnHit += SpellHitFn(spell_pri_penance_620_SpellScript::HandleOnHit);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
+    void HandleOnHit()
     {
-        return new spell_pri_penance_620_SpellScript();
+        Unit* caster = GetCaster();
+        Unit* target = GetHitUnit();
+        if (!caster || !target)
+            return;
+
+        float damageModifier = 1.0f;
+        float healModifier = 1.0f;
+
+        //TODO: Need to test to see if it breaks the balance too much.
+        //Is it worth adding this? Or is it automatically included in the math of the formula?
+
+        if (caster->HasAura(198069))
+        {
+            damageModifier *= 1.3f;
+            healModifier *= 1.3f;
+        }
+
+        if (caster->HasAura(390706))
+        {
+            damageModifier *= 1.15f;
+        }
+
+        if (caster->IsHostileTo(target))
+        {
+            int32 damage = GetHitDamage();
+            SetHitDamage(int32(damage * damageModifier));
+        }
+        else
+        {
+            int32 healing = GetHitHeal();
+            SetHitHeal(int32(healing * healModifier));
+
+            ApplyAtonementHealing(caster);
+        }
+    }
+
+    void ApplyAtonementHealing(Unit* caster)
+    {
+        if (!caster || !caster->IsPlayer())
+            return;
+
+        Player* player = caster->ToPlayer();
+        float spellPower = player->GetStat(STAT_INTELLECT);
+        int32 atonementHealing = int32(spellPower * 0.1872f);
+
+        std::list<Unit*> targets;
+        Trinity::AnyFriendlyUnitInObjectRangeCheck check(caster, caster, 40.0f);
+        Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(caster, targets, check);
+        Cell::VisitAllObjects(caster, searcher, 40.0f);
+
+        for (Unit* target : targets)
+        {
+            if (target->HasAura(194384, caster->GetGUID()))
+            {
+                CastSpellExtraArgs args;
+                args.TriggerFlags = TRIGGERED_FULL_MASK;
+                args.AddSpellBP0(atonementHealing);
+                caster->CastSpell(target, 81751, args);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnCast += SpellCastFn(spell_pri_penance_620::HandleOnCast);
+        OnHit += SpellHitFn(spell_pri_penance_620::HandleOnHit);
     }
 };
 
 class spell_pri_penance_620_aura : public AuraScript
 {
-
     void HandleEffectCalcAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
     {
         Unit* caster = GetCaster();
