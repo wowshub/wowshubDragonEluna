@@ -190,8 +190,6 @@ class TC_GAME_API Aura
         ObjectGuid GetCastItemGUID() const { return m_castItemGuid; }
         uint32 GetCastItemId() const { return m_castItemId; }
         int32 GetCastItemLevel() const { return m_castItemLevel; }
-        uint32 GetSpellXSpellVisualId() const { return m_spellXSpellVisualId; }
-        void SetSpellXSpellVisualId(uint32 visual) { m_spellXSpellVisualId = visual; }
         SpellCastVisual GetSpellVisual() const { return m_spellVisual; }
         void SetSpellVisual(SpellCastVisual const& spellVisual);
         Unit* GetCaster() const;

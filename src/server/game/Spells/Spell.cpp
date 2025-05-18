@@ -9709,5 +9709,5 @@ SpellCastVisual::operator UF::SpellCastVisual() const
 
 SpellCastVisual::operator WorldPackets::Spells::SpellCastVisual() const
 {
-    return { SpellXSpellVisualID, ScriptVisualID };
+    return { int32(SpellXSpellVisualID), int32(ScriptVisualID) };
 }

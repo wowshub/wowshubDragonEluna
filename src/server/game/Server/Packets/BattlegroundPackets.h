@@ -449,7 +449,7 @@ namespace WorldPackets
         class RequestRatedPVPInfo  final : public ClientPacket
         {
         public:
-            explicit RequestRatedPvpInfo(WorldPacket&& packet) : ClientPacket(CMSG_REQUEST_RATED_PVP_INFO, std::move(packet)) { }
+            explicit RequestRatedPVPInfo(WorldPacket&& packet) : ClientPacket(CMSG_REQUEST_RATED_PVP_INFO, std::move(packet)) { }
 
             void Read() override { }
         };
@@ -482,7 +482,7 @@ namespace WorldPackets
         class RatedPVPInfo final : public ServerPacket
         {
         public:
-            explicit RatedPvpInfo() : ServerPacket(SMSG_RATED_PVP_INFO, 9 * sizeof(BracketInfo)) { }
+            explicit RatedPVPInfo() : ServerPacket(SMSG_RATED_PVP_INFO, 9 * sizeof(BracketInfo)) { }
 
             WorldPacket const* Write() override;
 

@@ -1138,12 +1138,5 @@ void KeyboundOverride::Read()
 {
     _worldPacket >> OverrideID;
 }
-
-void UpdateSpellVisual::Read()
-{
-    _worldPacket >> SpellID;
-    _worldPacket >> Visual;
-    _worldPacket >> TargetGUID;
-}
 }
 

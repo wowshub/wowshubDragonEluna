@@ -756,7 +756,6 @@ namespace WorldPackets
         class SetEmpowerMinHoldStagePercent;
         class SpellEmpowerRelease;
         class SpellEmpowerRestart;
-        class UpdateSpellVisual;
     }
 
     namespace Talent

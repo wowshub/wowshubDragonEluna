@@ -1229,7 +1229,7 @@ class aura_warr_ignore_pain : public AuraScript
             if (!spellInfo)
                 return;
 
-            SpellNonMeleeDamage spell(caster, caster->GetVictim(), spellInfo, { static_cast<int32>(spellInfo->GetSpellXSpellVisualId(caster)), 0 }, spellInfo->GetSchoolMask());
+            SpellNonMeleeDamage spell(caster, caster->GetVictim(), spellInfo, { static_cast<uint32>(spellInfo->GetSpellXSpellVisualId(caster)), 0 }, spellInfo->GetSchoolMask());
             spell.damage = dmgInfo.GetDamage() - dmgInfo.GetDamage() * 0.9f;
             spell.cleanDamage = spell.damage;
             caster->DealSpellDamage(&spell, false);
