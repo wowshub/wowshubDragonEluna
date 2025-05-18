@@ -972,6 +972,9 @@ class spell_warr_victory_rush : public SpellScript
             return;
 
         caster->CastSpell(caster, SPELL_WARRIOR_VICTORY_RUSH_HEAL, TRIGGERED_FULL_MASK);
+
+        if (GetCaster()->HasAura(SPELL_WARRIOR_VICTORIOUS))
+            GetCaster()->RemoveAura(SPELL_WARRIOR_VICTORIOUS);
     }
 
     void Register() override
