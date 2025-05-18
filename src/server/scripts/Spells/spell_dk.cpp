@@ -92,6 +92,8 @@ enum DeathKnightSpells
     SPELL_DK_RUNIC_CORRUPTION                   = 51460,
     SPELL_DK_RUNIC_POWER_ENERGIZE               = 49088,
     SPELL_DK_RUNIC_RETURN                       = 61258,
+    SPELL_DK_SANGUINE_GROUND_TALENT             = 391458,
+    SPELL_DK_SANGUINE_GROUND                    = 391459,
     SPELL_DK_SLUDGE_BELCHER                     = 207313,
     SPELL_DK_SLUDGE_BELCHER_SUMMON              = 212027,
     SPELL_DK_SMOTHERING_OFFENSE                 = 435005,
@@ -1376,6 +1378,9 @@ struct at_dk_death_and_decay : AreaTriggerAI
 
         if (unit->HasAura(SPELL_DK_UNHOLY_GROUND_TALENT))
             unit->CastSpell(unit, SPELL_DK_UNHOLY_GROUND_HASTE);
+
+        if (unit->HasAura(SPELL_DK_SANGUINE_GROUND_TALENT))
+            unit->CastSpell(unit, SPELL_DK_SANGUINE_GROUND);
     }
 
     void OnUnitExit(Unit* unit) override
@@ -1391,6 +1396,8 @@ struct at_dk_death_and_decay : AreaTriggerAI
             if (AuraEffect* const cleavingStrikes = unit->GetAuraEffect(SPELL_DK_CLEAVING_STRIKES, EFFECT_3))
                 deathAndDecay->SetDuration(cleavingStrikes->GetAmount());
         }
+
+        unit->RemoveAurasDueToSpell(SPELL_DK_SANGUINE_GROUND);
     }
 };
 
