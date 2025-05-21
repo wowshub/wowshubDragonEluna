@@ -253,7 +253,7 @@ namespace WorldPackets
 
             std::vector<uint64> QueueIDs;
             uint8 Roles = 0;
-            int32 BlacklistMap[2] = { };
+            std::array<int32, 2> BlacklistMap = { };
         };
 
         class BattlemasterJoinArena final : public ClientPacket

@@ -48,6 +48,7 @@ enum DeathKnightSpells
     SPELL_DK_ARMY_SUPER_ZOMBIE_TRANSFORM        = 127526,
     SPELL_DK_BLINDING_SLEET_SLOW                = 317898,
     SPELL_DK_BLOOD                              = 137008,
+    SPELL_DK_BLOODDRINKER_DEBUFF                = 458687,
     SPELL_DK_BLOOD_PLAGUE                       = 55078,
     SPELL_DK_BLOOD_SHIELD_ABSORB                = 77535,
     SPELL_DK_BLOOD_SHIELD_MASTERY               = 77513,
@@ -105,12 +106,11 @@ enum DeathKnightSpells
     SPELL_DK_UNHOLY_GROUND_HASTE                = 374271,
     SPELL_DK_UNHOLY_GROUND_TALENT               = 374265,
     SPELL_DK_UNHOLY_VIGOR                       = 196263,
-
+    SPELL_DH_VORACIOUS_LEECH                    = 274009,
+    SPELL_DH_VORACIOUS_TALENT                   = 273953,
     SPELL_DK_GLYPH_OF_ABSORB_MAGIC              = 159415,
     SPELL_DK_NECROSIS                           = 207346,
     SPELL_DK_IMPROVED_BLOOD_PRESENCE            = 50371,
-    SPELL_DK_VORACIOUS                          = 273953,
-    SPELL_DK_VORACIOUS_MOD_LEECH                = 274009,
     SPELL_DK_VIRULENT_PLAGUE                    = 191587,
     SPELL_DK_UNHOLY_FRENZY                      = 207289,
     SPELL_DK_UNHOLY_FRENZY_BUFF                 = 207290,
@@ -315,6 +315,32 @@ class spell_dk_blinding_sleet : public AuraScript
     void Register() override
     {
         AfterEffectRemove += AuraEffectRemoveFn(spell_dk_blinding_sleet::HandleOnRemove, EFFECT_0, SPELL_AURA_MOD_CONFUSE, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+// 206931 - Blooddrinker
+class spell_dk_blooddrinker : public AuraScript
+{
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_DK_BLOODDRINKER_DEBUFF });
+    }
+
+    void AfterRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/) const
+    {
+        if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
+            return;
+
+        if (Unit* caster = GetCaster())
+            caster->CastSpell(GetTarget(), SPELL_DK_BLOODDRINKER_DEBUFF, CastSpellExtraArgsInit{
+                .TriggerFlags = TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_DONT_REPORT_CAST_ERROR,
+                .TriggeringAura = aurEff
+            });
+    }
+
+    void Register() override
+    {
+        AfterEffectRemove += AuraEffectRemoveFn(spell_dk_blooddrinker::AfterRemove, EFFECT_0, SPELL_AURA_PERIODIC_LEECH, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
@@ -968,6 +994,35 @@ class spell_dk_icy_talons_buff : public SpellScript
     }
 };
 
+// 374277 - Improved Death Strike
+class spell_dk_improved_death_strike : public AuraScript
+{
+    bool Validate(SpellInfo const* spellInfo) override
+    {
+        return ValidateSpellInfo({ SPELL_DK_BLOOD })
+            && ValidateSpellEffect({ { spellInfo->Id, EFFECT_4 } });
+    }
+
+    void CalcHealIncrease(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/) const
+    {
+        if (GetUnitOwner()->HasAura(SPELL_DK_BLOOD))
+            amount = GetEffectInfo(EFFECT_3).CalcValue(GetCaster());
+    }
+
+    void CalcPowerCostReduction(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/) const
+    {
+        if (GetUnitOwner()->HasAura(SPELL_DK_BLOOD))
+            amount = GetEffectInfo(EFFECT_4).CalcValue(GetCaster());
+    }
+
+    void Register() override
+    {
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_improved_death_strike::CalcHealIncrease, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER);
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_improved_death_strike::CalcHealIncrease, EFFECT_1, SPELL_AURA_ADD_PCT_MODIFIER);
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_improved_death_strike::CalcPowerCostReduction, EFFECT_2, SPELL_AURA_ADD_FLAT_MODIFIER);
+    }
+};
+
 // 206940 - Mark of Blood
 class spell_dk_mark_of_blood : public AuraScript
 {
@@ -1363,6 +1418,34 @@ class spell_dk_vampiric_blood : public AuraScript
     }
 };
 
+// 273953 - Voracious (attached to 49998 - Death Strike)
+class spell_dk_voracious : public SpellScript
+{
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_DH_VORACIOUS_TALENT, SPELL_DH_VORACIOUS_LEECH });
+    }
+
+    bool Load() override
+    {
+        return GetCaster()->HasAura(SPELL_DH_VORACIOUS_TALENT);
+    }
+
+    void HandleHit(SpellEffIndex /*effIndex*/) const
+    {
+        Unit* caster = GetCaster();
+        caster->CastSpell(caster, SPELL_DH_VORACIOUS_LEECH, CastSpellExtraArgsInit{
+            .TriggerFlags = TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_DONT_REPORT_CAST_ERROR,
+            .TriggeringSpell = GetSpell()
+        });
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_dk_voracious::HandleHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
 // 43265 - Death and Decay
 struct at_dk_death_and_decay : AreaTriggerAI
 {
@@ -1735,6 +1818,7 @@ void AddSC_deathknight_spell_scripts()
     RegisterSpellScriptWithArgs(spell_dk_apply_bone_shield, "spell_dk_deaths_caress_apply_bone_shield", EFFECT_2);
     RegisterSpellScript(spell_dk_army_transform);
     RegisterSpellScript(spell_dk_blinding_sleet);
+    RegisterSpellScript(spell_dk_blooddrinker);
     RegisterSpellScript(spell_dk_blood_boil);
     RegisterSpellScript(spell_dk_brittle);
     RegisterSpellScript(spell_dk_dancing_rune_weapon);
@@ -1757,6 +1841,7 @@ void AddSC_deathknight_spell_scripts()
     RegisterSpellScript(spell_dk_ice_prison);
     RegisterSpellScript(spell_dk_icy_talons);
     RegisterSpellScript(spell_dk_icy_talons_buff);
+    RegisterSpellScript(spell_dk_improved_death_strike);
     RegisterSpellScript(spell_dk_mark_of_blood);
     RegisterSpellScript(spell_dk_necrosis);
     RegisterSpellScript(spell_dk_obliteration);
@@ -1772,6 +1857,7 @@ void AddSC_deathknight_spell_scripts()
     RegisterSpellScript(spell_dk_subduing_grasp);
     RegisterSpellScript(spell_dk_t20_2p_rune_empowered);
     RegisterSpellScript(spell_dk_vampiric_blood);
+    RegisterSpellScript(spell_dk_voracious);
     RegisterSpellScript(spell_dk_marrowrend);
 
     RegisterAreaTriggerAI(at_dk_death_and_decay);
