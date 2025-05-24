@@ -380,7 +380,7 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            ObjectGuid PetGUID;
+            ObjectGuid UnitGUID;
             bool Allow = false;
             bool HasDeclined = false;
             DeclinedName DeclinedNames;

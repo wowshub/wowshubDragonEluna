@@ -771,7 +771,6 @@ namespace WorldPackets
             uint32 SequenceIndex = 1;
             TaggedPosition<Position::XYZ> Direction;
         };
-    }
 
         ByteBuffer& operator>>(ByteBuffer& data, MovementAck& ack);
     }

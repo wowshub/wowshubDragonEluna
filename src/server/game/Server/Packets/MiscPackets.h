@@ -1040,7 +1040,7 @@ namespace WorldPackets
 		class LegendaryCraftingOpenNpc  final : public ServerPacket
         {
         public:
-            LegendaryCraftingOpenNpc() : ServerPacket(SMSG_RUNEFORGE_LEGENDARY_CRAFTING_OPEN_NPC, 16) {}
+            explicit LegendaryCraftingOpenNpc() : ServerPacket(SMSG_RUNEFORGE_LEGENDARY_CRAFTING_OPEN_NPC, 16) {}
 
             WorldPacket const* Write() override;
 
@@ -1051,7 +1051,7 @@ namespace WorldPackets
         class PerksProgramReqestPendingRewards final : public ClientPacket
         {
         public:
-            PerksProgramReqestPendingRewards(WorldPacket&& packet) : ClientPacket(CMSG_PERKS_PROGRAM_REQUEST_PENDING_REWARDS, std::move(packet)) { }
+            explicit PerksProgramReqestPendingRewards(WorldPacket&& packet) : ClientPacket(CMSG_PERKS_PROGRAM_REQUEST_PENDING_REWARDS, std::move(packet)) { }
 
             void Read() override {}
         };
@@ -1059,7 +1059,7 @@ namespace WorldPackets
         class OverrideScreenFlash final : public ClientPacket
         {
         public:
-            OverrideScreenFlash(WorldPacket&& packet) : ClientPacket(CMSG_OVERRIDE_SCREEN_FLASH, std::move(packet)) { }
+            explicit OverrideScreenFlash(WorldPacket&& packet) : ClientPacket(CMSG_OVERRIDE_SCREEN_FLASH, std::move(packet)) { }
 
             void Read() override;
 
@@ -1069,7 +1069,7 @@ namespace WorldPackets
         class PlayerChoiceClear final : public ServerPacket
         {
         public:
-            PlayerChoiceClear() :ServerPacket(SMSG_PLAYER_CHOICE_CLEAR) { }
+            explicit PlayerChoiceClear() :ServerPacket(SMSG_PLAYER_CHOICE_CLEAR) { }
 
             WorldPacket const* Write() override;
 
@@ -1091,7 +1091,7 @@ namespace WorldPackets
         class AccountNotificationAcknowledge final : public ClientPacket
         {
         public:
-            AccountNotificationAcknowledge(WorldPacket&& packet) : ClientPacket(CMSG_ACCOUNT_NOTIFICATION_ACKNOWLEDGED, std::move(packet)) { }
+            explicit AccountNotificationAcknowledge(WorldPacket&& packet) : ClientPacket(CMSG_ACCOUNT_NOTIFICATION_ACKNOWLEDGED, std::move(packet)) { }
 
             void Read() override;
 
@@ -1103,7 +1103,7 @@ namespace WorldPackets
         class ShowTradeSkillResponse final : public ServerPacket
         {
         public:
-            ShowTradeSkillResponse() : ServerPacket(SMSG_SHOW_TRADE_SKILL_RESPONSE, 16 + 4 + 12) { }
+            explicit ShowTradeSkillResponse() : ServerPacket(SMSG_SHOW_TRADE_SKILL_RESPONSE, 16 + 4 + 12) { }
 
             WorldPacket const* Write() override;
 
@@ -1118,7 +1118,7 @@ namespace WorldPackets
         class ShowTradeSkill final : public ClientPacket
         {
         public:
-            ShowTradeSkill(WorldPacket&& packet) : ClientPacket(CMSG_SHOW_TRADE_SKILL, std::move(packet)) { }
+            explicit ShowTradeSkill(WorldPacket&& packet) : ClientPacket(CMSG_SHOW_TRADE_SKILL, std::move(packet)) { }
 
             void Read() override;
 
