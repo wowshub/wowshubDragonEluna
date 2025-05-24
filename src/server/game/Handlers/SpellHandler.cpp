@@ -21,6 +21,7 @@
 #include "CreatureOutfit.h"
 #include "DatabaseEnv.h"
 #include "DB2Stores.h"
+#include "GameObject.h"
 #include "GameObjectAI.h"
 #include "GameObjectPackets.h"
 #include "Guild.h"
