@@ -117,7 +117,6 @@ enum RogueSpells
     SPELL_ROGUE_GARROTE_SILENCE                     = 1330,
     SPELL_ROGUE_THUGGEE                             = 196861,
     SPELL_ROGUE_GRAPPLING_HOOK_TRIGGER              = 230149,
-    SPELL_ROGUE_SHADOW_DANCE                        = 185313,
     SPELL_ROGUE_SHURIKEN_STORM                      = 197835,
 };
 
@@ -1919,78 +1918,6 @@ class spell_rog_blade_rush : public SpellScript
     }
 };
 
-// Shuriken Storm - 197835
-class spell_rog_shuriken_storm : public SpellScriptLoader
-{
-public:
-    spell_rog_shuriken_storm() : SpellScriptLoader("spell_rog_shuriken_storm") {}
-
-    class spell_rog_shuriken_storm_SpellScript : public SpellScript
-    {
-    public:
-        spell_rog_shuriken_storm_SpellScript()
-        {
-            _stealthed = false;
-        }
-
-    private:
-
-        bool _stealthed;
-
-        bool Load() override
-        {
-            Unit* caster = GetCaster();
-            if (caster->HasAuraType(SPELL_AURA_MOD_STEALTH) || caster->HasAura(SPELL_ROGUE_SHADOW_DANCE))
-                _stealthed = true;
-            return true;
-        }
-
-        bool Validate(SpellInfo const* /*spellInfo*/) override
-        {
-            return ValidateSpellInfo(
-                {
-                    SPELL_ROGUE_SHURIKEN_STORM
-                });
-        }
-
-        void RemoveKS()
-        {
-            Unit* target = GetHitUnit();
-            if (target->HasAura(51690)) //Killing spree debuff #1
-                target->RemoveAura(51690);
-            if (target->HasAura(61851)) //Killing spree debuff #2
-                target->RemoveAura(61851);
-        }
-
-        void AddComboPoint()
-        {
-            Unit* caster = GetCaster();
-            uint8 cp = caster->GetPower(POWER_COMBO_POINTS);
-            if (_stealthed)
-            {
-                int32 dmg = GetHitDamage();
-                SetHitDamage(dmg * 2); //Shuriken Storm deals 200% damage from stealth
-            }
-            if (cp < caster->GetMaxPower(POWER_COMBO_POINTS))
-            {
-                caster->SetPower(POWER_COMBO_POINTS, cp + 1);
-            }
-        }
-
-        void Register() override
-        {
-            OnHit += SpellHitFn(spell_rog_shuriken_storm_SpellScript::AddComboPoint); //add 1 combo points for each target (hook called for each target in map)
-            AfterHit += SpellHitFn(spell_rog_shuriken_storm_SpellScript::RemoveKS);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_rog_shuriken_storm_SpellScript();
-    }
-};
-
-
 void AddSC_rogue_spell_scripts()
 {
     RegisterSpellScript(spell_rog_acrobatic_strikes);
@@ -2050,5 +1977,4 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_fan_of_knives();
     new spell_rog_grappling_hook();
     RegisterSpellScript(spell_rog_blade_rush);
-    new spell_rog_shuriken_storm();
 }
