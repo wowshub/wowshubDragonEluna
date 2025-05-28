@@ -107,7 +107,6 @@ enum MonkSpells
     SPELL_MONK_CLASH_RUSH                               = 324383,
     SPELL_MONK_CLASH_STUN                               = 324382,
     SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH           = 122281,
-    SPELL_MONK_SONG_OF_CHI_JI_STUN                      = 198909,
     SPELL_MONK_CHI_WAVE_HEAL                            = 132463,
     SPELL_MONK_CHI_BURST_HEAL                           = 130654,
     SPELL_MONK_CHI_BURST_DAMAGE                         = 148135,
