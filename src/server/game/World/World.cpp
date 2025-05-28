@@ -2498,7 +2498,7 @@ void World::SendMapMessage(uint32 mapid, WorldPacket const* packet, WorldSession
             itr->second->GetPlayer()->IsInWorld() &&
             itr->second->GetPlayer()->GetMapId() == mapid &&
             itr->second != self &&
-            (team == 0 || itr->second->GetPlayer()->GetTeam() == team))
+            (!team || itr->second->GetPlayer()->GetTeam() == team))
         {
             itr->second->SendPacket(packet);
         }
@@ -2702,7 +2702,7 @@ bool World::SendAreaIDMessage(uint32 areaID, WorldPacket const* packet, WorldSes
             itr->second->GetPlayer()->IsInWorld() &&
             itr->second->GetPlayer()->GetAreaId() == areaID &&
             itr->second != self &&
-            (team == 0 || itr->second->GetPlayer()->GetTeam() == team))
+            (!team || itr->second->GetPlayer()->GetTeam() == team))
         {
             itr->second->SendPacket(packet);
             foundPlayerToSend = true;
