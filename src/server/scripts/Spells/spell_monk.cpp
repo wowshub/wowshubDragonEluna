@@ -1261,26 +1261,6 @@ struct at_monk_ring_of_peace : AreaTriggerAI
     }
 };
 
-// Song of Chi-Ji - 198898
-// AreaTriggerID - 5484 
-struct at_monk_song_of_chi_ji : AreaTriggerAI
-{
-    at_monk_song_of_chi_ji(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-    void OnUnitEnter(Unit* unit) override
-    {
-        Unit* caster = at->GetCaster();
-        if (!caster || !unit)
-            return;
-        if (!caster->ToPlayer())
-            return;
-        if (!caster->IsFriendlyTo(unit))
-        {
-            caster->CastSpell(unit, SPELL_MONK_SONG_OF_CHI_JI_STUN, true);
-        }
-    }
-};
-
 // 115098 - Chi Wave
 class spell_monk_chi_wave : public SpellScriptLoader
 {
@@ -2810,7 +2790,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_dampen_harm();
     new spell_monk_healing_elixirs_aura();
     RegisterAreaTriggerAI(at_monk_ring_of_peace);
-    RegisterAreaTriggerAI(at_monk_song_of_chi_ji);
     new spell_monk_chi_wave();
     new spell_monk_chi_wave_damage_missile();
     new spell_monk_chi_wave_heal_missile();
