@@ -2488,7 +2488,7 @@ void World::ForceGameEventUpdate()
     m_timers[WUPDATE_EVENTS].Reset();
 }
 
-void World::SendMapMessage(uint32 mapid, WorldPacket const* packet, WorldSession* self, uint32 team)
+void World::SendMapMessage(uint32 mapid, WorldPacket const* packet, WorldSession* self, Optional<Team> team)
 {
     SessionMap::const_iterator itr;
     for (itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
@@ -2690,7 +2690,7 @@ bool World::SendZoneMessage(uint32 zone, WorldPacket const* packet, WorldSession
     return foundPlayerToSend;
 }
 
-bool World::SendAreaIDMessage(uint32 areaID, WorldPacket const* packet, WorldSession* self, uint32 team)
+bool World::SendAreaIDMessage(uint32 areaID, WorldPacket const* packet, WorldSession* self, Optional<Team> team)
 {
     bool foundPlayerToSend = false;
     SessionMap::const_iterator itr;
