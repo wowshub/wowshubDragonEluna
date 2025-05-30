@@ -513,7 +513,7 @@ namespace WorldPackets::Movement
         }
     }
 
-    void CommonMovement::WriteCreateObjectAreaTriggerSpline(::Movement::Spline<int32> const& spline, ByteBuffer& data)
+    void CommonMovement::WriteCreateObjectAreaTriggerSpline(::Movement::Spline<float> const& spline, ByteBuffer& data)
     {
         data << BitsSize<16>(spline.getPoints());
         data.append(reinterpret_cast<float const*>(spline.getPoints().data()), spline.getPoints().size() * 3);

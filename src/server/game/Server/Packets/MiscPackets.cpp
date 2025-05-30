@@ -817,6 +817,7 @@ namespace WorldPackets::Misc
         {
         case DisplayToastType::NewItem:
             _worldPacket << Bits<1>(BonusRoll);
+            _worldPacket << Bits<1>(ForceToast);
             _worldPacket << Item;
             _worldPacket << int32(LootSpec);
             _worldPacket << int8(Gender);
