@@ -749,17 +749,9 @@ class spell_warr_shockwave : public SpellScript
         });
     }
 
-    // Cooldown reduced by 20 sec if it strikes at least 3 targets.
-    void HandleAfterHit()
-    {
-        if (_targetCount >= uint32(GetEffectInfo(EFFECT_0).CalcValue()))
-            GetCaster()->ToPlayer()->GetSpellHistory()->ModifyCooldown(GetSpellInfo()->Id, Seconds(-GetEffectInfo(EFFECT_3).CalcValue()));
-    }
-
     void Register() override
     {
         OnEffectHitTarget += SpellEffectFn(spell_warr_shockwave::HandleStun, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-        AfterCast += SpellCastFn(spell_warr_shockwave::HandleAfterHit);
     }
 };
 
