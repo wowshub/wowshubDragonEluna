@@ -72,7 +72,7 @@ enum WarriorSpells
     SPELL_WARRIOR_IMPENDING_VICTORY_HEAL            = 202166,
     SPELL_WARRIOR_IMPROVED_HEROIC_LEAP              = 157449,
     SPELL_WARRIOR_MORTAL_STRIKE                     = 12294,
-    SPELL_WARRIOR_MORTAL_WOUNDS                     = 213667,
+    SPELL_WARRIOR_MORTAL_WOUNDS                     = 115804,
     SPELL_WARRIOR_RALLYING_CRY                      = 97463,
     SPELL_WARRIOR_RUMBLING_EARTH                    = 275339,
     SPELL_WARRIOR_SHIELD_BLOCK_AURA                 = 132404,
@@ -626,15 +626,17 @@ class spell_warr_mortal_strike : public SpellScript
         return ValidateSpellInfo({ SPELL_WARRIOR_MORTAL_WOUNDS });
     }
 
-    void HandleOnHit()
+    void HandleMortalWounds(SpellEffIndex /*effIndex*/) const
     {
-        if (Unit* target = GetHitUnit())
-            GetCaster()->AddAura(SPELL_WARRIOR_MORTAL_WOUNDS, target);
+        GetCaster()->CastSpell(GetHitUnit(), SPELL_WARRIOR_MORTAL_WOUNDS, CastSpellExtraArgsInit{
+            .TriggerFlags = TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_DONT_REPORT_CAST_ERROR,
+            .TriggeringSpell = GetSpell()
+        });
     }
 
     void Register() override
     {
-        OnHit += SpellHitFn(spell_warr_mortal_strike::HandleOnHit);
+        OnEffectHitTarget += SpellEffectFn(spell_warr_mortal_strike::HandleMortalWounds, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
 
@@ -831,33 +833,6 @@ class spell_warr_strategist : public AuraScript
     {
         DoCheckEffectProc += AuraCheckEffectProcFn(spell_warr_strategist::CheckProc, EFFECT_0, SPELL_AURA_DUMMY);
         OnEffectProc += AuraEffectProcFn(spell_warr_strategist::HandleCooldown, EFFECT_0, SPELL_AURA_DUMMY);
-    }
-};
-
-// 52437 - Sudden Death
-class spell_warr_sudden_death : public AuraScript
-{
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        return ValidateSpellInfo({ SPELL_WARRIOR_COLOSSUS_SMASH });
-    }
-
-    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        // Remove cooldown on Colossus Smash
-        if (Player* player = GetTarget()->ToPlayer())
-            player->GetSpellHistory()->ResetCooldown(SPELL_WARRIOR_COLOSSUS_SMASH, true);
-    }
-
-    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
-    {
-        GetTarget()->CastSpell(GetTarget(), SPELL_WARRIOR_SUDDEN_DEATH_PROCS, true);
-    }
-
-    void Register() override
-    {
-        AfterEffectApply += AuraEffectRemoveFn(spell_warr_sudden_death::HandleApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL); // correct?
-        OnEffectProc += AuraEffectProcFn(spell_warr_sudden_death::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
     }
 };
 
@@ -1905,7 +1880,6 @@ void AddSC_warrior_spell_scripts()
     RegisterSpellScript(spell_warr_storm_bolt);
     RegisterSpellScript(spell_warr_storm_bolts);
     RegisterSpellScript(spell_warr_strategist);
-    RegisterSpellScript(spell_warr_sudden_death);
     RegisterSpellScript(spell_warr_sweeping_strikes);
     RegisterSpellScript(spell_warr_trauma);
     RegisterSpellScript(spell_warr_t3_prot_8p_bonus);
