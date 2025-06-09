@@ -4052,8 +4052,8 @@ std::list<AreaTrigger*> WorldObject::SelectNearestAreaTriggers(uint32 spellId, f
 std::list<Player*> WorldObject::SelectNearestPlayers(float range, bool alive)
 {
     std::list<Player*> PlayerList;
-    Trinity::AnyPlayerInObjectRangeCheck checker(this, range, alive);
-    Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, PlayerList, checker);
+    Trinity::AnyUnitInObjectRangeCheck checker(this, range, alive);
+    Trinity::PlayerListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(this, PlayerList, checker);
     Cell::VisitGridObjects(this, searcher, range);
     return PlayerList;
 }
@@ -4085,8 +4085,8 @@ void WorldObject::GetCreatureListInGrid(Container& creatureList, float maxSearch
 Player* WorldObject::FindNearestPlayer(float range, bool /*alive*/)
 {
     Player* player = nullptr;
-    Trinity::AnyPlayerInObjectRangeCheck check(this, GetVisibilityRange());
-    Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, check);
+    Trinity::AnyUnitInObjectRangeCheck check(this, GetVisibilityRange());
+    Trinity::PlayerSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(this, player, check);
     Cell::VisitGridObjects(this, searcher, range);
     return player;
 }
