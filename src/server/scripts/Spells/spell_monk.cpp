@@ -1719,41 +1719,42 @@ struct npc_monk_jade_serpent_statue : public ScriptedAI
 };
 
 // 101643
-class spell_monk_transcendence : public SpellScript
-{
-public:
-    void HandleSummon(Creature* creature)
-    {
-        DespawnSpirit(GetCaster());
-        GetCaster()->CastSpell(creature, SPELL_MONK_TRANSCENDENCE_CLONE_TARGET, true);
-        creature->CastSpell(creature, SPELL_MONK_TRANSCENDENCE_VISUAL, true);
-        creature->SetAIAnimKitId(2223); // Sniff Data
-        creature->SetDisableGravity(true);
-        creature->SetControlled(true, UNIT_STATE_ROOT);
-        GetCaster()->VariableStorage.Set(MONK_TRANSCENDENCE_GUID, creature->GetGUID());
-    }
-
-    static Creature* GetSpirit(Unit* caster)
-    {
-        ObjectGuid spiritGuid = caster->VariableStorage.GetValue<ObjectGuid>(MONK_TRANSCENDENCE_GUID, ObjectGuid());
-        if (spiritGuid.IsEmpty())
-            return nullptr;
-        return ObjectAccessor::GetCreature(*caster, spiritGuid);
-    }
-
-    static void DespawnSpirit(Unit* caster)
-    {
-        // Remove previous one if any
-        if (Creature* spirit = GetSpirit(caster))
-            spirit->DespawnOrUnsummon();
-        caster->VariableStorage.Remove(MONK_TRANSCENDENCE_GUID);
-    }
-
-    void Register() override
-    {
-        OnEffectSummon += SpellOnEffectSummonFn(spell_monk_transcendence::HandleSummon);
-    }
-};
+//class spell_monk_transcendence : public SpellScript
+//{
+//
+//    void HandleSummon(Unit* creature)
+//    {
+//        DespawnSpirit(GetCaster());
+//        GetCaster()->CastSpell(creature, SPELL_MONK_TRANSCENDENCE_CLONE_TARGET, true);
+//        creature->CastSpell(creature, SPELL_MONK_TRANSCENDENCE_VISUAL, true);
+//        creature->SetAIAnimKitId(2223); // Sniff Data
+//        creature->SetDisableGravity(true);
+//        creature->SetControlled(true, UNIT_STATE_ROOT);
+//        GetCaster()->VariableStorage.Set(MONK_TRANSCENDENCE_GUID, creature->GetGUID());
+//    }
+//
+//    void Register() override
+//    {
+//        OnEffectSummon += SpellOnEffectSummonFn(spell_monk_transcendence::HandleSummon);
+//    }
+//
+//public:
+//    static Creature* GetSpirit(Unit* caster)
+//    {
+//        ObjectGuid spiritGuid = caster->VariableStorage.GetValue<ObjectGuid>(MONK_TRANSCENDENCE_GUID, ObjectGuid());
+//        if (spiritGuid.IsEmpty())
+//            return nullptr;
+//        return ObjectAccessor::GetCreature(*caster, spiritGuid);
+//    }
+//
+//    static void DespawnSpirit(Unit* caster)
+//    {
+//        // Remove previous one if any
+//        if (Creature* spirit = GetSpirit(caster))
+//            spirit->DespawnOrUnsummon();
+//        caster->VariableStorage.Remove(MONK_TRANSCENDENCE_GUID);
+//    }
+//};
 
 // 210802 - Spirit of the Crane (Passive)
 class spell_monk_spirit_of_the_crane_passive : public AuraScript
@@ -1788,129 +1789,129 @@ class spell_monk_spirit_of_the_crane_passive : public AuraScript
 };
 
 // 101643
-class aura_monk_transcendence : public AuraScript
-{
-    void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        spell_monk_transcendence::DespawnSpirit(GetTarget());
-        if (GetTarget()->HasAura(SPELL_MONK_TRANSCENDENCE_RANGE_CHECK))
-        {
-            GetTarget()->RemoveAura(SPELL_MONK_TRANSCENDENCE_RANGE_CHECK);
-        }
-    }
-
-    void HandleDummyTick(AuraEffect const* /*aurEff*/)
-    {
-        SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(SPELL_MONK_TRANSCENDENCE_TRANSFER, GetCastDifficulty());
-        Unit* spirit = spell_monk_transcendence::GetSpirit(GetTarget());
-        if (spirit && GetTarget()->IsWithinDist(spirit, spellInfo->GetMaxRange(true)))
-        {
-            if (!GetTarget()->HasAura(SPELL_MONK_TRANSCENDENCE_RANGE_CHECK))
-            {
-                GetTarget()->CastSpell(GetTarget(), SPELL_MONK_TRANSCENDENCE_RANGE_CHECK, true);
-            }
-        }
-        else
-        {
-            if (GetTarget()->HasAura(SPELL_MONK_TRANSCENDENCE_RANGE_CHECK))
-            {
-                GetTarget()->RemoveAura(SPELL_MONK_TRANSCENDENCE_RANGE_CHECK);
-            }
-        }
-    }
-
-    void Register() override
-    {
-        OnEffectRemove += AuraEffectRemoveFn(aura_monk_transcendence::OnRemove, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        OnEffectPeriodic += AuraEffectPeriodicFn(aura_monk_transcendence::HandleDummyTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
-    }
-};
+//class aura_monk_transcendence : public AuraScript
+//{
+//    void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+//    {
+//        spell_monk_transcendence::DespawnSpirit(GetTarget());
+//        if (GetTarget()->HasAura(SPELL_MONK_TRANSCENDENCE_RANGE_CHECK))
+//        {
+//            GetTarget()->RemoveAura(SPELL_MONK_TRANSCENDENCE_RANGE_CHECK);
+//        }
+//    }
+//
+//    void HandleDummyTick(AuraEffect const* /*aurEff*/)
+//    {
+//        SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(SPELL_MONK_TRANSCENDENCE_TRANSFER, GetCastDifficulty());
+//        Unit* spirit = spell_monk_transcendence::GetSpirit(GetTarget());
+//        if (spirit && GetTarget()->IsWithinDist(spirit, spellInfo->GetMaxRange(true)))
+//        {
+//            if (!GetTarget()->HasAura(SPELL_MONK_TRANSCENDENCE_RANGE_CHECK))
+//            {
+//                GetTarget()->CastSpell(GetTarget(), SPELL_MONK_TRANSCENDENCE_RANGE_CHECK, true);
+//            }
+//        }
+//        else
+//        {
+//            if (GetTarget()->HasAura(SPELL_MONK_TRANSCENDENCE_RANGE_CHECK))
+//            {
+//                GetTarget()->RemoveAura(SPELL_MONK_TRANSCENDENCE_RANGE_CHECK);
+//            }
+//        }
+//    }
+//
+//    void Register() override
+//    {
+//        OnEffectRemove += AuraEffectRemoveFn(aura_monk_transcendence::OnRemove, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+//        OnEffectPeriodic += AuraEffectPeriodicFn(aura_monk_transcendence::HandleDummyTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+//    }
+//};
 
 // 119996 - Transcendence: Transfer
-class spell_monk_transcendence_transfer : public SpellScript
-{
-    SpellCastResult CheckCast()
-    {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return SPELL_FAILED_ERROR;
-        Unit* spirit = spell_monk_transcendence::GetSpirit(caster);
-        if (!spirit)
-        {
-            SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_YOU_HAVE_NO_SPIRIT_ACTIVE);
-            return SPELL_FAILED_CUSTOM_ERROR;
-        }
-        if (!spirit->IsWithinDist(caster, GetSpellInfo()->GetMaxRange(true, caster, GetSpell())))
-            return SPELL_FAILED_OUT_OF_RANGE;
-        return SPELL_CAST_OK;
-    }
-
-    void HandleOnCast()
-    {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
-        Unit* spirit = spell_monk_transcendence::GetSpirit(caster);
-        if (!spirit)
-            return;
-        caster->NearTeleportTo(*spirit, true);
-        spirit->NearTeleportTo(*caster, true);
-    }
-
-    void Register() override
-    {
-        OnCheckCast += SpellCheckCastFn(spell_monk_transcendence_transfer::CheckCast);
-        OnCast += SpellCastFn(spell_monk_transcendence_transfer::HandleOnCast);
-    }
-};
+//class spell_monk_transcendence_transfer : public SpellScript
+//{
+//    SpellCastResult CheckCast()
+//    {
+//        Unit* caster = GetCaster();
+//        if (!caster)
+//            return SPELL_FAILED_ERROR;
+//        Unit* spirit = spell_monk_transcendence::GetSpirit(caster);
+//        if (!spirit)
+//        {
+//            SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_YOU_HAVE_NO_SPIRIT_ACTIVE);
+//            return SPELL_FAILED_CUSTOM_ERROR;
+//        }
+//        if (!spirit->IsWithinDist(caster, GetSpellInfo()->GetMaxRange(true, caster, GetSpell())))
+//            return SPELL_FAILED_OUT_OF_RANGE;
+//        return SPELL_CAST_OK;
+//    }
+//
+//    void HandleOnCast()
+//    {
+//        Unit* caster = GetCaster();
+//        if (!caster)
+//            return;
+//        Unit* spirit = spell_monk_transcendence::GetSpirit(caster);
+//        if (!spirit)
+//            return;
+//        caster->NearTeleportTo(*spirit, true);
+//        spirit->NearTeleportTo(*caster, true);
+//    }
+//
+//    void Register() override
+//    {
+//        OnCheckCast += SpellCheckCastFn(spell_monk_transcendence_transfer::CheckCast);
+//        OnCast += SpellCastFn(spell_monk_transcendence_transfer::HandleOnCast);
+//    }
+//};
 
 // 116670 - Vivify
-class spell_monk_vivify : public SpellScriptLoader
-{
-public:
-    spell_monk_vivify() : SpellScriptLoader("spell_monk_vivify") { }
-
-    class spell_monk_vivify_SpellScript : public SpellScript
-    {
-        void FilterRenewingMist(std::list<WorldObject*>& targets)
-        {
-            targets.remove_if(Trinity::UnitAuraCheck(false, SPELL_MONK_RENEWING_MIST_HOT, GetCaster()->GetGUID()));
-        }
-
-        void HandleOnPrepare()
-        {
-            if (GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == SPELL_MONK_SOOTHING_MIST)
-            {
-                GetSpell()->m_castFlagsEx = TRIGGERED_CAST_DIRECTLY;
-                SpellCastTargets targets = GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->m_targets;
-                GetSpell()->InitExplicitTargets(targets);
-            }
-        }
-
-        void LifeCycles()
-        {
-            Player* caster = GetCaster()->ToPlayer();
-            if (!caster)
-                return;
-            if (caster->HasAura(SPELL_LIFECYCLES))
-            {
-                caster->CastSpell(caster, SPELL_MONK_LIFECYCLES_ENVELOPING_MIST, true);
-            }
-        }
-
-        void Register() override
-        {
-            OnPrepare += SpellOnPrepareFn(spell_monk_vivify_SpellScript::HandleOnPrepare);
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_vivify_SpellScript::FilterRenewingMist, EFFECT_1, TARGET_UNIT_DEST_AREA_ALLY);
-            AfterCast += SpellCastFn(spell_monk_vivify_SpellScript::LifeCycles);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_monk_vivify_SpellScript();
-    }
-};
+//class spell_monk_vivify : public SpellScriptLoader
+//{
+//public:
+//    spell_monk_vivify() : SpellScriptLoader("spell_monk_vivify") { }
+//
+//    class spell_monk_vivify_SpellScript : public SpellScript
+//    {
+//        void FilterRenewingMist(std::list<WorldObject*>& targets)
+//        {
+//            targets.remove_if(Trinity::UnitAuraCheck(false, SPELL_MONK_RENEWING_MIST_HOT, GetCaster()->GetGUID()));
+//        }
+//
+//        void HandleOnPrepare()
+//        {
+//            if (GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == SPELL_MONK_SOOTHING_MIST)
+//            {
+//                GetSpell()->m_castFlagsEx = TRIGGERED_CAST_DIRECTLY;
+//                SpellCastTargets targets = GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->m_targets;
+//                GetSpell()->InitExplicitTargets(targets);
+//            }
+//        }
+//
+//        void LifeCycles()
+//        {
+//            Player* caster = GetCaster()->ToPlayer();
+//            if (!caster)
+//                return;
+//            if (caster->HasAura(SPELL_LIFECYCLES))
+//            {
+//                caster->CastSpell(caster, SPELL_MONK_LIFECYCLES_ENVELOPING_MIST, true);
+//            }
+//        }
+//
+//        void Register() override
+//        {
+//            OnPrepare += SpellOnPrepareFn(spell_monk_vivify_SpellScript::HandleOnPrepare);
+//            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_vivify_SpellScript::FilterRenewingMist, EFFECT_1, TARGET_UNIT_DEST_AREA_ALLY);
+//            AfterCast += SpellCastFn(spell_monk_vivify_SpellScript::LifeCycles);
+//        }
+//    };
+//
+//    SpellScript* GetSpellScript() const override
+//    {
+//        return new spell_monk_vivify_SpellScript();
+//    }
+//};
 
 // Soothing Mist - 115175
 class spell_monk_soothing_mist : public SpellScriptLoader
@@ -2358,46 +2359,46 @@ class aura_monk_mana_tea : public AuraScript
 };
 
 // Enveloping Mist - 124682
-class spell_monk_enveloping_mist : public SpellScriptLoader
-{
-public:
-    spell_monk_enveloping_mist() : SpellScriptLoader("spell_monk_enveloping_mist") { }
-
-    class spell_monk_enveloping_mist_SpellScript : public SpellScript
-    {
-        void HandleOnPrepare()
-        {
-            if (GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == SPELL_MONK_SOOTHING_MIST)
-            {
-                GetSpell()->m_castFlagsEx = TRIGGERED_CAST_DIRECTLY;
-                SpellCastTargets targets = GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->m_targets;
-                GetSpell()->InitExplicitTargets(targets);
-            }
-        }
-
-        void LifeCycles()
-        {
-            Player* caster = GetCaster()->ToPlayer();
-            if (!caster)
-                return;
-            if (caster->HasAura(SPELL_LIFECYCLES))
-            {
-                caster->CastSpell(caster, SPELL_MONK_LIFECYCLES_VIVIFY, true);
-            }
-        }
-
-        void Register() override
-        {
-            OnPrepare += SpellOnPrepareFn(spell_monk_enveloping_mist_SpellScript::HandleOnPrepare);
-            AfterCast += SpellCastFn(spell_monk_enveloping_mist_SpellScript::LifeCycles);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_monk_enveloping_mist_SpellScript();
-    }
-};
+//class spell_monk_enveloping_mist : public SpellScriptLoader
+//{
+//public:
+//    spell_monk_enveloping_mist() : SpellScriptLoader("spell_monk_enveloping_mist") {}
+//
+//    class spell_monk_enveloping_mist_SpellScript : public SpellScript
+//    {
+//        void HandleOnPrepare()
+//        {
+//            if (GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == SPELL_MONK_SOOTHING_MIST)
+//            {
+//                GetSpell()->m_castFlagsEx = TRIGGERED_CAST_DIRECTLY;
+//                SpellCastTargets targets = GetCaster()->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->m_targets;
+//                GetSpell()->InitExplicitTargets(targets);
+//            }
+//        }
+//
+//        void HandleAfterCast()
+//        {
+//            Player* caster = GetCaster()->ToPlayer();
+//            if (!caster)
+//                return;
+//            if (caster->HasAura(SPELL_LIFECYCLES))
+//            {
+//                caster->CastSpell(caster, SPELL_MONK_LIFECYCLES_VIVIFY, true);
+//            }
+//        }
+//
+//        void Register() override
+//        {
+//            OnPrepare += SpellOnPrepareFn(spell_monk_enveloping_mist_SpellScript::HandleOnPrepare);
+//            AfterCast += SpellCastFn(spell_monk_enveloping_mist_SpellScript::HandleAfterCast);
+//        }
+//    };
+//
+//    SpellScript* GetSpellScript() const override
+//    {
+//        return new spell_monk_enveloping_mist_SpellScript();
+//    }
+//};
 
 //137639
 class spell_monk_storm_earth_and_fire : public AuraScript
@@ -2892,10 +2893,10 @@ void AddSC_monk_spell_scripts()
     new spell_monk_black_ox_brew();
     new spell_monk_jade_serpent_statue();
     RegisterCreatureAI(npc_monk_jade_serpent_statue);
-    RegisterSpellScript(spell_monk_transcendence);
-    RegisterSpellScript(aura_monk_transcendence);
-    RegisterSpellScript(spell_monk_transcendence_transfer);
-    new spell_monk_vivify();
+    //RegisterSpellScript(spell_monk_transcendence);
+    //RegisterSpellScript(aura_monk_transcendence);
+    //RegisterSpellScript(spell_monk_transcendence_transfer);
+    //new spell_monk_vivify();
     new spell_monk_soothing_mist();
     new spell_focused_thunder_talent_thunder_focus_tea();
     new spell_monk_zen_pulse();
@@ -2905,7 +2906,7 @@ void AddSC_monk_spell_scripts()
     RegisterSpellScript(spell_monk_essence_font);
     new spell_monk_essence_font_heal();
     RegisterSpellAndAuraScriptPair(spell_monk_mana_tea, aura_monk_mana_tea); // Not del stack  NEED FIX
-    new spell_monk_enveloping_mist();
+    //new spell_monk_enveloping_mist();
     RegisterSpellScript(spell_monk_storm_earth_and_fire); //npc not work and not despawn    NEED FIX
     RegisterCreatureAI(npc_monk_sef_spirit); //npc not work and not despawn                 NEED FIX
     new playerScript_monk_earth_fire_storm; //npc not work and not despawn                  NEED FIX
