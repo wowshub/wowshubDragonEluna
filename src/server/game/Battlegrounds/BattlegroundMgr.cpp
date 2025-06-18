@@ -36,7 +36,7 @@
 
 bool BattlegroundTemplate::IsArena() const
 {
-    return BattlemasterEntry->InstanceType == MAP_ARENA;
+    return BattlemasterEntry->GetType() == BattlemasterType::Arena;
 }
 
 uint16 BattlegroundTemplate::GetMinPlayersPerTeam() const
@@ -519,13 +519,13 @@ bool BattlegroundMgr::IsValidQueueId(BattlegroundQueueTypeId bgQueueTypeId)
     switch (BattlegroundQueueIdType(bgQueueTypeId.Type))
     {
         case BattlegroundQueueIdType::Battleground:
-            if (battlemasterList->InstanceType != MAP_BATTLEGROUND)
+            if (battlemasterList->GetType() != BattlemasterType::Battleground)
                 return false;
             if (bgQueueTypeId.TeamSize)
                 return false;
             break;
         case BattlegroundQueueIdType::Arena:
-            if (battlemasterList->InstanceType != MAP_ARENA)
+            if (battlemasterList->GetType() != BattlemasterType::Arena)
                 return false;
             if (!bgQueueTypeId.Rated)
                 return false;
@@ -537,7 +537,7 @@ bool BattlegroundMgr::IsValidQueueId(BattlegroundQueueTypeId bgQueueTypeId)
                 return false;
             break;
         case BattlegroundQueueIdType::ArenaSkirmish:
-            if (battlemasterList->InstanceType != MAP_ARENA)
+            if (battlemasterList->GetType() != BattlemasterType::Arena)
                 return false;
             if (!bgQueueTypeId.Rated)
                 return false;
