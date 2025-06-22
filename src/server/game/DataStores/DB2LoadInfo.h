@@ -3794,7 +3794,7 @@ struct LightSkyboxLoadInfo
 	{
 		{ .IsSigned = false, .Type = FT_INT, .Name = "ID" },
 		{ .IsSigned = false, .Type = FT_STRING_NOT_LOCALIZED, .Name = "Name" },
-		{ .IsSigned = false, .Type = FT_BYTE, .Name = "Flags" },
+		{ .IsSigned = false, .Type = FT_INT, .Name = "Flags" },
 		{ .IsSigned = true, .Type = FT_INT, .Name = "SkyboxFileDataID" },
 		{ .IsSigned = true, .Type = FT_INT, .Name = "CelestialSkyboxFileDataID" },
 	};

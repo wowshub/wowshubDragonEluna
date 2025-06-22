@@ -5253,7 +5253,7 @@ struct LightSkyboxEntry
 {
     uint32 ID;
     char const* Name;
-    uint8 Flags;
+    int32 Flags;
     int32 SkyboxFileDataID;
     int32 CelestialSkyboxFileDataID;
 };
