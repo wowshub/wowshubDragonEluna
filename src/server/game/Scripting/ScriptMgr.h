@@ -828,9 +828,6 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called when a player take damage
         virtual void OnTakeDamage(Player* /*player*/, uint32 /*damage*/, SpellSchoolMask /*schoolMask*/) { }
 
-        // Called when a player choose a response from a PlayerChoice
-        virtual void OnPlayerChoiceResponse(Player* player, uint32 choiceId, uint32 responseId);
-
         // Called in Spell::Cast after spell is actually casted
         virtual void OnSuccessfulSpellCast(Player* /*player*/, Spell* /*spell*/) { }
 
