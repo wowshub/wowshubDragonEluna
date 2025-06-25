@@ -76,6 +76,8 @@ struct CreatureTemplate;
 struct CreatureData;
 struct ItemTemplate;
 struct MapEntry;
+struct PlayerChoice;
+struct PlayerChoiceResponse;
 struct Position;
 struct QuestObjective;
 struct SceneTemplate;
@@ -1049,6 +1051,26 @@ class TC_GAME_API EventScript : public ScriptObject
         virtual void OnTrigger(WorldObject* object, WorldObject* invoker, uint32 eventId);
 };
 
+class TC_GAME_API PlayerChoiceScript : public ScriptObject
+{
+    protected:
+
+        explicit PlayerChoiceScript(char const* name) noexcept;
+
+    public:
+
+        ~PlayerChoiceScript();
+
+        /**
+         * @param object           Source object of the PlayerChoice (can be nullptr)
+         * @param player           Player making the choice
+         * @param choice           Database template of PlayerChoice
+         * @param response         Database template of selected PlayerChoice response
+         * @param clientIdentifier Dynamically generated identifier of the response, changes every time PlayerChoice is sent to player
+         */
+        virtual void OnResponse(WorldObject* object, Player* player, PlayerChoice const* choice, PlayerChoiceResponse const* response, uint16 clientIdentifier);
+};
+
 // Manages registration, loading, and execution of scripts.
 class TC_GAME_API ScriptMgr
 {
@@ -1293,7 +1315,7 @@ class TC_GAME_API ScriptMgr
         void OnQuestStatusChange(Player* player, uint32 questId);
         void OnPlayerRepop(Player* player);
         void OnMovieComplete(Player* player, uint32 movieId);
-        void OnPlayerChoiceResponse(Player* player, uint32 choiceId, uint32 responseId);
+        void OnPlayerChoiceResponse(WorldObject* object, Player* player, PlayerChoice const* choice, PlayerChoiceResponse const* response, uint16 clientIdentifier);
         void OnPlayerSuccessfulSpellCast(Player* player, Spell* spell);
         void OnCooldownStart(Player* player, SpellInfo const* spellInfo, uint32 itemId, int32& cooldown, uint32& categoryId, int32& categoryCooldown);
         void OnChargeRecoveryTimeStart(Player* player, uint32 chargeCategoryId, int32& chargeRecoveryTime);
