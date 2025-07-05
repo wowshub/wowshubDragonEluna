@@ -356,7 +356,6 @@ REPLACE INTO `spell_script_names` VALUES (157695, 'spell_warl_demonbolt');
 REPLACE INTO `spell_script_names` VALUES (196277, 'spell_warl_implosion');
 REPLACE INTO `spell_script_names` VALUES (603, 'spell_warlock_doom');
 REPLACE INTO `spell_script_names` VALUES (6353, 'spell_warlock_soul_fire');
-REPLACE INTO `spell_script_names` VALUES (196447, 'spell_warl_channel_demonfire');
 REPLACE INTO `spell_script_names` VALUES (215941, 'spell_warl_soul_conduit');
 REPLACE INTO `spell_script_names` VALUES (232670, 'spell_warr_shadowbolt_affliction');
 REPLACE INTO `spell_script_names` VALUES (104318, 'spell_warlock_fel_firebolt_wild_imp');

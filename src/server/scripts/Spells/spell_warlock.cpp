@@ -163,7 +163,6 @@ enum WarlockSpells
     SPELL_WARLOCK_CONFLAGRATE_FIRE_AND_BRIMSTONE    = 108685,
     SPELL_WARLOCK_IMMOLATE_FIRE_AND_BRIMSTONE       = 108686,
     SPELL_WARLOCK_SOUL_FIRE                         = 6353,
-    SPELL_WARLOCK_CHANNEL_DEMONFIRE_DAMAGE          = 196448,
     SPELL_WARLOCK_SOUL_CONDUIT_REFUND               = 215942,
     SPELL_SHADOW_EMBRACE                            = 32388,
     SPELL_SHADOW_EMBRACE_TARGET_DEBUFF              = 32390,
@@ -2801,45 +2800,6 @@ public:
     }
 };
 
-// Channel Demonfire - 196447
-class spell_warl_channel_demonfire : public SpellScriptLoader
-{
-public:
-    spell_warl_channel_demonfire() : SpellScriptLoader("spell_warl_channel_demonfire") {}
-
-    class spell_warl_channel_demonfire_AuraScript : public AuraScript
-    {
-
-        void HandlePeriodic(AuraEffect const* /*aurEff*/)
-        {
-            Unit* caster = GetCaster();
-            if (!caster)
-                return;
-
-            std::list<Unit*> enemies;
-            Trinity::AnyUnfriendlyUnitInObjectRangeCheck check(caster, caster, 100.f);
-            Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(caster, enemies, check);
-            Cell::VisitAllObjects(caster, searcher, 100.f);
-            enemies.remove_if(Trinity::UnitAuraCheck(false, SPELL_WARLOCK_IMMOLATE_DOT, caster->GetGUID()));
-            if (enemies.empty())
-                return;
-
-            Unit* target = Trinity::Containers::SelectRandomContainerElement(enemies);
-            caster->CastSpell(target, SPELL_WARLOCK_CHANNEL_DEMONFIRE_DAMAGE, true);
-        }
-
-        void Register() override
-        {
-            OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_channel_demonfire_AuraScript::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-        }
-    };
-
-    AuraScript* GetAuraScript() const override
-    {
-        return new spell_warl_channel_demonfire_AuraScript();
-    }
-};
-
 // Soul Conduit - 215941
 class spell_warl_soul_conduit : public SpellScriptLoader
 {
@@ -3229,7 +3189,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_implosion();
     new spell_warlock_doom();
     new spell_warlock_soul_fire();
-    new spell_warl_channel_demonfire();
     new spell_warl_soul_conduit();
     RegisterSpellScript(spell_warr_shadowbolt_affliction);
     new spell_warlock_fel_firebolt_wild_imp();
