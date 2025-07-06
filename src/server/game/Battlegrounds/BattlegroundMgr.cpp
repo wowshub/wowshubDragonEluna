@@ -24,6 +24,7 @@
 #include "DisableMgr.h"
 #include "FunctionProcessor.h"
 #include "GameEventMgr.h"
+#include "GossipDef.h"
 #include "Language.h"
 #include "Log.h"
 #include "MapManager.h"
@@ -452,6 +453,8 @@ void BattlegroundMgr::SendBattlegroundList(Player* player, ObjectGuid const& gui
     BattlegroundTemplate const* bgTemplate = GetBattlegroundTemplateByTypeId(bgTypeId);
     if (!bgTemplate)
         return;
+
+    player->PlayerTalkClass->GetInteractionData().StartInteraction(guid, PlayerInteractionType::BattleMaster);
 
     WorldPackets::Battleground::BattlefieldList battlefieldList;
     battlefieldList.BattlemasterGuid = guid;
