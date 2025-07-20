@@ -124,7 +124,6 @@ enum WarriorSpells
     SPELL_WARRIOR_VENGEANCE_AURA                    = 202572,
     SPELL_WARRIOR_LAST_STAND                        = 12975,
     SPELL_WARRIOR_SLAM_ARMS                         = 1464,
-    SPELL_WARRIOR_SUDDEN_DEATH                      = 280721,
     SPELL_WARRIOR_SUDDEN_DEATH_PROC                 = 280776,
     SPELL_WARRIOR_BOUNDING_STRIDE                   = 202163,
     SPELL_WARRIOR_BOUNDING_STRIDE_SPEED             = 202164,
