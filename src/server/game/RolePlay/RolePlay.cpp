@@ -858,6 +858,8 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
 
     sObjectMgr->CheckCreatureTemplate(&creatureTemplate);
 
+    sObjectMgr->_creatureTemplateStore[creatureTemplate.Entry] = std::move(creatureTemplate);
+
     EquipmentInfo _equipmentInfo;
     for (uint8 equipmentInfoSlot = 0; equipmentInfoSlot < MAX_EQUIPMENT_ITEMS; equipmentInfoSlot++) {
         _equipmentInfo.Items[equipmentInfoSlot].ItemId = 0;
@@ -1031,6 +1033,7 @@ void Roleplay::SetCustomNpcTameable(std::string const& key, bool tameable)
     cTemplate.type = tameable ? 1 : 0;
     cTemplate.family = tameable ? CREATURE_FAMILY_GORILLA : CREATURE_FAMILY_NONE;
 
+    sObjectMgr->_creatureTemplateStore[cTemplate.Entry] = std::move(cTemplate);
     SaveNpcCreatureTemplateToDb(cTemplate);
     ReloadSpawnedCustomNpcs(key);
 }
@@ -1041,6 +1044,7 @@ void Roleplay::SetCustomNpcName(std::string const& key, std::string const& displ
     CreatureTemplate& cTemplate = sObjectMgr->_creatureTemplateStore[templateId];
     cTemplate.Name = displayName;
 
+    sObjectMgr->_creatureTemplateStore[cTemplate.Entry] = std::move(cTemplate);
     SaveNpcCreatureTemplateToDb(cTemplate);
     ReloadSpawnedCustomNpcs(key);
 }
@@ -1051,6 +1055,7 @@ void Roleplay::SetCustomNpcSubName(std::string const& key, std::string const& su
     CreatureTemplate& cTemplate = sObjectMgr->_creatureTemplateStore[templateId];
     cTemplate.SubName = subName;
 
+    sObjectMgr->_creatureTemplateStore[cTemplate.Entry] = std::move(cTemplate);
     SaveNpcCreatureTemplateToDb(cTemplate);
     ReloadSpawnedCustomNpcs(key);
 }
