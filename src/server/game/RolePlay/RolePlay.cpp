@@ -852,11 +852,14 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
     creatureTemplate.Models.push_back(CreatureModel(outfitId, 1.0f, 1.0f));
 
     if (sWorld->getBoolConfig(CONFIG_CACHE_DATA_QUERIES)) {
+        CreatureTemplate& storedTemplate = sObjectMgr->_creatureTemplateStore[creatureTemplate.Entry];
         for (uint8 loc = LOCALE_enUS; loc < TOTAL_LOCALES; ++loc)
-            creatureTemplate.QueryData[loc] = creatureTemplate.BuildQueryData(static_cast<LocaleConstant>(loc), DIFFICULTY_NONE);
+            storedTemplate.QueryData[loc] = storedTemplate.BuildQueryData(static_cast<LocaleConstant>(loc), DIFFICULTY_NONE);
     }
 
     sObjectMgr->CheckCreatureTemplate(&creatureTemplate);
+
+    SaveNpcCreatureTemplateToDb(creatureTemplate);
 
     sObjectMgr->_creatureTemplateStore[creatureTemplate.Entry] = std::move(creatureTemplate);
 
@@ -875,7 +878,6 @@ void Roleplay::CreateCustomNpcFromPlayer(Player* player, std::string const& key)
     _customNpcStore[key] = npcData;
     SaveNpcOutfitToDb(npcCreatureTemplateId, 1);
     SaveCustomNpcDataToDb(npcData);
-    SaveNpcCreatureTemplateToDb(creatureTemplate);
     SaveNpcEquipmentInfoToDb(creatureTemplate.Entry, 1);
 }
 
