@@ -194,7 +194,6 @@ enum PriestSpells
     SPELL_PRIEST_THE_PENITENT_AURA                  = 200347,
     SPELL_PRIEST_TRAIL_OF_LIGHT_HEAL                = 234946,
     SPELL_PRIEST_TRINITY                            = 214205,
-    SPELL_PRIEST_TRINITY_EFFECT                     = 214206,
     SPELL_PRIEST_ULTIMATE_PENITENCE                 = 421453,
     SPELL_PRIEST_ULTIMATE_PENITENCE_DAMAGE          = 421543,
     SPELL_PRIEST_ULTIMATE_PENITENCE_HEAL            = 421544,
@@ -516,7 +515,6 @@ class spell_pri_atonement_effect : public SpellScript
             SPELL_PRIEST_ATONEMENT,
             SPELL_PRIEST_ATONEMENT_EFFECT,
             SPELL_PRIEST_TRINITY,
-            SPELL_PRIEST_TRINITY_EFFECT,
             SPELL_PRIEST_POWER_WORD_RADIANCE,
             SPELL_PRIEST_POWER_WORD_SHIELD
         }) && ValidateSpellEffect({
@@ -536,8 +534,6 @@ class spell_pri_atonement_effect : public SpellScript
         {
             if (GetSpellInfo()->Id != SPELL_PRIEST_POWER_WORD_SHIELD)
                 return false;
-
-            _effectSpellId = SPELL_PRIEST_TRINITY_EFFECT;
         }
 
         return true;
@@ -1229,7 +1225,6 @@ class spell_pri_evangelism : public SpellScript
         ({
             SPELL_PRIEST_TRINITY,
             SPELL_PRIEST_ATONEMENT_EFFECT,
-            SPELL_PRIEST_TRINITY_EFFECT
         });
     }
 
@@ -1238,9 +1233,7 @@ class spell_pri_evangelism : public SpellScript
         Unit* caster = GetCaster();
         Unit* target = GetHitUnit();
 
-        Aura* atonementAura = caster->HasAura(SPELL_PRIEST_TRINITY)
-            ? target->GetAura(SPELL_PRIEST_TRINITY_EFFECT, caster->GetGUID())
-            : target->GetAura(SPELL_PRIEST_ATONEMENT_EFFECT, caster->GetGUID());
+        Aura* atonementAura = target->GetAura(SPELL_PRIEST_ATONEMENT_EFFECT, caster->GetGUID());
         if (!atonementAura)
             return;
 
@@ -2191,7 +2184,6 @@ class spell_pri_power_word_shield : public AuraScript
             SPELL_PRIEST_STRENGTH_OF_SOUL,
             SPELL_PRIEST_STRENGTH_OF_SOUL_EFFECT,
             SPELL_PRIEST_ATONEMENT_EFFECT,
-            SPELL_PRIEST_TRINITY_EFFECT,
             SPELL_PRIEST_SHIELD_DISCIPLINE,
             SPELL_PRIEST_SHIELD_DISCIPLINE_EFFECT,
             SPELL_PVP_RULES_ENABLED_HARDCODED
@@ -2199,7 +2191,7 @@ class spell_pri_power_word_shield : public AuraScript
             { SPELL_PRIEST_MASTERY_GRACE, EFFECT_0 },
             { SPELL_PRIEST_RAPTURE, EFFECT_1 },
             { SPELL_PRIEST_BENEVOLENCE, EFFECT_0 },
-            { SPELL_PRIEST_DIVINE_AEGIS, EFFECT_1 }
+            { SPELL_PRIEST_DIVINE_AEGIS, EFFECT_0 }
         });
     }
 
@@ -2209,7 +2201,7 @@ class spell_pri_power_word_shield : public AuraScript
 
         if (Unit* caster = GetCaster())
         {
-            float modifiedAmount = caster->SpellBaseDamageBonusDone(GetSpellInfo()->GetSchoolMask()) * 3.36f;
+            float modifiedAmount = caster->SpellBaseDamageBonusDone(GetSpellInfo()->GetSchoolMask()) * 4.638;
 
             if (Player* player = caster->ToPlayer())
             {
@@ -2217,7 +2209,7 @@ class spell_pri_power_word_shield : public AuraScript
 
                 // Mastery: Grace (TBD: move into DoEffectCalcDamageAndHealing hook with a new SpellScript and AuraScript).
                 if (AuraEffect const* masteryGraceEffect = caster->GetAuraEffect(SPELL_PRIEST_MASTERY_GRACE, EFFECT_0))
-                    if (GetUnitOwner()->HasAura(SPELL_PRIEST_ATONEMENT_EFFECT) || GetUnitOwner()->HasAura(SPELL_PRIEST_TRINITY_EFFECT))
+                    if (GetUnitOwner()->HasAura(SPELL_PRIEST_ATONEMENT_EFFECT))
                         AddPct(modifiedAmount, masteryGraceEffect->GetAmount());
 
                 switch (player->GetPrimarySpecialization())
@@ -2243,7 +2235,7 @@ class spell_pri_power_word_shield : public AuraScript
                 modifiedAmount *= 2;
 
                 // Divine Aegis
-                if (AuraEffect const* divineEff = caster->GetAuraEffect(SPELL_PRIEST_DIVINE_AEGIS, EFFECT_1))
+                if (AuraEffect const* divineEff = caster->GetAuraEffect(SPELL_PRIEST_DIVINE_AEGIS, EFFECT_0))
                     AddPct(modifiedAmount, divineEff->GetAmount());
             }
 
