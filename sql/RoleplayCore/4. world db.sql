@@ -496,6 +496,12 @@ REPLACE INTO `spell_script_names` VALUES (271877, 'spell_rog_blade_rush');
 REPLACE INTO `spell_script_names` VALUES (197835, 'spell_rog_shuriken_storm');
 
 -- ----------------------------
+-- Priest spell fixes
+-- ----------------------------
+REPLACE INTO `spell_script_names` VALUES (186723, 'spell_pri_penance_620');
+REPLACE INTO `spell_script_names` VALUES (271466, 'spell_pri_luminous_barrier');
+
+-- ----------------------------
 -- Paladin spell fixes
 -- ----------------------------
 

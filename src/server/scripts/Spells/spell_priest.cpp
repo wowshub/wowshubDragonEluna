@@ -401,7 +401,20 @@ class spell_pri_atonement : public AuraScript
 
     void HandleOnProc(AuraEffect const* aurEff, ProcEventInfo const& eventInfo)
     {
-        TriggerAtonementHealOnTargets(aurEff, eventInfo);
+        DamageInfo* damageInfo = eventInfo.GetDamageInfo();
+        CastSpellExtraArgs args(aurEff);
+        args.AddSpellMod(SPELLVALUE_BASE_POINT0, CalculatePct(damageInfo->GetDamage(), aurEff->GetAmount()));
+        _appliedAtonements.erase(std::remove_if(_appliedAtonements.begin(), _appliedAtonements.end(), [this, &args](ObjectGuid const& targetGuid)
+        {
+            if (Unit* target = ObjectAccessor::GetUnit(*GetTarget(), targetGuid))
+            {
+                if (target->GetExactDist(GetTarget()) < GetEffectInfo(EFFECT_1).CalcValue())
+                    GetTarget()->CastSpell(target, SPELL_PRIEST_ATONEMENT_HEAL, args);
+
+                return false;
+            }
+            return true;
+        }), _appliedAtonements.end());
     }
 
     void Register() override
@@ -3712,6 +3725,31 @@ class spell_pri_penance_620_aura : public AuraScript
     }
 };
 
+// 271466 - Luminous Barrier aura
+class spell_pri_luminous_barrier : public AuraScript
+{
+    int32 baseAbsorbAmount = 0;
+
+    void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            if (SpellInfo const* spellInfo = GetSpellInfo())
+            {
+                float spMod = 11.5f;
+                int32 spellPower = caster->SpellBaseHealingBonusDone(spellInfo->GetSchoolMask());
+                baseAbsorbAmount = int32(spMod * spellPower);
+                amount = baseAbsorbAmount;
+            }
+        }
+    }
+
+    void Register() override
+    {
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pri_luminous_barrier::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+    }
+};
+
 void AddSC_priest_spell_scripts()
 {
     RegisterSpellScript(spell_pri_angelic_feather_trigger);
@@ -3808,4 +3846,5 @@ void AddSC_priest_spell_scripts()
 
     //New
     RegisterSpellAndAuraScriptPair(spell_pri_penance_620, spell_pri_penance_620_aura);
+    RegisterSpellScript(spell_pri_luminous_barrier);
 }
