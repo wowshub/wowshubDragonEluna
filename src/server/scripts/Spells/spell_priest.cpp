@@ -207,7 +207,9 @@ enum PriestSpells
     SPELL_PRIEST_WEAKENED_SOUL                      = 6788,
     SPELL_PRIEST_WHISPERING_SHADOWS                 = 406777,
     SPELL_PRIEST_WHISPERING_SHADOWS_DUMMY           = 391286,
-    SPELL_PVP_RULES_ENABLED_HARDCODED               = 134735
+    SPELL_PVP_RULES_ENABLED_HARDCODED               = 134735,
+
+    SPELL_PETRIFYING_SCREAM                         = 55676,
 };
 
 enum PriestSpellVisuals
@@ -3797,6 +3799,34 @@ class spell_priest_angelic_bulwark : public AuraScript
     }
 };
 
+// 8122 - Mental Scream
+class spell_mental_scream : public AuraScript
+{
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_PETRIFYING_SCREAM });
+    }
+
+    void HandleAuraApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+    {
+        if (aurEff->GetEffIndex() == 2)
+        {
+            if (Unit* caster = GetCaster())
+            {
+                if (!caster->HasAura(SPELL_PETRIFYING_SCREAM))
+                {
+                    PreventDefaultAction();
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_mental_scream::HandleAuraApply, EFFECT_2, SPELL_AURA_MOD_ROOT_2, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
 void AddSC_priest_spell_scripts()
 {
     RegisterSpellScript(spell_pri_angelic_feather_trigger);
@@ -3895,4 +3925,5 @@ void AddSC_priest_spell_scripts()
     RegisterSpellAndAuraScriptPair(spell_pri_penance_620, spell_pri_penance_620_aura);
     RegisterSpellScript(spell_pri_luminous_barrier);
     RegisterSpellScript(spell_priest_angelic_bulwark);
+    RegisterSpellScript(spell_mental_scream);
 }
