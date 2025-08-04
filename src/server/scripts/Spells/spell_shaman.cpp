@@ -166,7 +166,18 @@ enum ShamanSpells
     SPELL_SHAMAN_WINDFURY_VISUAL_3              = 466443,
     SPELL_SHAMAN_WIND_RUSH                      = 192082,
     SPELL_SHAMAN_WINDSTRIKE_DAMAGE_MAIN_HAND    = 115357,
-    SPELL_SHAMAN_WINDSTRIKE_DAMAGE_OFF_HAND     = 115360
+    SPELL_SHAMAN_WINDSTRIKE_DAMAGE_OFF_HAND     = 115360,
+
+    SPELL_SHAMAN_PRIMAL_ELEMENTALIST            = 117013,
+    SPELL_SHAMAN_FIRE_ELEMENTAL_SUMMON          = 198067,
+    SPELL_SHAMAN_FIRE_ELEMENTAL_SUMMON_TRIGGERED = 188592,
+    SPELL_SHAMAN_PRIMAL_ELEMENTALIST_FIRE_ELEMENTAL = 118291,
+    SPELL_SHAMAN_EARTH_ELEMENTAL_SUMMON         = 198103,
+    SPELL_SHAMAN_EARTH_ELEMENTAL_SUMMON_TRIGGERED = 188616,
+    SPELL_SHAMAN_PRIMAL_ELEMENTALIST_EARTH_ELEMENTAL_SUMMON = 118323,
+    SPELL_SHAMAN_STORM_ELEMENTAL_SUMMON         = 192249,
+    SPELL_SHAMAN_STORM_ELEMENTAL_SUMMON_TRIGGERED = 157299,
+    SPELL_SHAMAN_PRIMAL_ELEMENTALIST_STORM_ELEMENTAL_SUMMON = 157319,
 };
 
 enum ShamanSpellLabels
@@ -3345,6 +3356,90 @@ private:
     int32 _refreshTimer = REFRESH_TIME;
 };
 
+// Summon Fire, Earth & Storm Elemental  - Called By 198067 Fire Elemental, 198103 Earth Elemental, 192249 Storm Elemental
+class spell_sha_generic_summon_elemental : public SpellScript
+{
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo
+        ({
+            SPELL_SHAMAN_PRIMAL_ELEMENTALIST,
+            SPELL_SHAMAN_FIRE_ELEMENTAL_SUMMON,
+            SPELL_SHAMAN_FIRE_ELEMENTAL_SUMMON_TRIGGERED,
+            SPELL_SHAMAN_PRIMAL_ELEMENTALIST_FIRE_ELEMENTAL,
+            SPELL_SHAMAN_EARTH_ELEMENTAL_SUMMON,
+            SPELL_SHAMAN_EARTH_ELEMENTAL_SUMMON_TRIGGERED,
+            SPELL_SHAMAN_PRIMAL_ELEMENTALIST_EARTH_ELEMENTAL_SUMMON,
+            SPELL_SHAMAN_STORM_ELEMENTAL_SUMMON,
+            SPELL_SHAMAN_STORM_ELEMENTAL_SUMMON_TRIGGERED,
+            SPELL_SHAMAN_PRIMAL_ELEMENTALIST_STORM_ELEMENTAL_SUMMON,
+            });
+    }
+    void HandleSummon(SpellEffIndex /*p_EffIndex*/)
+    {
+        uint32 triggerSpell;
+
+        if (Unit* caster = GetCaster())
+        {
+            switch (GetSpellInfo()->Id)
+            {
+            case SPELL_SHAMAN_FIRE_ELEMENTAL_SUMMON:
+                triggerSpell = (caster->HasAura(SPELL_SHAMAN_PRIMAL_ELEMENTALIST)) ? SPELL_SHAMAN_PRIMAL_ELEMENTALIST_FIRE_ELEMENTAL : SPELL_SHAMAN_FIRE_ELEMENTAL_SUMMON_TRIGGERED;
+                break;
+            case SPELL_SHAMAN_EARTH_ELEMENTAL_SUMMON:
+                triggerSpell = (caster->HasAura(SPELL_SHAMAN_PRIMAL_ELEMENTALIST)) ? SPELL_SHAMAN_PRIMAL_ELEMENTALIST_EARTH_ELEMENTAL_SUMMON : SPELL_SHAMAN_EARTH_ELEMENTAL_SUMMON_TRIGGERED;
+                break;
+            case SPELL_SHAMAN_STORM_ELEMENTAL_SUMMON:
+                triggerSpell = (caster->HasAura(SPELL_SHAMAN_PRIMAL_ELEMENTALIST)) ? SPELL_SHAMAN_PRIMAL_ELEMENTALIST_STORM_ELEMENTAL_SUMMON : SPELL_SHAMAN_STORM_ELEMENTAL_SUMMON_TRIGGERED;
+                break;
+            default:
+                triggerSpell = 0;
+                break;
+            }
+
+            if (triggerSpell)
+                caster->CastSpell(caster, triggerSpell, true);
+        }
+    }
+
+    void Register()
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_sha_generic_summon_elemental::HandleSummon, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+
+};
+
+// 198103 - Earth Elemental
+class spell_sha_earth_elemental : public SpellScript
+{
+    void HandleSummon(SpellEffIndex /*effIndex*/)
+    {
+        if (Unit* caster = GetCaster())
+            caster->CastSpell(caster, SPELL_SHAMAN_EARTH_ELEMENTAL_SUMMON_TRIGGERED, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_sha_earth_elemental::HandleSummon, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+// 198067 - Fire Elemental
+class spell_sha_fire_elemental : public SpellScript
+{
+    void HandleSummon(SpellEffIndex /*effIndex*/)
+    {
+        if (Unit* caster = GetCaster())
+            caster->CastSpell(caster, SPELL_SHAMAN_FIRE_ELEMENTAL_SUMMON_TRIGGERED, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_sha_fire_elemental::HandleSummon, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     RegisterSpellScript(spell_sha_aftershock);
@@ -3447,4 +3542,9 @@ void AddSC_shaman_spell_scripts()
     RegisterSpellScript(spell_sha_windfury_weapon_proc);
     RegisterAreaTriggerAI(areatrigger_sha_arctic_snowstorm);
     RegisterAreaTriggerAI(areatrigger_sha_wind_rush_totem);
+
+    //New
+    RegisterSpellScript(spell_sha_generic_summon_elemental);
+    RegisterSpellScript(spell_sha_earth_elemental);
+    RegisterSpellScript(spell_sha_fire_elemental);
 }

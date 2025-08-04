@@ -579,6 +579,14 @@ REPLACE INTO `spell_script_names` VALUES (107428, 'spell_rising_sun_kick_proc');
 REPLACE INTO `spell_script_names` VALUES (152175, 'spell_monk_whirling_dragon_punch');
 
 -- ----------------------------
+-- Shaman spell fixes
+-- ----------------------------
+
+REPLACE INTO `spell_script_names` VALUES (192249, 'spell_shaman_generic_summon_elemental');
+REPLACE INTO `spell_script_names` VALUES (198103, 'spell_sha_earth_elemental');
+REPLACE INTO `spell_script_names` VALUES (198067, 'spell_sha_fire_elemental');
+
+-- ----------------------------
 -- DH spell fixes
 -- ----------------------------
 
