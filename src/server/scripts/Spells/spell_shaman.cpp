@@ -492,9 +492,22 @@ class spell_sha_chain_lightning_energize : public SpellScript
             });
     }
 
+    void HandleAfterCast()
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (Aura* stormkeeper = caster->GetAura(SPELL_SHAMAN_STORMKEEPER))
+        {
+            stormkeeper->DropChargeDelayed(1);
+        }
+    }
+
     void Register() override
     {
         OnEffectLaunch += SpellEffectFn(spell_sha_chain_lightning_energize::HandleScript, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        AfterCast += SpellCastFn(spell_sha_chain_lightning_energize::HandleAfterCast);
     }
 };
 
@@ -1774,9 +1787,22 @@ class spell_sha_lightning_bolt : public SpellScript
             });
     }
 
+    void HandleAfterCast()
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (Aura* stormkeeper = caster->GetAura(SPELL_SHAMAN_STORMKEEPER))
+        {
+            stormkeeper->DropChargeDelayed(1);
+        }
+    }
+
     void Register() override
     {
         OnEffectLaunch += SpellEffectFn(spell_sha_lightning_bolt::HandleScript, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        AfterCast += SpellCastFn(spell_sha_lightning_bolt::HandleAfterCast);
     }
 };
 
