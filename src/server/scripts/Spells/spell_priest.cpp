@@ -2359,21 +2359,28 @@ public:
             && ValidateSpellEffect({ { SPELL_PRIEST_PRAYER_OF_MENDING_HEAL, EFFECT_0 } });
     }
 
-    bool Load() override
-    {
-        _spellInfoHeal = sSpellMgr->AssertSpellInfo(SPELL_PRIEST_PRAYER_OF_MENDING_HEAL, DIFFICULTY_NONE);
-        return true;
-    }
-
     void CastPrayerOfMendingAura(Unit* caster, Unit* target, Unit* visualSender, uint8 stack, bool firstCast) const
     {
+        if (!caster || !target)
+            return;
+
+        SpellInfo const* spellInfoHeal = sSpellMgr->GetSpellInfo(SPELL_PRIEST_PRAYER_OF_MENDING_HEAL, DIFFICULTY_NONE);
+        if (!spellInfoHeal)
+            return;
+
         CastSpellExtraArgs args;
         args.TriggerFlags = TRIGGERED_FULL_MASK;
         args.AddSpellMod(SPELLVALUE_AURA_STACK, stack);
 
+        if (spellInfoHeal->GetEffects().size() <= EFFECT_0)
+            return;
+
         // Note: this line's purpose is to show the correct amount in Points field in SMSG_AURA_UPDATE.
-        SpellEffectInfo const* healEffectDummy = &_spellInfoHeal->GetEffect(EFFECT_0);
-        uint32 basePoints = caster->SpellHealingBonusDone(target, _spellInfoHeal, healEffectDummy->CalcValue(caster), HEAL, *healEffectDummy);
+        SpellEffectInfo const* healEffectDummy = &spellInfoHeal->GetEffect(EFFECT_0);
+        if (!healEffectDummy)
+            return;
+
+        uint32 basePoints = caster->SpellHealingBonusDone(target, spellInfoHeal, healEffectDummy->CalcValue(caster), HEAL, *healEffectDummy);
         args.AddSpellMod(SPELLVALUE_BASE_POINT0, basePoints);
 
         // Note: Focused Mending talent.
@@ -2382,7 +2389,8 @@ public:
         caster->CastSpell(target, SPELL_PRIEST_PRAYER_OF_MENDING_AURA, args);
 
         // Note: the visualSender is the priest if it is first cast or the aura holder when the aura triggers.
-        visualSender->SendPlaySpellVisual(target, SPELL_VISUAL_PRIEST_PRAYER_OF_MENDING, 0, 0, 40.0f);
+        if (visualSender)
+            visualSender->SendPlaySpellVisual(target, SPELL_VISUAL_PRIEST_PRAYER_OF_MENDING, 0, 0, 40.0f);
     }
 
 protected:
@@ -2662,8 +2670,15 @@ class spell_pri_assured_safety : public spell_pri_prayer_of_mending_SpellScriptB
     void HandleEffectHitTarget(SpellEffIndex /*effIndex*/) const
     {
         Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        Unit* target = GetHitUnit();
+        if (!target)
+            return;
+
         if (AuraEffect const* effect = caster->GetAuraEffect(SPELL_PRIEST_ASSURED_SAFETY, EFFECT_0))
-            CastPrayerOfMendingAura(caster, GetHitUnit(), caster, effect->GetAmount(), false);
+            CastPrayerOfMendingAura(caster, target, caster, effect->GetAmount(), false);
     }
 
     void Register() override
