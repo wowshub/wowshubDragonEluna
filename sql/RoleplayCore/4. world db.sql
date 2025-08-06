@@ -500,8 +500,13 @@ REPLACE INTO `spell_script_names` VALUES (197835, 'spell_rog_shuriken_storm');
 -- ----------------------------
 REPLACE INTO `spell_script_names` VALUES (186723, 'spell_pri_penance_620');
 REPLACE INTO `spell_script_names` VALUES (271466, 'spell_pri_luminous_barrier');
-REPLACE INTO `spell_script_names` VALUES (108945, 'spell_priest_angelic_bulwark');
-REPLACE INTO `spell_script_names` VALUES (8122, 'spell_mental_scream');
+REPLACE INTO `spell_script_names` VALUES (108945, 'spell_pri_angelic_bulwark');
+REPLACE INTO `spell_script_names` VALUES (8122, 'spell_pri_mental_scream');
+REPLACE INTO `spell_script_names` VALUES (194249, 'spell_pri_voidform');
+REPLACE INTO `spell_script_names` VALUES (228260, 'spell_pri_void_eruption');
+REPLACE INTO `spell_script_names` VALUES (335467, 'spell_pri_devouring_plague');
+REPLACE INTO `spell_script_names` VALUES (108920, 'spell_pri_void_tendrils');
+
 
 -- ----------------------------
 -- Paladin spell fixes

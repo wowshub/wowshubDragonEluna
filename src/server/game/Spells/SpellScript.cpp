@@ -258,6 +258,7 @@ bool SpellScript::TargetHook::CheckEffect(SpellInfo const* spellInfo, uint8 effI
 template TC_GAME_API SpellScriptBase::HookList<SpellScript::CastHandler>& SpellScriptBase::HookList<SpellScript::CastHandler>::operator+=(SpellScript::CastHandler&& hook);
 template TC_GAME_API SpellScriptBase::HookList<SpellScript::CheckCastHandler>& SpellScriptBase::HookList<SpellScript::CheckCastHandler>::operator+=(SpellScript::CheckCastHandler&& hook);
 template TC_GAME_API SpellScriptBase::HookList<SpellScript::OnPrepareHandler>& SpellScriptBase::HookList<SpellScript::OnPrepareHandler>::operator+=(SpellScript::OnPrepareHandler&& hook);
+template TC_GAME_API SpellScriptBase::HookList<SpellScript::OnTakePowerHandler>& SpellScriptBase::HookList<SpellScript::OnTakePowerHandler>::operator+=(SpellScript::OnTakePowerHandler&& hook);
 template TC_GAME_API SpellScriptBase::HookList<SpellScript::OnSummonHandler>& SpellScriptBase::HookList<SpellScript::OnSummonHandler>::operator+=(SpellScript::OnSummonHandler&& hook);
 template TC_GAME_API SpellScriptBase::HookList<SpellScript::EffectHandler>& SpellScriptBase::HookList<SpellScript::EffectHandler>::operator+=(SpellScript::EffectHandler&& hook);
 template TC_GAME_API SpellScriptBase::HookList<SpellScript::BeforeHitHandler>& SpellScriptBase::HookList<SpellScript::BeforeHitHandler>::operator+=(SpellScript::BeforeHitHandler&& hook);

@@ -841,6 +841,40 @@ public:
         SafeWrapperType _safeWrapper;
     };
 
+    class OnTakePowerHandler final
+    {
+    public:
+        using SpellOnTakePowerFnType = void(SpellScript::*)(SpellPowerCost& powerCost);
+
+        using SafeWrapperType = void(*)(SpellScript* spellScript, SpellPowerCost& powerCost, SpellOnTakePowerFnType callImpl);
+
+        template<typename ScriptFunc>
+        explicit OnTakePowerHandler(ScriptFunc handler)
+        {
+            using ScriptClass = GetScriptClass_t<ScriptFunc>;
+
+            static_assert(sizeof(SpellOnTakePowerFnType) >= sizeof(ScriptFunc));
+            static_assert(alignof(SpellOnTakePowerFnType) >= alignof(ScriptFunc));
+
+            static_assert(std::is_invocable_r_v<void, ScriptFunc, ScriptClass, SpellPowerCost&>,
+                "OnTakePowerHandler signature must be \"void OnTakePowerHandler(SpellPowerCost& powerCost)\"");
+
+            _callImpl = reinterpret_cast<SpellOnTakePowerFnType>(handler);
+            _safeWrapper = [](SpellScript* spellScript, SpellPowerCost& powerCost, SpellOnTakePowerFnType callImpl) -> void
+                {
+                    return (static_cast<ScriptClass*>(spellScript)->*reinterpret_cast<ScriptFunc>(callImpl))(powerCost);
+                };
+        }
+
+        void Call(SpellScript* spellScript, SpellPowerCost& powerCost) const
+        {
+            return _safeWrapper(spellScript, powerCost, _callImpl);
+        }
+    private:
+        SpellOnTakePowerFnType _callImpl;
+        SafeWrapperType _safeWrapper;
+    };
+
     class OnSummonHandler final
     {
     public:
@@ -1021,6 +1055,11 @@ public:
     // where function is void function(int32 completedStages)
     HookList<EmpowerStageCompletedHandler> OnEmpowerCompleted;
     #define SpellOnEmpowerCompletedFn(F) EmpowerStageCompletedHandler(&F)
+
+    // example: OnTakePower += SpellOnTakePowerFn(class::function);
+    // where function is void function(SpellPowerCost& powerCost)
+    HookList<OnTakePowerHandler> OnTakePower;
+    #define SpellOnTakePowerFn(F) OnTakePowerHandler(&F)
 
     // example: OnSummonHandler += SpellOnEffectSummonFn(class::function);
     // where function is void function(Creature* summon)

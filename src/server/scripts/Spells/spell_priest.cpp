@@ -86,7 +86,7 @@ enum PriestSpells
     SPELL_PRIEST_DIVINE_STAR_SHADOW_DAMAGE          = 390845,
     SPELL_PRIEST_DIVINE_STAR_SHADOW_HEAL            = 390981,
     SPELL_PRIEST_DIVINE_WRATH                       = 40441,
-    SPELL_PRIEST_EMPOWERED_RENEW_HEAL               = 391359,
+    SPELL_PRIEST_EMPOWERED_RENEW_HEAL               = 430538,
     SPELL_PRIEST_EPIPHANY                           = 414553,
     SPELL_PRIEST_EPIPHANY_HIGHLIGHT                 = 414556,
     SPELL_PRIEST_ESSENCE_DEVOURER                   = 415479,
@@ -210,6 +210,17 @@ enum PriestSpells
     SPELL_PVP_RULES_ENABLED_HARDCODED               = 134735,
 
     SPELL_PETRIFYING_SCREAM                         = 55676,
+    SPELL_PRIEST_VOID_ERUPTION                      = 228260,
+    SPELL_PRIEST_VOID_ERUPTION_DAMAGE               = 228360,
+    SPELL_PRIEST_VOIDFORM_BUFFS                     = 194249,
+    SPELL_PRIEST_VOIDFORM_TENTACLES_4               = 210196,
+    SPELL_PRIEST_VOIDFORM_TENTACLES_3               = 210197,
+    SPELL_PRIEST_VOIDFORM_TENTACLES_2               = 210198,
+    SPELL_PRIEST_VOIDFORM_TENTACLES_1               = 210199,
+    SPELL_PRIEST_MIND_BLAST                         = 8092,
+    SPELL_PRIEST_DEVOURING_PLAGUE                   = 335467,
+    SPELL_PRIEST_VOID_BOLT                          = 205448,
+
 };
 
 enum PriestSpellVisuals
@@ -1389,7 +1400,7 @@ class spell_pri_halo_shadow : public SpellScript
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_pri_halo_shadow::HandleHitTarget, EFFECT_1, SPELL_EFFECT_ENERGIZE);
+        OnEffectHitTarget += SpellEffectFn(spell_pri_halo_shadow::HandleHitTarget, EFFECT_1, SPELL_EFFECT_APPLY_AURA);
     }
 };
 
@@ -3738,7 +3749,7 @@ class spell_pri_penance_620_aura : public AuraScript
 
     void Register() override
     {
-        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pri_penance_620_aura::HandleEffectCalcAmount, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pri_penance_620_aura::HandleEffectCalcAmount, EFFECT_0, SPELL_EFFECT_HEAL);
     }
 };
 
@@ -3768,12 +3779,12 @@ class spell_pri_luminous_barrier : public AuraScript
 };
 
 // 108945 - Angelic Bulwark
-class spell_priest_angelic_bulwark : public AuraScript
+class spell_pri_angelic_bulwark : public AuraScript
 {
 
     bool Validate(SpellInfo const* spellInfo) override
     {
-        return spellInfo->GetEffect(EFFECT_1).IsEffect(SPELL_EFFECT_DUMMY);
+        return spellInfo->GetEffect(EFFECT_1).IsEffect(SPELL_EFFECT_APPLY_AURA);
     }
 
     bool CheckProc(ProcEventInfo& procInfo)
@@ -3809,13 +3820,13 @@ class spell_priest_angelic_bulwark : public AuraScript
 
     void Register() override
     {
-        DoCheckProc += AuraCheckProcFn(spell_priest_angelic_bulwark::CheckProc);
-        OnEffectProc += AuraEffectProcFn(spell_priest_angelic_bulwark::HandleEffectProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+        DoCheckProc += AuraCheckProcFn(spell_pri_angelic_bulwark::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_pri_angelic_bulwark::HandleEffectProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
     }
 };
 
 // 8122 - Mental Scream
-class spell_mental_scream : public AuraScript
+class spell_pri_mental_scream : public AuraScript
 {
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
@@ -3838,7 +3849,182 @@ class spell_mental_scream : public AuraScript
 
     void Register() override
     {
-        OnEffectApply += AuraEffectApplyFn(spell_mental_scream::HandleAuraApply, EFFECT_2, SPELL_AURA_MOD_ROOT_2, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(spell_pri_mental_scream::HandleAuraApply, EFFECT_2, SPELL_AURA_MOD_ROOT_2, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+// 194249 - Voidform buffs
+class spell_pri_voidform : public AuraScript
+{
+private:
+    uint32 lastTentacleStage = 0;
+
+public:
+    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            lastTentacleStage = 0;
+        }
+    }
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (Aura* aura = GetAura())
+        {
+            uint32 duration = aura->GetDuration();
+            uint32 maxDuration = aura->GetMaxDuration();
+
+            if (maxDuration == 0)
+                return;
+
+            uint32 tentacleStage = (maxDuration - duration) / 4000;
+
+            if (tentacleStage <= lastTentacleStage)
+                return;
+
+            lastTentacleStage = tentacleStage;
+
+            switch (tentacleStage)
+            {
+            case 0:
+                caster->CastSpell(caster, SPELL_PRIEST_VOIDFORM_TENTACLES_4, true);
+                break;
+            case 1:
+                caster->CastSpell(caster, SPELL_PRIEST_VOIDFORM_TENTACLES_3, true);
+                break;
+            case 2:
+                caster->CastSpell(caster, SPELL_PRIEST_VOIDFORM_TENTACLES_2, true);
+                break;
+            case 3:
+                caster->CastSpell(caster, SPELL_PRIEST_VOIDFORM_TENTACLES_1, true);
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        caster->RemoveAurasDueToSpell(SPELL_PRIEST_VOIDFORM_TENTACLES_4);
+        caster->RemoveAurasDueToSpell(SPELL_PRIEST_VOIDFORM_TENTACLES_3);
+        caster->RemoveAurasDueToSpell(SPELL_PRIEST_VOIDFORM_TENTACLES_2);
+        caster->RemoveAurasDueToSpell(SPELL_PRIEST_VOIDFORM_TENTACLES_1);
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_pri_voidform::HandleApply, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_pri_voidform::HandlePeriodic, EFFECT_3, SPELL_AURA_PERIODIC_DUMMY);
+        AfterEffectRemove += AuraEffectRemoveFn(spell_pri_voidform::HandleRemove, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+// 228260 - Void Eruption
+class spell_pri_void_eruption : public SpellScript
+{
+    void HandleDummy(SpellEffIndex /*effIndex*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            caster->CastSpell(caster, SPELL_PRIEST_VOIDFORM_BUFFS, true);
+
+            if (Unit* target = GetHitUnit())
+            {
+                std::list<Unit*> targetList;
+                float radius = 10.0f;
+
+                Trinity::AnyUnitInObjectRangeCheck checker(target, radius);
+                Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(target, targetList, checker);
+                Cell::VisitAllObjects(target, searcher, radius);
+
+                for (Unit* nearbyTarget : targetList)
+                {
+                    if (nearbyTarget && caster->IsValidAttackTarget(nearbyTarget))
+                    {
+                        caster->CastSpell(nearbyTarget, SPELL_PRIEST_VOID_ERUPTION_DAMAGE, true);
+                    }
+                }
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_pri_void_eruption::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+// 335467 - Devouring Plague
+class spell_pri_devouring_plague : public SpellScript
+{
+    void IncreaseDuration()
+    {
+        if (Unit* caster = GetCaster())
+        {
+            if (Aura* voidForm = caster->GetAura(SPELL_PRIEST_VOIDFORM_BUFFS))
+            {
+                voidForm->SetDuration(voidForm->GetDuration() + 2500);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        AfterCast += SpellCastFn(spell_pri_devouring_plague::IncreaseDuration);
+    }
+};
+
+// 108920 - Void Tendrils
+class spell_pri_void_tendrils : public SpellScript
+{
+    void HandleOnHit()
+    {
+        if (Player* _player = GetCaster()->ToPlayer())
+            if (Unit* target = GetHitUnit())
+                _player->CastSpell(target, 114404, true);
+    }
+
+    void Register() override
+    {
+        OnHit += SpellHitFn(spell_pri_void_tendrils::HandleOnHit);
+    }
+};
+
+// 341491 - Shadowy Apparitions WIP
+class spell_pri_shadowy_apparitions : public AuraScript
+{
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo(
+            {
+                SPELL_PRIEST_MIND_BLAST,
+                SPELL_PRIEST_DEVOURING_PLAGUE,
+                SPELL_PRIEST_VOID_BOLT
+            });
+    }
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+    }
+
+    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
+    {
+    }
+
+    void Register() override
+    {
+        OnEffectProc += AuraEffectProcFn(spell_pri_shadowy_apparitions::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        DoCheckProc += AuraCheckProcFn(spell_pri_shadowy_apparitions::CheckProc);
     }
 };
 
@@ -3939,6 +4125,11 @@ void AddSC_priest_spell_scripts()
     //New
     RegisterSpellAndAuraScriptPair(spell_pri_penance_620, spell_pri_penance_620_aura);
     RegisterSpellScript(spell_pri_luminous_barrier);
-    RegisterSpellScript(spell_priest_angelic_bulwark);
-    RegisterSpellScript(spell_mental_scream);
+    RegisterSpellScript(spell_pri_angelic_bulwark);
+    RegisterSpellScript(spell_pri_mental_scream);
+    RegisterSpellScript(spell_pri_voidform);
+    RegisterSpellScript(spell_pri_void_eruption);
+    RegisterSpellScript(spell_pri_devouring_plague);
+    RegisterSpellScript(spell_pri_void_tendrils);
+
 }
