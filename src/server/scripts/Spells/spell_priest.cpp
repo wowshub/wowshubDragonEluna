@@ -4013,11 +4013,11 @@ class spell_pri_shadowy_apparitions : public AuraScript
             });
     }
 
-    bool CheckProc(ProcEventInfo& eventInfo)
+    bool CheckProc(ProcEventInfo& /*eventInfo*/)
     {
     }
 
-    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& eventInfo)
+    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
     {
     }
 

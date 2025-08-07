@@ -36,7 +36,6 @@
 #include "WorldStateMgr.h"
 #ifdef ELUNA
 #include "LuaEngine.h"
-#include "ElunaConfig.h"
 #endif
 
 #include <boost/dynamic_bitset.hpp>
@@ -484,8 +483,8 @@ void MapManager::FreeInstanceId(uint32 instanceId)
         if (!(*itr).second->Instanceable())
             continue;
 
-    if (Eluna* e = sWorld->GetEluna())
-    e->FreeInstanceId(instanceId);
+        if (Eluna* e = sWorld->GetEluna())
+            e->FreeInstanceId(instanceId);
     }
 #endif
 }

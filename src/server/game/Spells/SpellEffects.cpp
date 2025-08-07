@@ -6411,7 +6411,6 @@ void Spell::EffectObliterateItem()
     if (!itemTemplate || !(itemTemplate->HasFlag(ITEM_FLAG3_OBLITERATABLE)))
         return;
 
-    uint32 itemLevel = itemTemplate->GetBaseItemLevel();
     uint32 currencyId = 0;
     uint32 itemId = 0;
     uint32 addCount = 0;
