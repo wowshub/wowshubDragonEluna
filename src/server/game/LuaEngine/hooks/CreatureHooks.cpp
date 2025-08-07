@@ -9,12 +9,13 @@
 #include "LuaEngine.h"
 #include "BindingMap.h"
 #include "ElunaIncludes.h"
-#include "ElunaEventMgr.h"
 #include "ElunaTemplate.h"
 
 using namespace Hooks;
 
 #define START_HOOK(EVENT, CREATURE) \
+    auto CreatureEventBindings = GetBinding<EntryKey<CreatureEvents>>(REGTYPE_CREATURE);\
+    auto CreatureUniqueBindings = GetBinding<UniqueObjectKey<CreatureEvents>>(REGTYPE_CREATURE_UNIQUE);\
     auto entry_key = EntryKey<CreatureEvents>(EVENT, CREATURE->GetEntry());\
     auto unique_key = UniqueObjectKey<CreatureEvents>(EVENT, CREATURE->GET_GUID(), CREATURE->GetInstanceId());\
     if (!CreatureEventBindings->HasBindingsFor(entry_key))\
@@ -22,6 +23,8 @@ using namespace Hooks;
             return;
 
 #define START_HOOK_WITH_RETVAL(EVENT, CREATURE, RETVAL) \
+    auto CreatureEventBindings = GetBinding<EntryKey<CreatureEvents>>(REGTYPE_CREATURE);\
+    auto CreatureUniqueBindings = GetBinding<UniqueObjectKey<CreatureEvents>>(REGTYPE_CREATURE_UNIQUE);\
     auto entry_key = EntryKey<CreatureEvents>(EVENT, CREATURE->GetEntry());\
     auto unique_key = UniqueObjectKey<CreatureEvents>(EVENT, CREATURE->GET_GUID(), CREATURE->GetInstanceId());\
     if (!CreatureEventBindings->HasBindingsFor(entry_key))\
@@ -47,16 +50,15 @@ bool Eluna::OnQuestAccept(Player* pPlayer, Creature* pCreature, Quest const* pQu
     return CallAllFunctionsBool(CreatureEventBindings, CreatureUniqueBindings, entry_key, unique_key);
 }
 
-//bool Eluna::OnQuestReward(Player* pPlayer, Creature* pCreature, Quest const* pQuest, LootItemType* rewardType, uint32 rewardId)
-//{
-//    START_HOOK_WITH_RETVAL(CREATURE_EVENT_ON_QUEST_REWARD, pCreature, false);
-//    Push(pPlayer);
-//    Push(pCreature);
-//    Push(pQuest);
-//    Push(rewardType);
-//    Push(rewardId);
-//    return CallAllFunctionsBool(CreatureEventBindings, CreatureUniqueBindings, entry_key, unique_key);
-//}
+bool Eluna::OnQuestReward(Player* pPlayer, Creature* pCreature, Quest const* pQuest, uint32 opt)
+{
+    START_HOOK_WITH_RETVAL(CREATURE_EVENT_ON_QUEST_REWARD, pCreature, false);
+    HookPush(pPlayer);
+    HookPush(pCreature);
+    HookPush(pQuest);
+    HookPush(opt);
+    return CallAllFunctionsBool(CreatureEventBindings, CreatureUniqueBindings, entry_key, unique_key);
+}
 
 void Eluna::GetDialogStatus(const Player* pPlayer, const Creature* pCreature)
 {

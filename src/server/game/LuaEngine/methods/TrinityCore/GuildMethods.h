@@ -130,7 +130,7 @@ namespace LuaGuild
      * In multistate, this method is only available in the WORLD state
      *
      * @param [Player] leader : the [Player] leader to change
-     * @param bool isSelfPromote : default 'false', should only be set to 'true' 
+     * @param bool isSelfPromote : default 'false' 
      */
     int SetLeader(Eluna* E, Guild* guild)
     {
@@ -281,9 +281,7 @@ namespace LuaGuild
         { "SendPacketToRanked", &LuaGuild::SendPacketToRanked },
         { "Disband", &LuaGuild::Disband, METHOD_REG_WORLD }, // World state method only in multistate
         { "AddMember", &LuaGuild::AddMember, METHOD_REG_WORLD }, // World state method only in multistate
-        { "DeleteMember", &LuaGuild::DeleteMember, METHOD_REG_WORLD }, // World state method only in multistate
-
-        { NULL, NULL, METHOD_REG_NONE }
+        { "DeleteMember", &LuaGuild::DeleteMember, METHOD_REG_WORLD } // World state method only in multistate
     };
 };
 #endif

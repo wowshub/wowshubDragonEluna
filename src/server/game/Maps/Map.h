@@ -771,7 +771,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         void UpdateSpawnGroupConditions();
 
 #ifdef ELUNA
-        Eluna* GetEluna() const;
+        Eluna* GetEluna() const { return eluna.get(); }
 
         LuaVal lua_data = LuaVal({});
 #endif
@@ -840,9 +840,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         std::unordered_set<Object*> _updateObjects;
 
         MPSCQueue<FarSpellCallback> _farSpellCallbacks;
-
 #ifdef ELUNA
-        Eluna* eluna;
+        std::unique_ptr<Eluna> eluna;
 #endif
 
         /*********************************************************/

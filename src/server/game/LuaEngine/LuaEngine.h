@@ -8,16 +8,17 @@
 #define _LUA_ENGINE_H
 
 #include "Common.h"
-#include "SharedDefines.h"
-#include "DBCEnums.h"
+#include "ElunaUtility.h"
+#include "Hooks.h"
 
+#include "DBCEnums.h"
 #include "Group.h"
 #include "Item.h"
 #include "Map.h"
+#include "SharedDefines.h"
 #include "Weather.h"
 #include "World.h"
-#include "Hooks.h"
-#include "ElunaUtility.h"
+
 #include <mutex>
 #include <memory>
 
@@ -26,39 +27,41 @@ extern "C"
 #include "lua.h"
 };
 
-struct ItemTemplate;
-typedef BattlegroundTypeId BattleGroundTypeId;
-struct AreaTriggerEntry;
 class AuctionHouseObject;
-struct AuctionEntry;
-class Battleground;
-typedef Battleground BattleGround;
 class Channel;
 class Corpse;
 class Creature;
 class CreatureAI;
-class GameObject;
-class GameObjectAI;
-class Guild;
-class Group;
-class InstanceScript;
-typedef InstanceScript InstanceData;
 class ElunaInstanceAI;
+class GameObject;
+class Group;
+class Guild;
 class Item;
 class Pet;
 class Player;
 class Quest;
 class Spell;
 class SpellCastTargets;
-class TempSummon;
-// class Transport;
 class Unit;
 class Weather;
 class WorldPacket;
+struct AreaTriggerEntry;
+struct AuctionEntry;
+
+class Battleground;
+class GameObjectAI;
+class InstanceScript;
+class TempSummon;
 class Vehicle;
+struct ItemTemplate;
+typedef Battleground BattleGround;
+typedef BattlegroundTypeId BattleGroundTypeId;
+typedef InstanceScript InstanceData;
+
 struct lua_State;
 class EventMgr;
 class ElunaObject;
+class BaseBindingMap;
 template<typename T> class ElunaTemplate;
 
 template<typename K> class BindingMap;
@@ -84,15 +87,21 @@ enum MethodRegisterState
     METHOD_REG_ALL
 };
 
+enum MethodFlags : uint32
+{
+    METHOD_FLAG_NONE = 0x0,
+    METHOD_FLAG_UNSAFE = 0x1,
+    METHOD_FLAG_DEPRECATED = 0x2
+};
+
 #define ELUNA_STATE_PTR "Eluna State Ptr"
 
 #define ELUNA_GAME_API TC_GAME_API
+#define TRACKABLE_PTR_NAMESPACE ::Trinity::
 
 class ELUNA_GAME_API Eluna
 {
 public:
-    typedef std::list<LuaScript> ScriptList;
-    typedef std::recursive_mutex LockType;
 
     void ReloadEluna() { reload = true; }
     bool ExecuteCall(int params, int res);
@@ -101,12 +110,6 @@ private:
 
     // Indicates that the lua state should be reloaded
     bool reload = false;
-
-    // A counter for lua event stacks that occur (see event_level).
-    // This is used to determine whether an object belongs to the current call stack or not.
-    // 0 is reserved for always belonging to the call stack
-    // 1 is reserved for a non valid callstackid
-    uint64 callstackid = 2;
     // A counter for the amount of nested events. When the event_level
     // reaches 0 we are about to return back to C++. At this point the
     // objects used during the event stack are invalidated.
@@ -117,23 +120,24 @@ private:
 
     Map* const boundMap;
 
-    // Whether or not Eluna is in compatibility mode. Used in some method wrappers.
-    bool compatibilityMode;
-
-    // Index of the Eluna::StackTrace function pushed to the lua state stack when lua is opened
-    // We store the function to stack on lua open because it cannot be a pseudo-index (must be on stack) and we want access it on every call
-    int stacktraceFunctionStackIndex = 0;
-
     // Map from instance ID -> Lua table ref
     std::unordered_map<uint32, int> instanceDataRefs;
     // Map from map ID -> Lua table ref
     std::unordered_map<uint32, int> continentDataRefs;
 
+    std::array<std::unique_ptr<BaseBindingMap>, Hooks::REGTYPE_COUNT> bindingMaps;
+
+    template<typename T>
+    void CreateBinding(Hooks::RegisterTypes type)
+    {
+        auto index = static_cast<std::underlying_type_t<Hooks::RegisterTypes>>(type);
+        bindingMaps[index] = std::make_unique<BindingMap<T>>(L);
+    }
+
     void OpenLua();
     void CloseLua();
     void DestroyBindStores();
     void CreateBindStores();
-    void InvalidateObjects();
 
     // Use ReloadEluna() to make eluna reload
     // This is called on world update to reload eluna
@@ -181,34 +185,13 @@ private:
     template<typename T>
     void HookPush(T const* ptr)                     { Push(ptr); ++push_counter; }
 
+    QueryCallbackProcessor queryProcessor;
 public:
 
     lua_State* L;
-    EventMgr* eventMgr;
+    std::unique_ptr<EventMgr> eventMgr;
 
-    QueryCallbackProcessor queryProcessor;
     QueryCallbackProcessor& GetQueryProcessor() { return queryProcessor; }
-
-    BindingMap< EventKey<Hooks::ServerEvents> >*     ServerEventBindings;
-    BindingMap< EventKey<Hooks::PlayerEvents> >*     PlayerEventBindings;
-    BindingMap< EventKey<Hooks::GuildEvents> >*      GuildEventBindings;
-    BindingMap< EventKey<Hooks::GroupEvents> >*      GroupEventBindings;
-    BindingMap< EventKey<Hooks::VehicleEvents> >*    VehicleEventBindings;
-    BindingMap< EventKey<Hooks::BGEvents> >*         BGEventBindings;
-
-    BindingMap< EntryKey<Hooks::PacketEvents> >*     PacketEventBindings;
-    BindingMap< EntryKey<Hooks::CreatureEvents> >*   CreatureEventBindings;
-    BindingMap< EntryKey<Hooks::GossipEvents> >*     CreatureGossipBindings;
-    BindingMap< EntryKey<Hooks::GameObjectEvents> >* GameObjectEventBindings;
-    BindingMap< EntryKey<Hooks::GossipEvents> >*     GameObjectGossipBindings;
-    BindingMap< EntryKey<Hooks::SpellEvents> >*      SpellEventBindings;
-    BindingMap< EntryKey<Hooks::ItemEvents> >*       ItemEventBindings;
-    BindingMap< EntryKey<Hooks::GossipEvents> >*     ItemGossipBindings;
-    BindingMap< EntryKey<Hooks::GossipEvents> >*     PlayerGossipBindings;
-    BindingMap< EntryKey<Hooks::InstanceEvents> >*   MapEventBindings;
-    BindingMap< EntryKey<Hooks::InstanceEvents> >*   InstanceEventBindings;
-
-    BindingMap< UniqueObjectKey<Hooks::CreatureEvents> >* CreatureUniqueBindings;
 
     static int StackTrace(lua_State* _L);
     static void Report(lua_State* _L);
@@ -228,7 +211,6 @@ public:
     // can be used by anything, including methods.
     void Push(); // nil
     void Push(const long long);
-    void Push(Milliseconds);
     void Push(const unsigned long long);
     void Push(const long);
     void Push(const unsigned long);
@@ -277,8 +259,7 @@ public:
 
     void RunScripts();
     bool HasLuaState() const { return L != NULL; }
-    uint64 GetCallstackId() const { return callstackid; }
-    int Register(uint8 reg, uint32 entry, ObjectGuid guid, uint32 instanceId, uint32 event_id, int functionRef, uint32 shots);
+    int Register(std::underlying_type_t<Hooks::RegisterTypes> regtype, uint32 entry, ObjectGuid guid, uint32 instanceId, uint32 event_id, int functionRef, uint32 shots);
     void UpdateEluna(uint32 diff);
 
     // Checks
@@ -315,9 +296,26 @@ public:
         return 0;
     }
 
-    bool GetCompatibilityMode() const { return compatibilityMode; }
+    template<typename T>
+    BindingMap<T>* GetBinding(std::underlying_type_t<Hooks::RegisterTypes> type)
+    {
+        if (type >= Hooks::REGTYPE_COUNT)
+            return nullptr;
 
-    Eluna(Map * map, bool compatMode = false);
+        auto& binding = bindingMaps[type];
+        if (!binding)
+            return nullptr;
+
+        return dynamic_cast<BindingMap<T>*>(binding.get());
+    }
+
+    template<typename T>
+    BindingMap<T>* GetBinding(Hooks::RegisterTypes type)
+    {
+        return GetBinding<T>(static_cast<std::underlying_type_t<Hooks::RegisterTypes>>(type));
+    }
+
+    Eluna(Map * map);
     ~Eluna();
 
     // Prevent copy
@@ -367,7 +365,7 @@ public:
     bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action);
     bool OnGossipSelectCode(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action, const char* code);
     bool OnQuestAccept(Player* pPlayer, Creature* pCreature, Quest const* pQuest);
-    //bool OnQuestReward(Player* pPlayer, Creature* pCreature, Quest const* pQuest, uint32 opt);
+    bool OnQuestReward(Player* pPlayer, Creature* pCreature, Quest const* pQuest, uint32 opt);
     void GetDialogStatus(const Player* pPlayer, const Creature* pCreature);
 
     bool OnSummoned(Creature* creature, Unit* summoner);
@@ -400,6 +398,7 @@ public:
     bool OnGossipSelect(Player* pPlayer, GameObject* pGameObject, uint32 sender, uint32 action);
     bool OnGossipSelectCode(Player* pPlayer, GameObject* pGameObject, uint32 sender, uint32 action, const char* code);
     bool OnQuestAccept(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest);
+    bool OnQuestReward(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest, uint32 opt);
     void GetDialogStatus(const Player* pPlayer, const GameObject* pGameObject);
     void OnDestroyed(GameObject* pGameObject, WorldObject* attacker);
     void OnDamaged(GameObject* pGameObject, WorldObject* attacker);
@@ -465,12 +464,6 @@ public:
     /* Weather */
     void OnChange(Weather* weather, uint32 zone, WeatherState state, float grade);
 
-    /* Auction House */
-    void OnAdd(AuctionHouseObject* ah, AuctionPosting* auction);
-    void OnRemove(AuctionHouseObject* ah, AuctionPosting* auction);
-    void OnSuccessful(AuctionHouseObject* ah, AuctionPosting* auction);
-    void OnExpire(AuctionHouseObject* ah, AuctionPosting* auction);
-
     /* Guild */
     void OnAddMember(Guild* guild, Player* player, uint32 plRank);
     void OnRemoveMember(Guild* guild, ObjectGuid guid, bool isDisbanding, bool isKicked);
@@ -498,7 +491,7 @@ public:
     void OnDestroy(Map* map);
     void OnPlayerEnter(Map* map, Player* player);
     void OnPlayerLeave(Map* map, Player* player);
-    void OnUpdate(Map* map, uint32 diff);
+    void OnMapUpdate(Map* map, uint32 diff);
     void OnAddToWorld(Creature* creature);
     void OnRemoveFromWorld(Creature* creature);
     void OnAddToWorld(GameObject* gameobject);

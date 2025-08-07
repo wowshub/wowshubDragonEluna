@@ -7,18 +7,36 @@
 #ifndef _ELUNA_UTIL_H
 #define _ELUNA_UTIL_H
 
+#include "Common.h"
+
+#define EXP_CLASSIC 0
+#define EXP_TBC 1
+#define EXP_WOTLK 2
+#define EXP_CATA 3
+
+#include "SharedDefines.h"
+#include "ObjectGuid.h"
+#include "Log.h"
+#include "QueryResult.h"
+
 #include <unordered_map>
 #include <unordered_set>
 #include <mutex>
 #include <memory>
-#include "Common.h"
-#include "SharedDefines.h"
-#include "ObjectGuid.h"
-#include "QueryResult.h"
-#include "Log.h"
 
 #define USING_BOOST
+
+#if defined TRINITY_PLATFORM && defined TRINITY_PLATFORM_WINDOWS
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
 #define ELUNA_WINDOWS
+#endif
+#elif defined PLATFORM && defined PLATFORM_WINDOWS
+#if PLATFORM == PLATFORM_WINDOWS
+#define ELUNA_WINDOWS
+#endif
+#else
+#error Eluna could not determine platform
+#endif
 
 typedef QueryResult ElunaQuery;
 #define GET_GUID                GetGUID
@@ -31,12 +49,18 @@ typedef QueryResult ElunaQuery;
 #define HIGHGUID_VEHICLE        HighGuid::Vehicle
 #define HIGHGUID_DYNAMICOBJECT  HighGuid::DynamicObject
 #define HIGHGUID_CORPSE         HighGuid::Corpse
-#define HIGHGUID_MO_TRANSPORT   HighGuid::Transport
-#define HIGHGUID_GROUP          HighGuid::Party
 
-#define ELUNA_LOG_INFO(message__, ...)     TC_LOG_INFO("eluna", message__, ##__VA_ARGS__);
-#define ELUNA_LOG_ERROR(message__, ...)    TC_LOG_ERROR("eluna", message__, ## __VA_ARGS__);
-#define ELUNA_LOG_DEBUG(message__, ...)    TC_LOG_DEBUG("eluna", message__, ##__VA_ARGS__);
+#include "fmt/printf.h"
+#define ELUNA_LOG_TC_FMT(TC_LOG_MACRO, ...) \
+    try { \
+        std::string message = fmt::sprintf(__VA_ARGS__); \
+        TC_LOG_MACRO("eluna", "{}", message); \
+    } catch (const std::exception& e) { \
+        TC_LOG_MACRO("eluna", "Failed to format log message: {}", e.what()); \
+    }
+#define ELUNA_LOG_INFO(...)     ELUNA_LOG_TC_FMT(TC_LOG_INFO, __VA_ARGS__);
+#define ELUNA_LOG_ERROR(...)    ELUNA_LOG_TC_FMT(TC_LOG_ERROR, __VA_ARGS__);
+#define ELUNA_LOG_DEBUG(...)    ELUNA_LOG_TC_FMT(TC_LOG_DEBUG, __VA_ARGS__);
 
 #define MAKE_NEW_GUID(l, e, h)  ObjectGuid(h, e, l)
 

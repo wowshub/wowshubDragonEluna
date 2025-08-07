@@ -186,6 +186,17 @@ namespace LuaItem
     }
 
     /**
+     * Returns 'true' if the [Item] is a vellum, 'false' otherwise
+     *
+     * @return bool isVellum
+     */
+    int IsVellum(Eluna* E, Item* item)
+    {
+        E->Push(item->IsVellum());
+        return 1;
+    }
+
+    /**
      * Returns 'true' if the [Item] is a conjured consumable, 'false' otherwise
      *
      * @return bool isConjuredConsumable
@@ -210,20 +221,17 @@ namespace LuaItem
     /**
      * Returns the chat link of the [Item]
      *
-     * <pre>
-     * enum LocaleConstant
-     * {
-     *     LOCALE_enUS = 0,
-     *     LOCALE_koKR = 1,
-     *     LOCALE_frFR = 2,
-     *     LOCALE_deDE = 3,
-     *     LOCALE_zhCN = 4,
-     *     LOCALE_zhTW = 5,
-     *     LOCALE_esES = 6,
-     *     LOCALE_esMX = 7,
-     *     LOCALE_ruRU = 8
-     * };
-     * </pre>
+     * @table
+     * @columns [Locale, ID]
+     * @values [LOCALE_enUS, 0]
+     * @values [LOCALE_koKR, 1]
+     * @values [LOCALE_frFR, 2]
+     * @values [LOCALE_deDE, 3]
+     * @values [LOCALE_zhCN, 4]
+     * @values [LOCALE_zhTW, 5]
+     * @values [LOCALE_esES, 6]
+     * @values [LOCALE_esMX, 7]
+     * @values [LOCALE_ruRU, 8]
      *
      * @param [LocaleConstant] locale = DEFAULT_LOCALE : locale to return the [Item]'s name in
      * @return string itemLink
@@ -235,6 +243,7 @@ namespace LuaItem
             return luaL_argerror(E->L, 2, "valid LocaleConstant expected");
 
         const ItemTemplate* temp = item->GetTemplate();
+
         std::string name = temp->GetName(static_cast<LocaleConstant>(locale));
 
         std::ostringstream oss;
@@ -370,7 +379,7 @@ namespace LuaItem
     /**
      * Returns the name of the [Item]
      *
-     * <pre>
+     *  <pre>
      * enum LocaleConstant
      * {
      *     LOCALE_enUS = 0,
@@ -386,6 +395,7 @@ namespace LuaItem
      * </pre>
      *
      * @param [LocaleConstant] locale = DEFAULT_LOCALE : locale to return the [Item]'s name in
+     *
      * @return string name
      */
     int GetName(Eluna* E, Item* item)
@@ -532,28 +542,6 @@ namespace LuaItem
     }
 
     /**
-     * Returns the [Item] modified appearance
-     *
-     * @return uint32 item modified appearance 
-     */
-    int GetItemModifiedAppearance(Eluna* E, Item* item)
-    {
-        E->Push(item->GetItemModifiedAppearance());
-        return 1;
-    }
-
-    /**
-     * Returns the [Item] modified appearance id
-     *
-     * @return uint32 item modified appearance id
-     */
-    int GetItemModifiedAppearanceId(Eluna* E, Item* item)
-    {
-        E->Push(item->GetItemModifiedAppearance()->ID);
-        return 1;
-    }
-
-    /**
      * Sets the [Player] specified as the owner of the [Item]
      *
      * @param [Player] player : the [Player] specified
@@ -590,40 +578,6 @@ namespace LuaItem
     {
         uint32 count = E->CHECKVAL<uint32>(2);
         item->SetCount(count);
-        return 0;
-    }
-
-    /**
-     * Sets modifier for [Item] on [Player]
-     *
-     * @param ItemModifier itemmodifier
-     * @param uint32 value
-     * 
-     */
-    int SetModified(Eluna* E, Item* item)
-    {
-        ItemModifier itemmodifier = (ItemModifier)E->CHECKVAL<uint16>(2);
-        uint32 value = E->CHECKVAL<uint32>(3);
-
-        item->SetModifier(itemmodifier, value);
-
-        return 0;
-    }
-
-    /**
-     * Sets state for [Item] on [Player]
-     *
-     * @param ItemUpdateState itemstate
-     * @param [Player] player : the [Player] specified
-     *
-     */
-    int SetState(Eluna* E, Item* item)
-    {
-        ItemUpdateState itemstate = (ItemUpdateState)E->CHECKVAL<uint8>(2);
-        Player* player = E->CHECKOBJ<Player>(3);
-
-        item->SetState(itemstate, player);
-
         return 0;
     }
 
@@ -730,15 +684,11 @@ namespace LuaItem
         { "GetRequiredLevel", &LuaItem::GetRequiredLevel },
         { "GetItemSet", &LuaItem::GetItemSet },
         { "GetBagSize", &LuaItem::GetBagSize },
-        { "GetItemModifiedAppearance", &LuaItem::GetItemModifiedAppearance },
-        { "GetItemModifiedAppearanceId", &LuaItem::GetItemModifiedAppearanceId },
 
         // Setters
         { "SetOwner", &LuaItem::SetOwner },
         { "SetBinding", &LuaItem::SetBinding },
         { "SetCount", &LuaItem::SetCount },
-        { "SetModified", &LuaItem::SetModified },
-        { "SetState", &LuaItem::SetState },
 
         // Boolean
         { "IsSoulBound", &LuaItem::IsSoulBound },
@@ -756,15 +706,14 @@ namespace LuaItem
         { "IsEquipped", &LuaItem::IsEquipped },
         { "HasQuest", &LuaItem::HasQuest },
         { "IsPotion", &LuaItem::IsPotion },
+        { "IsWeaponVellum", &LuaItem::IsVellum },
         { "IsRefundExpired", &LuaItem::IsRefundExpired },
         { "IsConjuredConsumable", &LuaItem::IsConjuredConsumable },
         { "SetEnchantment", &LuaItem::SetEnchantment },
         { "ClearEnchantment", &LuaItem::ClearEnchantment },
 
         // Other
-        { "SaveToDB", &LuaItem::SaveToDB },
-
-        { NULL, NULL, METHOD_REG_NONE }
+        { "SaveToDB", &LuaItem::SaveToDB }
     };
 };
 #endif

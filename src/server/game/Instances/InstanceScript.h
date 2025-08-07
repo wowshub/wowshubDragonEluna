@@ -193,10 +193,10 @@ class TC_GAME_API InstanceScript : public ZoneScript
         // if we're starting without any saved instance data
         virtual void Create();
         // if we're loading existing instance save data
-        void Load(char const* data);
+        virtual void Load(char const* data);
 
         // When save is needed, this function generates the data
-        std::string GetSaveData();
+        virtual std::string GetSaveData();
 
         std::string UpdateBossStateSaveData(std::string const& oldData, UpdateBossStateSaveDataEvent const& event);
         std::string UpdateAdditionalSaveData(std::string const& oldData, UpdateAdditionalSaveDataEvent const& event);

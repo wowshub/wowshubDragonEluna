@@ -9,9 +9,7 @@
 
 #include "ElunaUtility.h"
 #include "Common.h"
-
 #include "Random.h"
-
 #include <map>
 
 #include "Define.h"
@@ -75,7 +73,7 @@ public:
 
 private:
     void RemoveEvents_internal();
-    void AddEvent(LuaEvent* luaEvent);
+    void AddEvent(LuaEvent* luaEvent, bool reschedule = true);
     void RemoveEvent(LuaEvent* luaEvent);
     EventList eventList;
     uint64 m_time;
@@ -88,7 +86,7 @@ class EventMgr
 public:
     typedef std::unordered_set<ElunaEventProcessor*> ProcessorSet;
     ProcessorSet processors;
-    ElunaEventProcessor* globalProcessor;
+    std::unique_ptr<ElunaEventProcessor> globalProcessor;
     Eluna* E;
 
     EventMgr(Eluna* _E);
@@ -101,6 +99,8 @@ public:
     // Sets the eventId's state in all processors
     // Execute only in safe env
     void SetState(int eventId, LuaEventState state);
+
+    void UpdateProcessors(uint32 diff);
 };
 
 #endif

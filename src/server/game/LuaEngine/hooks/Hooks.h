@@ -68,7 +68,7 @@
 
 namespace Hooks
 {
-    enum RegisterTypes
+    enum RegisterTypes : uint8
     {
         REGTYPE_PACKET,
         REGTYPE_SERVER,
@@ -76,6 +76,7 @@ namespace Hooks
         REGTYPE_GUILD,
         REGTYPE_GROUP,
         REGTYPE_CREATURE,
+        REGTYPE_CREATURE_UNIQUE,
         REGTYPE_VEHICLE,
         REGTYPE_CREATURE_GOSSIP,
         REGTYPE_GAMEOBJECT,
@@ -313,7 +314,7 @@ namespace Hooks
         GAMEOBJECT_EVENT_ON_SPAWN                       = 2,    // (event, go)
         GAMEOBJECT_EVENT_ON_DUMMY_EFFECT                = 3,    // (event, caster, spellid, effindex, go) - Can return true to stop normal action
         GAMEOBJECT_EVENT_ON_QUEST_ACCEPT                = 4,    // (event, player, go, quest) - Can return true to stop normal action
-        // UNUSED                                       = 5,    // (event, player, go, quest, opt) - Can return true to stop normal action
+        GAMEOBJECT_EVENT_ON_QUEST_REWARD                = 5,    // (event, player, go, quest, opt) - Can return true to stop normal action
         GAMEOBJECT_EVENT_ON_DIALOG_STATUS               = 6,    // (event, player, go)
         GAMEOBJECT_EVENT_ON_DESTROYED                   = 7,    // (event, go, attacker)
         GAMEOBJECT_EVENT_ON_DAMAGED                     = 8,    // (event, go, attacker)

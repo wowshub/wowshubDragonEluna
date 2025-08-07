@@ -85,14 +85,11 @@ namespace LuaGameObject
      * Returns the state of a [GameObject]
      * Below are client side [GOState]s off of 3.3.5a
      *
-     * <pre>
-     * enum GOState
-     * {
-     *     GO_STATE_ACTIVE             = 0,                        // show in world as used and not reset (closed door open)
-     *     GO_STATE_READY              = 1,                        // show in world as ready (closed door close)
-     *     GO_STATE_ACTIVE_ALTERNATIVE = 2                         // show in world as used in alt way and not reset (closed door open by cannon fire)
-     * };
-     * </pre>
+     * @table
+     * @columns [GOState, ID, Comment]
+     * @values [GO_STATE_ACTIVE, 0, "show in world as used and not reset (closed door open)"]
+     * @values [GO_STATE_READY, 1, "show in world as ready (closed door close)"]
+     * @values [GO_STATE_ACTIVE_ALTERNATIVE, 2, "show in world as used in alt way and not reset (closed door open by cannon fire)"]
      *
      * @return [GOState] goState
      */
@@ -106,15 +103,12 @@ namespace LuaGameObject
      * Returns the [LootState] of a [GameObject]
      * Below are [LootState]s off of 3.3.5a
      *
-     * <pre>
-     * enum LootState
-     * {
-     *     GO_NOT_READY = 0,
-     *     GO_READY,                                               // can be ready but despawned, and then not possible activate until spawn
-     *     GO_ACTIVATED,
-     *     GO_JUST_DEACTIVATED
-     * };
-     * </pre>
+     * @table
+     * @columns [LootState, ID, Comment]
+     * @values [GO_NOT_READY, 0, ""]
+     * @values [GO_READY, 1, "can be ready but despawned, and then not possible activate until spawn"]
+     * @values [GO_ACTIVATED, 2, ""]
+     * @values [GO_JUST_DEACTIVATED, 3, ""]
      *
      * @return [LootState] lootState
      */
@@ -138,14 +132,11 @@ namespace LuaGameObject
     /**
      * Sets the state of a [GameObject]
      *
-     * <pre>
-     * enum GOState
-     * {
-     *     GO_STATE_ACTIVE             = 0,                        // show in world as used and not reset (closed door open)
-     *     GO_STATE_READY              = 1,                        // show in world as ready (closed door close)
-     *     GO_STATE_ACTIVE_ALTERNATIVE = 2                         // show in world as used in alt way and not reset (closed door open by cannon fire)
-     * };
-     * </pre>
+     * @table
+     * @columns [GOState, ID, Comment]
+     * @values [GO_STATE_ACTIVE, 0, "show in world as used and not reset (closed door open)"]
+     * @values [GO_STATE_READY, 1, "show in world as ready (closed door close)"]
+     * @values [GO_STATE_ACTIVE_ALTERNATIVE, 2, "show in world as used in alt way and not reset (closed door open by cannon fire)"]
      *
      * @param [GOState] state : all available go states can be seen above
      */
@@ -158,13 +149,7 @@ namespace LuaGameObject
         else if (state == 1)
             go->SetGoState(GO_STATE_READY);
         else if (state == 2)
-        {
-#ifndef CATA
             go->SetGoState(GO_STATE_DESTROYED);
-#else
-            go->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
-#endif
-        }
 
         return 0;
     }
@@ -173,15 +158,12 @@ namespace LuaGameObject
      * Sets the [LootState] of a [GameObject]
      * Below are [LootState]s off of 3.3.5a
      *
-     * <pre>
-     * enum LootState
-     * {
-     *     GO_NOT_READY = 0,
-     *     GO_READY,                                               // can be ready but despawned, and then not possible activate until spawn
-     *     GO_ACTIVATED,
-     *     GO_JUST_DEACTIVATED
-     * };
-     * </pre>
+     * @table
+     * @columns [LootState, ID, Comment]
+     * @values [GO_NOT_READY, 0, ""]
+     * @values [GO_READY, 1, "can be ready but despawned, and then not possible activate until spawn"]
+     * @values [GO_ACTIVATED, 2, ""]
+     * @values [GO_JUST_DEACTIVATED, 3, ""]
      *
      * @param [LootState] state : all available loot states can be seen above
      */
@@ -208,6 +190,60 @@ namespace LuaGameObject
     int SaveToDB(Eluna* /*E*/, GameObject* go)
     {
         go->SaveToDB();
+        return 0;
+    }
+
+    /**
+ * Change position for the gameobject.
+ *
+ * @param float x
+ * @param float y
+ * @param float z
+ * @param float i
+ */
+    int ChangePosition(Eluna* E, GameObject* go)
+    {
+        float x = E->CHECKVAL<float>(2);
+        float y = E->CHECKVAL<float>(3);
+        float z = E->CHECKVAL<float>(4);
+        float o = E->CHECKVAL<float>(5, go->GetOrientation());
+
+        Map* map = go->GetMap();
+        ObjectGuid::LowType guid = go->GetSpawnId();
+
+        go->DestroyForNearbyPlayers();
+        go->RelocateStationaryPosition(x, y, z, o);
+        go->GetMap()->GameObjectRelocation(go, x, y, z, o);
+        go->SaveToDB();
+        go->Delete();
+        go = GameObject::CreateGameObjectFromDB(guid, map);
+        return 0;
+    }
+
+    /**
+     * Change turn for the gameobject.
+     *
+     * @param float oz
+     * @param float oy
+     * @param float ox
+     */
+    int Turn(Eluna* E, GameObject* go)
+    {
+        float oz = E->CHECKVAL<float>(2);
+        float oy = E->CHECKVAL<float>(3, 0.0f);
+        float ox = E->CHECKVAL<float>(4, 0.0f);
+
+        Map* map = go->GetMap();
+        ObjectGuid::LowType guid = go->GetSpawnId();
+
+        go->Relocate(go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), oz);
+        go->RelocateStationaryPosition(go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), go->GetOrientation());
+        go->SetLocalRotationAngles(oz, oy, ox);
+        go->DestroyForNearbyPlayers();
+        go->UpdateObjectVisibility();
+        go->SaveToDB();
+        go->Delete();
+        go = GameObject::CreateGameObjectFromDB(guid, map);
         return 0;
     }
 
@@ -289,60 +325,6 @@ namespace LuaGameObject
     }
 
     /**
-     * Change position for the gameobject.
-     *
-     * @param float x
-     * @param float y
-     * @param float z
-     * @param float i
-     */
-    int ChangePosition(Eluna* E, GameObject* go)
-    {
-        float x = E->CHECKVAL<float>(2);
-        float y = E->CHECKVAL<float>(3);
-        float z = E->CHECKVAL<float>(4);
-        float o = E->CHECKVAL<float>(5, go->GetOrientation());
-
-        Map* map = go->GetMap();
-        ObjectGuid::LowType guid = go->GetSpawnId();
-
-        go->DestroyForNearbyPlayers();
-        go->RelocateStationaryPosition(x, y, z, o);
-        go->GetMap()->GameObjectRelocation(go, x, y, z, o);
-        go->SaveToDB();
-        go->Delete();
-        go = GameObject::CreateGameObjectFromDB(guid, map);
-        return 0;
-    }
-
-    /**
-     * Change turn for the gameobject.
-     *
-     * @param float oz
-     * @param float oy
-     * @param float ox
-     */
-    int Turn(Eluna* E, GameObject* go)
-    {
-        float oz = E->CHECKVAL<float>(2);
-        float oy = E->CHECKVAL<float>(3, 0.0f);
-        float ox = E->CHECKVAL<float>(4, 0.0f);
-
-        Map* map = go->GetMap();
-        ObjectGuid::LowType guid = go->GetSpawnId();
-
-        go->Relocate(go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), oz);
-        go->RelocateStationaryPosition(go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), go->GetOrientation());
-        go->SetLocalRotationAngles(oz, oy, ox);
-        go->DestroyForNearbyPlayers();
-        go->UpdateObjectVisibility();
-        go->SaveToDB();
-        go->Delete();
-        go = GameObject::CreateGameObjectFromDB(guid, map);
-        return 0;
-    }
-
-    /**
      * Sets whether or not the [GameObject] will be spawned by default
      *
      * Primarily used for temporary spawns.
@@ -384,10 +366,8 @@ namespace LuaGameObject
         { "Despawn", &LuaGameObject::Despawn },
         { "Respawn", &LuaGameObject::Respawn },
         { "SaveToDB", &LuaGameObject::SaveToDB },
-        { "ChangePosition", &LuaGameObject::ChangePosition },
+        { "ChangePosition",& LuaGameObject::ChangePosition },
         { "Turn", &LuaGameObject::Turn },
-
-        { NULL, NULL, METHOD_REG_NONE }
     };
 };
 #endif

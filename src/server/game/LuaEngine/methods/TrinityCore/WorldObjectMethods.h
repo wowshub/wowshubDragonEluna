@@ -8,7 +8,6 @@
 #define WORLDOBJECTMETHODS_H
 
 #include "LuaValue.h"
-#include "PhasingHandler.h"
 
 /***
  * Inherits all methods from: [Object]
@@ -49,52 +48,6 @@ namespace LuaWorldObject
     }
 
     /**
-    * Sets the [WorldObject]'s phase Id.
-    *
-    * @param [Player] player = nil : [Player] set phase
-    * @param uint32 phaseId
-    * @param bool update = true : update visibility to nearby objects
-    */
-    int SetPhaseId(Eluna* E, WorldObject* /*obj*/)
-    {
-        Player* player = E->CHECKOBJ<Player>(2, false);
-        uint32 phaseId = E->CHECKVAL<uint32>(3);
-        bool update = E->CHECKVAL<bool>(4, true);
-
-        PhasingHandler::AddPhase(player, phaseId, update);
-        return 0;
-    }
-
-    /**
-    * Remove the [WorldObject]'s all phase.
-    *
-    * @return remove phase
-    *
-    */
-    int RemoveAllPhase(Eluna* /*E*/, WorldObject* obj)
-    {
-        obj->GetPhaseShift().ClearPhases();
-        return 1;
-    }
-
-    /**
-    * Remove the [WorldObject]'s phase Id.
-    *
-    * @param [Player] player = nil : [Player] set phase
-    * @param uint32 phaseId
-    * @param bool update = true : update visibility to nearby objects
-    */
-    int RemovePhaseId(Eluna* E, WorldObject* /*obj*/)
-    {
-        Player* player = E->CHECKOBJ<Player>(2, false);
-        uint32 phaseId = E->CHECKVAL<uint32>(3);
-        bool update = E->CHECKVAL<bool>(4, true);
-
-        PhasingHandler::RemovePhase(player, phaseId, update);
-        return 0;
-    }
-
-    /**
      * Returns the current phase of the [WorldObject]
      *
      * @return uint32 phase
@@ -115,6 +68,7 @@ namespace LuaWorldObject
     int SetPhaseMask(Eluna* E, WorldObject* /*obj*/)
     {
         uint32 phaseMask = E->CHECKVAL<uint32>(2);
+
         EventMap event;
         event.SetPhase(phaseMask);
         return 0;
@@ -651,6 +605,7 @@ namespace LuaWorldObject
     int GetAngle(Eluna* E, WorldObject* obj)
     {
         WorldObject* target = E->CHECKOBJ<WorldObject>(2, false);
+
         if (target)
             E->Push(obj->GetAbsoluteAngle(target));
         else
@@ -697,6 +652,7 @@ namespace LuaWorldObject
         uint32 respawnDelay = E->CHECKVAL<uint32>(7, 30);
 
         QuaternionData rot = QuaternionData::fromEulerAnglesZYX(o, 0.f, 0.f);
+
         E->Push(obj->SummonGameObject(entry, Position(x, y, z, o), rot, Seconds(respawnDelay)));
         return 1;
     }
@@ -704,19 +660,18 @@ namespace LuaWorldObject
     /**
      * Spawns the creature at specified location.
      *
-     *     enum TempSummonType
-     *     {
-     *         TEMPSUMMON_TIMED_OR_DEAD_DESPAWN       = 1, // despawns after a specified time OR when the creature disappears
-     *         TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN     = 2, // despawns after a specified time OR when the creature dies
-     *         TEMPSUMMON_TIMED_DESPAWN               = 3, // despawns after a specified time
-     *         TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT = 4, // despawns after a specified time after the creature is out of combat
-     *         TEMPSUMMON_CORPSE_DESPAWN              = 5, // despawns instantly after death
-     *         TEMPSUMMON_CORPSE_TIMED_DESPAWN        = 6, // despawns after a specified time after death
-     *         TEMPSUMMON_DEAD_DESPAWN                = 7, // despawns when the creature disappears
-     *         TEMPSUMMON_MANUAL_DESPAWN              = 8, // despawns when UnSummon() is called
-     *         TEMPSUMMON_TIMED_OOC_OR_CORPSE_DESPAWN = 9, // despawns after a specified time (OOC) OR when the creature dies
-     *         TEMPSUMMON_TIMED_OOC_OR_DEAD_DESPAWN   = 10 // despawns after a specified time (OOC) OR when the creature disappears
-     *     };
+     * @table
+     * @columns [TempSummonType, ID, Comment]
+     * @values [TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 1, "despawns after a specified time OR when the creature disappears"]
+     * @values [TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 2, "despawns after a specified time OR when the creature dies"]
+     * @values [TEMPSUMMON_TIMED_DESPAWN, 3, "despawns after a specified time"]
+     * @values [TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 4, "despawns after a specified time after the creature is out of combat"]
+     * @values [TEMPSUMMON_CORPSE_DESPAWN, 5, "despawns instantly after death"]
+     * @values [TEMPSUMMON_CORPSE_TIMED_DESPAWN, 6, "despawns after a specified time after death"]
+     * @values [TEMPSUMMON_DEAD_DESPAWN, 7, "despawns when the creature disappears"]
+     * @values [TEMPSUMMON_MANUAL_DESPAWN, 8, "despawns when UnSummon() is called"]
+     * @values [TEMPSUMMON_TIMED_OOC_OR_CORPSE_DESPAWN, 9, "despawns after a specified time (OOC) OR when the creature dies"]
+     * @values [TEMPSUMMON_TIMED_OOC_OR_DEAD_DESPAWN, 10, "despawns after a specified time (OOC) OR when the creature disappears"]
      *
      * @param uint32 entry : [Creature]'s entry ID
      * @param float x
@@ -769,7 +724,6 @@ namespace LuaWorldObject
         }
 
         E->Push(obj->SummonCreature(entry, x, y, z, o, type, Milliseconds(despawnTimer)));
-
         return 1;
     }
 
@@ -787,8 +741,6 @@ namespace LuaWorldObject
      *     worldobject:RegisterEvent(Timed, 1000, 5) -- do it after 1 second 5 times
      *     worldobject:RegisterEvent(Timed, {1000, 10000}, 0) -- do it after 1 to 10 seconds forever
      *
-     * In multistate, this method is only available in the MAP states
-     * 
      * @proto eventId = (function, delay)
      * @proto eventId = (function, delaytable)
      * @proto eventId = (function, delay, repeats)
@@ -825,7 +777,7 @@ namespace LuaWorldObject
         int functionRef = luaL_ref(E->L, LUA_REGISTRYINDEX);
         if (functionRef != LUA_REFNIL && functionRef != LUA_NOREF)
         {
-            obj->elunaEvents->AddEvent(functionRef, min, max, repeats);
+            obj->GetElunaEvents(E->GetBoundMapId())->AddEvent(functionRef, min, max, repeats);
             E->Push(functionRef);
         }
         return 1;
@@ -834,26 +786,21 @@ namespace LuaWorldObject
     /**
      * Removes the timed event from a [WorldObject] by the specified event ID
      *
-     * In multistate, this method is only available in the MAP states
-     *
      * @param int eventId : event Id to remove
      */
     int RemoveEventById(Eluna* E, WorldObject* obj)
     {
         int eventId = E->CHECKVAL<int>(2);
-        obj->elunaEvents->SetState(eventId, LUAEVENT_STATE_ABORT);
+        obj->GetElunaEvents(E->GetBoundMapId())->SetState(eventId, LUAEVENT_STATE_ABORT);
         return 0;
     }
 
     /**
      * Removes all timed events from a [WorldObject]
-     *
-     * In multistate, this method is only available in the MAP states
-     *
      */
-    int RemoveEvents(Eluna* /*E*/, WorldObject* obj)
+    int RemoveEvents(Eluna* E, WorldObject* obj)
     {
-        obj->elunaEvents->SetStates(LUAEVENT_STATE_ABORT);
+        obj->GetElunaEvents(E->GetBoundMapId())->SetStates(LUAEVENT_STATE_ABORT);
         return 0;
     }
 
@@ -1193,9 +1140,6 @@ namespace LuaWorldObject
         // Getters
         { "GetName", &LuaWorldObject::GetName },
         { "GetMap", &LuaWorldObject::GetMap },
-        { "SetPhaseId", &LuaWorldObject::SetPhaseId },
-        { "RemoveAllPhase", &LuaWorldObject::RemoveAllPhase },
-        { "RemovePhaseId", &LuaWorldObject::RemovePhaseId },
         { "GetPhaseMask", &LuaWorldObject::GetPhaseMask },
         { "SetPhaseMask", &LuaWorldObject::SetPhaseMask },
         { "GetInstanceId", &LuaWorldObject::GetInstanceId },
@@ -1240,15 +1184,13 @@ namespace LuaWorldObject
         { "SummonGameObject", &LuaWorldObject::SummonGameObject },
         { "SpawnCreature", &LuaWorldObject::SpawnCreature },
         { "SendPacket", &LuaWorldObject::SendPacket },
-        { "RegisterEvent", &LuaWorldObject::RegisterEvent, METHOD_REG_MAP }, // Map state method only in multistate
-        { "RemoveEventById", &LuaWorldObject::RemoveEventById, METHOD_REG_MAP }, // Map state method only in multistate
-        { "RemoveEvents", &LuaWorldObject::RemoveEvents, METHOD_REG_MAP }, // Map state method only in multistate
+        { "RegisterEvent", &LuaWorldObject::RegisterEvent },
+        { "RemoveEventById", &LuaWorldObject::RemoveEventById },
+        { "RemoveEvents", &LuaWorldObject::RemoveEvents },
         { "PlayMusic", &LuaWorldObject::PlayMusic },
         { "PlayDirectSound", &LuaWorldObject::PlayDirectSound },
         { "PlayDistanceSound", &LuaWorldObject::PlayDistanceSound },
-        { "Data", &LuaWorldObject::Data },
-
-        { NULL, NULL, METHOD_REG_NONE }
+        { "Data", &LuaWorldObject::Data }
     };
 };
 #endif
