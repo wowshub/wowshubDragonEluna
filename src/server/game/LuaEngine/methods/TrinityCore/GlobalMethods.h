@@ -79,7 +79,7 @@ namespace LuaGlobalFunctions
      */
     int GetCoreExpansion(Eluna* E)
     {
-        E->Push(2);
+        E->Push(sConfigMgr->GetIntDefault("Expansion", CURRENT_EXPANSION));
         return 1;
     }
 
@@ -90,7 +90,7 @@ namespace LuaGlobalFunctions
      */
     int GetStateMap(Eluna* E)
     {
-        E->Push(sConfigMgr->GetIntDefault("Expansion", CURRENT_EXPANSION));;
+        E->Push(E->GetBoundMap());;
         return 1;
     }
 
