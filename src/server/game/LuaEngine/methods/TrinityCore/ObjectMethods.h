@@ -24,7 +24,6 @@
  */
 namespace LuaObject
 {
-
     /**
      * Returns `true` if the [Object] has been added to its [Map], otherwise `false`.
      *
@@ -101,17 +100,16 @@ namespace LuaObject
     /**
      * Returns the TypeId of the [Object].
      *
-     *     enum TypeID
-     *     {
-     *         TYPEID_OBJECT        = 0,
-     *         TYPEID_ITEM          = 1,
-     *         TYPEID_CONTAINER     = 2,
-     *         TYPEID_UNIT          = 3,
-     *         TYPEID_PLAYER        = 4,
-     *         TYPEID_GAMEOBJECT    = 5,
-     *         TYPEID_DYNAMICOBJECT = 6,
-     *         TYPEID_CORPSE        = 7
-     *     };
+     * @table
+     * @columns [TypeID, ID]
+     * @values [TYPEID_OBJECT, 0]
+     * @values [TYPEID_ITEM, 1]
+     * @values [TYPEID_CONTAINER, 2]
+     * @values [TYPEID_UNIT, 3]
+     * @values [TYPEID_PLAYER, 4]
+     * @values [TYPEID_GAMEOBJECT, 5]
+     * @values [TYPEID_DYNAMICOBJECT, 6]
+     * @values [TYPEID_CORPSE, 7]
      *
      * @return uint8 typeID
      */
@@ -219,9 +217,7 @@ namespace LuaObject
         { "ToUnit", &LuaObject::ToUnit },
         { "ToCreature", &LuaObject::ToCreature },
         { "ToPlayer", &LuaObject::ToPlayer },
-        { "ToCorpse", &LuaObject::ToCorpse },
-
-        { NULL, NULL, METHOD_REG_NONE }
+        { "ToCorpse", &LuaObject::ToCorpse }
     };
 };
 #endif

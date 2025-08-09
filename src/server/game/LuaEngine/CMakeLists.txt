@@ -1,3 +1,12 @@
+set(CUSTOM_METHODS_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/methods/Custom/CustomMethods.h")
+if(EXISTS "${CUSTOM_METHODS_HEADER}")
+	if(NOT ${LUA_VERSION} MATCHES "luajit")
+	target_compile_definitions(lualib PUBLIC ELUNA_USE_CUSTOM_METHODS)
+	else()
+    target_compile_definitions(lualib INTERFACE ELUNA_USE_CUSTOM_METHODS)
+  endif()
+endif()
+
 # Define variables for paths
 set(MODULES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/modules")
 if(UNIX)

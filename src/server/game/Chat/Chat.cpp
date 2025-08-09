@@ -33,9 +33,6 @@
 #include "StringConvert.h"
 #include "World.h"
 #include "WorldSession.h"
-#ifdef ELUNA
-#include "LuaEngine.h"
-#endif
 #include <boost/algorithm/string/replace.hpp>
 #include <sstream>
 

@@ -169,28 +169,6 @@ namespace LuaSpell
         spell->finish();
         return 0;
     }
-
-    int GetMountDisplay(Eluna* E, Spell* spell)
-    {
-        MountEntry const* mountEntry = sDB2Manager.GetMount(spell->m_spellInfo->Id);
-        uint32 displayId = 0;
-        if (!mountEntry->GetFlags().HasFlag(MountFlags::IsSelfMount))
-        {
-            DB2Manager::MountXDisplayContainer const* mountDisplays = sDB2Manager.GetMountDisplays(mountEntry->ID);
-            DB2Manager::MountXDisplayContainer usableDisplays;
-            std::copy(mountDisplays->begin(), mountDisplays->end(), std::back_inserter(usableDisplays));
-            displayId = Trinity::Containers::SelectRandomContainerElement(usableDisplays)->CreatureDisplayInfoID;
-        }
-        E->Push(displayId);
-        return 1;
-    }
-
-    int IsMountSummon(Eluna* E, Spell* spell)
-    {
-        SpellInfo const* spellInfo = spell->m_spellInfo;
-        E->Push((spellInfo->GetEffectMechanic(EFFECT_0) == MECHANIC_MOUNT));
-        return 1;
-    }
     
     ElunaRegister<Spell> SpellMethods[] =
     {
@@ -202,21 +180,17 @@ namespace LuaSpell
         { "GetPowerCost", &LuaSpell::GetPowerCost },
         { "GetTargetDest", &LuaSpell::GetTargetDest },
         { "GetTarget", &LuaSpell::GetTarget },
-        { "GetMountDisplay", &LuaSpell::GetMountDisplay },
 
         // Setters
         { "SetAutoRepeat", &LuaSpell::SetAutoRepeat },
 
         // Boolean
         { "IsAutoRepeat", &LuaSpell::IsAutoRepeat },
-        { "IsMountSummon", &LuaSpell::IsMountSummon },
 
         // Other
         { "Cancel", &LuaSpell::Cancel },
         { "Cast", &LuaSpell::Cast },
-        { "Finish", &LuaSpell::Finish },
-
-        { NULL, NULL, METHOD_REG_NONE }
+        { "Finish", &LuaSpell::Finish }
     };
 };
 #endif

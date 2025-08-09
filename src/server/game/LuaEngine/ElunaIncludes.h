@@ -10,12 +10,12 @@
 // Required
 #include "AccountMgr.h"
 #include "AuctionHouseMgr.h"
+#include "Bag.h"
 #include "Cell.h"
 #include "CellImpl.h"
-#include "Chat.h"
 #include "Channel.h"
+#include "Chat.h"
 #include "DB2Stores.h"
-
 #include "GameEventMgr.h"
 #include "GossipDef.h"
 #include "GridNotifiers.h"
@@ -25,47 +25,42 @@
 #include "GuildMgr.h"
 #include "Language.h"
 #include "Mail.h"
+#include "MapManager.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "Opcodes.h"
-#include "Player.h"
 #include "Pet.h"
+#include "Player.h"
 #include "ReputationMgr.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "SpellAuras.h"
 #include "SpellMgr.h"
 #include "TemporarySummon.h"
-#include "WorldSession.h"
 #include "WorldPacket.h"
-
-#include "SpellHistory.h"
-#include "MiscPackets.h"
-
-#include "MapManager.h"
-
+#include "WorldSession.h"
+#include "Battleground.h"
 #include "Config.h"
-#include "GameEventMgr.h"
+#include "DatabaseEnv.h"
 #include "GitRevision.h"
 #include "GroupMgr.h"
+#include "MiscPackets.h"
+#include "MotionMaster.h"
 #include "ScriptedCreature.h"
+#include "SpellHistory.h"
 #include "SpellInfo.h"
 #include "WeatherMgr.h"
-#include "Battleground.h"
-#include "MotionMaster.h"
-#include "DatabaseEnv.h"
-#include "Bag.h"
-
-#include "Vehicle.h"
 #include "ArenaTeam.h"
+#include "Vehicle.h"
 
-typedef OpcodeServer            OpcodesList;
+typedef OpcodeServer OpcodesList;
 
 /*
  * Note: if you add or change a CORE_NAME or CORE_VERSION #define,
  *   please update LuaGlobalFunctions::GetCoreName or LuaGlobalFunctions::GetCoreVersion documentation example string.
  */
 #define CORE_NAME               "TrinityCore"
+#define REGEN_TIME_FULL
 #define CORE_VERSION            (GitRevision::GetFullVersion())
 #define eWorld                  (sWorld)
 #define eMapMgr                 (sMapMgr)
@@ -75,6 +70,5 @@ typedef OpcodeServer            OpcodesList;
 #define eAuctionMgr             (sAuctionMgr)
 #define eGameEventMgr           (sGameEventMgr)
 #define eObjectAccessor()       ObjectAccessor::
-#define REGEN_TIME_FULL
 
 #endif // _ELUNA_INCLUDES_H

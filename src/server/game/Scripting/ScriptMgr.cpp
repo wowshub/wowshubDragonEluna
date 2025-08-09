@@ -1667,15 +1667,7 @@ void ScriptMgr::OnDestroyMap(Map* map)
 
 #ifdef ELUNA
     if (Eluna* e = map->GetEluna())
-    {
         e->OnDestroy(map);
-
-        if (map->IsBattleground())
-        {
-            Battleground* bg = map->ToBattlegroundMap()->GetBG();
-            e->OnBGDestroy(bg, bg->GetTypeID(), bg->GetInstanceID());
-        }
-    }
 #endif
 
     ForEachMapScript([](auto* script, auto* map) { script->OnDestroy(map); }, map);
@@ -1718,10 +1710,8 @@ void ScriptMgr::OnMapUpdate(Map* map, uint32 diff)
 #ifdef ELUNA
     if (Eluna* e = map->GetEluna())
     {
-        if (!sElunaConfig->IsElunaCompatibilityMode())
-            e->UpdateEluna(diff);
-
-        e->OnUpdate(map, diff);
+        e->UpdateEluna(diff);
+        e->OnMapUpdate(map, diff);
     }
 #endif
 
@@ -1993,11 +1983,6 @@ void ScriptMgr::OnAuctionAdd(AuctionHouseObject* ah, AuctionPosting* auction)
     ASSERT(ah);
     ASSERT(auction);
 
-#ifdef ELUNA
-    if (Eluna* e = sWorld->GetEluna())
-        e->OnAdd(ah, auction);
-#endif
-
     FOREACH_SCRIPT(AuctionHouseScript)->OnAuctionAdd(ah, auction);
 }
 
@@ -2005,11 +1990,6 @@ void ScriptMgr::OnAuctionRemove(AuctionHouseObject* ah, AuctionPosting* auction)
 {
     ASSERT(ah);
     ASSERT(auction);
-
-#ifdef ELUNA
-    if (Eluna* e = sWorld->GetEluna())
-        e->OnRemove(ah, auction);
-#endif
 
     FOREACH_SCRIPT(AuctionHouseScript)->OnAuctionRemove(ah, auction);
 }
@@ -2019,11 +1999,6 @@ void ScriptMgr::OnAuctionSuccessful(AuctionHouseObject* ah, AuctionPosting* auct
     ASSERT(ah);
     ASSERT(auction);
 
-#ifdef ELUNA
-    if (Eluna* e = sWorld->GetEluna())
-        e->OnSuccessful(ah, auction);
-#endif
-
     FOREACH_SCRIPT(AuctionHouseScript)->OnAuctionSuccessful(ah, auction);
 }
 
@@ -2031,11 +2006,6 @@ void ScriptMgr::OnAuctionExpire(AuctionHouseObject* ah, AuctionPosting* auction)
 {
     ASSERT(ah);
     ASSERT(auction);
-
-#ifdef ELUNA
-    if (Eluna* e = sWorld->GetEluna())
-        e->OnExpire(ah, auction);
-#endif
 
     FOREACH_SCRIPT(AuctionHouseScript)->OnAuctionExpire(ah, auction);
 }

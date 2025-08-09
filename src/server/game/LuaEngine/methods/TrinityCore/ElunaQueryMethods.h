@@ -25,7 +25,7 @@ namespace LuaQuery
         if (field >= count)
         {
             char arr[256];
-            sprintf(arr, "trying to access invalid field index {}. There are {} fields available and the indexes start from 0", field, count);
+            sprintf(arr, "trying to access invalid field index %u. There are %u fields available and the indexes start from 0", field, count);
             luaL_argerror(E->L, 2, arr);
         }
     }
@@ -328,7 +328,7 @@ namespace LuaQuery
         lua_settop(E->L, tbl);
         return 1;
     }
-    
+
     ElunaRegister<ElunaQuery> QueryMethods[] =
     {
         // Getters
@@ -350,9 +350,7 @@ namespace LuaQuery
 
         // Boolean
         { "NextRow", &LuaQuery::NextRow },
-        { "IsNull", &LuaQuery::IsNull },
-
-        { NULL, NULL, METHOD_REG_NONE }
+        { "IsNull", &LuaQuery::IsNull }
     };
 };
 #undef RESULT

@@ -184,12 +184,6 @@ World::World()
 /// World destructor
 World::~World()
 {
-#ifdef ELUNA
-    // Delete world Eluna state
-    delete eluna;
-    eluna = nullptr;
-#endif
-
     ///- Empty the kicked session set
     while (!m_sessions.empty())
     {
@@ -1296,6 +1290,14 @@ bool World::SetInitialWorldSettings()
     {
         TC_LOG_INFO("server.loading", "Loading Lua scripts...");
         sElunaLoader->LoadScripts();
+
+#if defined ELUNA_TRINITY
+        if (sElunaConfig->GetConfig(CONFIG_ELUNA_SCRIPT_RELOADER))
+        {
+            TC_LOG_INFO("server.loading", "Loading Eluna script reloader...");
+            sElunaLoader->InitializeFileWatcher();
+        }
+#endif
     }
 #endif
 
@@ -1951,7 +1953,7 @@ bool World::SetInitialWorldSettings()
     if (sElunaConfig->IsElunaEnabled())
     {
         TC_LOG_INFO("server.loading", "Starting Eluna world state...");
-        eluna = new Eluna(nullptr, sElunaConfig->IsElunaCompatibilityMode());
+        eluna = std::make_unique<Eluna>(nullptr);
     }
 #endif
 
