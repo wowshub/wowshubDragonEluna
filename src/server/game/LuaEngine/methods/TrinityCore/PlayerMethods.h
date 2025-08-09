@@ -2748,7 +2748,7 @@ namespace LuaPlayer
     int Say(Eluna* E, Player* player)
     {
         std::string text = E->CHECKVAL<std::string>(2);
-        uint32 lang = E->CHECKVAL<uint32>(3);
+        uint32 lang = E->CHECKVAL<uint32>(3, 0);
 
         player->Say(text, (Language)lang);
         return 0;

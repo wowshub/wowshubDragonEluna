@@ -229,7 +229,6 @@ public:
     static bool HandleBarberCommand(ChatHandler* handler)
     {
         WorldPackets::Misc::EnableBarberShop packet;
-        packet.CustomizationFeatureMask = 0x7FFFFFFF;
         handler->GetSession()->GetPlayer()->SendDirectMessage(packet.Write());
 
         return true;
