@@ -1409,7 +1409,7 @@ public:
     bool Validate(SpellInfo const* spellInfo) override
     {
         return ValidateSpellInfo({ SPELL_DRUID_NATURES_GRACE_TALENT, SPELL_DRUID_DREAMSTATE })
-            && ValidateSpellEffect({ { spellInfo->Id, EFFECT_2 } });
+            && ValidateSpellEffect({ { spellInfo->Id, EFFECT_0 } });
     }
 
     static void Trigger(Unit* caster, AuraEffect const* naturesGraceEffect)

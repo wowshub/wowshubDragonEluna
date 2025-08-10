@@ -3708,6 +3708,7 @@ namespace LuaPlayer
     int RunCommand(Eluna* E, Player* player)
     {
         const char* command = E->CHECKVAL<const char*>(2);
+
         if (std::string(command).length() > 0)
             ChatHandler(player->GetSession())._ParseCommands(command);
         return 0;

@@ -2090,7 +2090,7 @@ class spell_hun_spearhead : public SpellScript
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_hun_spearhead::HandleDummy, EFFECT_5, SPELL_EFFECT_DUMMY);
+        OnEffectHitTarget += SpellEffectFn(spell_hun_spearhead::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
     }
 };
 

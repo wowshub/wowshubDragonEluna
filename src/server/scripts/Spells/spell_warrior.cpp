@@ -247,7 +247,7 @@ class spell_warr_bloodthirst : public SpellScript
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_warr_bloodthirst::CastHeal, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        OnEffectHitTarget += SpellEffectFn(spell_warr_bloodthirst::CastHeal, EFFECT_0, SPELL_EFFECT_APPLY_AURA);
         OnHit += SpellHitFn(spell_warr_bloodthirst::HandleOnHit);
     }
 };

@@ -4110,7 +4110,7 @@ void AddSC_priest_spell_scripts()
     RegisterSpellScript(spell_pri_shadow_word_death);
     RegisterSpellScript(spell_pri_surge_of_light);
     RegisterSpellScript(spell_pri_trail_of_light);
-    RegisterSpellScript(spell_pri_train_of_thought);
+    //RegisterSpellScript(spell_pri_train_of_thought); - not used in the game
     RegisterSpellScript(spell_pri_t3_4p_bonus);
     RegisterSpellScript(spell_pri_t5_heal_2p_bonus);
     RegisterSpellScript(spell_pri_t10_heal_2p_bonus);
