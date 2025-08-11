@@ -15549,14 +15549,6 @@ void Player::RewardQuest(Quest const* quest, LootItemType rewardType, uint32 rew
     uint32 quest_id = quest->GetQuestId();
     QuestStatus oldStatus = GetQuestStatus(quest_id);
 
-    uint32 XP = GetQuestXPReward(quest);
-
-    int32 moneyRew = 0;
-    if (!IsMaxLevel())
-        GiveXP(XP, nullptr);
-    else
-        moneyRew = int32(quest->GetRewMoneyMaxLevel() * sWorld->getRate(RATE_DROP_MONEY));
-
     if (quest->IsDaily() || quest->IsDFQuest())
     {
         SetDailyQuestStatus(quest_id);
@@ -15698,6 +15690,14 @@ void Player::RewardQuest(Quest const* quest, LootItemType rewardType, uint32 rew
 
     if (uint32 skill = quest->GetRewardSkillId())
         UpdateSkillPro(skill, 1000, quest->GetRewardSkillPoints());
+	
+    uint32 XP = GetQuestXPReward(quest);
+
+    int32 moneyRew = 0;
+    if (!IsMaxLevel())
+        GiveXP(XP, nullptr);
+    else
+        moneyRew = int32(quest->GetRewMoneyMaxLevel() * sWorld->getRate(RATE_DROP_MONEY));
 
     moneyRew += GetQuestMoneyReward(quest);
 
