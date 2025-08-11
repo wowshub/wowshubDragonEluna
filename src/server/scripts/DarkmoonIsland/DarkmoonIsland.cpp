@@ -154,6 +154,58 @@ public:
     }
 };
 
+// npc - 55229 55230 55231
+class npc_fire_eater_darkmoon : public CreatureScript
+{
+public:
+    npc_fire_eater_darkmoon() : CreatureScript("npc_fire_eater_darkmoon") {}
+
+    enum eNPC
+    {
+        SPELL_FIRE_BREATHING_SPELL = 102911,
+        EVENT_CAST_FIRE_EAT_SPELL = 101,
+    };
+
+    struct npc_fire_eater_darkmoonAI : public ScriptedAI
+    {
+        npc_fire_eater_darkmoonAI(Creature* creature) : ScriptedAI(creature) {}
+
+        EventMap events;
+
+        void Reset() override
+        {
+            events.Reset();
+            events.ScheduleEvent(EVENT_CAST_FIRE_EAT_SPELL,
+                Seconds(urand(5 * MINUTE, 7 * MINUTE)));
+        }
+
+        void UpdateAI(uint32 diff) override
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_CAST_FIRE_EAT_SPELL:
+                {
+                    me->CastSpell(me, SPELL_FIRE_BREATHING_SPELL, true);
+
+                    events.ScheduleEvent(EVENT_CAST_FIRE_EAT_SPELL,
+                        Seconds(urand(5 * MINUTE, 7 * MINUTE)));
+                    break;
+                }
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const override
+    {
+        return new npc_fire_eater_darkmoonAI(creature);
+    }
+};
+
 // 71992 - Moonfang <Darkmoon Den Mother>
 class boss_darkmoon_moonfang_mother : public CreatureScript
 {
@@ -658,6 +710,7 @@ public:
 void AddSC_darkmoon_island()
 {
     new npc_fire_juggler_darkmoon();
+    new npc_fire_eater_darkmoon();
     new boss_darkmoon_moonfang_mother();
 
     new spell_darkmoon_staging_area_teleport();

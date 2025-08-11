@@ -32079,7 +32079,7 @@ bool Player::TeleportToDigsiteInMap(uint32 mapId)
     if (sites.empty())
         return false;
 
-    uint32 site_id = Trinity::Containers::SelectRandomContainerElement(sites);
+    //uint32 site_id = Trinity::Containers::SelectRandomContainerElement(sites);
 
     MapEntry const* map = sMapStore.LookupEntry(mapId);
     if (!map)
