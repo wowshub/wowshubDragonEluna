@@ -2561,6 +2561,59 @@ bool ScriptMgr::OnQuestAccept(Player* player, Creature* creature, Quest const* q
     player->PlayerTalkClass->SendCloseGossip();
 }
 
+bool ScriptMgr::OnQuestAccept(Player* player, GameObject* go, Quest const* quest)
+{
+    ASSERT(player);
+    ASSERT(go);
+    ASSERT(quest);
+
+    GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
+    player->PlayerTalkClass->ClearMenus();
+    return tmpscript->OnQuestAccept(player, go, quest);
+
+    player->PlayerTalkClass->SendCloseGossip();
+}
+
+void ScriptMgr::OnQuestAccept(Player* player, const Quest* quest)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnQuestAccept(player, quest);
+
+    player->PlayerTalkClass->SendCloseGossip();
+}
+
+bool ScriptMgr::OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 opt)
+{
+    ASSERT(player);
+    ASSERT(creature);
+    ASSERT(quest);
+
+    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
+    player->PlayerTalkClass->ClearMenus();
+    return tmpscript->OnQuestReward(player, creature, quest, opt);
+
+    player->PlayerTalkClass->SendCloseGossip();
+}
+
+bool ScriptMgr::OnQuestReward(Player* player, GameObject* go, Quest const* quest, uint32 opt)
+{
+    ASSERT(player);
+    ASSERT(go);
+    ASSERT(quest);
+
+    GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
+    player->PlayerTalkClass->ClearMenus();
+    return tmpscript->OnQuestReward(player, go, quest, opt);
+
+    player->PlayerTalkClass->SendCloseGossip();
+}
+
+void ScriptMgr::OnQuestReward(Player* player, const Quest* quest)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnQuestReward(player, quest);
+
+    player->PlayerTalkClass->SendCloseGossip();
+}
+
 // Account
 void ScriptMgr::OnAccountLogin(uint32 accountId)
 {

@@ -487,6 +487,12 @@ class TC_GAME_API GameObjectScript : public ScriptObject
 
         // Called when a player selects a gossip with a code in the gameobject's gossip menu.
         virtual bool OnGossipSelectCode(Player* /*player*/, GameObject* /*go*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { return false; }
+
+        // Called when a player accepts a quest from the gameobject.
+        virtual bool OnQuestAccept(Player* /*player*/, GameObject* /*go*/, Quest const* /*quest*/) { return false; }
+
+        // Called when a player completes a quest and is rewarded, opt is the selected item's index or 0
+        virtual bool OnQuestReward(Player* /*player*/, GameObject* /*go*/, Quest const* /*quest*/, uint32 /*opt*/) { return false; }
 };
 
 class TC_GAME_API AreaTriggerScript : public ScriptObject
@@ -846,9 +852,17 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called when a player sits on a vehicle
         virtual void OnPlayerEnterVehicle(Player* /*player*/) { }
 
+        // Called when player learn spell
         virtual void OnSpellLearned(Player* /*player*/, uint32 /*spellID*/) { }
 
-        virtual void OnLogin(Player* /* player */) { }
+        // Called when player has quest removed from questlog (active or rewarded)
+        virtual void OnQuestAbandon(Player* /*player*/, Quest const* /*quest*/) { }
+
+        // Called when player accepts some quest
+        virtual void OnQuestAccept(Player* /*player*/, Quest const* /*quest*/) { }
+
+        // Called when player rewards some quest
+        virtual void OnQuestReward(Player* /*player*/, Quest const* /*quest*/) { }
 };
 
 class TC_GAME_API AccountScript : public ScriptObject
@@ -1402,6 +1416,11 @@ class TC_GAME_API ScriptMgr
 
     public:
         bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest);
+        bool OnQuestAccept(Player* player, GameObject* go, Quest const* quest);
+        void OnQuestAccept(Player* player, const Quest* quest);
+        bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 opt);
+        bool OnQuestReward(Player* player, GameObject* go, Quest const* quest, uint32 opt);
+        void OnQuestReward(Player* player, const Quest* quest);
         void OnPlayerTakeDamage(Player* player, uint32 damage, SpellSchoolMask schoolMask);
 };
 
