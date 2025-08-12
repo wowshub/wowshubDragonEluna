@@ -304,9 +304,9 @@ class spell_darkmoon_lasso_powerup : public SpellScript
 
         Position CasterPos = Caster->GetPosition();
 
-        /*if (Unit* Target = GetHitUnit())
+        if (Unit* Target = GetHitUnit())
             if (Creature* PowerUpHit = Target->ToCreature())
-                Caster->SummonCreature(PowerUpHit->GetEntry(), CasterPos, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 2000ms, 0, Caster->GetGUID());*/
+                Caster->SummonCreature(PowerUpHit->GetEntry(), CasterPos, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 2000ms);
     }
 
     void Register() override
