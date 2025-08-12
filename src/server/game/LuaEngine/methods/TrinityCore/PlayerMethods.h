@@ -2996,12 +2996,14 @@ namespace LuaPlayer
      *
      * @param uint32 entry : entry of the item to add
      * @param uint32 itemCount = 1 : amount of the item to add
+     * @param uint32 bonusId : item source bonus id
      * @return [Item] item : the item that was added or nil
      */
     int AddItem(Eluna* E, Player* player)
     {
         uint32 itemId = E->CHECKVAL<uint32>(2);
         uint32 itemCount = E->CHECKVAL<uint32>(3, 1);
+        uint32 bonusId = E->CHECKVAL<uint32>(4, 0);
 
         uint32 noSpaceForCount = 0;
         ItemPosCountVec dest;
@@ -3012,10 +3014,19 @@ namespace LuaPlayer
         if (itemCount == 0 || dest.empty())
             return 1;
 
-        Item* item = player->StoreNewItem(dest, itemId, true, GenerateItemRandomBonusListId(itemId));
+        Item* item;
 
-        if (item)
-            player->SendNewItem(item, itemCount, true, false);
+        if (bonusId != 0)
+        {
+            player->AddItemBonus(itemId, itemCount, bonusId);
+        }
+        else
+        {
+            item = player->StoreNewItem(dest, itemId, true, GenerateItemRandomBonusListId(itemId));
+
+            if (item)
+                player->SendNewItem(item, itemCount, true, false);
+        };
 
         E->Push(item);
         return 1;

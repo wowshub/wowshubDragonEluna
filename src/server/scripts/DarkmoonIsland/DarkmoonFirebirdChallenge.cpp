@@ -177,7 +177,7 @@ public:
                     CloseGossipMenuFor(player);
 
                     player->DestroyItemCount(ITEM_DARKMOON_TOKEN, 1, true);
-                    player->CastSpell(player, WINGS_OF_FLAME_START, true);
+                    player->CastSpell(player, SPELL_WINGS_OF_FLAME_START, true);
                 }
                 break;
                 // I understand
@@ -212,13 +212,13 @@ public:
             if (!caster)
                 return;
 
-            std::vector<AreaTrigger*> areatriggerlist = caster->GetAreaTriggers(SUMMON_RINGS_AT);
+            std::vector<AreaTrigger*> areatriggerlist = caster->GetAreaTriggers(SPELL_SUMMON_RINGS_AT);
 
             for (AreaTrigger* areatrigger : areatriggerlist)
                 areatrigger->RemoveFromWorld();
 
-            caster->RemoveAurasDueToSpell(BLAZING_RING);
-            caster->CastSpell(caster, SLOW_FALL, true);
+            caster->RemoveAurasDueToSpell(SPELL_BLAZING_RING);
+            caster->CastSpell(caster, SPELL_SLOW_FALL, true);
         }
 
 
@@ -255,7 +255,7 @@ public:
 
             for (Position const& spawnPoint : areatrigger_firebird_challenge_list)
             {
-                caster->CastSpell(spawnPoint, SUMMON_RINGS_AT, true);
+                caster->CastSpell(spawnPoint, SPELL_SUMMON_RINGS_AT, true);
             }
         }
 
@@ -298,11 +298,11 @@ public:
             if (!caster->ToPlayer())
                 return;
 
-            caster->CastSpell(caster, BLAZING_RING, true);
-            caster->CastSpell(caster, WINGS_OF_FLAME_AURA, true);
+            caster->CastSpell(caster, SPELL_BLAZING_RING, true);
+            caster->CastSpell(caster, SPELL_WINGS_OF_FLAME_AURA, true);
             at->RemoveFromWorld();
 
-            if (Aura* shootAura = caster->GetAura(BLAZING_RING))
+            if (Aura* shootAura = caster->GetAura(SPELL_BLAZING_RING))
             {
 
                 Player* pl = caster->ToPlayer();
