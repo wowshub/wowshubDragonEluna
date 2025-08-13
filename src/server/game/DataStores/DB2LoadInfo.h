@@ -4053,7 +4053,7 @@ struct ModelFileDataLoadInfo
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "Geobox4" },
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "Geobox5" },
 		{ .IsSigned = false, .Type = FT_INT, .Name = "ID" },
-		{ .IsSigned = false, .Type = FT_INT, .Name = "Flags" },
+		{ .IsSigned = true, .Type = FT_INT, .Name = "Flags" },
 		{ .IsSigned = false, .Type = FT_BYTE, .Name = "LogCount" },
 		{ .IsSigned = false, .Type = FT_INT, .Name = "ModelResourcesID" },
 	};
