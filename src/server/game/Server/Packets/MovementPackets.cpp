@@ -1042,6 +1042,11 @@ WorldPacket const* MoveUpdateRemoveMovementForce::Write()
     return &_worldPacket;
 }
 
+void DiscardedTimeSyncAcks::Read()
+{
+    _worldPacket >> MaxSequenceIndex;
+}
+
 void MoveSetCollisionHeightAck::Read()
 {
     _worldPacket >> Data;
@@ -1208,5 +1213,14 @@ WorldPacket const* MoveSetCompoundState::Write()
 void MoveInitActiveMoverComplete::Read()
 {
     _worldPacket >> Ticks;
+}
+
+WorldPacket const* MoveAddImpulse::Write()
+{
+    _worldPacket << MoverGUID;
+    _worldPacket << uint32(SequenceIndex);
+    _worldPacket << Direction;
+
+    return &_worldPacket;
 }
 }

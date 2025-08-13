@@ -1233,7 +1233,6 @@ public:
         sArtifactPowerStore.LoadFromDB();
         sArtifactPowerPickerStore.LoadFromDB();
         sAuctionHouseStore.LoadFromDB();
-        sBankBagSlotPricesStore.LoadFromDB();
         sBroadcastTextStore.LoadFromDB();
         sCharTitlesStore.LoadFromDB();
         sChatChannelsStore.LoadFromDB();
