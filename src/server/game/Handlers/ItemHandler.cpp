@@ -1685,32 +1685,6 @@ void WorldSession::HandleSortBankBags(WorldPackets::Item::SortBankBags& /*sortBa
     SendPacket(WorldPackets::Item::BagCleanupFinished().Write());
 }
 
-void WorldSession::HandleSortReagentBankBags(WorldPackets::Item::SortReagentBankBags& /*sortReagentBankBags*/)
-{
-    std::multimap<uint64, Item*> items;
-    uint32 sortOrderHi;
-    uint32 sortOrderLo;
-    uint64 sortOrder;
-
-    //save all the items in all bags into a multimap: items and remove items from bank
-    for (uint8 slot = REAGENT_SLOT_START; slot < REAGENT_SLOT_END; ++slot)
-    {
-        if (Item* item = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-        {
-            sortOrderLo = (UINT32_MAX - item->GetEntry());
-            sortOrderHi = item->GetTemplate()->GetClass() << 16 | (MAX_ITEM_SUBCLASS_TRADE_GOODS - item->GetTemplate()->GetSubClass());
-            sortOrder = (static_cast<uint64>(sortOrderHi) << 32) | sortOrderLo;
-            items.insert(std::make_pair(sortOrder, item));
-            _player->RemoveItem(INVENTORY_SLOT_BAG_0, item->GetSlot(), true);
-        }
-    }
-
-    for (auto itr = std::begin(items); itr != std::end(items); ++itr)
-        _player->StoreItemInReagentBank(itr->second);
-
-    SendPacket(WorldPackets::Item::BagCleanupFinished().Write());
-}
-
 void WorldSession::HandleRemoveNewItem(WorldPackets::Item::RemoveNewItem& removeNewItem)
 {
     Item* item = _player->GetItemByGuid(removeNewItem.ItemGuid);
@@ -1749,29 +1723,6 @@ void WorldSession::HandleChangeBagSlotFlag(WorldPackets::Item::ChangeBagSlotFlag
     }
     else
         _player->RemoveBagSlotFlag(changeBagSlotFlag.BagIndex, changeBagSlotFlag.FlagToChange);
-}
-
-void WorldSession::HandleChangeBankBagSlotFlag(WorldPackets::Item::ChangeBankBagSlotFlag const& changeBankBagSlotFlag)
-{
-    if (changeBankBagSlotFlag.BagIndex >= _player->m_activePlayerData->BankBagSlotFlags.size())
-        return;
-
-    if (changeBankBagSlotFlag.On)
-    {
-        if (_player->GetBankBagSlotFlags(changeBankBagSlotFlag.BagIndex).HasFlag(BagSlotFlags::PriorityConsumables))
-            _player->RemoveBankBagSlotFlag(changeBankBagSlotFlag.BagIndex, BagSlotFlags::PriorityConsumables);
-        if (_player->GetBankBagSlotFlags(changeBankBagSlotFlag.BagIndex).HasFlag(BagSlotFlags::PriorityEquipment))
-            _player->RemoveBankBagSlotFlag(changeBankBagSlotFlag.BagIndex, BagSlotFlags::PriorityEquipment);
-        if (_player->GetBankBagSlotFlags(changeBankBagSlotFlag.BagIndex).HasFlag(BagSlotFlags::PriorityJunk))
-            _player->RemoveBankBagSlotFlag(changeBankBagSlotFlag.BagIndex, BagSlotFlags::PriorityJunk);
-        if (_player->GetBankBagSlotFlags(changeBankBagSlotFlag.BagIndex).HasFlag(BagSlotFlags::PriorityQuestItems))
-            _player->RemoveBankBagSlotFlag(changeBankBagSlotFlag.BagIndex, BagSlotFlags::PriorityQuestItems);
-        if (_player->GetBankBagSlotFlags(changeBankBagSlotFlag.BagIndex).HasFlag(BagSlotFlags::PriorityTradeGoods))
-            _player->RemoveBankBagSlotFlag(changeBankBagSlotFlag.BagIndex, BagSlotFlags::PriorityTradeGoods);
-        _player->SetBankBagSlotFlag(changeBankBagSlotFlag.BagIndex, changeBankBagSlotFlag.FlagToChange);
-    }
-    else
-        _player->RemoveBankBagSlotFlag(changeBankBagSlotFlag.BagIndex, changeBankBagSlotFlag.FlagToChange);
 }
 
 void WorldSession::HandleSetBackpackAutosortDisabled(WorldPackets::Item::SetBackpackAutosortDisabled const& setBackpackAutosortDisabled)
