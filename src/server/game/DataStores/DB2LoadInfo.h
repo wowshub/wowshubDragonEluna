@@ -4053,7 +4053,7 @@ struct ModelFileDataLoadInfo
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "Geobox4" },
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "Geobox5" },
 		{ .IsSigned = false, .Type = FT_INT, .Name = "ID" },
-		{ .IsSigned = false, .Type = FT_BYTE, .Name = "Flags" },
+		{ .IsSigned = false, .Type = FT_INT, .Name = "Flags" },
 		{ .IsSigned = false, .Type = FT_BYTE, .Name = "LogCount" },
 		{ .IsSigned = false, .Type = FT_INT, .Name = "ModelResourcesID" },
 	};
@@ -4133,7 +4133,7 @@ struct ModifiedCraftingReagentItemLoadInfo
  
 struct ModifiedCraftingReagentSlotLoadInfo
 {
-	static constexpr DB2FieldMeta Fields[6] =
+	static constexpr DB2FieldMeta Fields[7] =
 	{
 		{ .IsSigned = false, .Type = FT_STRING, .Name = "Name" },
 		{ .IsSigned = false, .Type = FT_INT, .Name = "ID" },
@@ -4141,9 +4141,10 @@ struct ModifiedCraftingReagentSlotLoadInfo
 		{ .IsSigned = true, .Type = FT_INT, .Name = "PlayerConditionID" },
 		{ .IsSigned = true, .Type = FT_INT, .Name = "ReagentType" },
 		{ .IsSigned = false, .Type = FT_BYTE, .Name = "Field_10_0_2_46091_005" },
+        { .IsSigned = true, .Type = FT_INT, .Name = "Field_11_2_0_61476_006" },
 	};
 
-	static constexpr DB2LoadInfo Instance{ Fields, 6, &ModifiedCraftingReagentSlotMeta::Instance, HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_SLOT };
+	static constexpr DB2LoadInfo Instance{ Fields, 7, &ModifiedCraftingReagentSlotMeta::Instance, HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_SLOT };
 };
 
 struct ModifiedCraftingSpellSlotLoadInfo
@@ -5440,7 +5441,7 @@ struct SoundKitEntryLoadInfo
  
 struct SoundKitAdvancedLoadInfo
 {
-	static constexpr DB2FieldMeta Fields[57] =
+	static constexpr DB2FieldMeta Fields[58] =
 	{
 		{ .IsSigned = false, .Type = FT_INT, .Name = "ID" },
 		{ .IsSigned = false, .Type = FT_INT, .Name = "SoundKitID" },
@@ -5464,6 +5465,7 @@ struct SoundKitAdvancedLoadInfo
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "DuckToSuppressors" },
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "DuckToCinematicSFX" },
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "DuckToCinematicMusic" },
+        { .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_11_2_0_61476_021" },
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "InnerRadiusOfInfluence" },
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "OuterRadiusOfInfluence" },
 		{ .IsSigned = false, .Type = FT_INT, .Name = "TimeToDuck" },
@@ -5501,7 +5503,7 @@ struct SoundKitAdvancedLoadInfo
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_9_1_0_38312_056" },
 	};
 
-	static constexpr DB2LoadInfo Instance{ Fields, 57, &SoundKitAdvancedMeta::Instance, HOTFIX_SEL_SOUND_KIT_ADVANCED };
+	static constexpr DB2LoadInfo Instance{ Fields, 58, &SoundKitAdvancedMeta::Instance, HOTFIX_SEL_SOUND_KIT_ADVANCED };
 };
 
 struct SpecializationSpellsLoadInfo

@@ -3055,7 +3055,7 @@ struct ModelFileDataEntry
 {
     std::array<float, 6> Geobox;
     uint32 ID;
-    uint8 Flags;
+    uint32 Flags;
     uint8 LogCount;
     uint32 ModelID;
 };
@@ -3113,6 +3113,7 @@ struct ModifiedCraftingReagentSlotEntry
     int32 PlayerConditionID;
     int32 ReagentType;
     int8 Field_10_0_2_46091_005;
+    int32 Field_11_2_0_61476_006;
 };
 
 struct ModifiedCraftingSpellSlotEntry
@@ -3964,6 +3965,7 @@ struct SoundKitAdvancedEntry
     float       DuckToSuppressors;
     float       DuckToCinematicSFX;
     float       DuckToCinematicMusic;
+    float       Field_11_2_0_61476_021;
     float       InnerRadiusOfInfluence;
     float       OuterRadiusOfInfluence;
     uint32      TimeToDuck;

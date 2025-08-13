@@ -148,6 +148,7 @@ CREATE TABLE `modified_crafting_reagent_slot` (
 	`PlayerConditionID` INT(10) NOT NULL DEFAULT '0',
 	`ReagentType` INT(10) NOT NULL DEFAULT '0',
 	`Field_10_0_2_46091_005` INT(10) NOT NULL DEFAULT '0',
+	`Field_11_2_0_61476_006` INT(10) NOT NULL DEFAULT '0',
 	`VerifiedBuild` INT(10) NOT NULL DEFAULT '0',
     PRIMARY KEY (`ID`,`VerifiedBuild`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

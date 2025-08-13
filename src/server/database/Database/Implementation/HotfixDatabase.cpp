@@ -1257,7 +1257,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_MODIFIED_CRAFTING_SPELL_SLOT, "SELECT MAX(ID) + 1 FROM modified_crafting_spell_slot", CONNECTION_SYNCH);
 
     // ModifiedCraftingReagentSlot.db2
-    PrepareStatement(HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_SLOT, "SELECT Name, ID, Field_9_0_1_33978_001, PlayerConditionID, ReagentType, Field_10_0_2_46091_005 "
+    PrepareStatement(HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_SLOT, "SELECT Name, ID, Field_9_0_1_33978_001, PlayerConditionID, ReagentType, Field_10_0_2_46091_005, Field_11_2_0_61476_006 "
         "FROM modified_crafting_reagent_slot WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_SLOT, "SELECT MAX(ID) + 1 FROM modified_crafting_reagent_slot", CONNECTION_SYNCH);
     PREPARE_LOCALE_STMT(HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_SLOT, "SELECT ID, Name_lang FROM modified_crafting_reagent_slot_locale WHERE (`VerifiedBuild` > 0) = ?"
@@ -1669,7 +1669,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     // SoundKitAdvanced.db2
     PrepareStatement(HOTFIX_SEL_SOUND_KIT_ADVANCED, "SELECT ID, SoundKitID, `InnerRadius2D`, `OuterRadius2D`, `TimeA`, `TimeB`, `TimeC`, `TimeD`, "
         "`RandomOffsetRange`, `Usage`, `TimeIntervalMin`, `TimeIntervalMax`, `DelayMin`, `DelayMax`, `VolumeSliderCategory`, `DuckToSFX`, `DuckToMusic`, "
-        "`DuckToAmbience`, `DuckToDialog`, `DuckToSuppressors`, `DuckToCinematicSFX`, `DuckToCinematicMusic`, `InnerRadiusOfInfluence`, `OuterRadiusOfInfluence`, "
+        "`DuckToAmbience`, `DuckToDialog`, `DuckToSuppressors`, `DuckToCinematicSFX`, `DuckToCinematicMusic`, `Field_11_2_0_61476_021`, `InnerRadiusOfInfluence`, `OuterRadiusOfInfluence`, "
         "`TimeToDuck`, `TimeToUnduck`, `InsideAngle`, `OutsideAngle`, `OutsideVolume`, `MinRandomPosOffset`, `MaxRandomPosOffset`, `MsOffset`, `TimeCooldownMin`, "
         "`TimeCooldownMax`, `MaxInstancesBehavior`, `VolumeControlType`, `VolumeFadeInTimeMin`, `VolumeFadeInTimeMax`, `VolumeFadeInCurveID`, "
         "`VolumeFadeOutTimeMin`, `VolumeFadeOutTimeMax`, `VolumeFadeOutCurveID`, `ChanceToPlay`, `RolloffType`, `RolloffParam0`, `Field_8_2_0_30080_045`, "

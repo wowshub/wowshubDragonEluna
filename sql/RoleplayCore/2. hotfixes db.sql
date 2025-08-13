@@ -179,6 +179,7 @@ CREATE TABLE `sound_kit_advanced`  (
   `DuckToSuppressors` float NOT NULL DEFAULT 0,
   `DuckToCinematicSFX` float NOT NULL DEFAULT 0,
   `DuckToCinematicMusic` float NOT NULL DEFAULT 0,
+  `Field_11_2_0_61476_021` float NOT NULL DEFAULT 0,
   `InnerRadiusOfInfluence` float NOT NULL DEFAULT 0,
   `OuterRadiusOfInfluence` float NOT NULL DEFAULT 0,
   `TimeToDuck` int UNSIGNED NOT NULL DEFAULT 0,
