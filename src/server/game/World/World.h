@@ -36,6 +36,7 @@
 #include <map>
 #include <memory>
 #include <unordered_map>
+#include <variant>
 #include <vector>
 
 #ifdef ELUNA
@@ -45,6 +46,7 @@ class Player;
 class WorldPacket;
 class WorldSession;
 class WorldSocket;
+enum class GameRule : int32;
 
 // ServerMessages.dbc
 enum ServerMessageType
@@ -796,6 +798,17 @@ class TC_GAME_API World
         void SetForcedWarModeFactionBalanceState(TeamId team, int32 reward = 0);
         void DisableForcedWarModeFactionBalanceState();
 
+        struct GameRule
+        {
+            ::GameRule Rule;
+            std::variant<int32, float, bool> Value;
+        };
+
+        std::vector<GameRule> const& GetGameRules() const
+        {
+            return _gameRules;
+        }
+
     protected:
         void _UpdateGameTime();
 
@@ -907,6 +920,8 @@ class TC_GAME_API World
         bool _guidAlert;
         uint32 _warnDiff;
         time_t _warnShutdownTime;
+
+        std::vector<GameRule> _gameRules;
 
         // War mode balancing
         void UpdateWarModeRewardValues();
