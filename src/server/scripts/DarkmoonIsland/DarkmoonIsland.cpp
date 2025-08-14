@@ -28,17 +28,13 @@
 #include "Transport.h"
 #include "DarkmoonIsland.h"
 #include "AchievementMgr.h"
-#include "ScriptMgr.h"
-#include "ScriptedGossip.h"
 #include "ScriptedCreature.h"
-#include "DarkmoonIsland.h"
 #include "Player.h"
 #include "GameObject.h"
 #include "GameObjectAI.h"
 #include "InstanceScript.h"
 #include "Log.h"
 #include "ObjectAccessor.h"
-#include "Player.h"
 #include "ScriptedEscortAI.h"
 #include "WorldSession.h"
 #include "Item.h"
@@ -48,12 +44,10 @@
 #include "AchievementPackets.h"
 #include "DB2HotfixGenerator.h"
 #include "DB2Stores.h"
-#include "CellImpl.h"
 #include "ChatTextBuilder.h"
 #include "Containers.h"
 #include "DatabaseEnv.h"
 #include "GameTime.h"
-#include "GridNotifiersImpl.h"
 #include "Group.h"
 #include "Guild.h"
 #include "GuildMgr.h"
@@ -67,10 +61,7 @@
 #include "AreaTriggerAI.h"
 #include "CreatureAI.h"
 #include "CreatureAIImpl.h"
-#include "SpellScript.h"
-#include "SpellAuras.h"
 #include "SharedDefines.h"
-#include "ObjectAccessor.h"
 #include "TemporarySummon.h"
 #include <sstream>
 
@@ -353,6 +344,7 @@ public:
             }
         }
     };
+
     CreatureAI* GetAI(Creature* creature) const override
     {
         return new boss_darkmoon_moonfang_motherAI(creature);
@@ -360,47 +352,36 @@ public:
 };
 
 // To the Staging Area! - 101260
-class spell_darkmoon_staging_area_teleport : public SpellScriptLoader
+class spell_darkmoon_staging_area_teleport : public SpellScript
 {
-public:
-    spell_darkmoon_staging_area_teleport() : SpellScriptLoader("spell_darkmoon_staging_area_teleport") { }
 
-    class spell_darkmoon_staging_area_teleport_SpellScript : public SpellScript
+    bool Load() override
     {
+        return GetCaster() != nullptr;
+    }
 
-        bool Load() override
+    void RelocateDest(SpellEffIndex /*effIndex*/)
+    {
+        if (Player* caster = GetCaster()->ToPlayer())
         {
-            return GetCaster() != nullptr;
-        }
-
-        void RelocateDest(SpellEffIndex /*effIndex*/)
-        {
-            if (Player* caster = GetCaster()->ToPlayer())
+            switch (caster->GetMapId())
             {
-                switch (caster->GetMapId())
-                {
-                    case 974: //Darkmoon Island
-                        if (caster->GetTeamId() == TEAM_HORDE)
-                            GetHitDest()->WorldRelocate(WorldLocation(1, -1454.415894f, 207.967484f, -7.790083f, 0.689538f));
-                        else
-                            GetHitDest()->WorldRelocate(WorldLocation(0, -9517.5f, 82.3f, 59.51f, 2.92168f));
-                        break;
-                    default:
-                        GetHitDest()->WorldRelocate(WorldLocation(974, -3618.669922f, 6315.669922f, 113.190002f, 3.204420f));
-                        break;
-                }
+                case 974: //Darkmoon Island
+                    if (caster->GetTeamId() == TEAM_HORDE)
+                        GetHitDest()->WorldRelocate(WorldLocation(1, -1454.415894f, 207.967484f, -7.790083f, 0.689538f));
+                    else
+                        GetHitDest()->WorldRelocate(WorldLocation(0, -9517.5f, 82.3f, 59.51f, 2.92168f));
+                    break;
+                default:
+                    GetHitDest()->WorldRelocate(WorldLocation(974, -3618.669922f, 6315.669922f, 113.190002f, 3.204420f));
+                    break;
             }
         }
+    }
 
-        void Register() override
-        {
-            OnEffectLaunch += SpellEffectFn(spell_darkmoon_staging_area_teleport_SpellScript::RelocateDest, EFFECT_0, SPELL_EFFECT_TELEPORT_UNITS);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
+    void Register() override
     {
-        return new spell_darkmoon_staging_area_teleport_SpellScript();
+        OnEffectLaunch += SpellEffectFn(spell_darkmoon_staging_area_teleport::RelocateDest, EFFECT_0, SPELL_EFFECT_TELEPORT_UNITS);
     }
 };
 
@@ -430,117 +411,84 @@ public:
 };
 
 // spells
-class spell_gen_repair_damaged_tonk : public SpellScriptLoader
+class spell_gen_repair_damaged_tonk : public SpellScript
 {
-public:
-    spell_gen_repair_damaged_tonk() : SpellScriptLoader("spell_gen_repair_damaged_tonk") {}
 
-    class spell_gen_repair_damaged_tonk_SpellScript : public SpellScript
+    SpellCastResult CheckRequirement()
     {
+        if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
+            return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
-        SpellCastResult CheckRequirement()
-        {
-            if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
-                return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+        return SPELL_CAST_OK;
+    }
 
-            return SPELL_CAST_OK;
-        }
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            Player* player = GetCaster()->ToPlayer();
-            Creature* target = GetHitCreature();
-
-            if (!target)
-                return;
-
-            player->KilledMonsterCredit(54504, ObjectGuid::Empty);
-
-            Position myPos = target->GetPosition();
-            target->SummonCreature(55356, myPos, TEMPSUMMON_TIMED_DESPAWN, 30000ms);
-            target->DespawnOrUnsummon();
-        }
-
-        void Register()
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_gen_repair_damaged_tonk_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            OnCheckCast += SpellCheckCastFn(spell_gen_repair_damaged_tonk_SpellScript::CheckRequirement);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
+    void HandleDummy(SpellEffIndex /*effIndex*/)
     {
-        return new spell_gen_repair_damaged_tonk_SpellScript();
+        Player* player = GetCaster()->ToPlayer();
+        Creature* target = GetHitCreature();
+
+        if (!target)
+            return;
+
+        player->KilledMonsterCredit(54504, ObjectGuid::Empty);
+
+        Position myPos = target->GetPosition();
+        target->SummonCreature(55356, myPos, TEMPSUMMON_TIMED_DESPAWN, 30000ms);
+        target->DespawnOrUnsummon();
+    }
+
+    void Register()
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_gen_repair_damaged_tonk::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnCheckCast += SpellCheckCastFn(spell_gen_repair_damaged_tonk::CheckRequirement);
     }
 };
 
-class spell_gen_shoe_baby : public SpellScriptLoader
+class spell_gen_shoe_baby : public SpellScript
 {
-public:
-    spell_gen_shoe_baby() : SpellScriptLoader("spell_gen_shoe_baby") {}
 
-    class spell_gen_shoe_baby_SpellScript : public SpellScript
+    SpellCastResult CheckRequirement()
     {
+        if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
+            return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
-        SpellCastResult CheckRequirement()
-        {
-            if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
-                return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+        return SPELL_CAST_OK;
+    }
 
-            return SPELL_CAST_OK;
-        }
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            Player* player = GetCaster()->ToPlayer();
-            player->KilledMonsterCredit(54510, ObjectGuid::Empty);
-        }
-
-        void Register()
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_gen_shoe_baby_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            OnCheckCast += SpellCheckCastFn(spell_gen_shoe_baby_SpellScript::CheckRequirement);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
+    void HandleDummy(SpellEffIndex /*effIndex*/)
     {
-        return new spell_gen_shoe_baby_SpellScript();
+        Player* player = GetCaster()->ToPlayer();
+        player->KilledMonsterCredit(54510, ObjectGuid::Empty);
+    }
+
+    void Register()
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_gen_shoe_baby::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnCheckCast += SpellCheckCastFn(spell_gen_shoe_baby::CheckRequirement);
     }
 };
 
-class spell_cook_crunchy_frog : public SpellScriptLoader
+class spell_cook_crunchy_frog : public SpellScript
 {
-public:
-    spell_cook_crunchy_frog() : SpellScriptLoader("spell_cook_crunchy_frog") {}
 
-    class spell_cook_crunchy_frog_SpellScript : public SpellScript
+    SpellCastResult CheckRequirement()
     {
+        if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
+            return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
-        SpellCastResult CheckRequirement()
-        {
-            if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
-                return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+        return SPELL_CAST_OK;
+    }
 
-            return SPELL_CAST_OK;
-        }
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            Player* player = GetCaster()->ToPlayer();
-            player->AddItem(72058, 1);
-        }
-
-        void Register()
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_cook_crunchy_frog_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            OnCheckCast += SpellCheckCastFn(spell_cook_crunchy_frog_SpellScript::CheckRequirement);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
+    void HandleDummy(SpellEffIndex /*effIndex*/)
     {
-        return new spell_cook_crunchy_frog_SpellScript();
+        Player* player = GetCaster()->ToPlayer();
+        player->AddItem(72058, 1);
+    }
+
+    void Register()
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_cook_crunchy_frog::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnCheckCast += SpellCheckCastFn(spell_cook_crunchy_frog::CheckRequirement);
     }
 };
 
@@ -553,174 +501,161 @@ enum InjuriedCarnieYells
     SAY_GREETINGS_5 = 4,
 };
 
-class spell_heal_injuried_carnie : public SpellScriptLoader
+class spell_heal_injuried_carnie : public SpellScript
 {
-public:
-    spell_heal_injuried_carnie() : SpellScriptLoader("spell_heal_injuried_carnie") {}
 
-    class spell_heal_injuried_carnie_SpellScript : public SpellScript
+    SpellCastResult CheckRequirement()
     {
+        if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
+            return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
-        SpellCastResult CheckRequirement()
-        {
-            if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
-                return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+        return SPELL_CAST_OK;
+    }
 
-            return SPELL_CAST_OK;
-        }
-
-        void HandleHealPct(SpellEffIndex /*effIndex*/)
-        {
-            Player* player = GetCaster()->ToPlayer();
-            Creature* target = GetHitCreature();
-
-            player->KilledMonsterCredit(54518, ObjectGuid::Empty);
-
-            if (!target)
-                return;
-
-            switch (urand(0, 4))
-            {
-            case 0:
-                target->AI()->Talk(SAY_GREETINGS_1);
-                target->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
-                target->GetMotionMaster()->MoveRandom(30);
-                target->DespawnOrUnsummon(8000ms);
-                break;
-            case 1:
-                target->AI()->Talk(SAY_GREETINGS_2);
-                target->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
-                target->GetMotionMaster()->MoveRandom(30);
-                target->DespawnOrUnsummon(8000ms);
-                break;
-            case 2:
-                target->AI()->Talk(SAY_GREETINGS_3);
-                target->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
-                target->GetMotionMaster()->MoveRandom(30);
-                target->DespawnOrUnsummon(8000ms);
-                break;
-            case 3:
-                target->AI()->Talk(SAY_GREETINGS_4);
-                target->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
-                target->GetMotionMaster()->MoveRandom(30);
-                target->DespawnOrUnsummon(8000ms);
-                break;
-            case 4:
-                target->AI()->Talk(SAY_GREETINGS_5);
-                target->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
-                target->GetMotionMaster()->MoveRandom(30);
-                target->DespawnOrUnsummon(8000ms);
-                break;
-            }
-        }
-
-        void Register()
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_heal_injuried_carnie_SpellScript::HandleHealPct, EFFECT_0, SPELL_EFFECT_HEAL_PCT);
-            OnCheckCast += SpellCheckCastFn(spell_heal_injuried_carnie_SpellScript::CheckRequirement);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
+    void HandleHealPct(SpellEffIndex /*effIndex*/)
     {
-        return new spell_heal_injuried_carnie_SpellScript();
+        Player* player = GetCaster()->ToPlayer();
+        Creature* target = GetHitCreature();
+
+        player->KilledMonsterCredit(54518, ObjectGuid::Empty);
+
+        if (!target)
+            return;
+
+        switch (urand(0, 4))
+        {
+        case 0:
+            target->AI()->Talk(SAY_GREETINGS_1);
+            target->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
+            target->GetMotionMaster()->MoveRandom(30);
+            target->DespawnOrUnsummon(8000ms);
+            break;
+        case 1:
+            target->AI()->Talk(SAY_GREETINGS_2);
+            target->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
+            target->GetMotionMaster()->MoveRandom(30);
+            target->DespawnOrUnsummon(8000ms);
+            break;
+        case 2:
+            target->AI()->Talk(SAY_GREETINGS_3);
+            target->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
+            target->GetMotionMaster()->MoveRandom(30);
+            target->DespawnOrUnsummon(8000ms);
+            break;
+        case 3:
+            target->AI()->Talk(SAY_GREETINGS_4);
+            target->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
+            target->GetMotionMaster()->MoveRandom(30);
+            target->DespawnOrUnsummon(8000ms);
+            break;
+        case 4:
+            target->AI()->Talk(SAY_GREETINGS_5);
+            target->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
+            target->GetMotionMaster()->MoveRandom(30);
+            target->DespawnOrUnsummon(8000ms);
+            break;
+        }
+    }
+
+    void Register()
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_heal_injuried_carnie::HandleHealPct, EFFECT_0, SPELL_EFFECT_HEAL_PCT);
+        OnCheckCast += SpellCheckCastFn(spell_heal_injuried_carnie::CheckRequirement);
     }
 };
 
-class spell_put_up_darkmoon_banner : public SpellScriptLoader
+class spell_put_up_darkmoon_banner : public SpellScript
 {
-public:
-    spell_put_up_darkmoon_banner() : SpellScriptLoader("spell_put_up_darkmoon_banner") {}
 
-    class spell_put_up_darkmoon_banner_SpellScript : public SpellScript
+    SpellCastResult CheckRequirement()
     {
+        if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
+            return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
-        SpellCastResult CheckRequirement()
-        {
-            if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
-                return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+        return SPELL_CAST_OK;
+    }
 
-            return SPELL_CAST_OK;
-        }
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            Player* player = GetCaster()->ToPlayer();
-            player->KilledMonsterCredit(54545, ObjectGuid::Empty);
-
-            if (Creature* loosestones = GetCaster()->FindNearestCreature(54545, 10.0f, true))
-            {
-                loosestones->SummonGameObject(179965, Position(loosestones->GetPositionX(), loosestones->GetPositionY(), loosestones->GetPositionZ(), loosestones->GetOrientation()), QuaternionData(), 0s);
-                loosestones->DespawnOrUnsummon(30000ms);
-            }
-        }
-
-        void Register()
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_put_up_darkmoon_banner_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            OnCheckCast += SpellCheckCastFn(spell_put_up_darkmoon_banner_SpellScript::CheckRequirement);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
+    void HandleDummy(SpellEffIndex /*effIndex*/)
     {
-        return new spell_put_up_darkmoon_banner_SpellScript();
+        Player* player = GetCaster()->ToPlayer();
+        player->KilledMonsterCredit(54545, ObjectGuid::Empty);
+
+        if (Creature* loosestones = GetCaster()->FindNearestCreature(54545, 10.0f, true))
+        {
+            loosestones->SummonGameObject(179965, Position(loosestones->GetPositionX(), loosestones->GetPositionY(), loosestones->GetPositionZ(), loosestones->GetOrientation()), QuaternionData(), 0s);
+            loosestones->DespawnOrUnsummon(30000ms);
+        }
+    }
+
+    void Register()
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_put_up_darkmoon_banner::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnCheckCast += SpellCheckCastFn(spell_put_up_darkmoon_banner::CheckRequirement);
     }
 };
 
-class spell_darkmoon_deathmatch : public SpellScriptLoader
+
+class spell_darkmoon_deathmatch : public SpellScript
 {
-public:
-    spell_darkmoon_deathmatch() : SpellScriptLoader("spell_darkmoon_deathmatch") {}
 
-    class spell_darkmoon_deathmatch_SpellScript : public SpellScript
+    SpellCastResult CheckRequirement()
     {
+        if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
+            return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
-        SpellCastResult CheckRequirement()
-        {
-            if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
-                return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+        return SPELL_CAST_OK;
+    }
 
-            return SPELL_CAST_OK;
-        }
-
-        void HandleScript(SpellEffIndex /*effIndex*/)
-        {
-            Unit* caster = GetCaster();
-
-            if (caster->GetPositionY() <= 6400.0f)
-                caster->CastSpell(caster, 108919, false);
-            else
-                caster->CastSpell(caster, 108923, false);
-        }
-
-        void Register()
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_darkmoon_deathmatch_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
-            OnCheckCast += SpellCheckCastFn(spell_darkmoon_deathmatch_SpellScript::CheckRequirement);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
+    void HandleScript(SpellEffIndex /*effIndex*/)
     {
-        return new spell_darkmoon_deathmatch_SpellScript();
+        Unit* caster = GetCaster();
+
+        if (caster->GetPositionY() <= 6400.0f)
+            caster->CastSpell(caster, 108919, false);
+        else
+            caster->CastSpell(caster, 108923, false);
+    }
+
+    void Register()
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_darkmoon_deathmatch::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+        OnCheckCast += SpellCheckCastFn(spell_darkmoon_deathmatch::CheckRequirement);
+    }
+};
+
+// 73814, 73810, 73104, 73815, 70764, 71084 - Citizen Costume 
+class spell_darkmoon_citizen_costume : public AuraScript
+{
+    void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        static uint32 Alliance_Model[15] = { 2225, 17479, 2220, 1437, 22699, 18231, 25521, 11680, 4888, 1434, 3112, 1482, 18137, 3068, 17241 };
+        static uint32 Horde_Model[12] = { 1879, 11756, 5346, 18212, 16758, 4085, 3606, 2667, 2025, 4540, 16814, 27260 };
+
+        if (Creature* l_Creature = GetTarget()->ToCreature())
+            l_Creature->SetDisplayId(l_Creature->GetEntry() == 55347 ? Alliance_Model[urand(0, 14)] : Horde_Model[urand(0, 11)]);
+    }
+
+    void Register() override
+    {
+        AfterEffectApply += AuraEffectRemoveFn(spell_darkmoon_citizen_costume::OnApply, EFFECT_0, SPELL_AURA_TRANSFORM, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
 void AddSC_darkmoon_island()
 {
-    new npc_fire_juggler_darkmoon();
-    new npc_fire_eater_darkmoon();
+    RegisterCreatureAI(npc_fire_juggler_darkmoon);
+    RegisterCreatureAI(npc_fire_eater_darkmoon);
     new boss_darkmoon_moonfang_mother();
 
-    new spell_darkmoon_staging_area_teleport();
+    RegisterSpellScript(spell_darkmoon_staging_area_teleport);
 
-    new item_darkmoon_faire_fireworks();   
+    new item_darkmoon_faire_fireworks();
 
-    new spell_gen_repair_damaged_tonk();
-    new spell_gen_shoe_baby();
-    new spell_cook_crunchy_frog();
-    new spell_heal_injuried_carnie();
-    new spell_put_up_darkmoon_banner();
-    new spell_darkmoon_deathmatch();
+    RegisterSpellScript(spell_gen_repair_damaged_tonk);
+    RegisterSpellScript(spell_gen_shoe_baby);
+    RegisterSpellScript(spell_cook_crunchy_frog);
+    RegisterSpellScript(spell_heal_injuried_carnie);
+    RegisterSpellScript(spell_put_up_darkmoon_banner);
+    RegisterSpellScript(spell_darkmoon_deathmatch);
+    RegisterSpellScript(spell_darkmoon_citizen_costume);
 };

@@ -64,7 +64,7 @@
 #include "TemporarySummon.h"
 #include <sstream>
 
-// npc - 181097 WIP
+// npc - 181097
 class npc_dance_battle_simon_sezdans : public CreatureScript
 {
 public:
@@ -218,5 +218,5 @@ public:
 void AddSC_darkmoon_dance_battle()
 {
     new scene_darkmoon_dance_battle();
-    new npc_dance_battle_simon_sezdans();
+    RegisterCreatureAI(npc_dance_battle_simon_sezdans);
 };

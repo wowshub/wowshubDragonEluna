@@ -273,8 +273,8 @@ class spell_darkmoon_canon_preparation : public AuraScript
 
 void AddSC_darkmoon_canon()
 {
-    new npc_canon_maxima();
-    new npc_darkmoon_canon_target();
-    new npc_canon_fozlebub();
+    RegisterCreatureAI(npc_canon_maxima);
+    RegisterCreatureAI(npc_darkmoon_canon_target);
+    RegisterCreatureAI(npc_canon_fozlebub);
     RegisterSpellScript(spell_darkmoon_canon_preparation);
 };
