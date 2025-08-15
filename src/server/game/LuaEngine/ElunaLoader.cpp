@@ -17,7 +17,9 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+#if defined ELUNA_WINDOWS
 #include <Windows.h>
+#endif
 
 #include "MapManager.h"
 
@@ -108,6 +110,12 @@ void ElunaLoader::LoadScripts()
     const std::string& lua_path_extra = sElunaConfig->GetConfig(CONFIG_ELUNA_REQUIRE_PATH_EXTRA);
     const std::string& lua_cpath_extra = sElunaConfig->GetConfig(CONFIG_ELUNA_REQUIRE_CPATH_EXTRA);
 
+#if !defined ELUNA_WINDOWS
+    if (lua_folderpath[0] == '~')
+        if (const char* home = getenv("HOME"))
+            lua_folderpath.replace(0, 1, home);
+#endif
+
     ELUNA_LOG_INFO("[Eluna]: Searching for scripts in `%s`", lua_folderpath.c_str());
 
     // open a new temporary Lua state to compile bytecode in
@@ -178,9 +186,15 @@ void ElunaLoader::ReadFiles(lua_State* L, std::string path)
         {
             std::string fullpath = dir_iter->path().generic_string();
             // Check if file is hidden
+#if defined ELUNA_WINDOWS
             DWORD dwAttrib = GetFileAttributes(fullpath.c_str());
             if (dwAttrib != INVALID_FILE_ATTRIBUTES && (dwAttrib & FILE_ATTRIBUTE_HIDDEN))
                 continue;
+#else
+            std::string name = dir_iter->path().filename().generic_string().c_str();
+            if (name[0] == '.')
+                continue;
+#endif
 
             // load subfolder
             if (fs::is_directory(dir_iter->status()))
