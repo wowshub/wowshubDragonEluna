@@ -56,6 +56,8 @@ enum darkmoonIslandAchievement
 enum darkmoonIslandSpells
 {
     SPELL_WHEE                              = 46668,
+    SPELL_FIRE_BREATHING_SPELL              = 102911,
+    SPELL_JUGGLE_TORCH_AURA                 = 46322, //  102905,
 
     // Firebirds Challenge spell
     SPELL_WINGS_OF_FLAME_START              = 170819,

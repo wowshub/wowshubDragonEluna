@@ -636,7 +636,7 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPackets::Battleground::Battl
     sBattlegroundMgr->ScheduleQueueUpdate(matchmakerRating, bgQueueTypeId, bracketEntry->GetBracketId());
 }
 
-void WorldSession::HandleJoinSkirmish(WorldPackets::Battleground::JoinSkirmish& packet)
+void WorldSession::HandleJoinSkirmish(WorldPackets::Battleground::JoinSkirmish& /*packet*/)
 {
     // ignore if we already in BG or BG queue
     if (_player->InBattleground())

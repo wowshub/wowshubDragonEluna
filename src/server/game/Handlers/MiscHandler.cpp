@@ -1247,7 +1247,7 @@ void WorldSession::HandleOverrideScreenFlash(WorldPackets::Misc::OverrideScreenF
     _player->SetOverrideScreenFlash(overrideScreenFlash.BlackScreenOrRedScreen);
 }
 
-void WorldSession::HandleAccountNotificationAcknowledge(WorldPackets::Misc::AccountNotificationAcknowledge& packet)
+void WorldSession::HandleAccountNotificationAcknowledge(WorldPackets::Misc::AccountNotificationAcknowledge& /*packet*/)
 {
 }
 

@@ -79,173 +79,139 @@ enum eSpells
 
 #define ACHIEVEMENT_BLASTENHEIMER_BULLSEYE  6021
 
-class npc_canon_maxima : public CreatureScript
+struct npc_canon_maxima : public ScriptedAI
 {
-public:
-    npc_canon_maxima() : CreatureScript("npc_canon_maxima") { }
+    explicit npc_canon_maxima(Creature* creature) : ScriptedAI(creature) { }
 
-    struct npc_canon_maximaAI : public ScriptedAI
+    bool OnGossipHello(Player* player) override
     {
-        npc_canon_maximaAI(Creature* creature) : ScriptedAI(creature) { }
+        if (me->IsQuestGiver())
+            player->PrepareQuestMenu(me->GetGUID());
 
-        bool OnGossipHello(Player* player) override
+        AddGossipItemFor(player, 6575, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        AddGossipItemFor(player, 6575, 1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+
+        SendGossipMenuFor(player, player->GetGossipTextId(me), me->GetGUID());
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipListId) override
+    {
+        uint32 const action = player->PlayerTalkClass->GetGossipOptionAction(gossipListId);
+        ClearGossipMenuFor(player);
+
+        switch (action)
         {
-            if (me->IsQuestGiver())
-                player->PrepareQuestMenu(me->GetGUID());
-
-            AddGossipItemFor(player, 6575, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            AddGossipItemFor(player, 6575, 1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-
-            SendGossipMenuFor(player, player->GetGossipTextId(me), me->GetGUID());
-            return true;
-        }
-
-        bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipListId) override
-        {
-            uint32 const action = player->PlayerTalkClass->GetGossipOptionAction(gossipListId);
-            ClearGossipMenuFor(player);
-
-            switch (action)
+            // Info
+        case GOSSIP_ACTION_INFO_DEF + 1:
+            player->PlayerTalkClass->ClearMenus();
+            AddGossipItemFor(player, 16972, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+            SendGossipMenuFor(player, 7790, me->GetGUID());
+            break;
+            // Ready to play
+        case  GOSSIP_ACTION_INFO_DEF + 2:
+            if (player->HasItemCount(ITEM_DARKMOON_TOKEN, 1))
             {
-                // Info
-            case GOSSIP_ACTION_INFO_DEF + 1:
-                player->PlayerTalkClass->ClearMenus();
-                AddGossipItemFor(player, 16972, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-                SendGossipMenuFor(player, 7790, me->GetGUID());
-                break;
-                // Ready to play
-            case  GOSSIP_ACTION_INFO_DEF + 2:
-                if (player->HasItemCount(ITEM_DARKMOON_TOKEN, 1))
-                {
-                    CloseGossipMenuFor(player);
+                CloseGossipMenuFor(player);
 
-                    player->DestroyItemCount(ITEM_DARKMOON_TOKEN, 1, true);
-                    player->CastSpell(player, SPELL_ROOT, true);
-                    player->CastSpell(player, 102113, true);
-                    if (Aura* flyAura = player->AddAura(SPELL_HELPER_FLY, player))
-                        flyAura->SetDuration(5000);
-                    player->CastSpell(player, SPELL_CANON_PREPARATION, true);
+                player->DestroyItemCount(ITEM_DARKMOON_TOKEN, 1, true);
+                player->CastSpell(player, SPELL_ROOT, true);
+                player->CastSpell(player, 102113, true);
+                if (Aura* flyAura = player->AddAura(SPELL_HELPER_FLY, player))
+                    flyAura->SetDuration(5000);
+                player->CastSpell(player, SPELL_CANON_PREPARATION, true);
 
-                }
-                else
-                {
-                    player->PlayerTalkClass->ClearMenus();
-                    return OnGossipHello(player);
-                }
-                break;
-                // I understand
-            case GOSSIP_ACTION_INFO_DEF + 3:
+            }
+            else
+            {
                 player->PlayerTalkClass->ClearMenus();
                 return OnGossipHello(player);
-                break;
             }
-
-            return false;
+            break;
+            // I understand
+        case GOSSIP_ACTION_INFO_DEF + 3:
+            player->PlayerTalkClass->ClearMenus();
+            return OnGossipHello(player);
+            break;
         }
-    };
 
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_canon_maximaAI(creature);
+        return false;
     }
 };
 
-class npc_darkmoon_canon_target : public CreatureScript
+struct npc_darkmoon_canon_target : ScriptedAI
 {
-public:
-    npc_darkmoon_canon_target() : CreatureScript("npc_darkmoon_canon_target") { }
+    explicit npc_darkmoon_canon_target(Creature* creature) : ScriptedAI(creature) {}
 
-    CreatureAI* GetAI(Creature* pCreature) const override
+    void Reset() override
     {
-        return new npc_darkmoon_canon_targetAI(pCreature);
     }
 
-    struct npc_darkmoon_canon_targetAI : ScriptedAI
+    void UpdateAI(uint32 /*diff*/) override
     {
-        npc_darkmoon_canon_targetAI(Creature* pCreature) : ScriptedAI(pCreature)
-        {}
+        std::list<Player*> playerList;
+        me->GetPlayerListInGrid(playerList, 30.0f);
 
-        void Reset() override
+        if (playerList.empty())
+            return;
+
+        for (auto player : playerList)
         {
-        }
+            if (player->GetPositionZ() > 0.0f)
+                continue;
 
-        void UpdateAI(uint32 /*diff*/) override
-        {
-            std::list<Player*> playerList;
-            me->GetPlayerListInGrid(playerList, 30.0f);
+            if (!player->HasAura(SPELL_CANON_DEFLAGRATION))
+                continue;
 
-            if (playerList.empty())
-                return;
+            player->RemoveAurasDueToSpell(SPELL_CANON_DEFLAGRATION);
 
-            for (auto player : playerList)
+            uint32 dist = me->GetDistance(player);
+            uint32 creditCount = 1;
+
+            if (dist <= 2.0f)
             {
-                if (player->GetPositionZ() > 0.0f)
-                    continue;
-
-                if (!player->HasAura(SPELL_CANON_DEFLAGRATION))
-                    continue;
-
+                if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(ACHIEVEMENT_BLASTENHEIMER_BULLSEYE))
+                    player->CompletedAchievement(achievementEntry);
+                me->AddAura(SPELL_TARGET_CENTER, player);
+                creditCount = 5;
+            }
+            else if (dist <= 5.0f)
+            {
+                me->AddAura(SPELL_TARGET_NEAR, player);
+                creditCount = 3;
+            }
+            else
+                me->AddAura(SPELL_TARGET_MISS, player);
                 player->RemoveAurasDueToSpell(SPELL_CANON_DEFLAGRATION);
 
-                uint32 dist = me->GetDistance(player);
-                uint32 creditCount = 1;
-
-                if (dist <= 2.0f)
-                {
-                    if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(ACHIEVEMENT_BLASTENHEIMER_BULLSEYE))
-                        player->CompletedAchievement(achievementEntry);
-                    me->AddAura(SPELL_TARGET_CENTER, player);
-                    creditCount = 5;
-                }
-                else if (dist <= 5.0f)
-                {
-                    me->AddAura(SPELL_TARGET_NEAR, player);
-                    creditCount = 3;
-                }
-                else
-                    me->AddAura(SPELL_TARGET_MISS, player);
-                    player->RemoveAurasDueToSpell(SPELL_CANON_DEFLAGRATION);
-
-                for (uint8 i = 0; i < creditCount; ++i)
-                    player->CastSpell(player, SPELL_TARGET_CREDIT, false);
-            }
+            for (uint8 i = 0; i < creditCount; ++i)
+                player->CastSpell(player, SPELL_TARGET_CREDIT, false);
         }
-    };
+    }
 };
 
-class npc_canon_fozlebub : public CreatureScript
+struct npc_canon_fozlebub : public ScriptedAI
 {
-public:
-    npc_canon_fozlebub() : CreatureScript("npc_canon_fozlebub") { }
+    explicit npc_canon_fozlebub(Creature* creature) : ScriptedAI(creature) { }
 
-    struct npc_canon_fozlebubAI : public ScriptedAI
+    bool OnGossipHello(Player* player) override
     {
-        npc_canon_fozlebubAI(Creature* creature) : ScriptedAI(creature) { }
+        if (me->IsQuestGiver())
+            player->PrepareQuestMenu(me->GetGUID());
 
-        bool OnGossipHello(Player* player) override
-        {
-            if (me->IsQuestGiver())
-                player->PrepareQuestMenu(me->GetGUID());
+            AddGossipItemFor(player, GossipOptionNpc::None, "Teleport me to the cannon |cFF0000FF(30 silver)|r", GOSSIP_SENDER_MAIN, 0);
 
-                AddGossipItemFor(player, GossipOptionNpc::None, "Teleport me to the cannon |cFF0000FF(30 silver)|r", GOSSIP_SENDER_MAIN, 0);
+        player->PlayerTalkClass->SendGossipMenu(player->GetGossipTextId(me), me->GetGUID());
+        return true;
+    }
 
-            player->PlayerTalkClass->SendGossipMenu(player->GetGossipTextId(me), me->GetGUID());
-            return true;
-        }
-
-        bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 /*gossipListId*/) override
-        {
-            player->ModifyMoney(-3000);
-            player->CastSpell(player, 109244, true);
-
-            CloseGossipMenuFor(player);
-            return true;
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
+    bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 /*gossipListId*/) override
     {
-        return new npc_canon_fozlebubAI(creature);
+        player->ModifyMoney(-3000);
+        player->CastSpell(player, 109244, true);
+
+        CloseGossipMenuFor(player);
+        return true;
     }
 };
 

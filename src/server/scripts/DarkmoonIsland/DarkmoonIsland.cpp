@@ -94,106 +94,72 @@ const Position mfPos[22] =
 };
 
 // npc - 55089 55093 55397 55398 
-class npc_fire_juggler_darkmoon : public CreatureScript
+struct npc_fire_juggler_darkmoon : public ScriptedAI
 {
-public:
-    npc_fire_juggler_darkmoon() : CreatureScript("npc_fire_juggler_darkmoon") { }
+    npc_fire_juggler_darkmoon(Creature* creature) : ScriptedAI(creature) { }
 
-    enum eNPC
+    EventMap events;
+
+    void Reset() override
     {
-        SPELL_JUGGLE_TORCH_AURA = 46322, //  102905,
-        EVENT_START_FIRE_JUGGLING = 101,
-    };
+        events.Reset();
+        events.ScheduleEvent(101, 1s);
+    }
 
-    struct npc_fire_juggler_darkmoonAI : public ScriptedAI
+    void UpdateAI(uint32 diff) override
     {
-        npc_fire_juggler_darkmoonAI(Creature* creature) : ScriptedAI(creature) { }
+        events.Update(diff);
 
-        EventMap events;
-
-        void Reset() override
+        while (uint32 eventId = events.ExecuteEvent())
         {
-            events.Reset();
-            events.ScheduleEvent(EVENT_START_FIRE_JUGGLING, 1s);
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            events.Update(diff);
-
-            while (uint32 eventId = events.ExecuteEvent())
+            switch (eventId)
             {
-                switch (eventId)
-                {
-                case EVENT_START_FIRE_JUGGLING:
-                {
-                    if (!me->HasAura(SPELL_JUGGLE_TORCH_AURA))
-                        me->AddAura(SPELL_JUGGLE_TORCH_AURA, me);
-                    events.ScheduleEvent(EVENT_START_FIRE_JUGGLING, 3s);
-                    break;
-                }
-                }
+            case 101:
+            {
+                if (!me->HasAura(SPELL_JUGGLE_TORCH_AURA))
+                    me->AddAura(SPELL_JUGGLE_TORCH_AURA, me);
+                events.ScheduleEvent(101, 3s);
+                break;
             }
-
-            UpdateVictim();
+            }
         }
-    };
 
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_fire_juggler_darkmoonAI(creature);
+        UpdateVictim();
     }
 };
 
 // npc - 55229 55230 55231
-class npc_fire_eater_darkmoon : public CreatureScript
+struct npc_fire_eater_darkmoon : public ScriptedAI
 {
-public:
-    npc_fire_eater_darkmoon() : CreatureScript("npc_fire_eater_darkmoon") {}
+    explicit npc_fire_eater_darkmoon(Creature* creature) : ScriptedAI(creature) {}
 
-    enum eNPC
+    EventMap events;
+
+    void Reset() override
     {
-        SPELL_FIRE_BREATHING_SPELL = 102911,
-        EVENT_CAST_FIRE_EAT_SPELL = 101,
-    };
+        events.Reset();
+        events.ScheduleEvent(101,
+            Seconds(urand(5 * MINUTE, 7 * MINUTE)));
+    }
 
-    struct npc_fire_eater_darkmoonAI : public ScriptedAI
+    void UpdateAI(uint32 diff) override
     {
-        npc_fire_eater_darkmoonAI(Creature* creature) : ScriptedAI(creature) {}
+        events.Update(diff);
 
-        EventMap events;
-
-        void Reset() override
+        while (uint32 eventId = events.ExecuteEvent())
         {
-            events.Reset();
-            events.ScheduleEvent(EVENT_CAST_FIRE_EAT_SPELL,
-                Seconds(urand(5 * MINUTE, 7 * MINUTE)));
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            events.Update(diff);
-
-            while (uint32 eventId = events.ExecuteEvent())
+            switch (eventId)
             {
-                switch (eventId)
-                {
-                case EVENT_CAST_FIRE_EAT_SPELL:
-                {
-                    me->CastSpell(me, SPELL_FIRE_BREATHING_SPELL, true);
+            case 101:
+            {
+                me->CastSpell(me, SPELL_FIRE_BREATHING_SPELL, true);
 
-                    events.ScheduleEvent(EVENT_CAST_FIRE_EAT_SPELL,
-                        Seconds(urand(5 * MINUTE, 7 * MINUTE)));
-                    break;
-                }
-                }
+                events.ScheduleEvent(101,
+                    Seconds(urand(5 * MINUTE, 7 * MINUTE)));
+                break;
+            }
             }
         }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_fire_eater_darkmoonAI(creature);
     }
 };
 
