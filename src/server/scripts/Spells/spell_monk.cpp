@@ -448,7 +448,7 @@ class spell_monk_pressure_points : public SpellScript
         return !GetCaster()->HasAura(SPELL_MONK_PRESSURE_POINTS);
     }
 
-    static void PreventDispel(WorldObject*& target)
+    static void PreventDispel(SpellScript const&, WorldObject*& target)
     {
         target = nullptr;
     }
