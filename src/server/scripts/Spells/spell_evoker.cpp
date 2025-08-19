@@ -27,8 +27,6 @@
 #include "DB2Stores.h"
 #include "Player.h"
 #include "ScriptMgr.h"
-#include "AreaTrigger.h"
-#include "AreaTriggerAI.h"
 #include "Spell.h"
 #include "SpellAuraEffects.h"
 #include "SpellHistory.h"
