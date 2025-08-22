@@ -3382,7 +3382,7 @@ std::vector<TransmogSetEntry const*> const* DB2Manager::GetTransmogSetsForItemMo
     return Trinity::Containers::MapGetValuePtr(_transmogSetsByItemModifiedAppearance, itemModifiedAppearanceId);
 }
 
-SpellEffectEntry const* SpellEntry::GetSpellEffect(uint32 /*eff*/, uint8 diff) const
+SpellEffectEntry const* SpellEntry::GetSpellEffect(uint32 /*eff*/, uint8 /*diff*/) const
 {
     return nullptr;
 }

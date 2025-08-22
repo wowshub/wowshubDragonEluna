@@ -138,6 +138,7 @@ private:
     void CloseLua();
     void DestroyBindStores();
     void CreateBindStores();
+    void RegisterHookGlobals(lua_State* _L);
 
     // Use ReloadEluna() to make eluna reload
     // This is called on world update to reload eluna
