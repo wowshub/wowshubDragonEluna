@@ -7,8 +7,10 @@
 #ifndef PLAYERMETHODS_H
 #define PLAYERMETHODS_H
 
+#include "InstanceLockMgr.h"
+#include "RestMgr.h"
+#include "ChatPackets.h"
 #include "LuaValue.h"
-#include <RestMgr.h>
 #include "NPCPackets.h"
 #include "PartyPackets.h"
 #include "Unit.h"
@@ -241,6 +243,17 @@ namespace LuaPlayer
     int CanSpeak(Eluna* E, Player* player)
     {
         E->Push(player->GetSession()->CanSpeak());
+        return 1;
+    }
+
+    /**
+     * Returns 'true' if the [Player] has permission to uninvite others from the current group, 'false' otherwise.
+     *
+     * @return bool canUninviteFromGroup
+     */
+    int CanUninviteFromGroup(Eluna* E, Player* player)
+    {
+        E->Push(player->CanUninviteFromGroup(ObjectGuid::Empty, 0) == ERR_PARTY_RESULT_OK);
         return 1;
     }
 
@@ -575,7 +588,7 @@ namespace LuaPlayer
      */
     int IsRested(Eluna* E, Player* player)
     {
-        E->Push(player->HasPlayerFlag(PlayerFlags::PLAYER_FLAGS_RESTING));
+        E->Push(player->m_activePlayerData->RestInfo[REST_TYPE_XP].StateID == 1);
         return 1;
     }
 
@@ -772,6 +785,43 @@ namespace LuaPlayer
     }
 
     /**
+     * Returns the [Player]s current amount of Arena Points
+     *
+     * In retail Arena Points are now called Conquest.
+     *
+     * @return uint32 arenaPoints
+     */
+    int GetArenaPoints(Eluna* E, Player* player)
+    {
+        E->Push(player->GetCurrencyQuantity(1602));
+        return 1;
+    }
+
+    /**
+     * Returns the [Player]s current amount of Honor Points
+     *
+     * Honor Points are now a currency in retail
+     *
+     * @return uint32 honorPoints
+     */
+    int GetHonorPoints(Eluna* E, Player* player)
+    {
+        E->Push(player->GetCurrencyQuantity(1792));
+        return 1;
+    }
+
+    /**
+     * Returns the [Player]s current shield block value
+     *
+     * @return uint32 blockValue
+     */
+    int GetShieldBlockValue(Eluna* E, Player* player)
+    {
+        E->Push(player->m_activePlayerData->ShieldBlock);
+        return 1;
+    }
+
+    /**
      * Returns the [Player]s cooldown delay by specified [Spell] ID
      *
      * @param uint32 spellId
@@ -783,9 +833,8 @@ namespace LuaPlayer
 
         if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId, DIFFICULTY_NONE))
         {
-            auto cooldown = player->GetSpellHistory()->GetRemainingCooldown(spellInfo);
-
-            E->Push(static_cast<uint32>(std::chrono::duration_cast<std::chrono::milliseconds>(cooldown).count())); // need check
+            Milliseconds remainingCooldown = player->GetSpellHistory()->GetRemainingCooldown(spellInfo);
+            E->Push(remainingCooldown.count());
         }
         else
             E->Push(0);
@@ -883,8 +932,8 @@ namespace LuaPlayer
     {
         uint32 xp = E->CHECKVAL<uint32>(2);
 
-        RestMgr* restMgr = &player->GetRestMgr();
-        E->Push(restMgr->GetRestBonusFor(RestTypes::REST_TYPE_XP, xp));
+        RestMgr restMgr = player->GetRestMgr();
+        E->Push(restMgr.GetRestBonusFor(REST_TYPE_XP, xp));
         return 1;
     }
 
@@ -1040,7 +1089,8 @@ namespace LuaPlayer
      */
     int GetManaBonusFromIntellect(Eluna* E, Player* player)
     {
-        E->Push(player->GetMaxPower(Powers::POWER_MANA));
+        UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + AsUnderlyingType(POWER_MANA));
+        E->Push(player->GetFlatModifierValue(unitMod, BASE_VALUE) + player->GetCreatePowerValue(POWER_MANA));
         return 1;
     }
 
@@ -1052,6 +1102,18 @@ namespace LuaPlayer
     int GetHealthBonusFromStamina(Eluna* E, Player* player)
     {
         E->Push(player->GetHealthBonusFromStamina());
+        return 1;
+    }
+
+    /**
+     * Returns raid or dungeon difficulty
+     *
+     * @param bool isRaid = true : argument is TrinityCore only
+     * @return int32 difficulty
+     */
+    int GetDifficulty(Eluna* E, Player* player)
+    {
+        E->Push(player->GetMap()->GetDifficultyID());
         return 1;
     }
 
@@ -1101,6 +1163,18 @@ namespace LuaPlayer
         uint32 faction = E->CHECKVAL<uint32>(2);
 
         E->Push(player->GetReputationMgr().GetReputation(faction));
+        return 1;
+    }
+
+    /**
+     * Returns [Unit] target combo points are on
+     *
+     * @return [Unit] target
+     */
+    int GetComboTarget(Eluna* E, Player* player)
+    {
+        Unit const* target = ObjectAccessor::GetUnit(*player, player->GetTarget());
+        E->Push(target->GetPower(POWER_COMBO_POINTS));
         return 1;
     }
 
@@ -1222,8 +1296,8 @@ namespace LuaPlayer
      */
     int GetRestBonus(Eluna* E, Player* player)
     {
-        RestMgr* restMgr = &player->GetRestMgr();
-        E->Push(restMgr->GetRestBonus(RestTypes::REST_TYPE_XP));
+        RestMgr restMgr = player->GetRestMgr();
+        E->Push(restMgr.GetRestBonus(REST_TYPE_XP));
         return 1;
     }
 
@@ -1896,6 +1970,36 @@ namespace LuaPlayer
     }
 
     /**
+     * Sets the [Player]s Arena Points to the amount specified
+     *
+     * In retail Area Points are now called Conquest
+     *
+     * @param uint32 arenaPoints
+     */
+    int SetArenaPoints(Eluna* E, Player* player)
+    {
+        uint32 arenaP = E->CHECKVAL<uint32>(2);
+        uint32 currAP = player->GetCurrencyQuantity(1602);
+        player->RemoveCurrency(1602, currAP);
+        player->AddCurrency(1602, arenaP);
+        return 0;
+    }
+
+    /**
+     * Sets the [Player]s Honor Points to the amount specified
+     *
+     * @param uint32 honorPoints
+     */
+    int SetHonorPoints(Eluna* E, Player* player)
+    {
+        uint32 honorP = E->CHECKVAL<uint32>(2);
+        uint32 currHP = player->GetCurrencyQuantity(1792);
+        player->RemoveCurrency(1792, currHP);
+        player->AddCurrency(1792, honorP);
+        return 0;
+    }
+
+    /**
      * Sets the [Player]s amount of money to copper specified
      *
      * @param uint32 copperAmt
@@ -2054,6 +2158,36 @@ namespace LuaPlayer
     }
 
     /**
+     * Adds or detracts from the [Player]s current Arena Points
+     *
+     * In retail Area Points are now called Conquest. Will use this function for both
+     *
+     * @param int32 amount
+     */
+    int ModifyArenaPoints(Eluna* E, Player* player)
+    {
+        int32 amount = E->CHECKVAL<int32>(2);
+
+        player->ModifyCurrency(1602, amount, CurrencyGainSource::Script);
+        return 0;
+    }
+
+    /**
+     * Adds or detracts from the [Player]s current Honor Points
+     *
+     * In retail Honor Points are now a currency.
+     *
+     * @param int32 amount
+     */
+    int ModifyHonorPoints(Eluna* E, Player* player)
+    {
+        int32 amount = E->CHECKVAL<int32>(2);
+
+        player->ModifyCurrency(1792, amount, CurrencyGainSource::Script);
+        return 0;
+    }
+
+    /**
      * Saves the [Player] to the database
      */
     int SaveToDB(Eluna* /*E*/, Player* player)
@@ -2150,11 +2284,12 @@ namespace LuaPlayer
      * Sends a tabard vendor window to the [Player] from the [WorldObject] specified
      *
      * @param [WorldObject] sender
+     * @param Ventor type Guild = 0, Personal = 1,
      */
     int SendTabardVendorActivate(Eluna* E, Player* player)
     {
         WorldObject* obj = E->CHECKOBJ<WorldObject>(2);
-        int16 VendorType = E->CHECKVAL<int16>(3);
+        int32 VendorType = E->CHECKVAL<int32>(3, 0);
 
         player->GetSession()->SendTabardVendorActivate(obj->GET_GUID(), TabardVendorType(VendorType));
         return 0;
@@ -2190,13 +2325,12 @@ namespace LuaPlayer
      * Sends a trainer window to the [Player] from the [Creature] specified
      *
      * @param [Creature] sender
-     * @param uint32 trainderId
      */
     int SendTrainerList(Eluna* E, Player* player)
     {
         Creature* obj = E->CHECKOBJ<Creature>(2);
-        uint32 trainerId = E->CHECKVAL<uint32>(3, 0);
 
+        uint32 trainerId = obj->GetTrainerId();
         player->GetSession()->SendTrainerList(obj, trainerId);
         return 0;
     }
@@ -2250,6 +2384,32 @@ namespace LuaPlayer
     int RemoveFromBattlegroundRaid(Eluna* /*E*/, Player* player)
     {
         player->RemoveFromBattlegroundOrBattlefieldRaid();
+        return 0;
+    }
+
+    /**
+     * Unbinds the [Player] from his instances except the one he currently is in.
+     *
+     * Difficulty is not used on classic.
+     *
+     * @param uint32 map = true
+     * @param uint32 difficulty = 0
+     */
+    int UnbindInstance(Eluna* E, Player* player)
+    {
+        uint32 map = E->CHECKVAL<uint32>(2);
+        Difficulty difficulty = static_cast<Difficulty>(E->CHECKVAL<uint32>(3, 0));
+
+        sInstanceLockMgr.ResetInstanceLocksForPlayer(player->GetGUID(), map, difficulty, nullptr, nullptr);
+        return 0;
+    }
+
+    /**
+     * Unbinds the [Player] from his instances except the one he currently is in.
+     */
+    int UnbindAllInstances(Eluna* /*E*/, Player* player)
+    {
+        sInstanceLockMgr.ResetInstanceLocksForPlayer(player->GetGUID(), std::nullopt, std::nullopt, nullptr, nullptr);
         return 0;
     }
 
@@ -2451,7 +2611,8 @@ namespace LuaPlayer
      */
     int AddComboPoints(Eluna* E, Player* player)
     {
-        int8 count = E->CHECKVAL<int8>(2);
+        [[maybe_unused]] Unit* target = E->CHECKOBJ<Unit>(2);
+        int8 count = E->CHECKVAL<int8>(3);
 
         player->SetPower(POWER_COMBO_POINTS, count);
         return 0;
@@ -2556,58 +2717,55 @@ namespace LuaPlayer
         if (!quest || player->GetQuestStatus(entry) == QUEST_STATUS_NONE)
             return 0;
 
-        for (uint32 i = 0; i < quest->Objectives.size(); ++i)
-        {
-            QuestObjective const& obj = quest->Objectives[i];
+        for (QuestObjective const& obj : quest->Objectives)
 
             switch (obj.Type)
             {
-            case QUEST_OBJECTIVE_ITEM:
-            {
-                uint32 curItemCount = player->GetItemCount(obj.ObjectID, true);
-                ItemPosCountVec dest;
-                uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, obj.ObjectID, obj.Amount - curItemCount);
-                if (msg == EQUIP_ERR_OK)
+                case QUEST_OBJECTIVE_ITEM:
                 {
-                    Item* item = player->StoreNewItem(dest, obj.ObjectID, true);
-                    player->SendNewItem(item, obj.Amount - curItemCount, true, false);
+                    uint32 curItemCount = player->GetItemCount(obj.ObjectID, true);
+                    ItemPosCountVec dest;
+                    uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, obj.ObjectID, obj.Amount - curItemCount);
+                    if (msg == EQUIP_ERR_OK)
+                    {
+                        Item* item = player->StoreNewItem(dest, obj.ObjectID, true);
+                        player->SendNewItem(item, obj.Amount - curItemCount, true, false);
+                    }
+                    break;
                 }
-                break;
+                case QUEST_OBJECTIVE_CURRENCY:
+                {
+                    player->ModifyCurrency(obj.ObjectID, obj.Amount, CurrencyGainSource::Cheat);
+                    break;
+                }
+                case QUEST_OBJECTIVE_MIN_REPUTATION:
+                {
+                    uint32 curRep = player->GetReputationMgr().GetReputation(obj.ObjectID);
+                    if (curRep < uint32(obj.Amount))
+                        if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(obj.ObjectID))
+                            player->GetReputationMgr().SetReputation(factionEntry, obj.Amount);
+                    break;
+                }
+                case QUEST_OBJECTIVE_MAX_REPUTATION:
+                {
+                    uint32 curRep = player->GetReputationMgr().GetReputation(obj.ObjectID);
+                    if (curRep > uint32(obj.Amount))
+                        if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(obj.ObjectID))
+                            player->GetReputationMgr().SetReputation(factionEntry, obj.Amount);
+                    break;
+                }
+                case QUEST_OBJECTIVE_MONEY:
+                {
+                    player->ModifyMoney(obj.Amount);
+                    break;
+                }
+                case QUEST_OBJECTIVE_PROGRESS_BAR:
+                    // do nothing
+                    break;
+                default:
+                    player->UpdateQuestObjectiveProgress(static_cast<QuestObjectiveType>(obj.Type), obj.ObjectID, obj.Amount);
+                    break;
             }
-            case QUEST_OBJECTIVE_CURRENCY:
-            {
-                player->ModifyCurrency(obj.ObjectID, obj.Amount, CurrencyGainSource::Cheat);
-                break;
-            }
-            case QUEST_OBJECTIVE_GAMEOBJECT:
-            {
-                for (uint16 z = 0; z < obj.Amount; ++z)
-                    player->KillCreditGO(obj.ObjectID);
-                break;
-            }
-            case QUEST_OBJECTIVE_MIN_REPUTATION:
-            {
-                uint32 curRep = player->GetReputationMgr().GetReputation(obj.ObjectID);
-                if (curRep < uint32(obj.Amount))
-                    if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(obj.ObjectID))
-                        player->GetReputationMgr().SetReputation(factionEntry, obj.Amount);
-                break;
-            }
-            case QUEST_OBJECTIVE_MAX_REPUTATION:
-            {
-                uint32 curRep = player->GetReputationMgr().GetReputation(obj.ObjectID);
-                if (curRep > uint32(obj.Amount))
-                    if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(obj.ObjectID))
-                        player->GetReputationMgr().SetReputation(factionEntry, obj.Amount);
-                break;
-            }
-            case QUEST_OBJECTIVE_MONEY:
-            {
-                player->ModifyMoney(obj.Amount);
-                break;
-            }
-            }
-        }
 
         if (sWorld->getBoolConfig(CONFIG_QUEST_ENABLE_QUEST_TRACKER)) // check if Quest Tracker is enabled
         {
@@ -2921,6 +3079,15 @@ namespace LuaPlayer
     }
 
     /**
+     * Advances all of the [Player]s weapon skills to the maximum amount available
+     */
+    int AdvanceSkillsToMax(Eluna* /*E*/, Player* player)
+    {
+        player->UpdateSkillsForLevel();
+        return 0;
+    }
+
+    /**
      * Advances all of the [Player]s skills to the amount specified
      *
      * @param uint32 skillStep
@@ -3058,6 +3225,25 @@ namespace LuaPlayer
     }
 
     /**
+     * Removes specified amount of lifetime kills
+     *
+     * WIP
+     * 
+     * @param uint32 val : kills to remove
+     */
+
+    int RemoveLifetimeKills(Eluna* E, Player* player)
+    {
+        uint32 val = E->CHECKVAL<uint32>(2);
+        uint32 currentKills = player->m_activePlayerData->LifetimeHonorableKills;
+
+        if (val > currentKills)
+            val = currentKills;
+
+        return 0;
+    }
+
+    /**
      * Resets cooldown of the specified spell
      *
      * @param uint32 spellId
@@ -3167,9 +3353,6 @@ namespace LuaPlayer
         WorldPackets::Chat::Chat chat;
         chat.Initialize(channel, LANG_ADDON, player, receiver, fullmsg, 0, "", DEFAULT_LOCALE, prefix);
         receiver->GetSession()->SendPacket(chat.Write());
-
-        //ELUNA_LOG_INFO("AIO server->client SendAddonMessage:\nsender: {}\nprefix: {}\nchannel: {}\nfullmsg(d): {}\nreceiver: {}", player->GetName().c_str(), prefix.c_str(), ChatMsg(channel), fullmsg.c_str(), receiver->GetName().c_str());
-        //ELUNA_LOG_INFO("AIO server->client SendAddonMessage(Packet):\nchannel: {}\nlang: {}\nplayer: {}\nreceiver: {}\nfullmsg: {}\nachieve: {}\nchannelName: {}\nlocale: {}\nprefix: {}", ChatMsg(channel), "LANG_ADDON", player->GetName().c_str(), receiver->GetName().c_str(), fullmsg.c_str(), "0", "empty", DEFAULT_LOCALE, prefix.c_str());
 
         return 0;
     }
@@ -3662,6 +3845,7 @@ namespace LuaPlayer
      * @values [HUNTER_PET, 1]
      *
      * @param uint32 entryId : the ID of the pet to summon.
+     * @param petsavemode 
      * @param float x
      * @param float y
      * @param float z
@@ -3672,7 +3856,7 @@ namespace LuaPlayer
     int SummonPet(Eluna* E, Player* player)
     {
         uint32 entry = E->CHECKVAL<uint32>(2);
-        int mode = E->CHECKVAL<int>(3, PET_SAVE_AS_DELETED);
+        int mode = E->CHECKVAL<int>(3, PET_SAVE_AS_CURRENT);
         float x = E->CHECKVAL<float>(4);
         float y = E->CHECKVAL<float>(5);
         float z = E->CHECKVAL<float>(6);
@@ -3725,6 +3909,34 @@ namespace LuaPlayer
         return 0;
     }
 
+    /**
+     * Add item appearance to the [Player].
+     *
+     * @param uint32 itemId : the ID of the item to add appearance from
+     */
+    int AddItemAppearance(Eluna* E, Player* player)
+    {
+        uint32 entry = E->CHECKVAL<uint32>(2);
+
+        player->GetSession()->GetCollectionMgr()->AddItemAppearance(entry);
+
+        return 0;
+    }
+
+    /**
+     * Add transmog set appearances to the [Player].
+     *
+     * @param uint32 transmogSetId : the ID of the set to add all appearances from
+     */
+    int AddTransmogSet(Eluna* E, Player* player)
+    {
+        uint32 entry = E->CHECKVAL<uint32>(2);
+
+        player->GetSession()->GetCollectionMgr()->AddTransmogSet(entry);
+
+        return 0;
+    }
+
     ElunaRegister<Player> PlayerMethods[] =
     {
         // Getters
@@ -3738,6 +3950,9 @@ namespace LuaPlayer
         { "GetGuild", &LuaPlayer::GetGuild },
         { "GetAccountId", &LuaPlayer::GetAccountId },
         { "GetAccountName", &LuaPlayer::GetAccountName },
+        { "GetArenaPoints", &LuaPlayer::GetArenaPoints },
+        { "GetHonorPoints", &LuaPlayer::GetHonorPoints },
+        { "GetLifetimeKills", &LuaPlayer::GetLifetimeKills },
         { "GetLifetimeKills", &LuaPlayer::GetLifetimeKills },
         { "GetPlayerIP", &LuaPlayer::GetPlayerIP },
         { "GetLevelPlayedTime", &LuaPlayer::GetLevelPlayedTime },
@@ -3755,12 +3970,14 @@ namespace LuaPlayer
         { "GetQuestStatus", &LuaPlayer::GetQuestStatus },
         { "GetInGameTime", &LuaPlayer::GetInGameTime },
         { "GetComboPoints", &LuaPlayer::GetComboPoints },
+        { "GetComboTarget", &LuaPlayer::GetComboTarget },
         { "GetGuildName", &LuaPlayer::GetGuildName },
         { "GetFreeTalentPoints", &LuaPlayer::GetFreeTalentPoints },
         { "GetActiveSpec", &LuaPlayer::GetActiveSpec },
         { "GetSpecsCount", &LuaPlayer::GetSpecsCount },
         { "GetSpellCooldownDelay", &LuaPlayer::GetSpellCooldownDelay },
         { "GetGuildRank", &LuaPlayer::GetGuildRank },
+        { "GetDifficulty", &LuaPlayer::GetDifficulty },
         { "GetHealthBonusFromStamina", &LuaPlayer::GetHealthBonusFromStamina },
         { "GetManaBonusFromIntellect", &LuaPlayer::GetManaBonusFromIntellect },
         { "GetMaxSkillValue", &LuaPlayer::GetMaxSkillValue },
@@ -3788,18 +4005,22 @@ namespace LuaPlayer
         { "GetCorpse", &LuaPlayer::GetCorpse },
         { "GetGossipTextId", &LuaPlayer::GetGossipTextId },
         { "GetQuestRewardStatus", &LuaPlayer::GetQuestRewardStatus },
+        { "GetShieldBlockValue", &LuaPlayer::GetShieldBlockValue },
         { "GetMailCount", &LuaPlayer::GetMailCount },
         { "GetXP", &LuaPlayer::GetXP },
         { "GetXPForNextLevel", &LuaPlayer::GetXPForNextLevel },
         { "GetMoney", &LuaPlayer::GetMoney },
 
         // Setters
+        { "AdvanceSkillsToMax", &LuaPlayer::AdvanceSkillsToMax },
         { "AdvanceSkill", &LuaPlayer::AdvanceSkill },
         { "AdvanceAllSkills", &LuaPlayer::AdvanceAllSkills },
         { "SetCoinage", &LuaPlayer::SetCoinage },
         { "SetKnownTitle", &LuaPlayer::SetKnownTitle },
         { "UnsetKnownTitle", &LuaPlayer::UnsetKnownTitle },
         { "SetBindPoint", &LuaPlayer::SetBindPoint },
+        { "SetArenaPoints", &LuaPlayer::SetArenaPoints },
+        { "SetHonorPoints", &LuaPlayer::SetHonorPoints },
         { "SetGameMaster", &LuaPlayer::SetGameMaster },
         { "SetGMChat", &LuaPlayer::SetGMChat },
         { "SetTaxiCheat", &LuaPlayer::SetTaxiCheat },
@@ -3854,6 +4075,7 @@ namespace LuaPlayer
         { "HasPendingBind", &LuaPlayer::HasPendingBind },
         { "HasAchieved", &LuaPlayer::HasAchieved },
         { "SetAchievement", &LuaPlayer::SetAchievement },
+        { "CanUninviteFromGroup", &LuaPlayer::CanUninviteFromGroup },
         { "IsRested", &LuaPlayer::IsRested },
         { "IsNeverVisible", &LuaPlayer::IsNeverVisible },
         { "IsVisibleForPlayer", &LuaPlayer::IsVisibleForPlayer },
@@ -3886,6 +4108,8 @@ namespace LuaPlayer
         { "CanRewardQuest", &LuaPlayer::CanRewardQuest },
         { "HasRecruited", &LuaPlayer::HasRecruited },
         { "IsRecruited", &LuaPlayer::IsRecruited },
+        { "AddItemAppearance", &LuaPlayer::AddItemAppearance },
+        { "AddTransmogSet", &LuaPlayer::AddTransmogSet },
 
         // Gossip
         { "GossipMenuAddItem", &LuaPlayer::GossipMenuAddItem },
@@ -3945,7 +4169,11 @@ namespace LuaPlayer
         { "DurabilityPointLossForEquipSlot", &LuaPlayer::DurabilityPointLossForEquipSlot },
         { "DurabilityRepairAll", &LuaPlayer::DurabilityRepairAll },
         { "DurabilityRepair", &LuaPlayer::DurabilityRepair },
+        { "ModifyHonorPoints", &LuaPlayer::ModifyHonorPoints },
+        { "ModifyArenaPoints", &LuaPlayer::ModifyArenaPoints },
         { "LeaveBattleground", &LuaPlayer::LeaveBattleground },
+        { "UnbindInstance", &LuaPlayer::UnbindInstance },
+        { "UnbindAllInstances", &LuaPlayer::UnbindAllInstances },
         { "RemoveFromBattlegroundRaid", &LuaPlayer::RemoveFromBattlegroundRaid },
         { "ResetAchievements", &LuaPlayer::ResetAchievements },
         { "KickPlayer", &LuaPlayer::KickPlayer },

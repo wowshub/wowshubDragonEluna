@@ -261,11 +261,14 @@ namespace LuaGameObject
         // cs_gobject.cpp copy paste
         ObjectGuid ownerGuid = go->GetOwnerGUID();
 
-        Unit* owner = eObjectAccessor()GetUnit(*go, ownerGuid);
-        if (!owner || !ownerGuid.IsPlayer())
-            return 0;
+        if (!ownerGuid.IsEmpty())
+        {
+            Unit* owner = eObjectAccessor()GetUnit(*go, ownerGuid);
+            if (!owner || !ownerGuid.IsPlayer())
+                return 0;
 
-        owner->RemoveGameObject(go, false);
+            owner->RemoveGameObject(go, false);
+        }
 
         if (deldb)
             GameObject::DeleteFromDB(go->GetSpawnId());

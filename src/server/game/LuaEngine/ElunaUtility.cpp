@@ -10,6 +10,7 @@
 #include "Unit.h"
 #include "GameObject.h"
 #include "DB2Stores.h"
+#include "IpAddress.h"
 
 uint32 ElunaUtil::GetCurrTime()
 {
@@ -185,4 +186,11 @@ unsigned char* ElunaUtil::DecodeData(const char *data, size_t *output_length)
     }
 
     return decoded_data;
+}
+
+bool ElunaUtil::IsIPAddress(std::string const& text)
+{
+    boost::system::error_code error;
+    Trinity::Net::make_address(text, error);
+    return !error;
 }

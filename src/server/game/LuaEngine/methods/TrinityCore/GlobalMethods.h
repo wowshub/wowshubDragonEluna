@@ -449,7 +449,8 @@ namespace LuaGlobalFunctions
     int GetItemLink(Eluna* E)
     {
         uint32 entry = E->CHECKVAL<uint32>(1);
-        uint8 locale = E->CHECKVAL<uint8>(2, DEFAULT_LOCALE);
+        LocaleConstant locale = static_cast<LocaleConstant>(E->CHECKVAL<uint8>(2, DEFAULT_LOCALE));
+
         if (locale >= TOTAL_LOCALES)
             return luaL_argerror(E->L, 2, "valid LocaleConstant expected");
 
@@ -523,7 +524,8 @@ namespace LuaGlobalFunctions
     int GetAreaName(Eluna* E)
     {
         uint32 areaOrZoneId = E->CHECKVAL<uint32>(1);
-        uint8 locale = E->CHECKVAL<uint8>(2, DEFAULT_LOCALE);
+        LocaleConstant locale = static_cast<LocaleConstant>(E->CHECKVAL<uint8>(2, DEFAULT_LOCALE));
+
         if (locale >= TOTAL_LOCALES)
             return luaL_argerror(E->L, 2, "valid LocaleConstant expected");
 
@@ -1824,10 +1826,11 @@ namespace LuaGlobalFunctions
     {
         uint32 opcode = E->CHECKVAL<uint32>(1);
         size_t size = E->CHECKVAL<size_t>(2);
-        if (opcode >= NUM_CMSG_OPCODES)
+        OpcodeTable opcodeTable;
+        if ((!opcodeTable.IsValid((OpcodeClient)opcode)) || (!opcodeTable.IsValid((OpcodeServer)opcode)))
             return luaL_argerror(E->L, 1, "valid opcode expected");
 
-        E->Push(new WorldPacket((OpcodesList)opcode, size));
+        E->Push(new WorldPacket(opcode, size));
         return 1;
     }
 
@@ -1853,7 +1856,6 @@ namespace LuaGlobalFunctions
         vItem.maxcount = maxcount;
         vItem.incrtime = incrtime;
         vItem.ExtendedCost = extendedcost;
-        vItem.Type = ITEM_VENDOR_TYPE_ITEM;
 
         if (!eObjectMgr->IsVendorItemValid(entry, vItem))
             return 0;
@@ -1955,6 +1957,11 @@ namespace LuaGlobalFunctions
                     return luaL_argerror(E->L, 2, "invalid character name");
                 mode = BanMode::BAN_CHARACTER;
                 break;
+            case BAN_IP:
+                if (!ElunaUtil::IsIPAddress(nameOrIP))
+                    return luaL_argerror(E->L, 2, "invalid ip");
+                mode = BanMode::BAN_IP;
+                break;
             default:
                 return luaL_argerror(E->L, 1, "unknown banmode");
         }
@@ -2051,7 +2058,7 @@ namespace LuaGlobalFunctions
                 continue;
             }
 
-            if (amount < 1 || (item_proto->ExtendedData->MaxCount > 0 && amount > uint32(item_proto->ExtendedData->MaxCount)))
+            if (amount < 1 || (item_proto->GetMaxCount() > 0 && amount > uint32(item_proto->GetMaxCount())))
             {
                 luaL_error(E->L, "Item entry %d has invalid amount %d", entry, amount);
                 continue;

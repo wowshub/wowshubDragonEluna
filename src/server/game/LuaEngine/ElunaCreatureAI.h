@@ -18,7 +18,7 @@ struct ElunaCreatureAI : NativeScriptedAI
     bool justSpawned;
     // used to delay movementinform hook (WP hook)
     std::vector< std::pair<uint32, uint32> > movepoints;
-    ElunaCreatureAI(Creature* creature) : NativeScriptedAI(creature), justSpawned(true)
+    ElunaCreatureAI(Creature* creature, uint32 scriptId) : NativeScriptedAI(creature, scriptId), justSpawned(true)
     {
     }
     ~ElunaCreatureAI() { }

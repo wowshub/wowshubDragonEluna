@@ -25,6 +25,37 @@
 namespace LuaObject
 {
     /**
+     * Returns `true` if the specified flag is set, otherwise `false`.
+     *
+     * @param uint32 flag : the flag to check for in the flags data
+     * @return bool hasFlag
+     */
+    int HasFlag(Eluna* E, Object* obj)
+    {
+        uint32 flag = E->CHECKVAL<uint32>(2);
+
+        E->Push(obj->HasDynamicFlag(flag));
+        return 1;
+    }
+
+    /**
+     * Sets the specified flag in the data value at the specified index.
+     *
+     * If the flag was already set, it remains set.
+     *
+     * To remove a flag, use [Object:RemoveFlag].
+     *
+     * @param uint32 value
+     */
+    int SetFlag(Eluna* E, Object* obj)
+    {
+        uint32 flag = E->CHECKVAL<uint32>(2);
+
+        obj->SetDynamicFlag(flag);
+        return 0;
+    }
+
+    /**
      * Returns `true` if the [Object] has been added to its [Map], otherwise `false`.
      *
      * @return bool inWorld
@@ -133,6 +164,20 @@ namespace LuaObject
     }
 
     /**
+     * Removes a flag from the value at the specified index.
+     *
+     * @param uint16 index
+     * @param uint32 flag
+     */
+    int RemoveFlag(Eluna* E, Object* obj)
+    {
+        uint32 flag = E->CHECKVAL<uint32>(2);
+
+        obj->RemoveDynamicFlag(flag);
+        return 0;
+    }
+
+    /**
      * Attempts to convert the [Object] to a [Corpse].
      *
      * If the [Object] is not a [Corpse], returns `nil`.
@@ -208,16 +253,19 @@ namespace LuaObject
 
         // Setters
         { "SetScale", &LuaObject::SetScale },
+        { "SetFlag", &LuaObject::SetFlag },
 
         // Boolean
         { "IsInWorld", &LuaObject::IsInWorld },
+        { "HasFlag", &LuaObject::HasFlag },
 
         // Other
         { "ToGameObject", &LuaObject::ToGameObject },
         { "ToUnit", &LuaObject::ToUnit },
         { "ToCreature", &LuaObject::ToCreature },
         { "ToPlayer", &LuaObject::ToPlayer },
-        { "ToCorpse", &LuaObject::ToCorpse }
+        { "ToCorpse", &LuaObject::ToCorpse },
+        { "RemoveFlag",& LuaObject::RemoveFlag }
     };
 };
 #endif

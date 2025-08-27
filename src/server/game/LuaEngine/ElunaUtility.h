@@ -23,6 +23,7 @@
 #include <unordered_set>
 #include <mutex>
 #include <memory>
+#include <sstream>
 
 #define USING_BOOST
 
@@ -134,6 +135,8 @@ namespace ElunaUtil
      * The returned result buffer must be `delete[]`ed by the caller.
      */
     unsigned char* DecodeData(const char* data, size_t *output_length);
+
+    bool IsIPAddress(std::string const& text);
 };
 
 #endif

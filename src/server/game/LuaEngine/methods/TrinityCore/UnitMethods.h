@@ -117,7 +117,7 @@ namespace LuaUnit
      */
     int IsRooted(Eluna* E, Unit* unit)
     {
-        E->Push(unit->HasUnitMovementFlag(MOVEMENTFLAG_ROOT));
+        E->Push(unit->HasRootAura() || unit->HasUnitMovementFlag(MOVEMENTFLAG_ROOT));
         return 1;
     }
 
@@ -669,7 +669,7 @@ namespace LuaUnit
         if (spellschool >= MAX_SPELL_SCHOOL)
             return 1;
 
-        E->Push(unit->ToPlayer()->GetModDamageDonePos(static_cast<SpellSchools>(spellschool)));
+        E->Push(unit->GetOwner()->ToPlayer()->m_activePlayerData->ModDamageDonePos[spellschool]);
         return 1;
     }
 

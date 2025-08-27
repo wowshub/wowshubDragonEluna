@@ -93,9 +93,9 @@ bool Eluna::OnItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targ
 
 bool Eluna::OnExpire(Player* pPlayer, ItemTemplate const* pProto)
 {
-    START_HOOK_WITH_RETVAL(ITEM_EVENT_ON_EXPIRE, pProto->GetId(), false);
+    START_HOOK_WITH_RETVAL(ITEM_EVENT_ON_EXPIRE, pProto->BasicData->ID, false);
     HookPush(pPlayer);
-    HookPush(pProto->GetId());
+    HookPush(pProto->BasicData->ID);
     return CallAllFunctionsBool(binding, key);
 }
 

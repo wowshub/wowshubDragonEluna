@@ -753,12 +753,6 @@ int Eluna::Register(std::underlying_type_t<Hooks::RegisterTypes> regtype, uint32
         case Hooks::REGTYPE_PACKET:
             if (event_id < Hooks::PACKET_EVENT_COUNT)
             {
-                if (entry >= NUM_CMSG_OPCODES)
-                {
-                    luaL_unref(L, LUA_REGISTRYINDEX, functionRef);
-                    luaL_error(L, "Couldn't find a creature with (ID: %d)!", entry);
-                    return 0; // Stack: (empty)
-                }
                 return RegisterEntryBinding<Hooks::PacketEvents>(this, regtype, entry, event_id, functionRef, shots);
             }
             break;
@@ -887,7 +881,7 @@ void Eluna::UpdateEluna(uint32 diff)
 
             _ReloadEluna();
 
-    eventMgr->UpdateProcessors(diff);
+    eventMgr->globalProcessor->Update(diff);
 
     GetQueryProcessor().ProcessReadyCallbacks();
 }
@@ -950,7 +944,7 @@ CreatureAI* Eluna::GetAI(Creature* creature)
 
         if (CreatureEBindings->HasBindingsFor(entryKey) ||
             CreatureUBindings->HasBindingsFor(uniqueKey))
-            return new ElunaCreatureAI(creature);
+            return new ElunaCreatureAI(creature, sObjectMgr->GetScriptId("ElunaCreatureAI", false));
     }
 
     return NULL;

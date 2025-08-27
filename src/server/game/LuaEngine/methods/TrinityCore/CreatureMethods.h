@@ -171,6 +171,7 @@ namespace LuaCreature
     int CanWalk(Eluna* E, Creature* creature)
     {
         E->Push(!creature->IsAquatic());
+
         return 1;
     }
 
@@ -524,9 +525,8 @@ namespace LuaCreature
 
         if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell, DIFFICULTY_NONE))
         {
-            auto cooldown = creature->GetSpellHistory()->GetRemainingCooldown(spellInfo);
-
-            E->Push(static_cast<uint32>(std::chrono::duration_cast<std::chrono::milliseconds>(cooldown).count())); // need check
+            Milliseconds remainingCooldown = creature->GetSpellHistory()->GetRemainingCooldown(spellInfo);
+            E->Push(remainingCooldown.count());
         }
         else
             E->Push(0);
@@ -862,9 +862,8 @@ namespace LuaCreature
      */
     int GetRank(Eluna* E, Creature* creature)
     {
-        CreatureClassifications rank = creature->GetCreatureTemplate()->Classification;
+        E->Push(static_cast<int>(creature->GetCreatureClassification()));
 
-        E->Push(uint32(rank));
         return 1;
     }
 

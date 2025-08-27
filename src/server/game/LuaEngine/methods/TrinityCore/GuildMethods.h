@@ -213,11 +213,11 @@ namespace LuaGuild
     int AddMember(Eluna* E, Guild* guild)
     {
         Player* player = E->CHECKOBJ<Player>(2);
-        GuildRankId rankId = *E->CHECKOBJ<GuildRankId>(3);
+        uint8 rankId = E->CHECKVAL<uint8>(3, GUILD_RANK_NONE);
 
         CharacterDatabaseTransaction trans(nullptr);
 
-        guild->AddMember(trans, player->GET_GUID(), rankId);
+        guild->AddMember(trans, player->GET_GUID(), GuildRankId(rankId));
         return 0;
     }
 

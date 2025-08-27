@@ -372,37 +372,18 @@ namespace LuaItem
     */
     int GetItemId(Eluna* E, Item* item)
     {
-        E->Push(item->GetTemplate()->GetId());
+        E->Push(item->GetTemplate()->BasicData->ID);
         return 1;
     }
 
     /**
      * Returns the name of the [Item]
      *
-     *  <pre>
-     * enum LocaleConstant
-     * {
-     *     LOCALE_enUS = 0,
-     *     LOCALE_koKR = 1,
-     *     LOCALE_frFR = 2,
-     *     LOCALE_deDE = 3,
-     *     LOCALE_zhCN = 4,
-     *     LOCALE_zhTW = 5,
-     *     LOCALE_esES = 6,
-     *     LOCALE_esMX = 7,
-     *     LOCALE_ruRU = 8
-     * };
-     * </pre>
-     *
-     * @param [LocaleConstant] locale = DEFAULT_LOCALE : locale to return the [Item]'s name in
-     *
      * @return string name
      */
     int GetName(Eluna* E, Item* item)
     {
-        uint8 locale = E->CHECKVAL<uint8>(2, DEFAULT_LOCALE);
-
-        E->Push(item->GetTemplate()->GetName(static_cast<LocaleConstant>(locale)));
+        E->Push(item->GetTemplate()->GetDefaultLocaleName());
         return 1;
     }
 
@@ -413,7 +394,8 @@ namespace LuaItem
      */
     int GetDisplayId(Eluna* E, Item* item)
     {
-        E->Push(item->GetTemplate()->ExtendedData->Display.Str[(LocaleConstant)0]);
+        auto player = item->GetOwner();
+        E->Push(item->GetDisplayId(player));
         return 1;
     }
 
@@ -425,6 +407,28 @@ namespace LuaItem
     int GetQuality(Eluna* E, Item* item)
     {
         E->Push(item->GetTemplate()->GetQuality());
+        return 1;
+    }
+
+    /**
+    * Returns the flags of the [Item]
+    *
+    * @return uint32 flags
+    */
+    int GetFlags(Eluna* E, Item* item)
+    {
+        E->Push(item->GetTemplate()->ExtendedData->Flags[0]);
+        return 1;
+    }
+
+    /**
+    * Returns the flags2 of the [Item]
+    *
+    * @return uint32 flags2
+    */
+    int GetFlags2(Eluna* E, Item* item)
+    {
+        E->Push(item->GetTemplate()->ExtendedData->Flags[1]);
         return 1;
     }
 
@@ -495,6 +499,17 @@ namespace LuaItem
     }
 
     /**
+     * Returns the [Player] races allowed to use this [Item]
+     *
+     * @return uint32 allowableRace
+     */
+    int GetAllowableRace(Eluna* E, Item* item)
+    {
+        E->Push(item->GetTemplate()->GetAllowableRace().RawValue);
+        return 1;
+    }
+
+    /**
      * Returns the [Item]s level
      *
      * @return uint32 itemLevel
@@ -513,6 +528,114 @@ namespace LuaItem
     int GetRequiredLevel(Eluna* E, Item* item)
     {
         E->Push(item->GetTemplate()->GetBaseRequiredLevel());
+        return 1;
+    }
+
+    /**
+     * Returns the stat info of the specified stat slot of this [Item]
+     *
+     * @param uint8 statSlot : the stat slot specified
+     * @return int32 statValue
+     * @return int32 statType
+     */
+    int GetStatInfo(Eluna* E, Item* item)
+    {
+        uint8 statSlot = E->CHECKVAL<uint8>(2);
+        int32 statValue = 0;
+        int32 statType = 0;
+
+        if (statSlot > 0 && statSlot <= MAX_ITEM_PROTO_STATS)
+        {
+            auto owner = item->GetOwner();
+            statValue = item->GetItemStatValue(statSlot, owner);
+            statType = item->GetItemStatType(statSlot);
+        }
+
+        E->Push(statValue);
+        E->Push(statType);
+        return 2;
+    }
+
+    /**
+     * Returns the damage info of the specified damage slot of this [Item]
+     *
+     * WIP
+     * 
+     * @param uint8 damageSlot : the damage slot specified (1 or 2)
+     * @return uint32 damageType
+     * @return float minDamage
+     * @return float maxDamage
+     */
+    /*int GetDamageInfo(Eluna* E, Item* item)
+    {
+        uint8 damageSlot = E->CHECKVAL<uint8>(2);
+        uint32 damageType = 0;
+        float damageMin = 0;
+        float damageMax = 0;
+
+        if (damageSlot > 0 && damageSlot <= MAX_ITEM_PROTO_DAMAGES)
+        {
+            auto owner = item->GetOwner();
+            auto itemTemplate = item->GetTemplate();
+            damageType = itemTemplate->GetDamageType();
+            float dps = itemTemplate->GetDPS(item->GetItemLevel(owner));
+        }
+
+        if (dps > 0.0f)
+        {
+            float avgDamage = dps * itemTemplate->GetDelay() * 0.001f;
+            damageMin = (itemTemplate->GetDmgVariance() * -0.5f + 1.0f) * avgDamage;
+            damageMax = floor(float(avgDamage * (itemTemplate->GetDmgVariance() * 0.5f + 1.0f) + 0.5f));
+        }
+
+        E->Push(damageType);
+        E->Push(damageMin);
+        E->Push(damageMax);
+        return 3;
+    }*/
+
+    /**
+     * Returns the base attack speed of this [Item]
+     *
+     * @return uint32 speed
+     */
+    int GetSpeed(Eluna* E, Item* item)
+    {
+        E->Push(item->GetTemplate()->GetDelay());
+        return 1;
+    }
+
+    /**
+     * Returns the base armor of this [Item]
+     *
+     * @return uint32 armor
+     */
+    int GetArmor(Eluna* E, Item* item)
+    {
+        auto itemLevel = item->GetItemLevel(item->GetOwner());
+        E->Push(item->GetTemplate()->GetArmor(itemLevel));
+        return 1;
+    }
+
+    /**
+     * Returns the max durability of this [Item]
+     *
+     * @return uint32 maxDurability
+     */
+    int GetMaxDurability(Eluna* E, Item* item)
+    {
+        E->Push(item->m_itemData->MaxDurability);
+        return 1;
+    }
+
+    /**
+     * Returns the current durability of this [Item]
+     *
+     * @return uint32 durabiliy
+     */
+    int GetDurability(Eluna* E, Item* item)
+    {
+        E->Push(item->m_itemData->Durability);
         return 1;
     }
 
@@ -674,16 +797,25 @@ namespace LuaItem
         { "GetName", &LuaItem::GetName },
         { "GetDisplayId", &LuaItem::GetDisplayId },
         { "GetQuality", &LuaItem::GetQuality },
+        { "GetFlags", &LuaItem::GetFlags },
+        { "GetFlags2", &LuaItem::GetFlags2 },
         { "GetExtraFlags", &LuaItem::GetExtraFlags },		
         { "GetBuyCount", &LuaItem::GetBuyCount },
         { "GetBuyPrice", &LuaItem::GetBuyPrice },
         { "GetSellPrice", &LuaItem::GetSellPrice },
         { "GetInventoryType", &LuaItem::GetInventoryType },
         { "GetAllowableClass", &LuaItem::GetAllowableClass },
+        { "GetAllowableRace", &LuaItem::GetAllowableRace },
         { "GetItemLevel", &LuaItem::GetItemLevel },
         { "GetRequiredLevel", &LuaItem::GetRequiredLevel },
         { "GetItemSet", &LuaItem::GetItemSet },
         { "GetBagSize", &LuaItem::GetBagSize },
+        { "GetStatInfo", &LuaItem::GetStatInfo },
+        //{ "GetDamageInfo", &LuaItem::GetDamageInfo }, //WIP
+        { "GetSpeed", &LuaItem::GetSpeed },
+        { "GetArmor", &LuaItem::GetArmor },
+        { "GetMaxDurability", &LuaItem::GetMaxDurability },
+        { "GetDurability", &LuaItem::GetDurability },
 
         // Setters
         { "SetOwner", &LuaItem::SetOwner },

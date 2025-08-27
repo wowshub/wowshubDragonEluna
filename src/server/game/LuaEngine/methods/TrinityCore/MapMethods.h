@@ -109,7 +109,6 @@ namespace LuaMap
         float x = E->CHECKVAL<float>(2);
         float y = E->CHECKVAL<float>(3);
         PhaseShift* phasemask = E->CHECKOBJ<PhaseShift>(4, 1);
-
         float z = map->GetHeight(*phasemask, x, y, MAX_HEIGHT);
         if (z != INVALID_HEIGHT)
             E->Push(z);
@@ -125,7 +124,7 @@ namespace LuaMap
      */
     int GetDifficulty(Eluna* E, Map* map)
     {
-        E->Push(map->GetMapDifficulty()->DifficultyID);
+        E->Push(map->GetDifficultyID());
         return 1;
     }
 
