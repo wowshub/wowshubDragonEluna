@@ -771,6 +771,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         void UpdateSpawnGroupConditions();
 
 #ifdef ELUNA
+        bool IsTerrainMap() const { return GetTerrain() == nullptr; }
+
         Eluna* GetEluna() const { return eluna.get(); }
 
         LuaVal lua_data = LuaVal({});
