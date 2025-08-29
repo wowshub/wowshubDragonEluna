@@ -117,7 +117,6 @@ bool Eluna::OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 sender, 
     START_HOOK_WITH_RETVAL(REGTYPE_CREATURE_GOSSIP, GOSSIP_EVENT_ON_SELECT, pCreature->GetEntry(), false);
 
     auto original_menu = pPlayer->PlayerTalkClass->GetGossipMenu().GetMenuId();
-
     pPlayer->PlayerTalkClass->ClearMenus();
 
     HookPush(pPlayer);

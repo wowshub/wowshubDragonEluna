@@ -2054,7 +2054,7 @@ namespace LuaUnit
     int SendUnitSay(Eluna* E, Unit* unit)
     {
         const char* msg = E->CHECKVAL<const char*>(2);
-        uint32 language = E->CHECKVAL<uint32>(3);
+        uint32 language = E->CHECKVAL<uint32>(3, 0);
 
         if (std::string(msg).length() > 0)
             unit->Say(msg, (Language)language, unit);
