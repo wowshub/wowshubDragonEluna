@@ -1899,65 +1899,6 @@ public:
     }
 };
 
-// Binding Shot - 109248
-// AreaTriggerID - 1524
-class at_hun_binding_shot : public AreaTriggerEntityScript
-{
-public:
-
-    at_hun_binding_shot() : AreaTriggerEntityScript("at_hun_binding_shot") { }
-
-    struct at_hun_binding_shotAI : AreaTriggerAI
-    {
-        enum UsedSpells
-        {
-            SPELL_HUNTER_BINDING_SHOT_AURA = 117405,
-            SPELL_HUNTER_BINDING_SHOT_STUN = 117526,
-            SPELL_HUNTER_BINDING_SHOT_IMMUNE = 117553,
-            SPELL_HUNTER_BINDING_SHOT_VISUAL_1 = 118306,
-            SPELL_HUNDER_BINDING_SHOT_VISUAL_2 = 117614
-        };
-
-        at_hun_binding_shotAI(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
-
-        void OnUnitEnter(Unit* unit) override
-        {
-            Unit* caster = at->GetCaster();
-
-            if (!caster)
-                return;
-
-            if (!unit)
-                return;
-
-            if (!caster->IsFriendlyTo(unit))
-            {
-                unit->CastSpell(unit, SPELL_HUNTER_BINDING_SHOT_AURA, true);
-            }
-        }
-
-        void OnUnitExit(Unit* unit) override
-        {
-            if (!unit || !at->GetCaster())
-                return;
-
-            Position pos = at->GetPosition();
-
-            // Need to check range also, since when the trigger is removed, this get called as well.
-            if (unit->HasAura(SPELL_HUNTER_BINDING_SHOT_AURA) && unit->GetExactDist(&pos) >= 5.0f)
-            {
-                unit->RemoveAura(SPELL_HUNTER_BINDING_SHOT_AURA);
-                at->GetCaster()->CastSpell(unit, SPELL_HUNTER_BINDING_SHOT_STUN, true);
-            }
-        }
-    };
-
-    AreaTriggerAI* GetAI(AreaTrigger* areatrigger) const override
-    {
-        return new at_hun_binding_shotAI(areatrigger);
-    }
-};
-
 // 321530 - Bloodshed - Work half
 class spell_hun_bloodshed : public SpellScript
 {
@@ -2615,7 +2556,6 @@ void AddSC_hunter_spell_scripts()
     RegisterSpellScript(spell_hun_bestial_wrath);
     new spell_hun_barbed_shot();
     new spell_hun_dire_beast();
-    new at_hun_binding_shot();
     RegisterSpellScript(spell_hun_bloodshed); //work half
     RegisterSpellAndAuraScriptPair(spell_hun_volley, spell_hun_volley_aura);
     new spell_bursting_shot();
