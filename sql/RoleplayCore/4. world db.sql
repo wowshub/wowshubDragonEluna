@@ -459,8 +459,6 @@ REPLACE INTO `spell_script_names` VALUES (19574, 'spell_hun_bestial_wrath');
 REPLACE INTO `spell_script_names` VALUES (217200, 'spell_hun_barbed_shot');
 REPLACE INTO `spell_script_names` VALUES (120679, 'spell_hun_dire_beast');
 
-REPLACE INTO `areatrigger_create_properties` VALUES (1524, 0, 5972, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 4, 5, 5, 2, 2, 0.3, 0.3, 0, 0, 'at_hun_binding_shot', 31478);
-
 REPLACE INTO `spell_script_names` VALUES (321530, 'spell_hun_bloodshed');
 REPLACE INTO `spell_script_names` VALUES (260243, 'spell_hun_volley');
 REPLACE INTO `spell_script_names` VALUES (186387, 'spell_bursting_shot');
