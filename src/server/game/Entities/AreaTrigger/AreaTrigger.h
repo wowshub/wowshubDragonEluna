@@ -194,6 +194,8 @@ class TC_GAME_API AreaTrigger final : public WorldObject, public GridObject<Area
 
         void UpdateShape();
 
+        void HandleUnitExit(Unit* unit);
+
         UF::UpdateField<UF::AreaTriggerData, int32(WowCS::EntityFragment::CGObject), TYPEID_AREATRIGGER> m_areaTriggerData;
 
     protected:
@@ -220,6 +222,8 @@ class TC_GAME_API AreaTrigger final : public WorldObject, public GridObject<Area
         void SearchUnitInDisk(UF::AreaTriggerDisk const& disk, std::vector<Unit*>& targetList);
         void SearchUnitInBoundedPlane(UF::AreaTriggerBoundedPlane const& boundedPlane, std::vector<Unit*>& targetList);
         void HandleUnitEnterExit(std::vector<Unit*> const& targetList);
+        void HandleUnitEnter(Unit* unit);
+        void HandleUnitExitInternal(Unit* unit);
 
         void DoActions(Unit* unit);
         void UndoActions(Unit* unit);
@@ -231,6 +235,8 @@ class TC_GAME_API AreaTrigger final : public WorldObject, public GridObject<Area
 
         Position const* GetOrbitCenterPosition() const;
         Position CalculateOrbitPosition() const;
+
+        void UpdateHasPlayersFlag();
 
         void DebugVisualizePosition(); // Debug purpose only
 
