@@ -137,7 +137,6 @@ enum WarriorSpells
     SPELL_WARRIOR_LAST_STAND                        = 12975,
     SPELL_WARRIOR_SLAM_ARMS                         = 1464,
     SPELL_WARRIOR_SUDDEN_DEATH_PROC                 = 280776,
-    SPELL_WARRIOR_BOUNDING_STRIDE                   = 202163,
     SPELL_WARRIOR_BOUNDING_STRIDE_SPEED             = 202164,
     SPELL_WARRIOR_LAST_STAND_TRIGGERED              = 12976,
     SPELL_WARRIOR_WRECKING_BALL_EFFECT              = 215570,
