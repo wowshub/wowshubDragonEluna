@@ -41,8 +41,15 @@ private:
     static inline uint32 m_staticYear = 1900;
     static inline uint32 m_staticMonth = 1;
     static inline uint32 m_staticMonthDay = 1;
-    static inline bool m_timeFreezed = false;
 
+    static inline bool m_timeFreezed = false;
+    static inline bool m_timeTransitioning = false;
+
+    static inline uint32 m_targetHour = 12;
+    static inline uint32 m_targetMinute = 0;
+
+    static inline uint32 m_transitionStepMs = 1000;
+    static inline uint32 m_transitionTimer = 0;
 
 public:
 
@@ -116,7 +123,21 @@ public:
 
     static bool IsTimeFreezed()
     {
-        return m_timeFreezed;
+        return m_timeFreezed && !m_timeTransitioning;
+    }
+
+    static void SetStaticTimeSmooth(uint32 targetHour, uint32 targetMinute, uint32 stepMs = 1000)
+    {
+        if (targetHour > 23 || targetMinute > 59)
+            return;
+
+        m_targetHour = targetHour;
+        m_targetMinute = targetMinute;
+        m_transitionStepMs = stepMs;
+        m_transitionTimer = 0;
+        m_timeTransitioning = true;
+        m_timeFreezed = false;
+
     }
 
     static void SetStaticTime(uint32 hour, uint32 minute, bool freeze = false)
@@ -124,6 +145,7 @@ public:
         m_staticHour = hour;
         m_staticMinute = minute;
         m_timeFreezed = freeze;
+        m_timeTransitioning = false;
 
         SaveStaticTimeToDB();
         SendTimeSync();
@@ -137,6 +159,7 @@ public:
         m_staticHour = localTime->tm_hour;
         m_staticMinute = localTime->tm_min;
         m_timeFreezed = false;
+        m_timeTransitioning = false;
 
         RoleplayDatabasePreparedStatement* stmt = RoleplayDatabase.GetPreparedStatement(Roleplay_DEL_SERVER_SETTINGS);
         RoleplayDatabase.Execute(stmt);
@@ -168,6 +191,37 @@ public:
 
         sWorld->SendGlobalMessage(timePacket.Write());
     }
+
+    static void Update(uint32 diff)
+    {
+        if (!m_timeTransitioning)
+            return;
+
+        m_transitionTimer += diff;
+
+        if (m_transitionTimer >= m_transitionStepMs)
+        {
+            m_transitionTimer = 0;
+
+            m_staticMinute++;
+            if (m_staticMinute >= 60)
+            {
+                m_staticMinute = 0;
+                m_staticHour++;
+                if (m_staticHour >= 24)
+                    m_staticHour = 0;
+            }
+
+            if (m_staticHour == m_targetHour && m_staticMinute == m_targetMinute)
+            {
+                m_timeTransitioning = false;
+                m_timeFreezed = true;
+                SaveStaticTimeToDB();
+            }
+
+            SendTimeSync();
+        }
+    }
 };
 
 class free_share_scripts : public CommandScript
@@ -191,7 +245,7 @@ public:
             { "npcmoveto",       rbac::RBAC_PERM_COMMAND_NPC_MOVE,      false,      &HandleNpcMoveTo,           ""},
             { "npcguidsay",      rbac::RBAC_PERM_COMMAND_NPC_SAY,       false,      &HandleNpcGuidSay,          ""},
             { "npcguidyell",     rbac::RBAC_PERM_COMMAND_NPC_YELL,      false,      &HandleNpcGuidYell,         ""},
-            { "settime",         rbac::RBAC_PERM_COMMAND_NPC_YELL,      false,      &HandleSetTimeCommand,      ""},
+            { "settime",         rbac::RBAC_PERM_COMMAND_NPC_YELL,      false,      &HandleSetTimeCommand,      "<hour> <minute> [instant|smooth] <ms shift>"},
             { "typing",          typimgCommandTable },
         };
 
@@ -441,12 +495,12 @@ public:
     }
 
     // custom command .settime
-    static bool HandleSetTimeCommand(ChatHandler* handler, Optional<uint32> hour, Optional<uint32> minute)
+    static bool HandleSetTimeCommand(ChatHandler* handler, Optional<uint32> hour, Optional<uint32> minute, Optional<std::string> mode, Optional<uint32> speedMs)
     {
         if (hour && *hour == 999)
         {
             StaticTimeManager::ResetToServerTime();
-            handler->PSendSysMessage("Time reset");
+            handler->PSendSysMessage("Time reset to server time.");
             return true;
         }
 
@@ -459,9 +513,20 @@ public:
             return false;
         }
 
-        StaticTimeManager::SetStaticTime(setHour, setMinute, true);
+        std::string modeStr = mode ? *mode : "instant";
 
-        handler->PSendSysMessage("Server time is set to %02u:%02u (frozen)", setHour, setMinute);
+        if (modeStr == "smooth")
+        {
+            uint32 stepMs = speedMs ? *speedMs : 1000;
+            StaticTimeManager::SetStaticTimeSmooth(setHour, setMinute, stepMs);
+            handler->PSendSysMessage("Smooth time transition started to %02u:%02u.", setHour, setMinute);
+        }
+        else
+        {
+            StaticTimeManager::SetStaticTime(setHour, setMinute, true);
+            handler->PSendSysMessage("Server time is set to %02u:%02u (frozen).", setHour, setMinute);
+        }
+
         return true;
     }
 };
@@ -484,6 +549,8 @@ public:
 
     void OnUpdate(uint32 diff) override
     {
+        StaticTimeManager::Update(diff);
+
         static uint32 timeCheckTimer = 0;
         timeCheckTimer += diff;
 

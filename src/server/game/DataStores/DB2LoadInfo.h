@@ -3137,6 +3137,46 @@ struct ItemDisenchantLootLoadInfo
     static constexpr DB2LoadInfo Instance{ Fields, 8, &ItemDisenchantLootMeta::Instance, HOTFIX_SEL_ITEM_DISENCHANT_LOOT };
 };
 
+struct ItemDisplayInfoLoadInfo
+{
+    static constexpr DB2FieldMeta Fields[31] =
+    {
+        {.IsSigned = false, .Type = FT_INT, .Name = "ID" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "GeosetGroupOverride" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "ItemVisual" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "ParticleColorID" },
+        {.IsSigned = false, .Type = FT_INT, .Name = "ItemRangedDisplayInfoID" },
+        {.IsSigned = false, .Type = FT_INT, .Name = "OverrideSwooshSoundKitID" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "SheatheTransformMatrixID" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "StateSpellVisualKitID" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "SheathedSpellVisualKitID" },
+        {.IsSigned = false, .Type = FT_INT, .Name = "UnsheathedSpellVisualKitID" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "Flags" },
+        {.IsSigned = false, .Type = FT_INT, .Name = "ModelResourcesID1" },
+        {.IsSigned = false, .Type = FT_INT, .Name = "ModelResourcesID2" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "ModelMaterialResourcesID1" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "ModelMaterialResourcesID2" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "ModelType1" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "ModelType2" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "GeosetGroup1" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "GeosetGroup2" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "GeosetGroup3" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "GeosetGroup4" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "GeosetGroup5" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "GeosetGroup6" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "AttachmentGeosetGroup1" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "AttachmentGeosetGroup2" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "AttachmentGeosetGroup3" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "AttachmentGeosetGroup4" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "AttachmentGeosetGroup5" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "AttachmentGeosetGroup6" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "HelmetGeosetVis1" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "HelmetGeosetVis2" },
+    };
+
+    static constexpr DB2LoadInfo Instance{ Fields, 31, &ItemDisplayInfoMeta::Instance, HOTFIX_SEL_ITEM_DISPLAY_INFO };
+};
+
 struct ItemEffectLoadInfo
 {
     static constexpr DB2FieldMeta Fields[9] =
