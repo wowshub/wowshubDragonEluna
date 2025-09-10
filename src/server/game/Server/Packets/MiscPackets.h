@@ -1131,7 +1131,7 @@ namespace WorldPackets
         class FactionSelectUI final : public ServerPacket
         {
         public:
-            FactionSelectUI() : ServerPacket(SMSG_SHOW_NEUTRAL_PLAYER_FACTION_SELECT_UI, 0) {}
+            FactionSelectUI() : ServerPacket(SMSG_SHOW_NEUTRAL_PLAYER_FACTION_SELECT_UI, 0) { }
 
             WorldPacket const* Write() override { return &_worldPacket; }
         };
@@ -1139,11 +1139,11 @@ namespace WorldPackets
         class FactionSelect final : public ClientPacket
         {
         public:
-            FactionSelect(WorldPacket&& packet) : ClientPacket(CMSG_NEUTRAL_PLAYER_SELECT_FACTION, std::move(packet)) {}
+            FactionSelect(WorldPacket&& packet) : ClientPacket(CMSG_NEUTRAL_PLAYER_SELECT_FACTION, std::move(packet)) { }
 
             void Read() override;
 
-            uint32 FactionChoice = 0;
+            uint8 FactionChoice = 0;
         };
     }
 }
