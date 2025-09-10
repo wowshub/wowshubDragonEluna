@@ -31667,3 +31667,9 @@ void Player::AddMoveImpulse(Position direction)
     addImpulse.Direction = direction;
     SendMessageToSet(addImpulse.Write(), true);
 }
+
+void Player::ShowNeutralPlayerFactionSelectUI()
+{
+    WorldPackets::Misc::FactionSelectUI packet;
+    GetSession()->SendPacket(packet.Write());
+}

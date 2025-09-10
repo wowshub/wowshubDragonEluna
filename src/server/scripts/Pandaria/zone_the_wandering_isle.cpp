@@ -1231,6 +1231,23 @@ class spell_flame_spout : public AuraScript
     }
 };
 
+// 108897 - Pandaren Faction Choice
+class spell_pandaren_faction_choice : public SpellScript
+{
+
+    void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+    {
+        if (Unit* caster = GetCaster())
+            if (caster->IsPlayer())
+                caster->ToPlayer()->ShowNeutralPlayerFactionSelectUI();
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_pandaren_faction_choice::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
 void AddSC_zone_the_wandering_isle()
 {
     RegisterCreatureAI(npc_tushui_huojin_trainee);
@@ -1254,4 +1271,6 @@ void AddSC_zone_the_wandering_isle()
     new at_min_dimwind_captured();
     new at_cave_of_meditation();
     new at_inside_of_cave_of_meditation();
+
+    RegisterSpellScript(spell_pandaren_faction_choice);
 }

@@ -3397,6 +3397,8 @@ class TC_GAME_API Player final : public Unit, public GridObject<Player>
         WargameRequest* GetWargameRequest() const { return _wargameRequest; }
         WargameRequest* _wargameRequest;
 
+        void ShowNeutralPlayerFactionSelectUI();
+
         // Spell cast request handling
     public:
         // Queues up a spell cast request that has been received via packet and processes it whenever possible.

@@ -914,4 +914,9 @@ namespace WorldPackets::Misc
         _worldPacket >> SpellID;
         _worldPacket >> SkillLineID;
     }
+
+    void WorldPackets::Misc::FactionSelect::Read()
+    {
+        _worldPacket >> FactionChoice;
+    }
 }
