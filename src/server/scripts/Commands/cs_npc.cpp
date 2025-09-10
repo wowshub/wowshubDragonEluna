@@ -1550,12 +1550,11 @@ public:
         {
             ObjectGuid castId = ObjectGuid::Create<HighGuid::Cast>(SPELL_CAST_SOURCE_NORMAL, target->GetMapId(), spellId, target->GetMap()->GenerateLowGuid<HighGuid::Cast>());
             AuraCreateInfo createInfo2(castId, spellInfo, target->GetMap()->GetDifficultyID(), MAX_EFFECT_MASK, target);
+            createInfo2.CasterGUID = target->GetGUID();
             Aura::TryRefreshStackOrCreate(createInfo2);
         }
 
-        //.ToString().c_str()
-
-        //Cot? SQL
+        //SQL insert
         guidLow = target->GetSpawnId();
         std::string auraString = std::to_string(uint32(spellId));
         QueryResult guidSql = WorldDatabase.PQuery("SELECT auras FROM creature_addon WHERE guid = '{}'", guidLow);
@@ -1583,8 +1582,6 @@ public:
         }
 
         return true;
-
-
     }
 
     static bool HandleNpcSetMountCommand(ChatHandler* handler, uint32 mount)
