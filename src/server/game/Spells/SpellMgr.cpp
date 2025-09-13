@@ -4808,6 +4808,20 @@ void SpellMgr::LoadSpellInfoCorrections()
     // ENDOF ANTORUS THE BURNING THRONE SPELLS
 
     //
+    // DRUSTVAR SPELLS
+    //
+
+    // Shoot Wickerman
+    ApplySpellFix({ 255416 }, [](SpellInfo* spellInfo)
+    {
+        spellInfo->AttributesEx2 |= SPELL_ATTR2_IGNORE_LINE_OF_SIGHT;
+    });
+
+    //
+    // ENDOF DRUSTVAR SPELLS
+    //
+
+    //
     // STORMSONG VALLEY SPELLS
     //
 
