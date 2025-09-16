@@ -1913,6 +1913,62 @@ class spell_mage_water_elemental_freeze : public SpellScript
     }
 };
 
+// 383493 - Wildfire
+class spell_mage_wildfire_area_crit : public AuraScript
+{
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellEffect({ { SPELL_MAGE_WILDFIRE_TALENT, EFFECT_3 } });
+    }
+
+    void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        AuraEffect const* wildfireCritEffect = caster->GetAuraEffect(SPELL_MAGE_WILDFIRE_TALENT, EFFECT_3);
+        if (!wildfireCritEffect)
+            return;
+
+        canBeRecalculated = false;
+        amount = wildfireCritEffect->GetAmount();
+    }
+
+    void Register() override
+    {
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_wildfire_area_crit::CalculateAmount, EFFECT_0, SPELL_AURA_MOD_CRIT_PCT);
+    }
+};
+
+// 383492 - Wildfire
+class spell_mage_wildfire_caster_crit : public AuraScript
+{
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellEffect({ { SPELL_MAGE_WILDFIRE_TALENT, EFFECT_2 } });
+    }
+
+    void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        AuraEffect const* wildfireCritEffect = caster->GetAuraEffect(SPELL_MAGE_WILDFIRE_TALENT, EFFECT_2);
+        if (!wildfireCritEffect)
+            return;
+
+        canBeRecalculated = false;
+        amount = wildfireCritEffect->GetAmount();
+    }
+
+    void Register() override
+    {
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_wildfire_caster_crit::CalculateAmount, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER);
+    }
+};
+
 // Presence of mind - 205025
 class spell_mage_presence_of_mind : public AuraScript
 {
@@ -2448,6 +2504,8 @@ void AddSC_mage_spell_scripts()
     RegisterSpellScript(spell_mage_tempest_barrier);
     RegisterSpellScript(spell_mage_touch_of_the_magi_aura);
     RegisterSpellScript(spell_mage_water_elemental_freeze);
+    RegisterSpellScript(spell_mage_wildfire_area_crit);
+    RegisterSpellScript(spell_mage_wildfire_caster_crit);
 
     //new
     RegisterSpellScript(spell_mage_presence_of_mind);
