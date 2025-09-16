@@ -120,6 +120,7 @@ enum MageSpells
     SPELL_MAGE_CHAIN_REACTION_DUMMY              = 278309,
     SPELL_MAGE_CHAIN_REACTION                    = 278310,
     SPELL_MAGE_TOUCH_OF_THE_MAGI_EXPLODE         = 210833,
+    SPELL_MAGE_WILDFIRE_TALENT                   = 383489,
     SPELL_MAGE_WINTERS_CHILL                     = 228358,
     SPELL_MAGE_HYPOTHERMIA                       = 41425,
     SPELL_MAGE_GLACIAL_INSULATION                = 235297,
