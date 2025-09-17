@@ -338,8 +338,7 @@ public:
                 }
             }
 
-            if (!UpdateVictim())
-                return;
+            UpdateVictim();
         }
 
         void FillCitizenList()
@@ -490,8 +489,7 @@ public:
                 }
             }
 
-            if (!UpdateVictim())
-                return;
+            UpdateVictim();
         }
 
         bool ToBeDeleted(std::map<ObjectGuid, int32>::iterator itr)
