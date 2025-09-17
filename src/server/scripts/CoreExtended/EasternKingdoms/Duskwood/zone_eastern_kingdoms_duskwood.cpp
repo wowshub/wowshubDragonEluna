@@ -123,7 +123,7 @@ struct npc_stalvan : public ScriptedAI
         {
             Talk(SAY_06, tobias); // You see, brother... we''re not so different...
             tobias->AI()->Talk(SAY_04); // No...
-            tobias->GetMotionMaster()->MovePoint(0, tobiasForestEscape, true);
+            tobias->GetMotionMaster()->MovePoint(0, tobiasForestEscape, true, {}, 2.5f);
             tobias->DespawnOrUnsummon(4s);
         }
     }
