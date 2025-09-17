@@ -36,12 +36,12 @@ EndScriptData */
 
 enum SpellSummonStalvanData
 {
-    NPC_STALVAN = 315,
-    NPC_TOBIAS = 43453,
-    NPC_WORGEN_TOBIAS = 43797,
+    NPC_STALVAN                                         = 315,
+    NPC_WORGEN_TOBIAS                                   = 43797,
 
-    DISPLAYID_WORGEN_TOBIAS = 33508,
-    QUEST_MISTMANTLES_REVENGE = 26674,
+    DISPLAYID_WORGEN_TOBIAS                             = 33508,
+    DISPLAYID_TOBIAS                                    = 31161,
+    QUEST_MISTMANTLES_REVENGE                           = 26674,
 };
 
 const Position stalvanPosition      = { -10371.72f, -1251.92f, 35.99339f };
@@ -61,32 +61,38 @@ const Position tobiasForestEscape = { -10362.98f, -1220.066f, 39.45f };
 
 enum StalvanData
 {
-    SPELL_WORGEN_TRANSFORMATION = 81908,
-    SPELL_CURSE_OF_STALVAN = 3105,
-    SPELL_FETID_BREATH = 85234,
+    SPELL_WORGEN_TRANSFORMATION                         = 81908,
+    SPELL_CURSE_OF_STALVAN                              = 3105,
+    SPELL_FETID_BREATH                                  = 85234,
 
-    EVENT_STALVAN_STEP_1 = 1,
-    EVENT_STALVAN_STEP_2 = 2,
-    EVENT_STALVAN_STEP_3 = 3,
-    EVENT_STALVAN_STEP_4 = 4,
-    EVENT_STALVAN_STEP_5 = 5,
-    EVENT_STALVAN_STEP_6 = 6,
+    EVENT_STALVAN_STEP_1                                = 1,
+    EVENT_STALVAN_STEP_2                                = 2,
+    EVENT_STALVAN_STEP_3                                = 3,
+    EVENT_STALVAN_STEP_4                                = 4,
+    EVENT_STALVAN_STEP_5                                = 5,
+    EVENT_STALVAN_STEP_6                                = 6,
 
-    EVENT_TOBIAS_STEP_1 = 7,
-    EVENT_TOBIAS_STEP_2 = 8,
-    EVENT_TOBIAS_STEP_3 = 9,
-    EVENT_TOBIAS_STEP_4 = 10,
+    EVENT_TOBIAS_STEP_1                                 = 7,
+    EVENT_TOBIAS_STEP_2                                 = 8,
+    EVENT_TOBIAS_STEP_3                                 = 9,
+    EVENT_TOBIAS_STEP_4                                 = 10,
 
-    EVENT_CAST_SPELL_CURSE_OF_STALVAN = 11,
-    EVENT_CAST_SPELL_FETID_BREATH = 12,
+    EVENT_CAST_SPELL_CURSE_OF_STALVAN                   = 11,
+    EVENT_CAST_SPELL_FETID_BREATH                       = 12,
 
-    SAY_00 = 0,
-    SAY_01 = 1,
-    SAY_02 = 2,
-    SAY_03 = 3,
-    SAY_04 = 4,
-    SAY_05 = 5,
-    SAY_06 = 6,
+    SAY_00                                              = 0,
+    SAY_01                                              = 1,
+    SAY_02                                              = 2,
+    SAY_03                                              = 3,
+    SAY_04                                              = 4,
+    SAY_05                                              = 5,
+    SAY_06                                              = 6,
+};
+
+enum TobiasData
+{
+    EVENT_TOBIAS_SAY_DEATH                              = 1,
+    EVENT_TOBIAS_ESCAPE                                 = 2,
 };
 
 // 315 - Stalvan Mistmantle
@@ -99,21 +105,20 @@ struct npc_stalvan : public ScriptedAI
         _events.Reset();
         _events.ScheduleEvent(EVENT_STALVAN_STEP_1, 3s);
         _events.ScheduleEvent(EVENT_STALVAN_STEP_2, 8s);
-        _events.ScheduleEvent(EVENT_STALVAN_STEP_3, 15s);
-        _events.ScheduleEvent(EVENT_STALVAN_STEP_4, 23s);
+        _events.ScheduleEvent(EVENT_STALVAN_STEP_3, 14s);
+        _events.ScheduleEvent(EVENT_STALVAN_STEP_4, 22s);
         _events.ScheduleEvent(EVENT_STALVAN_STEP_5, 26s);
         _events.ScheduleEvent(EVENT_STALVAN_STEP_6, 32s);
 
         _events.ScheduleEvent(EVENT_TOBIAS_STEP_1, 5s);
         _events.ScheduleEvent(EVENT_TOBIAS_STEP_2, 9s);
         _events.ScheduleEvent(EVENT_TOBIAS_STEP_3, 16s);
-        _events.ScheduleEvent(EVENT_TOBIAS_STEP_4, 27s);
+        _events.ScheduleEvent(EVENT_TOBIAS_STEP_4, 31s);
     }
 
     void JustEngagedWith(Unit* /*who*/) override
     {
         _events.ScheduleEvent(EVENT_CAST_SPELL_CURSE_OF_STALVAN, 5s);
-
         _events.ScheduleEvent(EVENT_CAST_SPELL_FETID_BREATH, 8s, 25s);
     }
 
@@ -122,18 +127,16 @@ struct npc_stalvan : public ScriptedAI
         if (Creature* tobias = GetTobias())
         {
             Talk(SAY_06, tobias); // You see, brother... we''re not so different...
-            tobias->AI()->Talk(SAY_04); // No...
-            tobias->GetMotionMaster()->MovePoint(0, tobiasForestEscape, true, {}, 2.5f);
-            tobias->DespawnOrUnsummon(4s);
+            tobias->AI()->SetData(1, 1);
         }
     }
 
     Creature* GetTobias()
     {
-        if (Creature* tobias = me->FindNearestCreature(NPC_TOBIAS, 30, true))
+        if (Creature* tobias = me->FindNearestCreature(NPC_WORGEN_TOBIAS, 20, true))
             return tobias;
 
-        return me->FindNearestCreature(NPC_WORGEN_TOBIAS, 30, true);
+        return nullptr;
     }
 
     void UpdateAI(uint32 diff) override
@@ -144,92 +147,92 @@ struct npc_stalvan : public ScriptedAI
         {
             switch (eventId)
             {
-                case EVENT_STALVAN_STEP_1:
-                    me->SetWalk(true);
-                    me->SetSpeed(MOVE_WALK, 2.5);
-                    me->GetMotionMaster()->MovePoint(0, stalvanDestination, true);
-                    Talk(SAY_00, GetTobias()); // My ring... Who holds my family ring... Tilloa, is that you?
-                    break;
+            case EVENT_STALVAN_STEP_1:
+                me->SetWalk(true);
+                me->SetSpeed(MOVE_WALK, 2.5);
+                me->GetMotionMaster()->MovePoint(0, stalvanDestination, true);
+                Talk(SAY_00, GetTobias()); // My ring... Who holds my family ring... Tilloa, is that you?
+                break;
 
-                case EVENT_STALVAN_STEP_2:
-                    Talk(SAY_01, GetTobias()); // Tobias...
-                    break;
+            case EVENT_STALVAN_STEP_2:
+                Talk(SAY_01, GetTobias()); // Tobias...
+                break;
 
-                case EVENT_STALVAN_STEP_3:
-                    Talk(SAY_02, GetTobias()); // It''s all true, brother. Every word. You doubted it?
-                    break;
+            case EVENT_STALVAN_STEP_3:
+                Talk(SAY_02, GetTobias()); // It''s all true, brother. Every word. You doubted it?
+                break;
 
-                case EVENT_STALVAN_STEP_4:
-                    Talk(SAY_03, GetTobias()); // You know why!
-                    break;
+            case EVENT_STALVAN_STEP_4:
+                Talk(SAY_03, GetTobias()); // You know why!
+                break;
 
-                case EVENT_STALVAN_STEP_5:
-                    Talk(SAY_04, GetTobias()); // Surely you''ve felt anger. Anger so foul and vicious that it makes you want to tear someone to shreds...
-                    break;
+            case EVENT_STALVAN_STEP_5:
+                Talk(SAY_04, GetTobias()); // Surely you''ve felt anger. Anger so foul and vicious that it makes you want to tear someone to shreds...
+                break;
 
-                case EVENT_STALVAN_STEP_6:
-                    Talk(SAY_05, GetTobias()); // Aren''t you feeling it right now?
-                    break;
+            case EVENT_STALVAN_STEP_6:
+                Talk(SAY_05, GetTobias()); // Aren''t you feeling it right now?
+                break;
 
-                case EVENT_TOBIAS_STEP_1:
-                    if (Creature* tobias = GetTobias())
-                    {
-                        tobias->SetFacingToObject(me, true);
-                        me->SetFacingToObject(tobias, true);
-                        tobias->AI()->Talk(SAY_00, me); // Brother!
-                    }
-                    break;
+            case EVENT_TOBIAS_STEP_1:
+                if (Creature* tobias = GetTobias())
+                {
+                    tobias->SetFacingToObject(me, true);
+                    me->SetFacingToObject(tobias, true);
+                    tobias->AI()->Talk(SAY_00, me); // Brother!
+                }
+                break;
 
-                case EVENT_TOBIAS_STEP_2:
-                    if (Creature* tobias = GetTobias())
-                        tobias->AI()->Talk(SAY_01, me); // Tell me it''s not true, brother. Tell me you didn''t die a murderer!
-                    break;
+            case EVENT_TOBIAS_STEP_2:
+                if (Creature* tobias = GetTobias())
+                    tobias->AI()->Talk(SAY_01, me); // Tell me it''s not true, brother. Tell me you didn''t die a murderer!
+                break;
 
-                case EVENT_TOBIAS_STEP_3:
-                    if (Creature* tobias = GetTobias())
-                        tobias->AI()->Talk(SAY_02, me); // But why?! How could you?
-                    break;
+            case EVENT_TOBIAS_STEP_3:
+                if (Creature* tobias = GetTobias())
+                    tobias->AI()->Talk(SAY_02, me); // But why?! How could you?
+                break;
 
-                case EVENT_TOBIAS_STEP_4:
-                    if (Creature* tobias = GetTobias())
-                    {
-                        tobias->CastSpell(tobias, SPELL_WORGEN_TRANSFORMATION, true);
-                        tobias->SetDisplayId(DISPLAYID_WORGEN_TOBIAS);
-                        tobias->SetReactState(REACT_AGGRESSIVE);
+            case EVENT_TOBIAS_STEP_4:
+                if (Creature* tobias = GetTobias())
+                {
+                    tobias->CastSpell(tobias, SPELL_WORGEN_TRANSFORMATION, true);
+                    tobias->SetDisplayId(DISPLAYID_WORGEN_TOBIAS);
+                    tobias->SetReactState(REACT_AGGRESSIVE);
 
-                        me->RemoveUnitFlag(UNIT_FLAG_UNINTERACTIBLE | UNIT_FLAG_IMMUNE_TO_PC);
-                        me->GetThreatManager().AddThreat(tobias, 10.f);
-                        tobias->GetThreatManager().AddThreat(me, 10.f);
-                        tobias->SetInCombatWith(me);
+                    tobias->AI()->Talk(SAY_03, me); // No... NO! STOP IT!
 
-                        if (me->Attack(tobias, true))
-                            me->GetMotionMaster()->MoveChase(tobias);
+                    me->RemoveUnitFlag(UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
+                    me->GetThreatManager().AddThreat(tobias, 10.f);
+                    tobias->GetThreatManager().AddThreat(me, 10.f);
+                    tobias->SetInCombatWith(me);
 
-                        if (tobias->Attack(me, true))
-                            tobias->GetMotionMaster()->MoveChase(me);
+                    if (me->Attack(tobias, true))
+                        me->GetMotionMaster()->MoveChase(tobias);
 
-                        me->SetReactState(REACT_AGGRESSIVE);
+                    if (tobias->Attack(me, true))
+                        tobias->GetMotionMaster()->MoveChase(me);
 
-                        tobias->AI()->Talk(SAY_03, tobias->GetOwner()); // No... NO! STOP IT!
-                    }
-                    break;
+                    me->SetReactState(REACT_AGGRESSIVE);
+                }
+                break;
 
-                case EVENT_CAST_SPELL_CURSE_OF_STALVAN:
-                    if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat))
-                        me->CastSpell(target, SPELL_CURSE_OF_STALVAN, true);
+            case EVENT_CAST_SPELL_CURSE_OF_STALVAN:
+                if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat))
+                    me->CastSpell(target, SPELL_CURSE_OF_STALVAN, true);
 
-                    _events.ScheduleEvent(EVENT_CAST_SPELL_CURSE_OF_STALVAN, 5s);
-                    break;
+                _events.ScheduleEvent(EVENT_CAST_SPELL_CURSE_OF_STALVAN, 5s);
+                break;
 
-                case EVENT_CAST_SPELL_FETID_BREATH:
-                    if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat))
-                        me->CastSpell(target, SPELL_FETID_BREATH, false);
+            case EVENT_CAST_SPELL_FETID_BREATH:
+                if (Unit* target = SelectTarget(SelectTargetMethod::MaxThreat))
+                    me->CastSpell(target, SPELL_FETID_BREATH, false);
 
-                    _events.ScheduleEvent(EVENT_CAST_SPELL_FETID_BREATH, 8s, 25s);
-                    break;
+                _events.ScheduleEvent(EVENT_CAST_SPELL_FETID_BREATH, 8s, 25s);
+                break;
 
-                default:
-                    break;
+            default:
+                break;
             }
         }
 
@@ -238,6 +241,62 @@ struct npc_stalvan : public ScriptedAI
 
 private:
     EventMap _events;
+};
+
+// 43797 - Tobias Mistmantle
+struct npc_tobias : public ScriptedAI
+{
+    npc_tobias(Creature* creature) : ScriptedAI(creature)
+    {
+        _stalvanDead = false;
+    }
+
+    void Reset() override
+    {
+        _events.Reset();
+        _stalvanDead = false;
+    }
+
+    void SetData(uint32 type, uint32 data) override
+    {
+        if (type == 1 && data == 1)
+        {
+            _stalvanDead = true;
+            _events.ScheduleEvent(EVENT_TOBIAS_SAY_DEATH, 6s);
+            _events.ScheduleEvent(EVENT_TOBIAS_ESCAPE, 10s);
+        }
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        _events.Update(diff);
+
+        while (uint32 eventId = _events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            case EVENT_TOBIAS_SAY_DEATH:
+                Talk(SAY_04); // No...
+                break;
+
+            case EVENT_TOBIAS_ESCAPE:
+                me->GetMotionMaster()->MovePoint(0, tobiasForestEscape, true);
+                me->SetSpeedRate(MOVE_WALK, 3.0);
+                me->SetSpeedRate(MOVE_RUN, 3.0);
+                me->DespawnOrUnsummon(4s);
+                break;
+
+            default:
+                break;
+            }
+        }
+
+        UpdateVictim();
+    }
+
+private:
+    EventMap _events;
+    bool _stalvanDead;
 };
 
 enum SoothingIncenseCloudData
@@ -380,14 +439,15 @@ class spell_summon_stalvan : public SpellScript
         {
             stalvan->SetFacingTo(stalvanOrientation, true);
             stalvan->SetReactState(REACT_PASSIVE);
-            stalvan->SetUnitFlag(UNIT_FLAG_UNINTERACTIBLE | UNIT_FLAG_IMMUNE_TO_PC);
+            stalvan->SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
         }
     }
 
     void SummonTobias()
     {
-        if (TempSummon* tobias = GetCaster()->SummonCreature(NPC_TOBIAS, tobiasPositions[0]))
+        if (TempSummon* tobias = GetCaster()->SummonCreature(NPC_WORGEN_TOBIAS, tobiasPositions[0]))
         {
+            tobias->SetDisplayId(DISPLAYID_TOBIAS);
             tobias->RemoveNpcFlag(UNIT_NPC_FLAG_QUESTGIVER | UNIT_NPC_FLAG_GOSSIP);
             tobias->SetWalk(true);
             tobias->SetSpeed(MOVE_WALK, 3.5);
@@ -430,6 +490,7 @@ void AddSC_duskwood_custom()
 {
     RegisterSpellScript(spell_summon_stalvan);
     RegisterCreatureAI(npc_stalvan);
+    RegisterCreatureAI(npc_tobias);
     RegisterCreatureAI(npc_soothing_incense_cloud);
     RegisterSpellScript(spell_sacred_cleansing);
     RegisterCreatureAI(npc_ebenlocke);
