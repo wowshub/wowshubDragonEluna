@@ -999,6 +999,12 @@ DisableWaterBreath = 4
 
 fatigue.enabled = 0
 
+#    Enables or Disables the "ability to level up Classic Fishing in zones with ExpansionID -3" (e.g. Stormwind, Orgrimmar, Darkmoon Island)
+#                   = 1 (enabled)
+#           default = 0 (disabled)
+
+fishing_fix.enabled = 0
+
 #
 #
 #    AllFlightPaths

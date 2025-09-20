@@ -5628,8 +5628,11 @@ bool Player::UpdateFishingSkill(int32 expansion)
 {
     TC_LOG_DEBUG("entities.player.skills", "Player::UpdateFishingSkill: Player '{}' ({}) Expansion: {}", GetName(), GetGUID().ToString(), expansion);
 
-    if (expansion == -3) // hackfix until another solution is invented
-        expansion = 0;
+    if (sConfigMgr->GetBoolDefault("fishingfix.enabled", true))
+    {
+        if (expansion == -3) // hackfix until another solution is invented
+            expansion = 0;
+    }
 
     uint32 fishingSkill = GetProfessionSkillForExp(SKILL_FISHING, expansion);
     if (!fishingSkill || !HasSkill(fishingSkill))
