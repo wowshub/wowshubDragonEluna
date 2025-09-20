@@ -44,7 +44,11 @@ enum darkmoonIslandItems
 //ACHIEVEMENT
 enum darkmoonIslandAchievement
 {
+    // Firebirds Challenge achieve
+    ACHIEVEMENT_FLYING_HIGH                 = 9250,
     ACHIEVEMENT_BLOOD_OF_ALYSRAZOR          = 9252,
+
+    // Dance Battle achieve
     ACHIEVEMENT_FIRST_DANCE                 = 15212,
     ACHIEVEMENT_YOU_GOT_THE_BEAT            = 15222,
     ACHIEVEMENT_WHAT_A_FEELING              = 15214,

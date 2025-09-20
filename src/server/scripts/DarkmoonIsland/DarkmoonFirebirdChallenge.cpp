@@ -309,10 +309,10 @@ public:
                 }
                 else if (shootAura->GetStackAmount() >= 10)
                 {
-                    if (!pl->HasAchieved(9250))
+                    if (!pl->HasAchieved(ACHIEVEMENT_FLYING_HIGH))
                     {
 
-                        AchievementEntry const* achiev = sAchievementStore.LookupEntry(9250);
+                        AchievementEntry const* achiev = sAchievementStore.LookupEntry(ACHIEVEMENT_FLYING_HIGH);
                         if (pl)
                             pl->CompletedAchievement(achiev);
                     }
