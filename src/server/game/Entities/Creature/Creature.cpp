@@ -1732,8 +1732,8 @@ void Creature::SaveToDB(uint32 mapid, std::vector<Difficulty> const& spawnDiffic
     else
         stmt->setNull(index++);
 
+    stmt->setFloat(index++, data.size);
     trans->Append(stmt);
-        stmt->setFloat(index++, data.size);
 
     WorldDatabase.CommitTransaction(trans);
 }
