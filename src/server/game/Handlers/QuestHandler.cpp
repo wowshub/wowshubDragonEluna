@@ -382,6 +382,16 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPackets::Quest::Quest
     {
         if (_player->CanRewardQuest(quest, packet.Choice.LootItemType, packet.Choice.Item.ItemID, true)) // Then check if player can receive the reward item (if inventory is not full, if player doesn't have too many unique items, and so on). If not, the client will close the gossip window
         {
+#ifdef ELUNA
+            if (Eluna* e = GetPlayer()->GetEluna())
+            {
+                if (object->ToCreature())
+                    e->OnQuestReward(_player, object->ToCreature(), quest, packet.Choice.Item.ItemID);
+                if (object->ToGameObject())
+                    e->OnQuestReward(_player, object->ToGameObject(), quest, packet.Choice.Item.ItemID);
+            }
+#endif
+
             _player->RewardQuest(quest, packet.Choice.LootItemType, packet.Choice.Item.ItemID, object);
         }
     }
@@ -455,6 +465,11 @@ void WorldSession::HandleQuestLogRemoveQuest(WorldPackets::Quest::QuestLogRemove
             _player->TakeQuestSourceItem(questId, true); // remove quest src item from player
             _player->AbandonQuest(questId); // remove all quest items player received before abandoning quest. Note, this does not remove normal drop items that happen to be quest requirements.
             _player->DespawnPersonalSummonsForQuest(questId);
+
+#ifdef ELUNA
+            if (Eluna* e = GetPlayer()->GetEluna())
+                e->OnQuestAbandon(_player, questId);
+#endif
 
             TC_LOG_INFO("network", "Player {} abandoned quest {}", _player->GetGUID().ToString(), questId);
 

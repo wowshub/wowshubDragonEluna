@@ -957,7 +957,11 @@ void GameObject::AddToWorld()
 
 #ifdef ELUNA
         if (Eluna* e = GetEluna())
+        {
+            // one of these should really be deprecated, they serve the exact same purpose
             e->OnAddToWorld(this);
+            e->OnSpawn(this);
+        }
 #endif
     }
 }

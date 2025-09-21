@@ -141,6 +141,11 @@ BattlegroundMap* MapManager::CreateBattleground(uint32 mapId, uint32 instanceId,
     if (sWorld->getBoolConfig(CONFIG_BATTLEGROUNDMAP_LOAD_GRIDS))
         map->LoadAllCells();
 
+#ifdef ELUNA
+    if (Eluna* e = map->GetEluna())
+        e->OnBGCreate(bg, bg->GetTypeID(), bg->GetInstanceID());
+#endif
+
     return map;
 }
 

@@ -115,6 +115,11 @@ Battleground::Battleground(Battleground const&) = default;
 
 Battleground::~Battleground()
 {
+#ifdef ELUNA
+    if (m_Map)
+        if (Eluna* e = m_Map->GetEluna())
+            e->OnBGDestroy(this, GetTypeID(), GetInstanceID());
+#endif
 
     // unload map
     if (m_Map)

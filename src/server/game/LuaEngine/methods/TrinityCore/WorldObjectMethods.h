@@ -758,13 +758,13 @@ namespace LuaWorldObject
         uint32 min, max;
         if (lua_istable(E->L, 3))
         {
-            E->Push(1);
-            lua_gettable(E->L, 3);
-            min = E->CHECKVAL<uint32>(-1);
             E->Push(2);
             lua_gettable(E->L, 3);
+            min = E->CHECKVAL<uint32>(-1);
+            E->Push(3);
+            lua_gettable(E->L, 3);
             max = E->CHECKVAL<uint32>(-1);
-            lua_pop(E->L, 2);
+            lua_pop(E->L, 3);
         }
         else
             min = max = E->CHECKVAL<uint32>(3);

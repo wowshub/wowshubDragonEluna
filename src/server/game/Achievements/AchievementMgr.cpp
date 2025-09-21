@@ -500,8 +500,8 @@ void PlayerAchievementMgr::CompletedAchievement(AchievementEntry const* achievem
     sScriptMgr->OnAchievementCompleted(referencePlayer, achievement);
 
 #ifdef ELUNA
-    if (Eluna* e = _owner->GetEluna())
-        e->OnAchievementComplete(_owner, achievement->ID);
+    if (Eluna* e = referencePlayer->GetEluna())
+        e->OnAchievementComplete(referencePlayer, achievement->ID);
 #endif
 
     // reward items and titles if any
