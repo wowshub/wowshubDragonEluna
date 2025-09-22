@@ -204,7 +204,8 @@ void WorldSession::HandleGossipHelloOpcode(WorldPackets::NPC::Hello& packet)
 	
 #ifdef ELUNA
     if (Eluna* e = GetPlayer()->GetEluna())
-        if (!e->OnGossipHello(_player, unit))
+        if (e->OnGossipHello(_player, unit))
+            return;
 #endif
 	
     if (!unit->AI()->OnGossipHello(_player))
@@ -292,7 +293,8 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPackets::NPC::GossipSelec
         {
 #ifdef ELUNA
             if (Eluna* e = GetPlayer()->GetEluna())
-                if (!e->OnGossipSelectCode(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipMenuItem->OrderIndex), _player->PlayerTalkClass->GetGossipOptionAction(gossipMenuItem->OrderIndex), packet.PromotionCode.c_str()))
+                if (e->OnGossipSelectCode(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipMenuItem->OrderIndex), _player->PlayerTalkClass->GetGossipOptionAction(gossipMenuItem->OrderIndex), packet.PromotionCode.c_str()))
+                    return;
 #endif
             if (!unit->AI()->OnGossipSelectCode(_player, packet.GossipID, gossipMenuItem->OrderIndex, packet.PromotionCode.c_str()))
                 _player->OnGossipSelect(unit, packet.GossipOptionID, packet.GossipID);
@@ -301,9 +303,9 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPackets::NPC::GossipSelec
         {
 #ifdef ELUNA
             if (Eluna* e = GetPlayer()->GetEluna())
-                if (!e->OnGossipSelectCode(_player, go, _player->PlayerTalkClass->GetGossipOptionSender(gossipMenuItem->OrderIndex), _player->PlayerTalkClass->GetGossipOptionAction(gossipMenuItem->OrderIndex), packet.PromotionCode.c_str()))
+                if (e->OnGossipSelectCode(_player, go, _player->PlayerTalkClass->GetGossipOptionSender(gossipMenuItem->OrderIndex), _player->PlayerTalkClass->GetGossipOptionAction(gossipMenuItem->OrderIndex), packet.PromotionCode.c_str()))
+                    return;
 #endif
-
                 if (!go->AI()->OnGossipSelectCode(_player, packet.GossipID, gossipMenuItem->OrderIndex, packet.PromotionCode.c_str()))
                     _player->OnGossipSelect(go, packet.GossipID, packet.GossipID);
         }
@@ -323,7 +325,8 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPackets::NPC::GossipSelec
         {
 #ifdef ELUNA
             if (Eluna* e = GetPlayer()->GetEluna())
-                if (!e->OnGossipSelect(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipMenuItem->OrderIndex), _player->PlayerTalkClass->GetGossipOptionAction(gossipMenuItem->OrderIndex)))
+                if (e->OnGossipSelect(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipMenuItem->OrderIndex), _player->PlayerTalkClass->GetGossipOptionAction(gossipMenuItem->OrderIndex)))
+                    return;
 #endif
             if (!unit->AI()->OnGossipSelect(_player, packet.GossipID, gossipMenuItem->OrderIndex))
                 _player->OnGossipSelect(unit, packet.GossipOptionID, packet.GossipID);
@@ -332,9 +335,9 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPackets::NPC::GossipSelec
         {
 #ifdef ELUNA
             if (Eluna* e = GetPlayer()->GetEluna())
-                if (!e->OnGossipSelect(_player, go, _player->PlayerTalkClass->GetGossipOptionSender(gossipMenuItem->OrderIndex), _player->PlayerTalkClass->GetGossipOptionAction(gossipMenuItem->OrderIndex)))
+                if (e->OnGossipSelect(_player, go, _player->PlayerTalkClass->GetGossipOptionSender(gossipMenuItem->OrderIndex), _player->PlayerTalkClass->GetGossipOptionAction(gossipMenuItem->OrderIndex)))
+                    return;
  #endif
-
                 if (!go->AI()->OnGossipSelect(_player, packet.GossipID, gossipMenuItem->OrderIndex))
                     _player->OnGossipSelect(go, packet.GossipOptionID, packet.GossipID);
         }
