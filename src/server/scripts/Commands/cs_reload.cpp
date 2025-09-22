@@ -1382,9 +1382,11 @@ public:
 
     static bool HandleReloadCreatureTemplateAllCommand(ChatHandler* handler, const char* /*args*/)
     {
+        TC_LOG_INFO("misc", "Reloading creature model info...");
+        sObjectMgr->LoadCreatureModelInfo();
         TC_LOG_INFO("misc", "Reloading creature template...");
         sObjectMgr->LoadCreatureTemplates();
-        handler->SendGlobalGMSysMessage("DB table `creature_template` reloaded.");
+        handler->SendGlobalGMSysMessage("DB table `creature_template` and `creature_model_info` reloaded.");
         TC_LOG_INFO("server.loading", "Initialize query data...");
         sObjectMgr->InitializeQueriesData(QUERY_DATA_CREATURES);
         return true;
