@@ -7,6 +7,10 @@
 #include "Config.h"
 #include "ElunaConfig.h"
 
+#include <sstream>
+#include <algorithm>
+#include <cctype>
+
 ElunaConfig::ElunaConfig()
 {
 }

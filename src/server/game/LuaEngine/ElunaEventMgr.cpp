@@ -43,7 +43,6 @@ void ElunaEventProcessor::Update(uint32 diff)
 
         if (luaEvent->state == LUAEVENT_STATE_RUN)
         {
-
             uint32 delay = luaEvent->delay;
             bool remove = luaEvent->repeats == 1;
             if (!remove)

@@ -14,8 +14,13 @@
 #include <thread>
 #include <charconv>
 
+#if defined USING_BOOST
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
 
 #if defined ELUNA_WINDOWS
 #include <Windows.h>
