@@ -3844,7 +3844,7 @@ private:
         }
     }
 
-    void OnUnitExit(Unit* unit) override
+    void OnUnitExit(Unit* unit, AreaTriggerExitReason /*reason*/) override
     {
         Unit* caster = at->GetCaster();
         if (!caster || !unit)
@@ -3860,7 +3860,7 @@ struct at_demon_hunter_mana_rift : AreaTriggerAI
 {
     at_demon_hunter_mana_rift(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
 
-    void OnUnitExit(Unit* unit) override
+    void OnUnitExit(Unit* unit, AreaTriggerExitReason /*reason*/) override
     {
         Unit* caster = at->GetCaster();
         if (!caster || !unit)

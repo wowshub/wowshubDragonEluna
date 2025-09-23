@@ -1646,7 +1646,7 @@ struct at_dk_defile : AreaTriggerAI
             caster->CastSpell(unit, SPELL_DK_DEFILE_DUMMY, true);
     }
 
-    void OnUnitExit(Unit* unit) override
+    void OnUnitExit(Unit* unit, AreaTriggerExitReason /*reason*/) override
     {
         unit->RemoveAurasDueToSpell(SPELL_DK_DEFILE_DUMMY);
     }
