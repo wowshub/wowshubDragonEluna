@@ -26,6 +26,7 @@ void AddSC_darkmoon_ring_toss();
 void AddSC_darkmoon_firebird_challenge();
 void AddSC_darkmoon_dance_battle();
 void AddSC_DarkmoonBlightBoard();
+void AddSC_darkmoon_roller_coaster();
 
 
 // The name of this function should match:
@@ -42,4 +43,5 @@ void AddDarkmoonIslandScripts()
     AddSC_darkmoon_firebird_challenge();
     AddSC_darkmoon_dance_battle();
     AddSC_DarkmoonBlightBoard();
+    AddSC_darkmoon_roller_coaster();
 }

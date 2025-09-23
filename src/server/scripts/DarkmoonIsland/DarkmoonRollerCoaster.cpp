@@ -16,40 +16,23 @@
  */
 
 #include "ScriptMgr.h"
-#include "Cell.h"
-#include "CellImpl.h"
 #include "ScriptedCreature.h"
-#include "GridNotifiers.h"
-#include "GridNotifiersImpl.h"
-#include "SpellScript.h"
-#include "SpellAuras.h"
-#include "ScriptedGossip.h"
-#include "MotionMaster.h"
-#include "GameObject.h"
-#include "Transport.h"
-#include "DarkmoonIsland.h"
-#include "AchievementMgr.h"
-#include "GameObjectAI.h"
-#include "InstanceScript.h"
-#include "Log.h"
-#include "ObjectAccessor.h"
 #include "Player.h"
-#include "ScriptedEscortAI.h"
-#include "WorldSession.h"
-#include "Item.h"
-#include "SpellInfo.h"
-#include "SpellMgr.h"
-#include "GameEventMgr.h"
-#include "AchievementPackets.h"
-#include "DB2HotfixGenerator.h"
-#include "TemporarySummon.h"
+#include "SpellAuraEffects.h"
+#include "SpellAuras.h"
 #include "Vehicle.h"
-#include <sstream>
-#include <G3D/Quat.h>
+#include "WorldSession.h"
+#include "MoveSplineInit.h"
+#include "MotionMaster.h"
 
-#define ROLLER_COASTER_POSITION_COUNT 167
+enum RollerCoaster
+{
+    NPC_ROLLER_COASTER_VEHICLE = 149537,
+    ITEM_ROLLER_COASTER_TICKET = 81055,
+    SPELL_ROLLER_COASTER_AURA = 290169
+};
 
-const Position tonkTargetPositions[ROLLER_COASTER_POSITION_COUNT] = {
+static std::vector<Position> splinePoints = {
     {-4050.0522f, 6245.365f, 18.29404f},
     {-4057.75f, 6251.7446f, 18.072662f},
     {-4060.6477f, 6254.146f, 17.989328f},
@@ -218,3 +201,7 @@ const Position tonkTargetPositions[ROLLER_COASTER_POSITION_COUNT] = {
     {-4051.5955f, 6246.528f, 17.990435f},
     {-4054.3057f, 6249.0312f, 17.989328f}
 };
+
+void AddSC_darkmoon_roller_coaster()
+{
+}
