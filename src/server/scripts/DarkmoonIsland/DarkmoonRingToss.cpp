@@ -65,124 +65,101 @@
 #include <sstream>
 
 // 54485 - Jessica Rogers
-class npc_jessica_rogers : public CreatureScript
+struct npc_jessica_rogers : public ScriptedAI
 {
-public:
-    npc_jessica_rogers() : CreatureScript("npc_jessica_rogers") { }
+    npc_jessica_rogers(Creature* creature) : ScriptedAI(creature) { }
 
-    struct npc_jessica_rogersAI : public ScriptedAI
+    bool OnGossipHello(Player* player) override
     {
-        npc_jessica_rogersAI(Creature* creature) : ScriptedAI(creature) { }
+        if (me->IsQuestGiver())
+            player->PrepareQuestMenu(me->GetGUID());
 
-        bool OnGossipHello(Player* player) override
-        {
-            if (me->IsQuestGiver())
-                player->PrepareQuestMenu(me->GetGUID());
-
-            AddGossipItemFor(player, 13012, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);            
-            AddGossipItemFor(player, 13012, 1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+        AddGossipItemFor(player, 13012, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);            
+        AddGossipItemFor(player, 13012, 1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
                 
-            player->PlayerTalkClass->SendGossipMenu(player->GetGossipTextId(me), me->GetGUID());
-            return true;
-        }
+        player->PlayerTalkClass->SendGossipMenu(player->GetGossipTextId(me), me->GetGUID());
+        return true;
+    }
 
-        bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipListId) override
+    bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipListId) override
+    {
+        uint32 const action = player->PlayerTalkClass->GetGossipOptionAction(gossipListId);
+        ClearGossipMenuFor(player);
+
+        switch (action)
         {
-            uint32 const action = player->PlayerTalkClass->GetGossipOptionAction(gossipListId);
-            ClearGossipMenuFor(player);
-
-            switch (action)
+        case GOSSIP_ACTION_INFO_DEF + 1:
+            AddGossipItemFor(player, 13013, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+                SendGossipMenuFor(player, 18286, me->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 2:
+            if (player->HasItemCount(ITEM_DARKMOON_TOKEN, 1))
             {
-            case GOSSIP_ACTION_INFO_DEF + 1:
-                AddGossipItemFor(player, 13013, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-                    SendGossipMenuFor(player, 18286, me->GetGUID());
-                break;
-            case GOSSIP_ACTION_INFO_DEF + 2:
-                if (player->HasItemCount(ITEM_DARKMOON_TOKEN, 1))
-                {
-                    CloseGossipMenuFor(player);
+                CloseGossipMenuFor(player);
 
-                    player->DestroyItemCount(ITEM_DARKMOON_TOKEN, 1, true);
-                    player->RemoveAurasByType(SPELL_AURA_MOUNTED);
+                player->DestroyItemCount(ITEM_DARKMOON_TOKEN, 1, true);
+                player->RemoveAurasByType(SPELL_AURA_MOUNTED);
 
-                    player->AddAura(SPELL_RINGTOSS_ENABLE, player);
-                    player->SetPower(POWER_ALTERNATE_POWER, 10);
+                player->AddAura(SPELL_RINGTOSS_ENABLE, player);
+                player->SetPower(POWER_ALTERNATE_POWER, 10);
 
-                    return true;
-                }
-                else
-                {
-                    player->PlayerTalkClass->ClearMenus();
-                    return OnGossipHello(player);
-                }
-                break;
-            case GOSSIP_ACTION_INFO_DEF + 3:
+                return true;
+            }
+            else
+            {
                 player->PlayerTalkClass->ClearMenus();
                 return OnGossipHello(player);
-                break;
             }
-            return true;
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 3:
+            player->PlayerTalkClass->ClearMenus();
+            return OnGossipHello(player);
+            break;
         }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new npc_jessica_rogersAI(creature);
+        return true;
     }
 };
 
 // spell - 101695
-class spell_ring_toss : public SpellScriptLoader
+class spell_ring_toss : public SpellScript
 {
-public:
-    spell_ring_toss() : SpellScriptLoader("spell_ring_toss") {}
-
-    class spell_ring_toss_SpellScript : public SpellScript
+    SpellCastResult CheckRequirement()
     {
+        if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
+            return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
-        SpellCastResult CheckRequirement()
+        return SPELL_CAST_OK;
+    }
+
+    void HandleDummy(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+
+        WorldLocation* loc = GetHitDest();
+
+        Creature* dubenko = caster->FindNearestCreature(54490, 100.0f, true);
+
+        if (dubenko && dubenko->IsWithinDist2d(loc, 1.2f))
         {
-            if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
-                return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
-
-            return SPELL_CAST_OK;
-        }
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            Unit* caster = GetCaster();
-
-            WorldLocation* loc = GetHitDest();
-
-            Creature* dubenko = caster->FindNearestCreature(54490, 100.0f, true);
-
-            if (dubenko && dubenko->IsWithinDist2d(loc, 1.2f))
+            if (dubenko->HasAura(SPELL_RINGTOSS_TURTLE_CIRCLE_1))
             {
-                if (dubenko->HasAura(SPELL_RINGTOSS_TURTLE_CIRCLE_1))
-                {
-                    if (dubenko->HasAura(SPELL_RINGTOSS_TURTLE_CIRCLE_2))
-                        dubenko->CastSpell(dubenko, SPELL_RINGTOSS_TURTLE_CIRCLE_3, true);
-                    else
-                        dubenko->CastSpell(dubenko, SPELL_RINGTOSS_TURTLE_CIRCLE_2, true);
-                }
+                if (dubenko->HasAura(SPELL_RINGTOSS_TURTLE_CIRCLE_2))
+                    dubenko->CastSpell(dubenko, SPELL_RINGTOSS_TURTLE_CIRCLE_3, true);
                 else
-                    dubenko->CastSpell(dubenko, SPELL_RINGTOSS_TURTLE_CIRCLE_1, true);
+                    dubenko->CastSpell(dubenko, SPELL_RINGTOSS_TURTLE_CIRCLE_2, true);
+            }
+            else
+                dubenko->CastSpell(dubenko, SPELL_RINGTOSS_TURTLE_CIRCLE_1, true);
 
-                caster->CastSpell(dubenko, SPELL_RINGTOSS_HIT, false);
-            }          
-        }
+            caster->CastSpell(dubenko, SPELL_RINGTOSS_HIT, false);
+        }          
+    }
                         
 
-        void Register()
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_ring_toss_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            OnCheckCast += SpellCheckCastFn(spell_ring_toss_SpellScript::CheckRequirement);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
+    void Register()
     {
-        return new spell_ring_toss_SpellScript();
+        OnEffectHitTarget += SpellEffectFn(spell_ring_toss::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnCheckCast += SpellCheckCastFn(spell_ring_toss::CheckRequirement);
     }
 };
 
@@ -202,7 +179,7 @@ public:
 
 void AddSC_darkmoon_ring_toss()
 {
-    new npc_jessica_rogers();
-	new spell_ring_toss();
+    RegisterCreatureAI(npc_jessica_rogers);
+    RegisterSpellScript(spell_ring_toss);
 	new at_target_turtle();
 };

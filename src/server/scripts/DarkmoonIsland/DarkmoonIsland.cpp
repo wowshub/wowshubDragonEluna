@@ -164,8 +164,16 @@ struct npc_fire_eater_darkmoon : public ScriptedAI
 };
 
 // 71992 - Moonfang <Darkmoon Den Mother>
-class boss_darkmoon_moonfang_mother : public CreatureScript
+struct boss_darkmoon_moonfang_mother : public ScriptedAI
 {
+    boss_darkmoon_moonfang_mother(Creature* creature) : ScriptedAI(creature), summons(me)
+    {
+        me->SetVisible(false);
+        prevEvent1 = true;
+        prevEvent2 = false;
+        sDiedCount = 0;
+    }
+
     enum eSay
     {
         SAY_SUMM_SNARLER = 0,
@@ -188,132 +196,113 @@ class boss_darkmoon_moonfang_mother : public CreatureScript
         SPELL_MOONFANG_CURSE = 144590
     };
 
-public:
-    boss_darkmoon_moonfang_mother() : CreatureScript("boss_darkmoon_moonfang_mother") {}
+    EventMap events;
+    SummonList summons;
 
-    struct boss_darkmoon_moonfang_motherAI : public ScriptedAI
+    bool prevEvent1;
+    bool prevEvent2;
+    uint8 sDiedCount;
+
+    void Reset() override
     {
-        boss_darkmoon_moonfang_motherAI(Creature* creature) : ScriptedAI(creature), summons(me)
+        events.Reset();
+        summons.DespawnAll();
+
+        if (prevEvent1)
         {
-            me->SetVisible(false);
-            prevEvent1 = true;
+            SummonMoonfang();
+            ZoneTalk(SAY_SUMM_SNARLER, nullptr);
+        }
+    }
+
+    void SummonMoonfang()
+    {
+        if (prevEvent1)
+            for (uint8 i = 0; i < 11; i++)
+                me->SummonCreature(NPC_MOONFANG_SNARLER, mfPos[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000ms);
+
+        if (prevEvent2)
+            for (uint8 i = 11; i < 22; i++)
+                me->SummonCreature(NPC_MOONFANG_DREADHOWL, mfPos[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000ms);
+    }
+
+    void SummonedCreatureDies(Creature* /*summon*/, Unit* /*killer*/) override
+    {
+        if (prevEvent1 || prevEvent2)
+            sDiedCount++;
+
+        if (sDiedCount == 11)
+        {
+            prevEvent1 = false;
+            prevEvent2 = true;
+            ZoneTalk(SAY_SUMM_DREADHOWL, nullptr);
+            SummonMoonfang();
+        }
+
+        if (sDiedCount == 22)
+        {
             prevEvent2 = false;
-            sDiedCount = 0;
+            me->SetVisible(true);
+            ZoneTalk(SAY_SUMM_MOTHER, nullptr);
         }
+    }
 
-        EventMap events;
-        SummonList summons;
-
-        bool prevEvent1;
-        bool prevEvent2;
-        uint8 sDiedCount;
-
-        void Reset() override
-        {
-            events.Reset();
-            summons.DespawnAll();
-
-            if (prevEvent1)
-            {
-                SummonMoonfang();
-                ZoneTalk(SAY_SUMM_SNARLER, nullptr);
-            }
-        }
-
-        void SummonMoonfang()
-        {
-            if (prevEvent1)
-                for (uint8 i = 0; i < 11; i++)
-                    me->SummonCreature(NPC_MOONFANG_SNARLER, mfPos[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000ms);
-
-            if (prevEvent2)
-                for (uint8 i = 11; i < 22; i++)
-                    me->SummonCreature(NPC_MOONFANG_DREADHOWL, mfPos[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000ms);
-        }
-
-        void SummonedCreatureDies(Creature* /*summon*/, Unit* /*killer*/) override
-        {
-            if (prevEvent1 || prevEvent2)
-                sDiedCount++;
-
-            if (sDiedCount == 11)
-            {
-                prevEvent1 = false;
-                prevEvent2 = true;
-                ZoneTalk(SAY_SUMM_DREADHOWL, nullptr);
-                SummonMoonfang();
-            }
-
-            if (sDiedCount == 22)
-            {
-                prevEvent2 = false;
-                me->SetVisible(true);
-                ZoneTalk(SAY_SUMM_MOTHER, nullptr);
-            }
-        }
-
-        void EnterEvadeMode(EvadeReason /*why*/) override
-        {
-            events.ScheduleEvent(1, 0ms);       // cast leap
-            events.ScheduleEvent(2, 10000ms);   // cast stuns the target
-            events.ScheduleEvent(3, 8000ms);    // cast tears AOE
-            events.ScheduleEvent(4, 64000ms);   // summon moonfangs
-            events.ScheduleEvent(5, 180000ms);  // cast mind control
-        }
-
-        void JustSummoned(Creature* summon) override
-        {
-            summons.Summon(summon);
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            if (!UpdateVictim() && me->IsInCombat())
-                return;
-
-            events.Update(diff);
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case 1:
-                    if (auto target = SelectTarget(SelectTargetMethod::Random, 1, 40.0f, true))
-                        DoCast(target, SPELL_LEAP_FOR_THE_KILL, false);
-
-                    events.ScheduleEvent(1, 12000ms);
-                    break;
-                case 2:
-                    if (auto target = me->GetVictim())
-                        DoCast(target, SPELL_FANGS_OF_THE_MOON, false);
-
-                    events.ScheduleEvent(2, 10000ms);
-                    break;
-                case 3:
-                    DoCast(SPELL_MOONFANG_TEARS);
-                    events.ScheduleEvent(3, 22000ms);
-                    break;
-                case 4:
-                    DoCast(SPELL_CALL_THE_PACK);
-                    events.ScheduleEvent(4, 64000ms);
-                    break;
-                case 5:
-                    DoCast(SPELL_MOONFANG_CURSE);
-                    events.ScheduleEvent(5, 180000ms);
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
+    void EnterEvadeMode(EvadeReason /*why*/) override
     {
-        return new boss_darkmoon_moonfang_motherAI(creature);
+        events.ScheduleEvent(1, 0ms);       // cast leap
+        events.ScheduleEvent(2, 10000ms);   // cast stuns the target
+        events.ScheduleEvent(3, 8000ms);    // cast tears AOE
+        events.ScheduleEvent(4, 64000ms);   // summon moonfangs
+        events.ScheduleEvent(5, 180000ms);  // cast mind control
+    }
+
+    void JustSummoned(Creature* summon) override
+    {
+        summons.Summon(summon);
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        if (!UpdateVictim() && me->IsInCombat())
+            return;
+
+        events.Update(diff);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        if (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            case 1:
+                if (auto target = SelectTarget(SelectTargetMethod::Random, 1, 40.0f, true))
+                    DoCast(target, SPELL_LEAP_FOR_THE_KILL, false);
+
+                events.ScheduleEvent(1, 12000ms);
+                break;
+            case 2:
+                if (auto target = me->GetVictim())
+                    DoCast(target, SPELL_FANGS_OF_THE_MOON, false);
+
+                events.ScheduleEvent(2, 10000ms);
+                break;
+            case 3:
+                DoCast(SPELL_MOONFANG_TEARS);
+                events.ScheduleEvent(3, 22000ms);
+                break;
+            case 4:
+                DoCast(SPELL_CALL_THE_PACK);
+                events.ScheduleEvent(4, 64000ms);
+                break;
+            case 5:
+                DoCast(SPELL_MOONFANG_CURSE);
+                events.ScheduleEvent(5, 180000ms);
+                break;
+            default:
+                break;
+            }
+        }
     }
 };
 
@@ -611,7 +600,7 @@ void AddSC_darkmoon_island()
 {
     RegisterCreatureAI(npc_fire_juggler_darkmoon);
     RegisterCreatureAI(npc_fire_eater_darkmoon);
-    new boss_darkmoon_moonfang_mother();
+    RegisterCreatureAI(boss_darkmoon_moonfang_mother);
 
     RegisterSpellScript(spell_darkmoon_staging_area_teleport);
 

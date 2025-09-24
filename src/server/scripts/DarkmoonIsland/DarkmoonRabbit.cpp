@@ -85,14 +85,9 @@ enum Enums
 };
 
 // 58336 - Darkmoon Rabbit
-class npc_darkmoon_rabbit_ird : public CreatureScript
-{
-public:
-    npc_darkmoon_rabbit_ird() : CreatureScript("npc_darkmoon_rabbit_ird") { }
-
-    struct npc_darkmoon_rabbit_irdAI : public ScriptedAI
+    struct npc_darkmoon_rabbit_ird : public ScriptedAI
     {
-        npc_darkmoon_rabbit_irdAI(Creature* creature) : ScriptedAI(creature) { }
+        npc_darkmoon_rabbit_ird(Creature* creature) : ScriptedAI(creature) { }
 
         void JustEngagedWith(Unit* who) override
         {
@@ -120,13 +115,7 @@ public:
         EventMap events;
     };
 
-    CreatureAI* GetAI(Creature* p_Creature) const override
-    {
-        return new npc_darkmoon_rabbit_irdAI(p_Creature);
-    }
-};
-
 void AddSC_darkmoon_rabbit()
 {
-    new npc_darkmoon_rabbit_ird();
+    RegisterCreatureAI(npc_darkmoon_rabbit_ird);
 }
