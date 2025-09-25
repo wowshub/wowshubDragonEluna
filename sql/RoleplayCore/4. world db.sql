@@ -505,7 +505,12 @@ REPLACE INTO `spell_script_names` VALUES (194249, 'spell_pri_voidform');
 REPLACE INTO `spell_script_names` VALUES (228260, 'spell_pri_void_eruption');
 REPLACE INTO `spell_script_names` VALUES (335467, 'spell_pri_devouring_plague');
 REPLACE INTO `spell_script_names` VALUES (108920, 'spell_pri_void_tendrils');
+REPLACE INTO `spell_script_names` VALUES (421453, 'spell_ultimate_penitence');
+REPLACE INTO `spell_script_names` VALUES (421434, 'spell_ultimate_penitence_effect');
+REPLACE INTO `spell_script_names` VALUES (432154, 'spell_ultimate_penitence_jump');
 
+REPLACE INTO `areatrigger_create_properties` VALUES (1489, 0, 5802, 0, 0, 0, 0, 0, 0, -256, 255, 0, NULL, 10000, 1, 0 ,0 ,8 ,8 ,0 ,0 ,0 ,0 ,0 ,0 ,'at_pri_power_word_barrier', 53040);
+REPLACE INTO `areatrigger_scripts` VALUES (1489, 'at_pri_power_word_barrier');
 
 -- ----------------------------
 -- Paladin spell fixes

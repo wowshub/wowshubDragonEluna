@@ -220,6 +220,8 @@ enum PriestSpells
     SPELL_PRIEST_MIND_BLAST                         = 8092,
     SPELL_PRIEST_DEVOURING_PLAGUE                   = 335467,
     SPELL_PRIEST_VOID_BOLT                          = 205448,
+    SPELL_ULTIMATE_PENITENCE_CHANNELING             = 421434,
+    SPELL_POWER_WORD_BARRIER_BUFF                   = 81782,
 
 };
 
@@ -4007,6 +4009,135 @@ class spell_pri_shadowy_apparitions : public AuraScript
     }
 };
 
+// 421453 - Ultimate Penitence
+class spell_ultimate_penitence : public SpellScript
+{
+    void HandleEffectDummy(SpellEffIndex /*effIndex*/)
+    {
+        if (Unit* caster = GetCaster())
+        {
+            caster->CastSpell(caster, SPELL_ULTIMATE_PENITENCE_CHANNELING, true);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_ultimate_penitence::HandleEffectDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+// 421434 - Ultimate Penitence (effect)
+class spell_ultimate_penitence_effect : public AuraScript
+{
+    std::list<Unit*> targets;
+    float maxRange;
+
+    bool Load() override
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return false;
+
+        maxRange = GetSpellInfo()->GetMaxRange();
+
+        targets.clear();
+
+        Trinity::AllUnitsInRange targets_check(caster, maxRange);
+        Trinity::UnitListSearcher<Trinity::AllUnitsInRange> targets_searcher(caster, targets, targets_check);
+        Cell::VisitGridObjects(caster, targets_searcher, maxRange);
+
+        return true;
+    }
+
+    void HandleDummyTick(AuraEffect const* /*aurEff*/)
+    {
+        PreventDefaultAction();
+
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        targets.remove_if(Trinity::AnyDeadUnitCheck());
+
+        if (Unit* target = Trinity::Containers::SelectRandomContainerElement(targets))
+        {
+            if (target->IsValidAssistTarget(caster))
+            {
+                caster->CastSpell(target, SPELL_ULTIMATE_PENITENCE_CHANNELING,
+                    TRIGGERED_IGNORE_GCD | TRIGGERED_IGNORE_CAST_IN_PROGRESS);
+            }
+            else if (target->IsValidAttackTarget(caster))
+            {
+                caster->CastSpell(target, SPELL_ULTIMATE_PENITENCE_CHANNELING,
+                    TRIGGERED_IGNORE_GCD | TRIGGERED_IGNORE_CAST_IN_PROGRESS);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_ultimate_penitence_effect::HandleDummyTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
+// 432154 - Ultimate Penitence (jump)
+class spell_ultimate_penitence_jump : public SpellScript
+{
+    void SetDest(SpellDestination& dest)
+    {
+        Position offset = { 0.f, 0.f, 6.f, 0.f };
+        dest.RelocateOffset(offset);
+    }
+
+    void Register() override
+    {
+        OnDestinationTargetSelect += SpellDestinationTargetSelectFn(spell_ultimate_penitence_jump::SetDest, EFFECT_0, TARGET_DEST_CASTER);
+    }
+};
+
+// 62618 - Power Word: Barrier
+// AreaTriggerID - 1489
+struct at_pri_power_word_barrier : AreaTriggerAI
+{
+    at_pri_power_word_barrier(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
+    {
+    }
+
+    void OnUnitEnter(Unit* /*unit*/) override
+    {
+        if (Unit* caster = at->GetCaster())
+        {
+            for (ObjectGuid unit : at->GetInsideUnits())
+            {
+                if (Unit* target = ObjectAccessor::GetUnit(*caster, unit))
+                {
+                    if (caster->IsHostileTo(target))
+                        continue;
+
+                    target->CastSpell(target, SPELL_POWER_WORD_BARRIER_BUFF);
+                }
+            }
+        }
+    }
+
+    void OnUnitExit(Unit* unit, AreaTriggerExitReason /*reason*/) override
+    {
+        unit->RemoveAurasDueToSpell(SPELL_POWER_WORD_BARRIER_BUFF);
+    }
+
+    void OnRemove() override
+    {
+        if (Unit* caster = at->GetCaster())
+        {
+            for (ObjectGuid unit : at->GetInsideUnits())
+            {
+                if (Unit* target = ObjectAccessor::GetUnit(*caster, unit))
+                    target->RemoveAurasDueToSpell(SPELL_POWER_WORD_BARRIER_BUFF);
+            }
+        }
+    }
+};
+
 void AddSC_priest_spell_scripts()
 {
     RegisterSpellScript(spell_pri_angelic_feather_trigger);
@@ -4110,5 +4241,8 @@ void AddSC_priest_spell_scripts()
     RegisterSpellScript(spell_pri_void_eruption);
     RegisterSpellScript(spell_pri_devouring_plague);
     RegisterSpellScript(spell_pri_void_tendrils);
-
+    RegisterSpellScript(spell_ultimate_penitence);
+    RegisterSpellScript(spell_ultimate_penitence_jump);
+    RegisterSpellScript(spell_ultimate_penitence_effect);
+    RegisterAreaTriggerAI(at_pri_power_word_barrier);
 }

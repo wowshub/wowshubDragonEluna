@@ -1837,6 +1837,39 @@ namespace Trinity
             NearestPlayerInObjectRangeCheck(NearestPlayerInObjectRangeCheck const&) = delete;
     };
 
+    class AllUnitsInRange
+    {
+    public:
+        AllUnitsInRange(Unit const* obj, float range) : i_obj(obj), i_range(range) {}
+
+        bool operator()(Unit* u) const
+        {
+            if (u->isDead() && !u->IsVisible())
+                return false;
+
+            if (!u->InSamePhase(i_obj))
+                return false;
+
+            Creature* creature = u->ToCreature();
+            if (creature && creature->IsTrigger())
+                return false;
+
+            if (!i_obj->IsWithinDist(u, i_range, false))
+                return false;
+
+            if (!i_obj->IsWithinLOSInMap(u))
+                return false;
+
+            return true;
+        }
+
+    private:
+        Unit const* i_obj;
+        float i_range;
+
+        AllUnitsInRange(AllUnitsInRange const&) = delete;
+    };
+
     class AllFriendlyCreaturesInGrid
     {
         public:
