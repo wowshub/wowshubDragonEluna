@@ -309,6 +309,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool c
 
     InitStatsForLevel(petlevel);
     SetPetExperience(petInfo->Experience);
+
     SynchronizeLevelWithOwner();
 
     // Set pet's position after setting level, its size depends on it

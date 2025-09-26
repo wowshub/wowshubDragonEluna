@@ -30630,8 +30630,8 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
     PhasingHandler::InheritPhaseShift(pet, this);
 
     pet->SetCreatorGUID(GetGUID());
-
     pet->SetFaction(GetFaction());
+
     pet->ReplaceAllNpcFlags(UNIT_NPC_FLAG_NONE);
     pet->ReplaceAllNpcFlags2(UNIT_NPC_FLAG_2_NONE);
     pet->InitStatsForLevel(GetLevel());
@@ -31476,6 +31476,13 @@ void Player::ExecutePendingSpellCastRequest()
     spellInfo = overrideSpellInfo;
     triggerFlag |= overrideTriggerFlag;
     if (spellInfo->IsPassive())
+    {
+        CancelPendingCastRequest();
+        return;
+    }
+
+    // can't use our own spells when we're in possession of another unit
+    if (isPossessing())
     {
         CancelPendingCastRequest();
         return;

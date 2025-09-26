@@ -2070,7 +2070,7 @@ namespace Trinity
     template<typename Localizer>
     class LocalizedDo
     {
-        using LocalizedAction = std::remove_pointer_t<decltype(std::declval<Localizer>()(LocaleConstant{}))> ;
+        using LocalizedAction = std::remove_pointer_t<decltype(std::declval<Localizer>()(LocaleConstant{}))>;
 
     public:
         explicit LocalizedDo(Localizer& localizer) : _localizer(localizer) { }
