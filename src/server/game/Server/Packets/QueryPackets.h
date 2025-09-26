@@ -382,6 +382,7 @@ namespace WorldPackets
 
             ObjectGuid UnitGUID;
             bool Allow = false;
+
             bool HasDeclined = false;
             DeclinedName DeclinedNames;
             WorldPackets::Timestamp<> Timestamp;

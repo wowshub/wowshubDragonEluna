@@ -1692,7 +1692,7 @@ void ScriptMgr::OnPlayerEnterMap(Map* map, Player* player)
 }
 
 void ScriptMgr::OnPlayerLeaveMap(Map* map, Player* player)
-{	
+{
     ASSERT(map);
     ASSERT(player);
 
