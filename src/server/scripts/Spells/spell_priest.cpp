@@ -4042,8 +4042,8 @@ class spell_ultimate_penitence_effect : public AuraScript
 
         targets.clear();
 
-        Trinity::AllUnitsInRange targets_check(caster, maxRange);
-        Trinity::UnitListSearcher<Trinity::AllUnitsInRange> targets_searcher(caster, targets, targets_check);
+        Trinity::AllCreaturesInRange targets_check(caster, maxRange);
+        Trinity::UnitListSearcher<Trinity::AllCreaturesInRange> targets_searcher(caster, targets, targets_check);
         Cell::VisitGridObjects(caster, targets_searcher, maxRange);
 
         return true;

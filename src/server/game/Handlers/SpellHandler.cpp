@@ -248,11 +248,27 @@ void WorldSession::HandleCastSpellOpcode(WorldPackets::Spells::CastSpell& cast)
         return;
     }
 
+    // ignore for remote control state (for player case)
+    Unit* mover = _player->GetUnitBeingMoved();
+    if (mover != _player && mover->GetTypeId() == TYPEID_PLAYER)
+        return;
+
+    Unit* castingUnit = mover;
+    if (castingUnit->IsCreature() && !castingUnit->ToCreature()->HasSpell(spellInfo->Id))
+    {
+        // If the vehicle creature does not have the spell but it allows the passenger to cast own spells
+        // change caster to player and let him cast
+        if (!_player->IsOnVehicle(castingUnit) || spellInfo->CheckVehicle(_player) != SPELL_CAST_OK)
+            return;
+
+        castingUnit = _player;
+    }
+
     if (cast.Cast.MoveUpdate.has_value())
         HandleMovementOpcode(CMSG_MOVE_STOP, *cast.Cast.MoveUpdate);
 
-    if (_player->CanRequestSpellCast(spellInfo, _player))
-        _player->RequestSpellCast(std::make_unique<SpellCastRequest>(std::move(cast.Cast), _player->GetGUID()));
+    if (_player->CanRequestSpellCast(spellInfo, castingUnit))
+        _player->RequestSpellCast(std::make_unique<SpellCastRequest>(std::move(cast.Cast), castingUnit->GetGUID()));
     else
         Spell::SendCastResult(_player, spellInfo, {}, cast.Cast.CastID, SPELL_FAILED_SPELL_IN_PROGRESS);
 }

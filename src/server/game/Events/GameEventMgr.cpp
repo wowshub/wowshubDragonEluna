@@ -1721,16 +1721,16 @@ void GameEventMgr::SetHolidayEventTime(GameEventData& event)
 
     switch (holiday->CalendarFilterType)
     {
-    case -1: // Yearly
-        event.occurence = YEAR / MINUTE; // Not all too useful
-        break;
-    case 0: // Weekly
-        event.occurence = WEEK / MINUTE;
-        break;
-    case 1: // Defined dates only (Darkmoon Faire)
-        break;
-    case 2: // Only used for looping events (Call to Arms)
-        break;
+        case -1: // Yearly
+            event.occurence = YEAR / MINUTE; // Not all too useful
+            break;
+        case 0: // Weekly
+            event.occurence = WEEK / MINUTE;
+            break;
+        case 1: // Defined dates only (Darkmoon Faire)
+            break;
+        case 2: // Only used for looping events (Call to Arms)
+            break;
     }
 
     if (holiday->Looping)

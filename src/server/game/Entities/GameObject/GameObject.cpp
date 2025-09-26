@@ -340,7 +340,7 @@ public:
 
             G3D::Quat rotation = next;
 
-            if (!prev.fuzzyEq(next))
+            if (prev != next)
             {
                 float animProgress = float(newProgress - oldRotation->TimeIndex) / float(newRotation->TimeIndex - oldRotation->TimeIndex);
 

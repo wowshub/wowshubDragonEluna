@@ -525,7 +525,7 @@ TempSummon* Transport::SummonPassenger(uint32 entry, Position const& pos, TempSu
 
 int32 Transport::GetMapIdForSpawning() const
 {
-    return GetGOInfo()->GetSpawnMap();
+    return GetGOInfo()->moTransport.SpawnMap;
 }
 
 void Transport::UpdatePosition(float x, float y, float z, float o)
@@ -558,7 +558,7 @@ void Transport::UpdatePosition(float x, float y, float z, float o)
 
 void Transport::LoadStaticPassengers()
 {
-    uint32 mapId = GetGOInfo()->GetSpawnMap();
+    uint32 mapId = GetGOInfo()->moTransport.SpawnMap;
     if (!mapId)
         return;
 

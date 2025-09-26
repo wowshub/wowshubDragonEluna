@@ -240,13 +240,13 @@ Map* MapManager::CreateMap(uint32 mapId, Player* player, Optional<uint32> lfgDun
                 player->SetRecentInstance(mapId, newInstanceId);
         }
     }
-    /*else if (entry->IsGarrison())
+    else if (entry->IsGarrison())
     {
         newInstanceId = player->GetGUID().GetCounter();
         map = FindMap_i(mapId, newInstanceId);
         if (!map)
             map = CreateGarrison(mapId, newInstanceId, player);
-    }*/
+    }
     else
     {
         newInstanceId = 0;
