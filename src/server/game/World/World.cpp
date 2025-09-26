@@ -2934,7 +2934,6 @@ bool World::RemoveBanCharacter(std::string const& name)
 /// Update the game time
 void World::_UpdateGameTime()
 {
-
     ///- update the time
     time_t lastGameTime = GameTime::GetGameTime();
     GameTime::UpdateGameTimers();

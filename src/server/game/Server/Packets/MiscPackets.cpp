@@ -265,7 +265,7 @@ WorldPacket const* DungeonDifficultySet::Write()
 
 WorldPacket const* RaidDifficultySet::Write()
 {
-    _worldPacket << uint8(Legacy);
+    _worldPacket << int32(Legacy);
     _worldPacket << int32(DifficultyID);
 
     return &_worldPacket;
@@ -816,18 +816,18 @@ WorldPacket const* DisplayToast::Write()
 
     switch (Type)
     {
-    case DisplayToastType::NewItem:
-        _worldPacket << Bits<1>(BonusRoll);
-        _worldPacket << Bits<1>(ForceToast);
-        _worldPacket << Item;
-        _worldPacket << int32(LootSpec);
-        _worldPacket << int8(Gender);
-        break;
-    case DisplayToastType::NewCurrency:
-        _worldPacket << uint32(CurrencyID);
-        break;
-    default:
-        break;
+        case DisplayToastType::NewItem:
+            _worldPacket << Bits<1>(BonusRoll);
+            _worldPacket << Bits<1>(ForceToast);
+            _worldPacket << Item;
+            _worldPacket << int32(LootSpec);
+            _worldPacket << int8(Gender);
+            break;
+        case DisplayToastType::NewCurrency:
+            _worldPacket << uint32(CurrencyID);
+            break;
+        default:
+            break;
     }
 
     _worldPacket.FlushBits();
