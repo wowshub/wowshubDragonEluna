@@ -238,11 +238,6 @@ void LootStore::ReportUnusedIds(LootIdSet const& lootIdSet) const
         TC_LOG_ERROR("sql.sql", "Table '{}' Entry {} isn't {} and not referenced from loot, and thus useless.", GetName(), lootId, GetEntryName());
 }
 
-void LootStore::ReportNonExistingId(uint32 lootId) const
-{
-    TC_LOG_ERROR("sql.sql", "Table '{}' Entry {} does not exist", GetName(), lootId);
-}
-
 void LootStore::ReportNonExistingId(uint32 lootId, char const* ownerType, uint32 ownerId) const
 {
     TC_LOG_ERROR("sql.sql", "Table '{}' Entry {} does not exist but it is used by {} {}", GetName(), lootId, ownerType, ownerId);
@@ -1129,7 +1124,7 @@ void LoadLootTemplates_Disenchant()
     {
         uint32 lootid = disenchant->ID;
         if (!lootIdSet.contains(lootid))
-            LootTemplates_Disenchant.ReportNonExistingId(lootid);
+            LootTemplates_Disenchant.ReportNonExistingId(lootid, "ItemDisenchantLoot", lootid);
         else
             lootIdSetUsed.insert(lootid);
     }
@@ -1141,7 +1136,7 @@ void LoadLootTemplates_Disenchant()
 
         uint32 lootid = itemBonus->Value[0];
         if (!lootIdSet.contains(lootid))
-            LootTemplates_Disenchant.ReportNonExistingId(lootid);
+            LootTemplates_Disenchant.ReportNonExistingId(lootid, "ItemBonusList", itemBonus->ParentItemBonusListID);
         else
             lootIdSetUsed.insert(lootid);
     }
