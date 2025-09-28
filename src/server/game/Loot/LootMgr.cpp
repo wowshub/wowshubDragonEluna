@@ -1475,7 +1475,7 @@ void LoadLootTemplates_Scrapping()
     {
         uint32 lootid = itemScrappingLoot.Id;
         if (lootIdSet.find(lootid) == lootIdSet.end())
-            LootTemplates_Scrapping.ReportNonExistingId(lootid);
+            LootTemplates_Scrapping.ReportNonExistingId(lootid, "ItemScrappingLoot", lootid);
         else
             lootIdSetUsed.insert(lootid);
     }
@@ -1489,7 +1489,7 @@ void LoadLootTemplates_Scrapping()
     if (count)
         TC_LOG_INFO("server.loading", ">> Loaded {} scrapping loot templates in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
     else
-        TC_LOG_ERROR("server.loading", ">> Loaded 0 scrapping loot templates. DB table `disenchant_loot_template` is empty");
+        TC_LOG_ERROR("server.loading", ">> Loaded 0 scrapping loot templates. DB table `scrapping_loot_template` is empty");
 }
 
 void LoadLootTables()

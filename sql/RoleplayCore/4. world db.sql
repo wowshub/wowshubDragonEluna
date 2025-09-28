@@ -418,6 +418,7 @@ REPLACE INTO `spell_script_names` VALUES (214126, 'spell_mastery_icicles_mod_aur
 REPLACE INTO `spell_script_names` VALUES (214127, 'spell_mastery_icicles_mod_aura');
 REPLACE INTO `spell_script_names` VALUES (214130, 'spell_mastery_icicles_mod_aura');
 REPLACE INTO `spell_script_names` VALUES (199786, 'spell_mastery_icicles_glacial_spike');
+REPLACE INTO `spell_script_names` VALUES  (2120, 'spell_mage_flamestrike');
 
 -- ----------------------------
 -- DK spell fixes

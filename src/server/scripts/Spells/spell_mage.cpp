@@ -161,6 +161,7 @@ enum MageSpells
     SPELL_MAGE_GLACIAL_SPIKE                     = 199786,
     SPELL_MAGE_GLACIAL_SPIKE_DAMAGE              = 228600,
     SPELL_MAGE_PRISMATIC_BARRIER                 = 235450,
+    SPELL_MAGE_PYROMANIAC                        = 205020,
 
 };
 
@@ -2638,6 +2639,50 @@ class spell_mastery_icicles_glacial_spike : public SpellScript
     }
 };
 
+// Flamestrike 2120
+class spell_mage_flamestrike : public SpellScript
+{
+    void HandleOnHit(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        if (!caster)
+            return;
+
+        if (caster->HasAura(SPELL_MAGE_HOT_STREAK))
+        {
+            caster->RemoveAurasDueToSpell(SPELL_MAGE_HOT_STREAK);
+
+            if (caster->HasAura(SPELL_MAGE_PYROMANIAC))
+                if (AuraEffect* pyromaniacEff0 = caster->GetAuraEffect(SPELL_MAGE_PYROMANIAC, EFFECT_0))
+                    if (roll_chance_i(pyromaniacEff0->GetAmount()))
+                    {
+                        if (caster->HasAura(SPELL_MAGE_HEATING_UP))
+                            caster->RemoveAurasDueToSpell(SPELL_MAGE_HEATING_UP);
+
+                        caster->CastSpell(caster, SPELL_MAGE_HOT_STREAK, true);
+                    }
+        }
+    }
+
+    void HandleDummy()
+    {
+        Unit* caster = GetCaster();
+        WorldLocation const* dest = GetExplTargetDest();
+        if (!caster || !dest)
+            return;
+
+        if (caster->HasAura(SPELL_MAGE_FLAME_PATCH_TALENT))
+            if (WorldLocation const* dest = GetExplTargetDest())
+                caster->CastSpell(dest->GetPosition(), SPELL_MAGE_FLAME_PATCH_AREATRIGGER, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_mage_flamestrike::HandleOnHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        AfterCast += SpellCastFn(spell_mage_flamestrike::HandleDummy);
+    }
+};
+
 void AddSC_mage_spell_scripts()
 {
     RegisterSpellScript(spell_mage_alter_time_aura);
@@ -2716,4 +2761,5 @@ void AddSC_mage_spell_scripts()
     RegisterAuraScript(spell_mastery_icicles_periodic);
     RegisterAuraScript(spell_mastery_icicles_mod_aura);
     RegisterSpellScript(spell_mastery_icicles_glacial_spike);
+    RegisterSpellScript(spell_mage_flamestrike);
 }
