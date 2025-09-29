@@ -1156,6 +1156,22 @@ struct ChrModelLoadInfo
     static constexpr DB2LoadInfo Instance{ Fields, 21, &ChrModelMeta::Instance, HOTFIX_SEL_CHR_MODEL };
 };
 
+struct ChrRaceRacialAbilityLoadInfo
+{
+    static constexpr DB2FieldMeta Fields[7] =
+    {
+        {.IsSigned = false, .Type = FT_INT, .Name = "ID" },
+        {.IsSigned = false, .Type = FT_STRING, .Name = "Name" },
+        {.IsSigned = false, .Type = FT_STRING, .Name = "Description" },
+        {.IsSigned = false, .Type = FT_STRING, .Name = "DescriptionShort" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "Icon" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "Order" },
+        {.IsSigned = false, .Type = FT_INT, .Name = "ChrRacesID" },
+    };
+
+    static constexpr DB2LoadInfo Instance{ Fields, 7, &ChrRaceRacialAbilityMeta::Instance, HOTFIX_SEL_CHR_RACE_RACIAL_ABILITY };
+};
+
 struct ChrRaceXChrModelLoadInfo
 {
     static constexpr DB2FieldMeta Fields[5] =

@@ -104,6 +104,7 @@ DB2Storage<ChrCustomizationOptionEntry>         sChrCustomizationOptionStore("Ch
 DB2Storage<ChrCustomizationReqEntry>            sChrCustomizationReqStore("ChrCustomizationReq.db2", &ChrCustomizationReqLoadInfo::Instance);
 DB2Storage<ChrCustomizationReqChoiceEntry>      sChrCustomizationReqChoiceStore("ChrCustomizationReqChoice.db2", &ChrCustomizationReqChoiceLoadInfo::Instance);
 DB2Storage<ChrModelEntry>                       sChrModelStore("ChrModel.db2", &ChrModelLoadInfo::Instance);
+DB2Storage<ChrRaceRacialAbilityEntry>           sChrRaceRacialAbilityStore("ChrRaceRacialAbility.db2", &ChrRaceRacialAbilityLoadInfo::Instance);
 DB2Storage<ChrRaceXChrModelEntry>               sChrRaceXChrModelStore("ChrRaceXChrModel.db2", &ChrRaceXChrModelLoadInfo::Instance);
 DB2Storage<ChrRacesEntry>                       sChrRacesStore("ChrRaces.db2", &ChrRacesLoadInfo::Instance);
 DB2Storage<ChrSpecializationEntry>              sChrSpecializationStore("ChrSpecialization.db2", &ChrSpecializationLoadInfo::Instance);
@@ -778,6 +779,7 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, LocaleConstant defaul
     LOAD_DB2(sChrCustomizationReqStore);
     LOAD_DB2(sChrCustomizationReqChoiceStore);
     LOAD_DB2(sChrModelStore);
+    LOAD_DB2(sChrRaceRacialAbilityStore);
     LOAD_DB2(sChrRaceXChrModelStore);
     LOAD_DB2(sChrRacesStore);
     LOAD_DB2(sChrSpecializationStore);

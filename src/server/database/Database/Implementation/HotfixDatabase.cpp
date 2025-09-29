@@ -418,6 +418,13 @@ void HotfixDatabaseConnection::DoPrepareStatements()
         "BarberShopCameraHeightOffsetScale, BarberShopCameraRotationOffset FROM chr_model WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CHR_MODEL, "SELECT MAX(ID) + 1 FROM chr_model", CONNECTION_SYNCH);
 
+    // ChrRaceRacialAbility.db2
+    PrepareStatement(HOTFIX_SEL_CHR_RACE_RACIAL_ABILITY, "SELECT ID, Name, Description, DescriptionShort, Icon, `Order`, ChrRacesID"
+        " FROM chr_race_racial_ability WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+    PREPARE_MAX_ID_STMT(HOTFIX_SEL_CHR_RACE_RACIAL_ABILITY, "SELECT MAX(ID) + 1 FROM chr_race_racial_ability", CONNECTION_SYNCH);
+    PREPARE_LOCALE_STMT(HOTFIX_SEL_CHR_RACE_RACIAL_ABILITY, "SELECT ID, Name_lang, Description_lang, DescriptionShort_lang"
+        " FROM chr_race_racial_ability_locale WHERE (`VerifiedBuild` > 0) = ? AND locale = ?", CONNECTION_SYNCH);
+
     // ChrRaceXChrModel.db2
     PrepareStatement(HOTFIX_SEL_CHR_RACE_X_CHR_MODEL, "SELECT ID, ChrRacesID, ChrModelID, Sex, AllowedTransmogSlots FROM chr_race_x_chr_model"
         " WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);

@@ -415,6 +415,42 @@ CREATE TABLE `item_display_info` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------
+-- Table structure for chr_race_racial_ability
+-- ----------------------------
+CREATE TABLE `chr_race_racial_ability` (
+  `ID` int unsigned NOT NULL DEFAULT '0',
+  `Name` text,
+  `Description` text,
+  `DescriptionShort` text,
+  `Icon` int NOT NULL DEFAULT '0',
+  `Order` int NOT NULL DEFAULT '0',
+  `ChrRacesID` int NOT NULL DEFAULT '0',
+  `VerifiedBuild` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ID`,`VerifiedBuild`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `chr_race_racial_ability_locale` (
+  `ID` int unsigned NOT NULL DEFAULT '0',
+  `locale` varchar(4) NOT NULL,
+  `Name_lang` text,
+  `Description_lang` text,
+  `DescriptionShort_lang` text,
+  `VerifiedBuild` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ID`,`locale`,`VerifiedBuild`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+/*!50500 PARTITION BY LIST  COLUMNS(locale)
+(PARTITION deDE VALUES IN ('deDE') ENGINE = InnoDB,
+ PARTITION esES VALUES IN ('esES') ENGINE = InnoDB,
+ PARTITION esMX VALUES IN ('esMX') ENGINE = InnoDB,
+ PARTITION frFR VALUES IN ('frFR') ENGINE = InnoDB,
+ PARTITION itIT VALUES IN ('itIT') ENGINE = InnoDB,
+ PARTITION koKR VALUES IN ('koKR') ENGINE = InnoDB,
+ PARTITION ptBR VALUES IN ('ptBR') ENGINE = InnoDB,
+ PARTITION ruRU VALUES IN ('ruRU') ENGINE = InnoDB,
+ PARTITION zhCN VALUES IN ('zhCN') ENGINE = InnoDB,
+ PARTITION zhTW VALUES IN ('zhTW') ENGINE = InnoDB) */;
+
+-- ----------------------------
 -- Craft Table structure
 -- ----------------------------
 

@@ -844,6 +844,17 @@ struct ChrModelEntry
     float BarberShopCameraRotationOffset;
 };
 
+struct ChrRaceRacialAbilityEntry
+{
+    uint32 ID;
+    LocalizedString Name;
+    LocalizedString Description;
+    LocalizedString DescriptionShort;
+    int32 Icon;
+    int32 Order;
+    int32 ChrRacesID;
+};
+
 struct ChrRaceXChrModelEntry
 {
     uint32 ID;
