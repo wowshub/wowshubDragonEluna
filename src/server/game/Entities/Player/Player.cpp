@@ -15387,7 +15387,6 @@ void Player::RewardQuest(Quest const* quest, LootItemType rewardType, uint32 rew
 
     if (uint32 skill = quest->GetRewardSkillId())
         UpdateSkillPro(skill, 1000, quest->GetRewardSkillPoints());
-	
     uint32 XP = GetQuestXPReward(quest);
 
     int32 moneyRew = 0;

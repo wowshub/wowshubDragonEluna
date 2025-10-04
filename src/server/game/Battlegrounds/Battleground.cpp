@@ -904,7 +904,6 @@ void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
             SetBgRaid(team, nullptr);
 
         DecreaseInvitedCount(team);
-
         //we should update battleground queue, but only if bg isn't ending
         if (isBattleground() && GetStatus() < STATUS_WAIT_LEAVE && bgQueueTypeId)
         {

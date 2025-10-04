@@ -320,7 +320,7 @@ namespace Trinity::Impl::ChatCommands
             return true;
 #endif
 
-	return false;
+    return false;
 }
 
 /*static*/ void Trinity::Impl::ChatCommands::ChatCommandNode::SendCommandHelpFor(ChatHandler& handler, std::string_view cmdStr)
