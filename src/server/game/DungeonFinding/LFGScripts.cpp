@@ -51,6 +51,13 @@ void LFGPlayerScript::OnLogout(Player* player)
 
 void LFGPlayerScript::OnLogin(Player* player, bool /*loginFirst*/)
 {
+    if (sConfigMgr->GetIntDefault("SoloLFG.Enable", true))
+    {
+        if (!sLFGMgr->IsSoloLFG())
+        {
+            sLFGMgr->ToggleSoloLFG();
+        }
+    }
 	
     if (!sLFGMgr->isOptionEnabled(LFG_OPTION_ENABLE_DUNGEON_FINDER | LFG_OPTION_ENABLE_RAID_BROWSER))
         return;
