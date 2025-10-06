@@ -2165,7 +2165,7 @@ namespace LuaGlobalFunctions
             }
         }
 
-        Player* receiverPlayer = eObjectAccessor()FindPlayer(ObjectGuid::Create<HighGuid::Player>(receiverGUIDLow));
+        Player* receiverPlayer = eObjectAccessor()FindPlayerByLowGUID(receiverGUIDLow);
         draft.SendMailTo(trans, MailReceiver(receiverPlayer, receiverGUIDLow), sender, MAIL_CHECK_MASK_NONE, delay);
         CharacterDatabase.CommitTransaction(trans);
 
