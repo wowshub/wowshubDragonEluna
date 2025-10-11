@@ -175,6 +175,7 @@ namespace WorldPackets
             bool HasContentTuning = false;
             Optional<ContentTuningParams> ContentTuning;
             Optional<ObjectGuid> CastUnit;
+            Optional<ObjectGuid> CastItem;
             Optional<int32> Duration;
             Optional<int32> Remaining;
             Optional<float> TimeMod;
@@ -355,7 +356,7 @@ namespace WorldPackets
         {
             ObjectGuid BeaconGUID;
             uint32 Points = 0;
-            uint8 Type = 0;
+            uint32 Type = 0;
         };
 
         struct SpellCastData
@@ -772,9 +773,9 @@ namespace WorldPackets
             TaggedPosition<Position::XYZ> TargetPosition; // Overrides missile destination for SpellVisual::SpellVisualMissileSetID
             uint32 SpellVisualID = 0;
             float TravelSpeed = 0.0f;
-            uint16 HitReason = 0;
-            uint16 MissReason = 0;
-            uint16 ReflectStatus = 0;
+            uint8 HitReason = 0;
+            uint8 MissReason = 0;
+            uint8 ReflectStatus = 0;
             float LaunchDelay = 0.0f;
             float MinDuration = 0.0f;
             bool SpeedAsTime = false;

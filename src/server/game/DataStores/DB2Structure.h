@@ -141,7 +141,7 @@ struct AreaTableEntry
     uint8 FactionGroupMask;
     float AmbientMultiplier;
     int32 MountFlags;
-    int16 PvpCombatWorldStateID;
+    int32 PvpCombatWorldStateID;
     uint8 WildBattlePetLevelMin;
     uint8 WildBattlePetLevelMax;
     uint8 WindSettingsID;
@@ -554,7 +554,7 @@ struct BroadcastTextEntry
     int32 LanguageID;
     int32 ConditionID;
     uint16 EmotesID;
-    uint16 Flags;
+    int32 Flags;
     uint32 ChatBubbleDurationMs;
     int32 VoiceOverPriorityID;
     std::array<uint32, 2> SoundKitID;
@@ -934,7 +934,7 @@ struct ChrSpecializationEntry
     int8 OrderIndex;
     int8 PetTalentType;
     int8 Role;
-    uint32 Flags;
+    int32 Flags;
     int32 SpellIconFileID;
     int8 PrimaryStatPriority;
     int32 AnimReplacements;
@@ -994,6 +994,8 @@ struct ContentTuningEntry
     int32 DamageItemLevelCurveID;
     int32 HealthPrimaryStatCurveID;
     int32 DamagePrimaryStatCurveID;
+    int32 PrimaryStatScalingModPlayerDataElementCharacterID;
+    float PrimaryStatScalingModPlayerDataElementCharacterMultiplier;
     int32 MinLevel;
     int32 MaxLevel;
     int32 MinLevelType;
@@ -1587,7 +1589,7 @@ struct CurveEntry
 {
     uint32 ID;
     uint8 Type;
-    uint8 Flags;
+    int32 Flags;
 };
 
 struct CurvePointEntry
@@ -1596,7 +1598,7 @@ struct CurvePointEntry
     DBCPosition2D PreSLSquishPos;
     uint32 ID;
     uint32 CurveID;
-    uint8 OrderIndex;
+    uint32 OrderIndex;
 };
 
 struct DestructibleModelDataEntry
@@ -2298,7 +2300,7 @@ struct ItemEntry
     uint8 SheatheType;
     int8 SoundOverrideSubclassID;
     int32 IconFileDataID;
-    uint8 ItemGroupSoundsID;
+    uint32 ItemGroupSoundsID;
     int32 ContentTuningID;
     int32 ModifiedCraftingReagentItemID;
     int32 CraftingQualityID;
@@ -2397,6 +2399,8 @@ struct ItemBonusTreeNodeEntry
     int32 IblGroupPointsModSetID;
     int32 MinMythicPlusLevel;
     int32 MaxMythicPlusLevel;
+    int32 ItemCreationContextGroupID;
+    int32 Flags;
     uint32 ParentItemBonusTreeID;
 };
 
@@ -2427,6 +2431,13 @@ struct ItemContextPickerEntryEntry
     uint32 Flags;
     uint32 PlayerConditionID;
     uint32 ItemContextPickerID;
+};
+
+struct ItemCreationContextEntry
+{
+    uint32 ID;
+    uint8 ItemContext;
+    uint32 ItemCreationContextGroupID;
 };
 
 struct ItemCurrencyCostEntry
@@ -2601,12 +2612,28 @@ struct ItemNameDescriptionEntry
     int32 Color;
 };
 
+struct ItemOffsetCurveEntry
+{
+    uint32 ID;
+    int32 CurveID;
+    int32 Offset;
+};
+
 struct ItemPriceBaseEntry
 {
     uint32 ID;
     uint16 ItemLevel;
     float Armor;
     float Weapon;
+};
+
+struct ItemScalingConfigEntry
+{
+    uint32 ID;
+    int32 ItemOffsetCurveID;
+    int32 ItemLevel;
+    int32 RequiredLevel;
+    int32 Unknown1125;
 };
 
 struct ItemSearchNameEntry
@@ -2684,6 +2711,8 @@ struct ItemSparseEntry
     int32 ModifiedCraftingReagentItemID;
     int32 ContentTuningID;
     int32 PlayerLevelToItemLevelCurveID;
+    int32 ItemLevelOffsetCurveID;
+    int32 ItemLevelOffsetItemLevel;
     uint16 ItemNameDescriptionID;
     uint16 RequiredTransmogHoliday;
     uint16 RequiredHoliday;
@@ -3469,7 +3498,7 @@ struct PlayerConditionEntry
     std::array<uint32, 2> Time;
     std::array<int32, 4> AuraSpellID;
     std::array<uint8, 4> AuraStacks;
-    std::array<uint16, 4> Achievement;
+    std::array<uint32, 4> Achievement;
     std::array<uint16, 4> AreaID;
     std::array<uint8, 4> LfgStatus;
     std::array<uint8, 4> LfgCompare;
@@ -3488,6 +3517,7 @@ struct PlayerDataElementAccountEntry
     uint32 ID;
     int32 StorageIndex;
     int32 Type;
+    int32 Unknown1125;
 
     PlayerDataElementType GetType() const { return static_cast<PlayerDataElementType>(Type); }
 };
@@ -3497,6 +3527,7 @@ struct PlayerDataElementCharacterEntry
     uint32 ID;
     int32 StorageIndex;
     int32 Type;
+    int32 Unknown1125;
 
     PlayerDataElementType GetType() const { return static_cast<PlayerDataElementType>(Type); }
 };
@@ -3506,6 +3537,7 @@ struct PlayerDataFlagAccountEntry
     uint32 ID;
     int32 StorageIndex;
     int32 Unknown1107;
+    int32 Unknown1125;
 };
 
 struct PlayerDataFlagCharacterEntry
@@ -3513,6 +3545,7 @@ struct PlayerDataFlagCharacterEntry
     uint32 ID;
     int32 StorageIndex;
     int32 Unknown1107;
+    int32 Unknown1125;
 };
 
 struct PowerDisplayEntry
@@ -3819,8 +3852,8 @@ struct ScenarioStepEntry
 struct SceneScriptEntry
 {
     uint32 ID;
-    uint16 FirstSceneScriptID;
-    uint16 NextSceneScriptID;
+    uint32 FirstSceneScriptID;
+    uint32 NextSceneScriptID;
     int32 Unknown915;
 };
 
@@ -4115,10 +4148,10 @@ struct SpellCategoriesEntry
     uint32 ID;
     uint8 DifficultyID;
     int16 Category;
-    int8 DefenseType;
+    int32 DefenseType;
     int8 DispelType;
     int8 Mechanic;
-    int8 PreventionType;
+    int32 PreventionType;
     int16 StartRecoveryCategory;
     int16 ChargeCategory;
     uint32 SpellID;
@@ -4242,7 +4275,7 @@ struct SpellInterruptsEntry
 {
     uint32 ID;
     uint8 DifficultyID;
-    int16 InterruptFlags;
+    int32 InterruptFlags;
     std::array<int32, MAX_SPELL_AURA_INTERRUPT_FLAGS> AuraInterruptFlags;
     std::array<int32, MAX_SPELL_AURA_INTERRUPT_FLAGS> ChannelInterruptFlags;
     uint32 SpellID;
@@ -4748,6 +4781,7 @@ struct TraitCostEntry
     uint32 ID;
     int32 Amount;
     int32 TraitCurrencyID;
+    int32 CurveID;
 };
 
 struct TraitCurrencyEntry
@@ -4757,6 +4791,8 @@ struct TraitCurrencyEntry
     int32 CurrencyTypesID;
     int32 Flags;
     int32 Icon;
+    int32 PlayerDataElementAccountID;
+    int32 PlayerDataElementCharacterID;
 
     TraitCurrencyType GetType() const { return static_cast<TraitCurrencyType>(Type); }
 };
@@ -4904,6 +4940,18 @@ struct TraitSubTreeEntry
     uint32 TraitTreeID;             // Parent tree
 };
 
+struct TraitSystemEntry
+{
+    uint32 ID;
+    int32 Flags;
+    int32 WidgetSetID;
+    int32 TraitChangeSpell;
+    int32 ItemID;
+    int32 VariationType;
+
+    TraitSystemVariationType GetVariationType() const { return static_cast<TraitSystemVariationType>(VariationType); }
+};
+
 struct TraitTreeEntry
 {
     uint32 ID;
@@ -5043,6 +5091,7 @@ struct UiMapAssignmentEntry
     int32 AreaID;
     int32 WmoDoodadPlacementID;
     int32 WmoGroupID;
+    int32 Unknown1125;
 };
 
 struct UiMapLinkEntry
