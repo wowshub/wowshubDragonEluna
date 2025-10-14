@@ -146,7 +146,12 @@ enum DruidSpells
     SPELL_DRUID_UMBRAL_INSPIRATION_AURA        = 450419,
     SPELL_DRUID_URSOCS_FURY_SHIELD             = 372505,
     SPELL_DRUID_YSERAS_GIFT_HEAL_PARTY         = 145110,
-    SPELL_DRUID_YSERAS_GIFT_HEAL_SELF          = 145109
+    SPELL_DRUID_YSERAS_GIFT_HEAL_SELF          = 145109,
+
+    SPELL_DRUID_ECLIPSE                        = 279619,
+    SPELL_DRUID_SOLAR_EMPOWEREMENT             = 164545,
+    SPELL_DRUID_LUNAR_EMPOWEREMENT             = 164547,
+    SPELL_DRUID_BLESSING_OF_ELUNE              = 202737,
 };
 
 // 774 - Rejuvenation
@@ -2552,6 +2557,130 @@ class spell_dru_yseras_gift_group_heal : public SpellScript
     }
 };
 
+// 190984 - Solar Wrath | 194153 - Lunar Strike
+class spell_dru_blessing_of_elune : public SpellScript
+{
+    void HandleOnHit()
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster)
+            return;
+
+        uint32 power = GetHitDamage();
+
+        if (Aura* aura = caster->GetAura(202737))
+            if (AuraEffect* aurEff = aura->GetEffect(EFFECT_0))
+                power += CalculatePct(power, aurEff->GetAmount());
+
+        SetHitDamage(power);
+    }
+
+    void Register()
+    {
+        OnHit += SpellHitFn(spell_dru_blessing_of_elune::HandleOnHit);
+    }
+};
+
+// 194153 Lunar Strike
+class spell_druid_lunar_strike : public SpellScript
+{
+    enum Spells
+    {
+        SPELL_DRUID_LUNAR_STRIKE        = 194153,
+        SPELL_DRUID_WARRIOR_OF_ELUNE    = 202425,
+        SPELL_DRUID_NATURES_BALANCE     = 202430,
+    };
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_DRUID_MOONFIRE_DAMAGE, SPELL_DRUID_WARRIOR_OF_ELUNE, SPELL_DRUID_LUNAR_STRIKE, SPELL_DRUID_NATURES_BALANCE });
+    }
+
+    void HandleHitTarget(SpellEffIndex /*effIndex*/)
+    {
+        Unit* explTarget = GetExplTargetUnit();
+        Unit* currentTarget = GetHitUnit();
+
+        if (!explTarget || !currentTarget)
+            return;
+
+        if (currentTarget != explTarget)
+            SetHitDamage(GetHitDamage() * GetSpellInfo()->GetEffect(EFFECT_2).BasePoints / 100);
+
+        if (GetCaster()->HasAura(SPELL_DRUID_NATURES_BALANCE))
+            if (Aura* moonfireDOT = currentTarget->GetAura(SPELL_DRUID_MOONFIRE_DAMAGE, GetCaster()->GetGUID()))
+            {
+                int32 duration = moonfireDOT->GetDuration();
+                int32 newDuration = duration + 6 * IN_MILLISECONDS;
+
+                if (newDuration > moonfireDOT->GetMaxDuration())
+                    moonfireDOT->SetMaxDuration(newDuration);
+
+                moonfireDOT->SetDuration(newDuration);
+            }
+
+        if (GetCaster() && roll_chance_f(20) && GetCaster()->HasAura(SPELL_DRUID_ECLIPSE))
+            GetCaster()->CastSpell(nullptr, SPELL_DRUID_SOLAR_EMPOWEREMENT, true);
+    }
+
+    void HandleHit(SpellEffIndex /*effIndex*/)
+    {
+        if (Aura* WarriorOfElune = GetCaster()->GetAura(SPELL_DRUID_WARRIOR_OF_ELUNE))
+        {
+            int32 amount = WarriorOfElune->GetEffect(EFFECT_0)->GetAmount();
+            WarriorOfElune->GetEffect(EFFECT_0)->SetAmount(amount - 1);
+            if (amount == -102)
+                GetCaster()->RemoveAurasDueToSpell(SPELL_DRUID_WARRIOR_OF_ELUNE);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_druid_lunar_strike::HandleHitTarget, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        OnEffectHit += SpellEffectFn(spell_druid_lunar_strike::HandleHit, EFFECT_1, SPELL_EFFECT_ENERGIZE);
+    }
+};
+
+// 190984 Solar Wrath
+class spell_druid_solar_wrath : public SpellScript
+{
+    enum Spells
+    {
+        SPELL_DRUID_SOLAR_WRATH         = 190984,
+        SPELL_DRUID_NATURES_BALANCE     = 202430,
+        SPELL_DRUID_SUNFIRE_DOT         = 164815,
+    };
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_DRUID_SUNFIRE_DOT, SPELL_DRUID_SOLAR_WRATH, SPELL_DRUID_NATURES_BALANCE });
+    }
+
+    void HandleHitTarget(SpellEffIndex /*effIndex*/)
+    {
+        if (Unit* target = GetHitUnit())
+            if (GetCaster()->HasAura(SPELL_DRUID_NATURES_BALANCE))
+                if (Aura* sunfireDOT = target->GetAura(SPELL_DRUID_SUNFIRE_DOT, GetCaster()->GetGUID()))
+                {
+                    int32 duration = sunfireDOT->GetDuration();
+                    int32 newDuration = duration + 4 * IN_MILLISECONDS;
+
+                    if (newDuration > sunfireDOT->GetMaxDuration())
+                        sunfireDOT->SetMaxDuration(newDuration);
+
+                    sunfireDOT->SetDuration(newDuration);
+                }
+        if (GetCaster() && roll_chance_f(20) && GetCaster()->HasAura(SPELL_DRUID_ECLIPSE))
+            GetCaster()->CastSpell(nullptr, SPELL_DRUID_LUNAR_EMPOWEREMENT, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_druid_solar_wrath::HandleHitTarget, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
 void AddSC_druid_spell_scripts()
 {
     RegisterSpellScript(spell_dru_abundance);
@@ -2633,4 +2762,10 @@ void AddSC_druid_spell_scripts()
     RegisterSpellAndAuraScriptPair(spell_dru_wild_growth, spell_dru_wild_growth_aura);
     RegisterSpellScript(spell_dru_yseras_gift);
     RegisterSpellScript(spell_dru_yseras_gift_group_heal);
+
+    //new
+    RegisterSpellScript(spell_dru_blessing_of_elune);
+    RegisterSpellScript(spell_druid_lunar_strike);
+    RegisterSpellScript(spell_druid_solar_wrath);
+
 }
