@@ -1525,9 +1525,8 @@ bool Map::AreaTriggerCellRelocation(AreaTrigger* at, Cell new_cell)
 
 bool Map::CreatureRespawnRelocation(Creature* c, bool diffGridOnly)
 {
-    float resp_x, resp_y, resp_z, resp_o;
-    c->GetRespawnPosition(resp_x, resp_y, resp_z, &resp_o);
-    Cell resp_cell(resp_x, resp_y);
+    Position resp = c->GetRespawnPosition();
+    Cell resp_cell(resp.GetPositionX(), resp.GetPositionY());
 
     //creature will be unloaded with grid
     if (diffGridOnly && !c->GetCurrentCell().DiffGrid(resp_cell))
@@ -1543,7 +1542,7 @@ bool Map::CreatureRespawnRelocation(Creature* c, bool diffGridOnly)
     // teleport it to respawn point (like normal respawn if player see)
     if (CreatureCellRelocation(c, resp_cell))
     {
-        c->Relocate(resp_x, resp_y, resp_z, resp_o);
+        c->Relocate(resp);
         c->GetMotionMaster()->Initialize(); // prevent possible problems with default move generators
         //CreatureRelocationNotify(c, resp_cell, resp_cell.GetCellCoord());
         c->UpdatePositionData();
@@ -1556,9 +1555,8 @@ bool Map::CreatureRespawnRelocation(Creature* c, bool diffGridOnly)
 
 bool Map::GameObjectRespawnRelocation(GameObject* go, bool diffGridOnly)
 {
-    float resp_x, resp_y, resp_z, resp_o;
-    go->GetRespawnPosition(resp_x, resp_y, resp_z, &resp_o);
-    Cell resp_cell(resp_x, resp_y);
+    Position resp = go->GetRespawnPosition();
+    Cell resp_cell(resp.GetPositionX(), resp.GetPositionY());
 
     //GameObject will be unloaded with grid
     if (diffGridOnly && !go->GetCurrentCell().DiffGrid(resp_cell))
@@ -1571,7 +1569,7 @@ bool Map::GameObjectRespawnRelocation(GameObject* go, bool diffGridOnly)
     // teleport it to respawn point (like normal respawn if player see)
     if (GameObjectCellRelocation(go, resp_cell))
     {
-        go->Relocate(resp_x, resp_y, resp_z, resp_o);
+        go->Relocate(resp);
         go->UpdatePositionData();
         go->UpdateObjectVisibility(false);
         return true;
@@ -2761,17 +2759,11 @@ void Map::AddToActive(WorldObject* obj)
     {
         case TYPEID_UNIT:
             if (Creature* creature = obj->ToCreature(); !creature->IsPet() && creature->GetSpawnId())
-            {
-                respawnLocation.emplace();
-                creature->GetRespawnPosition(respawnLocation->m_positionX, respawnLocation->m_positionY, respawnLocation->m_positionZ);
-            }
+                respawnLocation = creature->GetRespawnPosition();
             break;
         case TYPEID_GAMEOBJECT:
             if (GameObject* gameObject = obj->ToGameObject(); gameObject->GetSpawnId())
-            {
-                respawnLocation.emplace();
-                gameObject->GetRespawnPosition(respawnLocation->m_positionX, respawnLocation->m_positionY, respawnLocation->m_positionZ);
-            }
+                respawnLocation = gameObject->GetRespawnPosition();
             break;
         default:
             break;
@@ -2812,17 +2804,11 @@ void Map::RemoveFromActive(WorldObject* obj)
     {
         case TYPEID_UNIT:
             if (Creature* creature = obj->ToCreature(); !creature->IsPet() && creature->GetSpawnId())
-            {
-                respawnLocation.emplace();
-                creature->GetRespawnPosition(respawnLocation->m_positionX, respawnLocation->m_positionY, respawnLocation->m_positionZ);
-            }
+                respawnLocation = creature->GetRespawnPosition();
             break;
         case TYPEID_GAMEOBJECT:
             if (GameObject* gameObject = obj->ToGameObject(); gameObject->GetSpawnId())
-            {
-                respawnLocation.emplace();
-                gameObject->GetRespawnPosition(respawnLocation->m_positionX, respawnLocation->m_positionY, respawnLocation->m_positionZ);
-            }
+                respawnLocation = gameObject->GetRespawnPosition();
             break;
         default:
             break;
