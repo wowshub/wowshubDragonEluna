@@ -668,7 +668,7 @@ REPLACE INTO `areatrigger_create_properties` VALUES (6482, 1, 11107, 1, 0, 0, 0,
 REPLACE INTO `areatrigger_create_properties` VALUES (6007, 1, 10666, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 20000, 0, 1, 1, 0, 0, 0, 0, 0, 0, 'at_shattered_soul_fragment', 32750);
 
 -- ----------------------------
--- Druiud spell fixes
+-- Druid spell fixes
 -- ----------------------------
 
 REPLACE INTO `spell_script_names` VALUES (103917, 'spell_dru_blessing_of_elune');

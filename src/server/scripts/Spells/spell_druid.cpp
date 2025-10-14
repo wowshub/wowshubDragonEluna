@@ -148,10 +148,9 @@ enum DruidSpells
     SPELL_DRUID_YSERAS_GIFT_HEAL_PARTY         = 145110,
     SPELL_DRUID_YSERAS_GIFT_HEAL_SELF          = 145109,
 
-    SPELL_DRUID_ECLIPSE                        = 279619,
-    SPELL_DRUID_SOLAR_EMPOWEREMENT             = 164545,
-    SPELL_DRUID_LUNAR_EMPOWEREMENT             = 164547,
-    SPELL_DRUID_BLESSING_OF_ELUNE              = 202737,
+    SPELL_DRUID_SOLAR_EMPOWEREMENT             = 211089,
+    SPELL_DRUID_LUNAR_EMPOWEREMENT             = 211091,
+    SPELL_DRUID_BLESSING_OF_ELUNE_10           = 202737,
 };
 
 // 774 - Rejuvenation
@@ -1467,7 +1466,7 @@ public:
     void OnOwnerInCombat(bool isNowInCombat) const
     {
         if (isNowInCombat)
-            Trigger(GetTarget(), GetEffect(EFFECT_2));
+            Trigger(GetTarget(), GetEffect(EFFECT_0));
     }
 
     void Register() override
@@ -2569,7 +2568,7 @@ class spell_dru_blessing_of_elune : public SpellScript
 
         uint32 power = GetHitDamage();
 
-        if (Aura* aura = caster->GetAura(202737))
+        if (Aura* aura = caster->GetAura(SPELL_DRUID_BLESSING_OF_ELUNE_10))
             if (AuraEffect* aurEff = aura->GetEffect(EFFECT_0))
                 power += CalculatePct(power, aurEff->GetAmount());
 
@@ -2620,7 +2619,7 @@ class spell_druid_lunar_strike : public SpellScript
                 moonfireDOT->SetDuration(newDuration);
             }
 
-        if (GetCaster() && roll_chance_f(20) && GetCaster()->HasAura(SPELL_DRUID_ECLIPSE))
+        if (GetCaster() && roll_chance_f(20) && GetCaster()->HasAura(SPELL_DRUID_ECLIPSE_LUNAR_AURA))
             GetCaster()->CastSpell(nullptr, SPELL_DRUID_SOLAR_EMPOWEREMENT, true);
     }
 
@@ -2671,7 +2670,7 @@ class spell_druid_solar_wrath : public SpellScript
 
                     sunfireDOT->SetDuration(newDuration);
                 }
-        if (GetCaster() && roll_chance_f(20) && GetCaster()->HasAura(SPELL_DRUID_ECLIPSE))
+        if (GetCaster() && roll_chance_f(20) && GetCaster()->HasAura(SPELL_DRUID_ECLIPSE_SOLAR_AURA))
             GetCaster()->CastSpell(nullptr, SPELL_DRUID_LUNAR_EMPOWEREMENT, true);
     }
 
