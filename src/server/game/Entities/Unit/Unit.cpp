@@ -12981,18 +12981,22 @@ float Unit::GetAdvFlyingVelocity() const
     return std::sqrt(advFlying->forwardVelocity * advFlying->forwardVelocity + advFlying->upVelocity * advFlying->upVelocity);
 }
 
-void Unit::NearTeleportTo(Position const& pos, bool casting /*= false*/)
+void Unit::NearTeleportTo(TeleportLocation const& target, bool casting)
 {
     DisableSpline();
-    TeleportLocation target{ .Location = { GetMapId(), pos } };
     if (GetTypeId() == TYPEID_PLAYER)
         ToPlayer()->TeleportTo(target, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : TELE_TO_NONE));
     else
     {
         SendTeleportPacket(target);
-        UpdatePosition(pos, true);
+        UpdatePosition(target.Location, true);
         UpdateObjectVisibility();
     }
+}
+
+void Unit::NearTeleportTo(Position const& pos, bool casting /*= false*/)
+{
+    NearTeleportTo(TeleportLocation{ .Location = { GetMapId(), pos } }, casting);
 }
 
 void Unit::SendTeleportPacket(TeleportLocation const& teleportLocation)
@@ -13036,7 +13040,10 @@ void Unit::SendTeleportPacket(TeleportLocation const& teleportLocation)
             moveUpdateTeleport.Status->transport.pos.Relocate(teleportLocation.Location);
         }
         else
+        {
             moveUpdateTeleport.Status->pos.Relocate(teleportLocation.Location);
+            moveUpdateTeleport.Status->transport.Reset();
+        }
     }
 
     // Broadcast the packet to everyone except self.
