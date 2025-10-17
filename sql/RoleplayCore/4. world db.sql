@@ -672,8 +672,9 @@ REPLACE INTO `areatrigger_create_properties` VALUES (6007, 1, 10666, 1, 0, 0, 0,
 -- ----------------------------
 
 REPLACE INTO `spell_script_names` VALUES (103917, 'spell_dru_blessing_of_elune');
-REPLACE INTO `spell_script_names` VALUES (194153, 'spell_druid_lunar_strike');
-REPLACE INTO `spell_script_names` VALUES (190984, 'spell_druid_solar_wrath');
+REPLACE INTO `spell_script_names` VALUES (194153, 'spell_dru_lunar_strike');
+REPLACE INTO `spell_script_names` VALUES (190984, 'spell_dru_solar_wrath');
+REPLACE INTO `spell_script_names` VALUES (106785, 'spell_dru_swipe');
 
 -- ----------------------------
 -- Misc fix or changes

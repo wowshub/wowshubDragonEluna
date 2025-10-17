@@ -151,6 +151,7 @@ enum DruidSpells
     SPELL_DRUID_SOLAR_EMPOWEREMENT             = 211089,
     SPELL_DRUID_LUNAR_EMPOWEREMENT             = 211091,
     SPELL_DRUID_BLESSING_OF_ELUNE_10           = 202737,
+    SPELL_DRUID_SWIPE_CAT                      = 106785,
 };
 
 // 774 - Rejuvenation
@@ -2582,7 +2583,7 @@ class spell_dru_blessing_of_elune : public SpellScript
 };
 
 // 194153 Lunar Strike
-class spell_druid_lunar_strike : public SpellScript
+class spell_dru_lunar_strike : public SpellScript
 {
     enum Spells
     {
@@ -2636,13 +2637,13 @@ class spell_druid_lunar_strike : public SpellScript
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_druid_lunar_strike::HandleHitTarget, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-        OnEffectHit += SpellEffectFn(spell_druid_lunar_strike::HandleHit, EFFECT_1, SPELL_EFFECT_ENERGIZE);
+        OnEffectHitTarget += SpellEffectFn(spell_dru_lunar_strike::HandleHitTarget, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        OnEffectHit += SpellEffectFn(spell_dru_lunar_strike::HandleHit, EFFECT_1, SPELL_EFFECT_ENERGIZE);
     }
 };
 
 // 190984 Solar Wrath
-class spell_druid_solar_wrath : public SpellScript
+class spell_dru_solar_wrath : public SpellScript
 {
     enum Spells
     {
@@ -2676,8 +2677,44 @@ class spell_druid_solar_wrath : public SpellScript
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_druid_solar_wrath::HandleHitTarget, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        OnEffectHitTarget += SpellEffectFn(spell_dru_solar_wrath::HandleHitTarget, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
+};
+
+// Swipe - 106785
+class spell_dru_swipe : public SpellScript
+{
+    void HandleOnHit(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        Unit* target = GetHitUnit();
+        if (!caster || !target)
+            return;
+
+        int32 damage = GetHitDamage();
+        int32 casterLevel = caster->GetLevelForTarget(caster);
+
+        // This prevent awarding multiple Combo Points when multiple targets hit with Swipe AoE
+        if (m_awardComboPoint)
+            // Awards the caster 1 Combo Point (get value from the spell data)
+            caster->ModifyPower(POWER_COMBO_POINTS, sSpellMgr->GetSpellInfo(SPELL_DRUID_SWIPE_CAT, DIFFICULTY_NONE)->GetEffect(EFFECT_0).BasePoints);
+
+        // If caster is level >= 44 and the target is bleeding, deals 20% increased damage (get value from the spell data)
+        if ((casterLevel >= 44) && target->HasAuraState(AURA_STATE_BLEED))
+            AddPct(damage, sSpellMgr->GetSpellInfo(SPELL_DRUID_SWIPE_CAT, DIFFICULTY_NONE)->GetEffect(EFFECT_1).BasePoints);
+
+        SetHitDamage(damage);
+
+        m_awardComboPoint = false;
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_dru_swipe::HandleOnHit, EFFECT_1, SPELL_EFFECT_DUMMY);
+    }
+
+private:
+    bool m_awardComboPoint = true;
 };
 
 void AddSC_druid_spell_scripts()
@@ -2764,7 +2801,7 @@ void AddSC_druid_spell_scripts()
 
     //new
     RegisterSpellScript(spell_dru_blessing_of_elune);
-    RegisterSpellScript(spell_druid_lunar_strike);
-    RegisterSpellScript(spell_druid_solar_wrath);
-
+    RegisterSpellScript(spell_dru_lunar_strike);
+    RegisterSpellScript(spell_dru_solar_wrath);
+    RegisterSpellScript(spell_dru_swipe);
 }
