@@ -33,6 +33,7 @@
 #include "Object.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
+#include "PathGenerator.h"
 #include "PhasingHandler.h"
 #include "Player.h"
 #include "RestMgr.h"
@@ -1572,4 +1573,23 @@ void AreaTrigger::ClearUpdateMask(bool remove)
 {
     m_values.ClearChangesMask(&AreaTrigger::m_areaTriggerData);
     Object::ClearUpdateMask(remove);
+}
+
+bool AreaTrigger::SetDestination(Position const& pos, uint32 timeToTarget, bool force)
+{
+    if (!IsInWorld())
+        return false;
+
+    PathGenerator path(this);
+    path.SetUseRaycast(true);
+
+    bool result = path.CalculatePath(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false);
+    if (!result || (path.GetPathType() & PATHFIND_NOPATH))
+        return false;
+
+    _reachedDestination = false;
+    _lastSplineIndex = -1;
+
+    InitSplines(path.GetPath(), timeToTarget);
+    return true;
 }

@@ -152,6 +152,7 @@ enum DruidSpells
     SPELL_DRUID_LUNAR_EMPOWEREMENT             = 211091,
     SPELL_DRUID_BLESSING_OF_ELUNE_10           = 202737,
     SPELL_DRUID_SWIPE_CAT                      = 106785,
+    SPELL_DRUID_FURY_OF_ELUNE_DAMAGE           = 211545,
 };
 
 // 774 - Rejuvenation
@@ -2717,6 +2718,42 @@ private:
     bool m_awardComboPoint = true;
 };
 
+// 202770 - Fury of Elune
+// AreatriggerAI - 6887
+struct at_dru_fury_of_elune : public AreaTriggerAI
+{
+    at_dru_fury_of_elune(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger), _timer(0) {}
+
+    void OnUpdate(uint32 diff) override
+    {
+        _timer += diff;
+        if (_timer < 400) // 400 ?? = 20 ??? ?? 8 ???
+            return;
+
+        _timer = 0;
+
+        Unit* caster = at->GetCaster();
+        if (!caster)
+            return;
+
+        Unit* target = at->GetTarget();
+        if (target && target->IsInWorld() && target->IsAlive())
+        {
+            if (lastTargetPosition.GetExactDist(target) > 0.5f)
+            {
+                lastTargetPosition = target->GetPosition();
+                at->SetDestination(lastTargetPosition, 300);
+            }
+        }
+
+        caster->CastSpell(at->GetPosition(), SPELL_DRUID_FURY_OF_ELUNE_DAMAGE, true);
+    }
+
+private:
+    uint32 _timer = 0;
+    Position lastTargetPosition;
+};
+
 void AddSC_druid_spell_scripts()
 {
     RegisterSpellScript(spell_dru_abundance);
@@ -2804,4 +2841,5 @@ void AddSC_druid_spell_scripts()
     RegisterSpellScript(spell_dru_lunar_strike);
     RegisterSpellScript(spell_dru_solar_wrath);
     RegisterSpellScript(spell_dru_swipe);
+    RegisterAreaTriggerAI(at_dru_fury_of_elune);
 }

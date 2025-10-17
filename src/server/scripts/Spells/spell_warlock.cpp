@@ -3235,7 +3235,7 @@ private:
         return ObjectAccessor::GetUnit(*me, _targetGUID);
     }
 
-    void CastSpellOnTarget(Unit* owner, Unit* target)
+    void CastSpellOnTarget(Unit* /*owner*/, Unit* target)
     {
         if (target && me->IsValidAttackTarget(target))
         {
