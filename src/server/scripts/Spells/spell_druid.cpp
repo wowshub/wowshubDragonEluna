@@ -2718,40 +2718,30 @@ private:
     bool m_awardComboPoint = true;
 };
 
-// 202770 - Fury of Elune
+// 202770 - Fury of Elune WIP
 // AreatriggerAI - 6887
 struct at_dru_fury_of_elune : public AreaTriggerAI
 {
-    at_dru_fury_of_elune(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger), _timer(0) {}
-
-    void OnUpdate(uint32 diff) override
+    at_dru_fury_of_elune(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger)
     {
-        _timer += diff;
-        if (_timer < 400) // 400 ?? = 20 ??? ?? 8 ???
-            return;
-
-        _timer = 0;
-
-        Unit* caster = at->GetCaster();
-        if (!caster)
-            return;
-
-        Unit* target = at->GetTarget();
-        if (target && target->IsInWorld() && target->IsAlive())
-        {
-            if (lastTargetPosition.GetExactDist(target) > 0.5f)
-            {
-                lastTargetPosition = target->GetPosition();
-                at->SetDestination(lastTargetPosition, 300);
-            }
-        }
-
-        caster->CastSpell(at->GetPosition(), SPELL_DRUID_FURY_OF_ELUNE_DAMAGE, true);
+        areatrigger->SetPeriodicProcTimer(400);
     }
 
-private:
-    uint32 _timer = 0;
-    Position lastTargetPosition;
+    void OnPeriodicProc() override
+    {
+        if (Unit* caster = at->GetCaster())
+        {
+            for (ObjectGuid guid : at->GetInsideUnits())
+            {
+                if (Unit* target = ObjectAccessor::GetUnit(*caster, guid))
+                {
+                    at->Relocate(target->GetPosition());
+                    at->SetDestination(*target, 200);
+                    caster->CastSpell(target->GetPosition(), SPELL_DRUID_FURY_OF_ELUNE_DAMAGE, true);
+                }
+            }
+        }
+    }
 };
 
 void AddSC_druid_spell_scripts()

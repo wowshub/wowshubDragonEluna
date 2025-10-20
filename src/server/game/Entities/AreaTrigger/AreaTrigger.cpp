@@ -397,6 +397,17 @@ void AreaTrigger::Update(uint32 diff)
     _ai->OnUpdate(diff);
 
     UpdateTargetList();
+
+    if (_basePeriodicProcTimer)
+    {
+        if (_periodicProcTimer <= diff)
+        {
+            _ai->OnPeriodicProc();
+            _periodicProcTimer = _basePeriodicProcTimer;
+        }
+        else
+            _periodicProcTimer -= diff;
+    }
 }
 
 void AreaTrigger::Remove()
@@ -1575,20 +1586,13 @@ void AreaTrigger::ClearUpdateMask(bool remove)
     Object::ClearUpdateMask(remove);
 }
 
-bool AreaTrigger::SetDestination(Position const& pos, uint32 timeToTarget, bool force)
+bool AreaTrigger::SetDestination(Position const& /*pos*/, uint32 timeToTarget)
 {
-    if (!IsInWorld())
+    PathGenerator path(GetCaster());
+    bool result = path.CalculatePath(GetPositionX(), GetPositionY(), GetPositionZ(), true);
+
+    if (!result || path.GetPathType() & PATHFIND_NOPATH)
         return false;
-
-    PathGenerator path(this);
-    path.SetUseRaycast(true);
-
-    bool result = path.CalculatePath(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false);
-    if (!result || (path.GetPathType() & PATHFIND_NOPATH))
-        return false;
-
-    _reachedDestination = false;
-    _lastSplineIndex = -1;
 
     InitSplines(path.GetPath(), timeToTarget);
     return true;

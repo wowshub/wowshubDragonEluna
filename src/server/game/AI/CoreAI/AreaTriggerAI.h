@@ -73,6 +73,9 @@ class TC_GAME_API AreaTriggerAI
 
         // Gets the id of the AI (script id)
         uint32 GetId() const { return _scriptId; }
+
+        // Called on each AreaTrigger proc, timer defined by at->SetPeriodicProcTimer(uint32)
+        virtual void OnPeriodicProc() {}
 };
 
 class NullAreaTriggerAI : public AreaTriggerAI

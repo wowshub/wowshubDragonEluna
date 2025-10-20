@@ -189,7 +189,6 @@ class TC_GAME_API AreaTrigger final : public WorldObject, public GridObject<Area
         void InitSplineOffsets(std::vector<Position> const& offsets, Optional<float> overrideSpeed = {}, Optional<bool> speedIsTimeInSeconds = {});
         void InitSplines(std::vector<G3D::Vector3> const& splinePoints, Optional<float> overrideSpeed = {}, Optional<bool> speedIsTimeInSeconds = {});
         bool HasSplines() const { return _spline != nullptr; }
-		bool SetDestination(Position const& pos, uint32 timeToTarget, bool force = false);
         ::Movement::Spline<float> const& GetSpline() const { return *_spline; }
         uint32 GetElapsedTimeForMovement() const;
 
@@ -277,6 +276,12 @@ class TC_GAME_API AreaTrigger final : public WorldObject, public GridObject<Area
         GuidUnorderedSet _insideUnits;
 
         std::unique_ptr<AreaTriggerAI> _ai;
+
+        public:
+            bool SetDestination(Position const& pos, uint32 timeToTarget);
+            uint32 _periodicProcTimer;
+            uint32 _basePeriodicProcTimer;
+            void SetPeriodicProcTimer(uint32 periodicProctimer) { _basePeriodicProcTimer = periodicProctimer; _periodicProcTimer = periodicProctimer; }
 };
 
 #endif
