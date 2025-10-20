@@ -92,6 +92,7 @@ enum PriestSpells
     SPELL_PRIEST_ESSENCE_DEVOURER                   = 415479,
     SPELL_PRIEST_ESSENCE_DEVOURER_SHADOWFIEND_HEAL  = 415673,
     SPELL_PRIEST_ESSENCE_DEVOURER_MINDBENDER_HEAL   = 415676,
+    SPELL_PRIEST_ETERNAL_BARRIER                    = 238135,
     SPELL_PRIEST_FLASH_HEAL                         = 2061,
     SPELL_PRIEST_FROM_DARKNESS_COMES_LIGHT_AURA     = 390617,
     SPELL_PRIEST_GREATER_HEAL                       = 289666,
@@ -194,6 +195,7 @@ enum PriestSpells
     SPELL_PRIEST_THE_PENITENT_AURA                  = 200347,
     SPELL_PRIEST_TRAIL_OF_LIGHT_HEAL                = 234946,
     SPELL_PRIEST_TRINITY                            = 214205,
+    SPELL_PRIEST_TRINITY_EFFECT                     = 290793,
     SPELL_PRIEST_ULTIMATE_PENITENCE                 = 421453,
     SPELL_PRIEST_ULTIMATE_PENITENCE_DAMAGE          = 421543,
     SPELL_PRIEST_ULTIMATE_PENITENCE_HEAL            = 421544,
@@ -2197,18 +2199,17 @@ class spell_pri_power_word_shield : public AuraScript
         }) && ValidateSpellEffect({
             { SPELL_PRIEST_MASTERY_GRACE, EFFECT_0 },
             { SPELL_PRIEST_RAPTURE, EFFECT_1 },
-            { SPELL_PRIEST_BENEVOLENCE, EFFECT_0 },
-            { SPELL_PRIEST_DIVINE_AEGIS, EFFECT_0 }
+            { SPELL_PRIEST_BENEVOLENCE, EFFECT_0 }
         });
     }
 
-    void CalculateAmount(AuraEffect const* auraEffect, int32& amount, bool& canBeRecalculated) const
+    void CalculateAmount(AuraEffect const* /*auraEffect*/, int32& amount, bool& canBeRecalculated) const
     {
         canBeRecalculated = false;
 
         if (Unit* caster = GetCaster())
         {
-            float modifiedAmount = caster->SpellBaseDamageBonusDone(GetSpellInfo()->GetSchoolMask()) * 4.638;
+            float modifiedAmount = caster->SpellBaseDamageBonusDone(GetSpellInfo()->GetSchoolMask()) * 4.638f;
 
             if (Player* player = caster->ToPlayer())
             {
@@ -2234,18 +2235,6 @@ class spell_pri_power_word_shield : public AuraScript
                 }
             }
 
-            float critChanceDone = caster->SpellCritChanceDone(nullptr, auraEffect, GetSpellInfo()->GetSchoolMask(), GetSpellInfo()->GetAttackType());
-            float critChanceTaken = GetUnitOwner()->SpellCritChanceTaken(caster, nullptr, auraEffect, GetSpellInfo()->GetSchoolMask(), critChanceDone, GetSpellInfo()->GetAttackType());
-
-            if (roll_chance_f(critChanceTaken))
-            {
-                modifiedAmount *= 2;
-
-                // Divine Aegis
-                if (AuraEffect const* divineEff = caster->GetAuraEffect(SPELL_PRIEST_DIVINE_AEGIS, EFFECT_0))
-                    AddPct(modifiedAmount, divineEff->GetAmount());
-            }
-
             // Rapture talent (TBD: move into DoEffectCalcDamageAndHealing hook).
             if (AuraEffect const* raptureEffect = caster->GetAuraEffect(SPELL_PRIEST_RAPTURE, EFFECT_1))
                 AddPct(modifiedAmount, raptureEffect->GetAmount());
@@ -2253,6 +2242,10 @@ class spell_pri_power_word_shield : public AuraScript
             // Benevolence talent
             if (AuraEffect const* benevolenceEffect = caster->GetAuraEffect(SPELL_PRIEST_BENEVOLENCE, EFFECT_0))
                 AddPct(modifiedAmount, benevolenceEffect->GetAmount());
+
+            // Eternal Barrier talent
+            if (AuraEffect const* eternalBarrier = caster->GetAuraEffect(SPELL_PRIEST_ETERNAL_BARRIER, EFFECT_0))
+                AddPct(modifiedAmount, eternalBarrier->GetAmount());
 
             amount = modifiedAmount;
         }
