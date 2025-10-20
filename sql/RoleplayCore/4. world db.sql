@@ -633,7 +633,6 @@ REPLACE INTO `spell_script_names` VALUES (208796, 'spell_dh_jagged_spikes');
 REPLACE INTO `spell_script_names` VALUES (206966, 'spell_dh_fel_lance');
 REPLACE INTO `spell_script_names` VALUES (206891, 'spell_dh_intimidated');
 REPLACE INTO `spell_script_names` VALUES (203753, 'spell_dh_blade_turning');
-REPLACE INTO `spell_script_names` VALUES (209651, 'spell_dh_shattered_souls_missile');
 REPLACE INTO `spell_script_names` VALUES (203783, 'spell_dh_shear_proc');
 REPLACE INTO `spell_script_names` VALUES (210047, 'spell_dh_consume_soul_missile');
 REPLACE INTO `spell_script_names` VALUES (209426, 'spell_dh_darkness_absorb');
@@ -662,10 +661,8 @@ REPLACE INTO `spell_script_names` VALUES (344865, 'spell_dh_fel_rush_specless');
 REPLACE INTO `areatrigger_scripts` VALUES (6615, 'at_dh_darkness');
 REPLACE INTO `areatrigger_scripts` VALUES (9695, 'at_demon_hunter_mana_rift');
 REPLACE INTO `areatrigger_scripts` VALUES (6482, 'at_demon_hunter_demonic_trample');
-REPLACE INTO `areatrigger_scripts` VALUES (10666, 'at_shattered_soul_fragment');
 
 REPLACE INTO `areatrigger_create_properties` VALUES (6482, 1, 11107, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'at_demon_hunter_demonic_trample', 40120);
-REPLACE INTO `areatrigger_create_properties` VALUES (6007, 1, 10666, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 20000, 0, 1, 1, 0, 0, 0, 0, 0, 0, 'at_shattered_soul_fragment', 32750);
 
 -- ----------------------------
 -- Druid spell fixes
