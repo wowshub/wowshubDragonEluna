@@ -2182,9 +2182,9 @@ class spell_pri_power_word_shield : public AuraScript
             SPELL_PRIEST_SHIELD_DISCIPLINE,
             SPELL_PRIEST_SHIELD_DISCIPLINE_EFFECT,
             SPELL_PVP_RULES_ENABLED_HARDCODED
-        }) && ValidateSpellEffect({
-            { SPELL_PRIEST_MASTERY_GRACE, EFFECT_0 },
-        });
+            }) && ValidateSpellEffect({
+                { SPELL_PRIEST_MASTERY_GRACE, EFFECT_0 }
+                });
     }
 
     void CalculateAmount(AuraEffect const* auraEffect, int32& amount, bool& canBeRecalculated) const
@@ -2255,35 +2255,6 @@ class spell_pri_power_word_shield : public AuraScript
         DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pri_power_word_shield::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
         AfterEffectApply += AuraEffectApplyFn(spell_pri_power_word_shield::HandleOnApply, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
         AfterEffectRemove += AuraEffectRemoveFn(spell_pri_power_word_shield::HandleOnRemove, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
-    }
-};
-
-// 238135 - Eternal Barrier
-// Attached to 17 - Power Word: Shield
-class spell_pri_eternal_barrier : public AuraScript
-{
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        return ValidateSpellEffect({ {SPELL_PRIEST_ETERNAL_BARRIER, EFFECT_0} });
-    }
-
-    void HandleOnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/) const
-    {
-        AuraEffect const* eternalBarrier = GetUnitOwner()->GetAuraEffect(SPELL_PRIEST_ETERNAL_BARRIER, EFFECT_0);
-        if (!eternalBarrier)
-            return;
-
-        AuraEffect* pws = GetUnitOwner()->GetAuraEffect(SPELL_PRIEST_POWER_WORD_SHIELD, EFFECT_0);
-        if (!pws)
-            return;
-
-        int32 barrierPct = CalculatePct(pws->GetAmount(), eternalBarrier->GetAmount());
-        pws->SetAmount(pws->GetAmount() + barrierPct);
-    }
-
-    void Register() override
-    {
-        AfterEffectApply += AuraEffectApplyFn(spell_pri_eternal_barrier::HandleOnApply, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
     }
 };
 
@@ -4165,7 +4136,6 @@ void AddSC_priest_spell_scripts()
     RegisterSpellScript(spell_pri_empowered_renew);
     RegisterSpellScript(spell_pri_epiphany);
     RegisterSpellScript(spell_pri_essence_devourer_heal);
-    RegisterSpellScript(spell_pri_eternal_barrier);
     RegisterSpellScript(spell_pri_evangelism);
     RegisterSpellScript(spell_pri_focused_mending);
     RegisterSpellScript(spell_pri_from_darkness_comes_light);
