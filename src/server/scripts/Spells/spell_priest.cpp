@@ -192,6 +192,8 @@ enum PriestSpells
     SPELL_PRIEST_TRANQUIL_LIGHT                     = 196816,
     SPELL_PRIEST_THE_PENITENT_AURA                  = 200347,
     SPELL_PRIEST_TRAIL_OF_LIGHT_HEAL                = 234946,
+    SPELL_PRIEST_TRINITY                            = 214205,
+    SPELL_PRIEST_TRINITY_EFFECT                     = 290793,
     SPELL_PRIEST_ULTIMATE_PENITENCE                 = 421453,
     SPELL_PRIEST_ULTIMATE_PENITENCE_DAMAGE          = 421543,
     SPELL_PRIEST_ULTIMATE_PENITENCE_HEAL            = 421544,
@@ -403,8 +405,8 @@ class spell_pri_atonement : public AuraScript
 {
     bool Validate(SpellInfo const* spellInfo) override
     {
-        return ValidateSpellInfo({ SPELL_PRIEST_ATONEMENT_HEAL, SPELL_PRIEST_SINS_OF_THE_MANY })
-            && ValidateSpellEffect({ { spellInfo->Id, EFFECT_1 }, { SPELL_PRIEST_SINS_OF_THE_MANY, EFFECT_2 } });
+        return ValidateSpellInfo({ SPELL_PRIEST_ATONEMENT_HEAL, SPELL_PRIEST_SINS_OF_THE_MANY, SPELL_PRIEST_TRINITY_EFFECT })
+            && ValidateSpellEffect({ { spellInfo->Id, EFFECT_1 }, { SPELL_PRIEST_SINS_OF_THE_MANY, EFFECT_2 }, { SPELL_PRIEST_TRINITY, EFFECT_0 } });
     }
 
     static bool CheckProc(AuraScript const&, ProcEventInfo const& eventInfo)
@@ -444,6 +446,7 @@ public:
         _appliedAtonements.push_back(target);
 
         UpdateSinsOfTheManyValue();
+        UpdateTrinityEffect();
     }
 
     void RemoveAtonementTarget(ObjectGuid const& target)
@@ -451,6 +454,7 @@ public:
         std::erase(_appliedAtonements, target);
 
         UpdateSinsOfTheManyValue();
+        UpdateTrinityEffect();
     }
 
     std::vector<ObjectGuid> const& GetAtonementTargets() const
@@ -501,6 +505,15 @@ public:
         for (SpellEffIndex effectIndex : { EFFECT_0, EFFECT_1, EFFECT_2 })
             if (AuraEffect* sinOfTheMany = GetUnitOwner()->GetAuraEffect(SPELL_PRIEST_SINS_OF_THE_MANY, effectIndex))
                 sinOfTheMany->ChangeAmount(damageByStack[std::min(_appliedAtonements.size(), damageByStack.size() - 1)]);
+    }
+
+    void UpdateTrinityEffect() const
+    {
+        Unit* priest = GetUnitOwner();
+        if (AuraEffect const* trinity = priest->GetAuraEffect(SPELL_PRIEST_TRINITY, EFFECT_0); trinity && std::ssize(_appliedAtonements) >= trinity->GetAmount())
+            priest->CastSpell(priest, SPELL_PRIEST_TRINITY_EFFECT, CastSpellExtraArgsInit{ .TriggerFlags = TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_DONT_REPORT_CAST_ERROR });
+        else
+            priest->RemoveAurasDueToSpell(SPELL_PRIEST_TRINITY_EFFECT);
     }
 };
 
@@ -1239,10 +1252,7 @@ class spell_pri_evangelism : public SpellScript
 {
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
-        return ValidateSpellInfo
-        ({
-            SPELL_PRIEST_ATONEMENT_EFFECT,
-        });
+        return ValidateSpellInfo({ SPELL_PRIEST_ATONEMENT_EFFECT });
     }
 
     void HandleScriptEffect(SpellEffIndex /*effIndex*/) const
@@ -2182,9 +2192,9 @@ class spell_pri_power_word_shield : public AuraScript
             SPELL_PRIEST_SHIELD_DISCIPLINE,
             SPELL_PRIEST_SHIELD_DISCIPLINE_EFFECT,
             SPELL_PVP_RULES_ENABLED_HARDCODED
-            }) && ValidateSpellEffect({
-                { SPELL_PRIEST_MASTERY_GRACE, EFFECT_0 }
-                });
+        }) && ValidateSpellEffect({
+            { SPELL_PRIEST_MASTERY_GRACE, EFFECT_0 }
+        });
     }
 
     void CalculateAmount(AuraEffect const* auraEffect, int32& amount, bool& canBeRecalculated) const

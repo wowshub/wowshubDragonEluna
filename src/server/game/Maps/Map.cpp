@@ -56,7 +56,7 @@
 #include "LuaEngine.h"
 #include "ElunaConfig.h"
 #endif
-#include "VMapManager2.h"
+#include "VMapManager.h"
 #include "Vehicle.h"
 #include "Vignette.h"
 #include "VignettePackets.h"
