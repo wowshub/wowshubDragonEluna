@@ -153,6 +153,12 @@ enum DruidSpells
     SPELL_DRUID_BLESSING_OF_ELUNE_10           = 202737,
     SPELL_DRUID_SWIPE_CAT                      = 106785,
     SPELL_DRUID_FURY_OF_ELUNE_DAMAGE           = 211545,
+    SPELL_DRUID_SHRED                          = 5221,
+    SPELL_DRUID_RAKE                           = 1822,
+    SPELL_DRUID_RIP                            = 1079,
+    SPELL_DRUID_FEROCIOUS_BITE                 = 22568,
+    SPELL_DRUID_MOONFIRE_CAT                   = 155625,
+    SPELL_DRUID_FELINE_SWIFTNESS               = 131768,
 };
 
 // 774 - Rejuvenation
@@ -2744,6 +2750,88 @@ struct at_dru_fury_of_elune : public AreaTriggerAI
     }
 };
 
+// Brutal Slash - 202028
+class spell_dru_brutal_slash : public SpellScript
+{
+    void HandleOnHit()
+    {
+        Unit* caster = GetCaster();
+        Unit* target = GetHitUnit();
+        if (!caster || !target)
+            return;
+
+        // This prevent awarding multiple Combo Points when multiple targets hit with Brutal Slash AoE
+        if (m_awardComboPoint)
+            // Awards the caster 1 Combo Point (get value from the spell data)
+            caster->ModifyPower(POWER_COMBO_POINTS, sSpellMgr->GetSpellInfo(SPELL_DRUID_SWIPE_CAT, DIFFICULTY_NONE)->GetEffect(EFFECT_0).BasePoints);
+
+        m_awardComboPoint = false;
+    }
+
+    void Register() override
+    {
+        OnHit += SpellHitFn(spell_dru_brutal_slash::HandleOnHit);
+    }
+
+private:
+    bool m_awardComboPoint = true;
+};
+
+// 202157 - Feral Affinity
+class aura_dru_feral_affinity : public AuraScript
+{
+    const std::vector<uint32> LearnedSpells =
+    {
+        SPELL_DRUID_FELINE_SWIFTNESS,
+        SPELL_DRUID_SHRED,
+        SPELL_DRUID_RAKE,
+        SPELL_DRUID_RIP,
+        SPELL_DRUID_FEROCIOUS_BITE,
+        SPELL_DRUID_SWIPE_CAT
+    };
+
+    void AfterApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Player* target = GetTarget()->ToPlayer())
+            for (uint32 spellId : LearnedSpells)
+                target->LearnSpell(spellId, false);
+    }
+
+    void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (Player* target = GetTarget()->ToPlayer())
+            for (uint32 spellId : LearnedSpells)
+                target->RemoveSpell(spellId);
+    }
+
+    void Register() override
+    {
+        AfterEffectApply += AuraEffectApplyFn(aura_dru_feral_affinity::AfterApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        AfterEffectRemove += AuraEffectRemoveFn(aura_dru_feral_affinity::AfterRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+// 159286 Primal Fury
+// @Version : 7.1.0.22908
+class spell_dru_primal_fury : public AuraScript
+{
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        bool _spellCanProc = (eventInfo.GetSpellInfo()->Id == SPELL_DRUID_SHRED || eventInfo.GetSpellInfo()->Id == SPELL_DRUID_RAKE || eventInfo.GetSpellInfo()->Id == SPELL_DRUID_SWIPE_CAT || eventInfo.GetSpellInfo()->Id == SPELL_DRUID_MOONFIRE_CAT);
+
+        if ((eventInfo.GetHitMask() & PROC_HIT_CRITICAL) && _spellCanProc)
+            return true;
+
+        return false;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_dru_primal_fury::CheckProc);
+    }
+};
+
 void AddSC_druid_spell_scripts()
 {
     RegisterSpellScript(spell_dru_abundance);
@@ -2832,4 +2920,7 @@ void AddSC_druid_spell_scripts()
     RegisterSpellScript(spell_dru_solar_wrath);
     RegisterSpellScript(spell_dru_swipe);
     RegisterAreaTriggerAI(at_dru_fury_of_elune);
+    RegisterSpellScript(spell_dru_brutal_slash);
+    RegisterSpellScript(aura_dru_feral_affinity);
+    RegisterSpellScript(spell_dru_primal_fury);
 }

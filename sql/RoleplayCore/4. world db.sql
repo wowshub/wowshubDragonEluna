@@ -304,6 +304,8 @@ INSERT INTO `scrapping_loot_template` (`Entry`, `Item`, `Reference`, `Chance`, `
 	(63, 152579, 0, 10, 0, 1, 0, 2, 5, ''),
 	(63, 152668, 0, 16, 0, 1, 0, 1, 1, ''),
 	(63, 160298, 0, 100, 0, 1, 0, 1, 1, '');
+	
+ALTER TABLE `scrapping_loot_template` ADD `ItemType` tinyint NOT NULL DEFAULT 0 AFTER `Entry`;
 
 REPLACE INTO `creature_model_info` VALUES (105540, 0, 0, 0, 0);
 REPLACE INTO `creature_model_info` VALUES (105328, 0, 0, 0, 0);
@@ -672,6 +674,9 @@ REPLACE INTO `spell_script_names` VALUES (103917, 'spell_dru_blessing_of_elune')
 REPLACE INTO `spell_script_names` VALUES (194153, 'spell_dru_lunar_strike');
 REPLACE INTO `spell_script_names` VALUES (190984, 'spell_dru_solar_wrath');
 REPLACE INTO `spell_script_names` VALUES (106785, 'spell_dru_swipe');
+REPLACE INTO `spell_script_names` VALUES (202028, 'spell_dru_brutal_slash');
+REPLACE INTO `spell_script_names` VALUES (202157, 'aura_dru_feral_affinity');
+REPLACE INTO `spell_script_names` VALUES (159286, 'spell_dru_primal_fury');
 
 -- ----------------------------
 -- Misc fix or changes
