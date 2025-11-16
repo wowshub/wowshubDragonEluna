@@ -76,6 +76,7 @@ enum DemonHunterSpells
     SPELL_DH_CONSUME_SOUL_HAVOC_DEMON              = 228556,
     SPELL_DH_CONSUME_SOUL_HAVOC_LESSER             = 228542,
     SPELL_DH_CONSUME_SOUL_HAVOC_SHATTERED          = 228540,
+    SPELL_DH_CONSUME_SOUL_HEAL                     = 203794,
     SPELL_DH_CONSUME_SOUL_VENGEANCE_DEMON          = 210050,
     SPELL_DH_CONSUME_SOUL_VENGEANCE_LESSER         = 208014,
     SPELL_DH_CONSUME_SOUL_VENGEANCE_SHATTERED      = 210047,
@@ -257,7 +258,6 @@ enum DemonHunterSpells
     SPELL_DH_SHATTER_THE_SOULS                     = 212827,
     SPELL_DH_SHEAR_PROC                            = 203783,
     SPELL_DH_COVER_OF_DARKNESS                     = 227635,
-    SPELL_DH_DEMONIC_APPETITE                      = 206478,
     SPELL_DH_FEAST_ON_THE_SOULS                    = 201468,
     SPELL_DH_CHAOS_CLEAVE_PROC                     = 236237,
     SPELL_DK_RAIN_FROM_ABOVE_SLOWFALL              = 206804,
@@ -1837,7 +1837,8 @@ class spell_dh_shattered_souls_trigger : public SpellScript
 {
 public:
     spell_dh_shattered_souls_trigger(uint32 triggeredSpellId, uint32 triggeredSpellIdDemon)
-        : _triggeredSpellId(triggeredSpellId), _triggeredSpellIdDemon(triggeredSpellIdDemon) { }
+        : _triggeredSpellId(triggeredSpellId), _triggeredSpellIdDemon(triggeredSpellIdDemon) {
+    }
 
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
@@ -1851,7 +1852,7 @@ public:
             target->CastSpell(GetHitDest()->GetPosition(), _triggeredSpellIdDemon && GetCaster()->GetCreatureType() == CREATURE_TYPE_DEMON ? _triggeredSpellIdDemon : _triggeredSpellId, CastSpellExtraArgsInit{
                 .TriggerFlags = TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_DONT_REPORT_CAST_ERROR,
                 .TriggeringSpell = GetSpell()
-            });
+                });
     }
 
     void Register() override
@@ -2734,7 +2735,7 @@ class spell_dh_soul_cleave : public SpellScript
 
         // Consume all soul fragments in 25 yards;
         std::vector<std::vector<AreaTrigger*>> fragments;
-        fragments.push_back(caster->GetAreaTriggers(SPELL_DH_SHATTERED_SOULS));
+        fragments.push_back(caster->GetAreaTriggers(SPELL_DH_SHATTERED_SOULS_HAVOC));
         fragments.push_back(caster->GetAreaTriggers(SPELL_DH_SHATTERED_SOULS_DEMON));
         fragments.push_back(caster->GetAreaTriggers(SPELL_DH_LESSER_SOUL_SHARD));
         int32 range = GetEffectInfo().BasePoints;
@@ -2890,7 +2891,7 @@ class spell_dh_soul_barrier : public AuraScript
 
             // Consume all soul fragments in 25 yards;
             std::vector<std::vector<AreaTrigger*>> fragments;
-            fragments.push_back(caster->GetAreaTriggers(SPELL_DH_SHATTERED_SOULS));
+            fragments.push_back(caster->GetAreaTriggers(SPELL_DH_SHATTERED_SOULS_HAVOC));
             fragments.push_back(caster->GetAreaTriggers(SPELL_DH_SHATTERED_SOULS_DEMON));
             fragments.push_back(caster->GetAreaTriggers(SPELL_DH_LESSER_SOUL_SHARD));
             float range = 25.f;
@@ -3297,7 +3298,7 @@ class spell_dh_immolation_aura : public SpellScript
             SPELL_DH_CLEANSED_BY_FLAME,
             SPELL_DH_CLEANSED_BY_FLAME_DISPEL,
             SPELL_DH_FALLOUT,
-            SPELL_DH_SHATTERED_SOULS,
+            SPELL_DH_SHATTERED_SOULS_HAVOC,
             });
     }
 
@@ -3547,35 +3548,6 @@ class spell_dh_prepared : public AuraScript
     }
 };
 
-// 206478 - Demonic Appetite
-class spell_dh_demonic_appetite : public AuraScript
-{
-
-    bool CheckProc(ProcEventInfo& /*eventInfo*/)
-    {
-        return true;
-    }
-
-    void OnProc(AuraEffect const* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
-    {
-        Unit* caster = GetCaster();
-        if (!caster)
-            return;
-
-        CastSpellExtraArgs args;
-        args.SetOriginalCaster(caster->GetGUID());
-        args.AddSpellMod(SPELLVALUE_BASE_POINT0, SPELL_DH_LESSER_SOUL_SHARD);
-
-        caster->CastSpell(caster, SPELL_DH_SHATTERED_SOULS, args);
-    }
-
-    void Register() override
-    {
-        DoCheckProc += AuraCheckProcFn(spell_dh_demonic_appetite::CheckProc);
-        OnEffectProc += AuraEffectProcFn(spell_dh_demonic_appetite::OnProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
-    }
-};
-
 // Soul Fragment healing effects - 178963, 203794, 228532
 class spell_dh_soul_fragment_heals : public SpellScript
 {
@@ -3759,7 +3731,7 @@ public:
             if (!caster || !target)
                 return;
 
-            for (uint32 spellId : { SPELL_DH_LESSER_SOUL_SHARD, SPELL_DH_SHATTERED_SOULS, SPELL_DH_SHATTERED_SOULS_DEMON })
+            for (uint32 spellId : { SPELL_DH_LESSER_SOUL_SHARD, SPELL_DH_SHATTERED_SOULS_HAVOC, SPELL_DH_SHATTERED_SOULS_DEMON })
                 if (tryCastDamage(caster, target, spellId))
                     break;
         }
@@ -3770,7 +3742,7 @@ public:
             if (!caster)
                 return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
-            if (!caster->GetAreaTrigger(SPELL_DH_LESSER_SOUL_SHARD) && !caster->GetAreaTrigger(SPELL_DH_SHATTERED_SOULS) && !caster->GetAreaTrigger(SPELL_DH_SHATTERED_SOULS_DEMON))
+            if (!caster->GetAreaTrigger(SPELL_DH_LESSER_SOUL_SHARD) && !caster->GetAreaTrigger(SPELL_DH_SHATTERED_SOULS_HAVOC) && !caster->GetAreaTrigger(SPELL_DH_SHATTERED_SOULS_DEMON))
                 return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
             return SPELL_CAST_OK;
@@ -4535,7 +4507,6 @@ void AddSC_demon_hunter_spell_scripts()
     RegisterSpellScript(spell_dh_consume_soul_missile);
     RegisterSpellScript(spell_dh_darkness_absorb);
     RegisterSpellScript(spell_dh_prepared);
-    RegisterSpellScript(spell_dh_demonic_appetite);
     RegisterSpellScript(spell_dh_soul_fragment_heals);
     RegisterSpellScript(spell_dh_chaos_cleave);
     RegisterSpellScript(spell_dh_desperate_instincts);
