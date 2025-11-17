@@ -238,10 +238,16 @@ class spell_switch_flight : public SpellScript
 
         bool hasRegular = caster->HasAura(SWITCH_AF_REGULAR);
         bool hasDragonRiding = caster->HasAura(SWITCH_AF_DRAGONRIDING);
+        bool hadBaseline = caster->HasAura(406095);
 
         if (!hasRegular && !hasDragonRiding)
         {
-            caster->CastSpell(caster, SWITCH_AF_REGULAR, TRIGGERED_FULL_MASK);
+            if (hadBaseline) {
+                caster->CastSpell(caster, SWITCH_AF_DRAGONRIDING, TRIGGERED_FULL_MASK);
+            }
+            else {
+                caster->CastSpell(caster, SWITCH_AF_REGULAR, TRIGGERED_FULL_MASK);
+            }
         }
         else if (hasRegular && !hasDragonRiding)
         {
