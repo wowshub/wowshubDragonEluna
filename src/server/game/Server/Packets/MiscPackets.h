@@ -1145,6 +1145,27 @@ namespace WorldPackets
 
             uint8 FactionChoice = 0;
         };
+
+        class ActivateSoulbind final : public ClientPacket
+        {
+        public:
+            ActivateSoulbind(WorldPacket&& packet) : ClientPacket(CMSG_ACTIVATE_SOULBIND, std::move(packet)) { }
+
+            void Read() override;
+
+            uint32 CovenantID;
+        };
+
+        class ActivateSoulbindFailed final : public ServerPacket
+        {
+        public:
+            ActivateSoulbindFailed() : ServerPacket(SMSG_ACTIVATE_SOULBIND_FAILED) { }
+
+            WorldPacket const* Write() override;
+
+            uint8 unk;
+            uint32 CovenantID;
+        };
     }
 }
 

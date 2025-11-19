@@ -1338,3 +1338,8 @@ void WorldSession::HandleSelectFactionOpcode(WorldPackets::Misc::FactionSelect& 
         _player->CastSpell(_player, 113245, true);  // Faction Choice Trigger Spell: Horde
     }
 }
+
+void WorldSession::HandleActivateSoulbind(WorldPackets::Misc::ActivateSoulbind& packet)
+{
+    // Need IMP
+}

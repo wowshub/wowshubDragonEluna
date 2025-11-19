@@ -919,4 +919,17 @@ void WorldPackets::Misc::FactionSelect::Read()
 {
     _worldPacket >> FactionChoice;
 }
+
+void WorldPackets::Misc::ActivateSoulbind::Read()
+{
+    _worldPacket >> CovenantID;
+}
+
+WorldPacket const* WorldPackets::Misc::ActivateSoulbindFailed::Write()
+{
+    _worldPacket << uint32(CovenantID);
+    _worldPacket << uint8(unk);
+
+    return &_worldPacket;
+}
 }

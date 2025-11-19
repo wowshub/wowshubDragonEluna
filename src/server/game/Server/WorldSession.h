@@ -544,6 +544,7 @@ namespace WorldPackets
         class AccountNotificationAcknowledge;
         class OverrideScreenFlash;
         class ShowTradeSkill;
+        class ActivateSoulbind;
     }
 
     namespace Movement
@@ -1832,6 +1833,7 @@ class TC_GAME_API WorldSession
         // Commentator
         void HandleAccountNotificationAcknowledge(WorldPackets::Misc::AccountNotificationAcknowledge& packet);
         void HandleShowTradeSkill(WorldPackets::Misc::ShowTradeSkill& packet);
+        void HandleActivateSoulbind(WorldPackets::Misc::ActivateSoulbind& packet);
 
         // Adventure Journal
         void HandleAdventureJournalOpenQuest(WorldPackets::AdventureJournal::AdventureJournalOpenQuest& openQuest);
