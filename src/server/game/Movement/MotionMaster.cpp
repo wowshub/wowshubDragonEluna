@@ -801,7 +801,7 @@ void MotionMaster::MoveCharge(PathGenerator const& path, float speed /*= SPEED_C
     init.Launch();
 }
 
-void MotionMaster::MoveKnockbackFrom(Position const& origin, float speedXY, float speedZ, Movement::SpellEffectExtraData const* spellEffectExtraData /*= nullptr*/)
+void MotionMaster::MoveKnockbackFrom(Position const& origin, float speedXY, float speedZ, float angle /*= M_PI*/, Movement::SpellEffectExtraData const* spellEffectExtraData /*= nullptr*/)
 {
     // This function may make players fall below map
     if (_owner->GetTypeId() == TYPEID_PLAYER)
@@ -811,7 +811,7 @@ void MotionMaster::MoveKnockbackFrom(Position const& origin, float speedXY, floa
         return;
 
     Position dest = _owner->GetPosition();
-    float o = dest == origin ? 0.0f : _owner->GetRelativeAngle(origin) + float(M_PI);
+    float o = (dest == origin ? 0.0f : _owner->GetRelativeAngle(origin)) + angle;
     if (speedXY < 0)
     {
         speedXY = -speedXY;
@@ -858,36 +858,11 @@ void MotionMaster::MoveKnockbackFrom(Position const& origin, float speedXY, floa
     Add(movement);
 }
 
-void MotionMaster::MoveJumpTo(float angle, float speedXY, float speedZ)
-{
-    // This function may make players fall below map
-    if (_owner->GetTypeId() == TYPEID_PLAYER)
-        return;
-
-    float x, y, z = _owner->GetPositionZ();
-
-    float moveTimeHalf = speedZ / Movement::gravity;
-    float dist = 2 * moveTimeHalf * speedXY;
-
-    _owner->GetNearPoint2D(nullptr, x, y, dist, _owner->GetOrientation() + angle);
-    _owner->UpdateAllowedPositionZ(x, y, z);
-
-    MoveJump(x, y, z, speedXY, speedZ);
-}
-
 void MotionMaster::MoveJump(Position const& pos, float speedXY, float speedZ, uint32 id /*= EVENT_JUMP*/, MovementFacingTarget const& facing /*= {}*/,
     bool orientationFixed /*= false*/, JumpArrivalCastArgs const* arrivalCast /*= nullptr*/, Movement::SpellEffectExtraData const* spellEffectExtraData /*= nullptr*/,
     Optional<Scripting::v2::ActionResultSetter<MovementStopReason>>&& scriptResult /*= {}*/)
 {
-    MoveJump(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), speedXY, speedZ, id, facing, orientationFixed, arrivalCast,
-        spellEffectExtraData, std::move(scriptResult));
-}
-
-void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float speedZ, uint32 id /*= EVENT_JUMP*/, MovementFacingTarget const& facing /* = {}*/,
-    bool orientationFixed /*= false*/, JumpArrivalCastArgs const* arrivalCast /*= nullptr*/, Movement::SpellEffectExtraData const* spellEffectExtraData /*= nullptr*/,
-    Optional<Scripting::v2::ActionResultSetter<MovementStopReason>>&& scriptResult /*= {}*/)
-{
-    TC_LOG_DEBUG("movement.motionmaster", "MotionMaster::MoveJump: '{}', jumps to point Id: {} (X: {}, Y: {}, Z: {})", _owner->GetGUID(), id, x, y, z);
+    TC_LOG_DEBUG("movement.motionmaster", "MotionMaster::MoveJump: '{}', jumps to point Id: {} ({})", _owner->GetGUID(), id, pos.ToString());
     if (speedXY < 0.01f)
     {
         if (scriptResult)
@@ -900,7 +875,7 @@ void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float spee
 
     std::function<void(Movement::MoveSplineInit&)> initializer = [=, effect = (spellEffectExtraData ? Optional<Movement::SpellEffectExtraData>(*spellEffectExtraData) : Optional<Movement::SpellEffectExtraData>())](Movement::MoveSplineInit& init)
     {
-        init.MoveTo(x, y, z, false);
+        init.MoveTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false);
         init.SetParabolic(max_height, 0);
         init.SetVelocity(speedXY);
         std::visit(Movement::MoveSplineInitFacingVisitor(init), facing);
