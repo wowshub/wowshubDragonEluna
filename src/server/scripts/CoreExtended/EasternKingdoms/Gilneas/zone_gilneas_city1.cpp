@@ -2768,7 +2768,7 @@ public:
                 case EVENTS_ANIM_2:
                 {
                     if (Creature* badAvery = ObjectAccessor::GetCreature(*me, m_badAveryGUID))
-                        badAvery->GetMotionMaster()->MoveJump(-1791.94f, 1427.29f, 12.4584f, 0.0f, 18.0f, 7.0f);
+                        badAvery->GetMotionMaster()->MoveJump(Position(-1791.94f, 1427.29f, 12.4584f), 0.0f, 18.0f, 7.0f);
                     m_events.ScheduleEvent(EVENTS_ANIM_3, 600ms);
                     break;
                 }
@@ -3338,7 +3338,7 @@ class npc_king_greymanes_horse_35905 : public CreatureScript
                     if (me->GetVehicleKit()->HasEmptySeat(1))
                     {
                         _isPaused = true;
-                        me->GetMotionMaster()->MoveJump(-1679.089f, 1348.42f, 15.31f, 25.0f, 15.0f);
+                        me->GetMotionMaster()->MoveJump(Position(-1679.089f, 1348.42f, 15.31f), 25.0f, 15.0f);
                         if (Player* player = GetPlayerForWaypoint())
                         {
                             Talk(SAY_HORSE_HOW_DO_HELP, player);
@@ -3911,7 +3911,7 @@ public:
                 case EVENT_MOVE_PART1: // jump over wall
                 {
                     m_movePart = 2;
-                    me->GetMotionMaster()->MoveJump(-1714.02f, 1666.37f, 20.57f, 0.0f, 25.0f, 15.0f);
+                    me->GetMotionMaster()->MoveJump(Position(-1714.02f, 1666.37f, 20.57f), 0.0f, 25.0f, 15.0f);
                     break;
                 }
                 case EVENT_MOVE_PART2:
@@ -3923,7 +3923,7 @@ public:
                 case EVENT_MOVE_PART3:
                 {
                     m_movePart = 4; // jump over brige
-                    me->GetMotionMaster()->MoveJump(-1571.23f, 1710.034f, 20.485f, 0.0f, 25.0f, 15.0f);
+                    me->GetMotionMaster()->MoveJump(Position(-1571.23f, 1710.034f, 20.485f), 0.0f, 25.0f, 15.0f);
                     break;
                 }
                 case EVENT_MOVE_PART4:

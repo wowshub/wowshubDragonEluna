@@ -1339,7 +1339,7 @@ void WorldSession::HandleSelectFactionOpcode(WorldPackets::Misc::FactionSelect& 
     }
 }
 
-void WorldSession::HandleActivateSoulbind(WorldPackets::Misc::ActivateSoulbind& packet)
+void WorldSession::HandleActivateSoulbind(WorldPackets::Misc::ActivateSoulbind& /*packet*/)
 {
     // Need IMP
 }
