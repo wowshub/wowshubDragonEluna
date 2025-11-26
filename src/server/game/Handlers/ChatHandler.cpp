@@ -574,13 +574,6 @@ void WorldSession::HandleChatAddonMessage(ChatMsg type, std::string prefix, std:
     if (prefix.empty() || prefix.length() > 16)
         return;
 
-    // Our Warden module also uses SendAddonMessage as a way to communicate Lua check results to the server, see if this is that
-    if (type == CHAT_MSG_GUILD)
-    {
-        if (_warden && _warden->ProcessLuaCheckResponse(text))
-            return;
-    }
-
     // Disabled addon channel?
     if (!sWorld->getBoolConfig(CONFIG_ADDON_CHANNEL))
         return;
