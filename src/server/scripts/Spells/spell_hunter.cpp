@@ -2214,8 +2214,8 @@ class spell_hun_flanking_strike : public SpellScript
         float speedXY, speedZ;
         speedZ = 1.8f;
         speedXY = player->GetExactDist2d(&pTarget) * 10.0f / speedZ;
-        player->GetMotionMaster()->MoveJump(pTarget, speedXY, speedZ, EVENT_JUMP);
-        pet->GetMotionMaster()->MoveJump(pTarget, speedXY, speedZ, EVENT_JUMP);
+        player->GetMotionMaster()->MoveJump(EVENT_JUMP, pTarget, speedXY, {}, speedZ);
+        pet->GetMotionMaster()->MoveJump(EVENT_JUMP, pTarget, speedXY, {}, speedZ);
 
         caster->CastSpell(target, 269752, true);
         pet->CastSpell(target, 269752, true);

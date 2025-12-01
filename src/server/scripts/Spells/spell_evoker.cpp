@@ -776,7 +776,7 @@ class spell_evo_soar : public SpellScript
     void HandleOnCast()
     {
         Unit* caster = GetCaster();
-        caster->GetMotionMaster()->MoveJump(Position(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ() + 30.0f), 20.0f, 10.0f);
+        caster->GetMotionMaster()->MoveJump(EVENT_JUMP, Position(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ() + 30.0f), 20.0f, {}, 10.0f);
     }
     void HandleAfterCast()
     {

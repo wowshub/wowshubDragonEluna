@@ -42,7 +42,6 @@
 #ifdef ELUNA
 #include "LuaEngine.h"
 #endif
-#include "Warden.h"
 #include "World.h"
 #include <algorithm>
 

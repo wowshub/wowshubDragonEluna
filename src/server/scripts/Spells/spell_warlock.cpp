@@ -2715,7 +2715,7 @@ public:
                 {
                     imp->VariableStorage.Set("ForceUpdateTimers", true);
                     imp->CastSpell(target, SPELL_WARLOCK_IMPLOSION_JUMP, true);
-                    imp->GetMotionMaster()->MoveJump(*target, 300.f, 1.f, EVENT_JUMP);
+                    imp->GetMotionMaster()->MoveJump(EVENT_JUMP, *target, 300.f, {}, 1.f);
                     ObjectGuid casterGuid = caster->GetGUID();
                     caster->GetScheduler().Schedule(500ms, [imp, casterGuid](TaskContext /*context*/)
                     {
