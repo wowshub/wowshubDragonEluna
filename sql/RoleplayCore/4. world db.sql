@@ -322,6 +322,7 @@ REPLACE INTO `creature_model_info` VALUES (115281, 0, 0, 0, 0);
 REPLACE INTO `creature_model_info` VALUES (116539, 0, 0, 0, 0);
 REPLACE INTO `creature_model_info` VALUES (116687, 0, 0, 0, 0);
 REPLACE INTO `creature_model_info` VALUES (126177, 0, 0, 0, 0);
+REPLACE INTO `creature_model_info` VALUES (113609, 0, 0, 0, 0);
 
 -- ----------------------------
 -- Warlock spell fixes
