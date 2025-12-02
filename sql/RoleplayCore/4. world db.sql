@@ -519,6 +519,8 @@ REPLACE INTO `areatrigger_scripts` VALUES (1489, 'at_pri_power_word_barrier');
 -- ----------------------------
 -- Paladin spell fixes
 -- ----------------------------
+REPLACE INTO `spell_script_names` VALUES (85043, 'spell_pal_grand_crusader');
+REPLACE INTO `spell_script_names` VALUES (152261, 'spell_pal_holy_shield');
 
 -- ----------------------------
 -- Monk spell fixes
