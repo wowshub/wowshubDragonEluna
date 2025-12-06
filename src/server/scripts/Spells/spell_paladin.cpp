@@ -1917,31 +1917,6 @@ class spell_pal_zeal : public AuraScript
     }
 };
 
-// 85043 - Grand Crusader
-class spell_pal_grand_crusader : public AuraScript
-{
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        return ValidateSpellInfo({ SPELL_PALADIN_AVENGERS_SHIELD });
-    }
-
-    bool CheckProc(ProcEventInfo& /*eventInfo*/)
-    {
-        return GetTarget()->GetTypeId() == TYPEID_PLAYER;
-    }
-
-    void HandleEffectProc(AuraEffect* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
-    {
-        GetTarget()->GetSpellHistory()->ResetCooldown(SPELL_PALADIN_AVENGERS_SHIELD, true);
-    }
-
-    void Register() override
-    {
-        DoCheckProc += AuraCheckProcFn(spell_pal_grand_crusader::CheckProc);
-        OnEffectProc += AuraEffectProcFn(spell_pal_grand_crusader::HandleEffectProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
-    }
-};
-
 // 152261 - Holy Shield
 class spell_pal_holy_shield : public AuraScript
 {
@@ -2025,6 +2000,5 @@ void AddSC_paladin_spell_scripts()
     RegisterSpellScript(spell_pal_zeal);
 
     //new
-    RegisterSpellScript(spell_pal_grand_crusader);
     RegisterSpellScript(spell_pal_holy_shield);
 }

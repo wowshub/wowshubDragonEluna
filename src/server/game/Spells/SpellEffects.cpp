@@ -1370,6 +1370,7 @@ void Spell::EffectHealthLeech()
 
         HealInfo healInfo(unitCaster, unitCaster, healthGain, m_spellInfo, m_spellSchoolMask);
         unitCaster->HealBySpell(healInfo);
+        unitCaster->LeechLife(healInfo.GetHeal(), m_spellInfo);
     }
 }
 

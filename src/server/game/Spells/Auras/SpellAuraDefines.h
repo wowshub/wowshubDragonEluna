@@ -527,7 +527,7 @@ enum AuraType : uint32
     SPELL_AURA_MOD_MULTISTRIKE_DAMAGE                       = 440,  // NYI
     SPELL_AURA_MOD_MULTISTRIKE_CHANCE                       = 441,  // NYI
     SPELL_AURA_MOD_READINESS                                = 442,  // NYI
-    SPELL_AURA_MOD_LEECH                                    = 443,  // NYI
+    SPELL_AURA_MOD_LEECH                                    = 443,
     SPELL_AURA_444                                          = 444,
     SPELL_AURA_445                                          = 445,
     SPELL_AURA_ADV_FLYING                                   = 446,
@@ -546,7 +546,7 @@ enum AuraType : uint32
     SPELL_AURA_IGNORE_MOVEMENT_FORCES                       = 459,
     SPELL_AURA_RESET_COOLDOWNS_ON_DUEL_START                = 460,  // NYI
     SPELL_AURA_461                                          = 461,
-    SPELL_AURA_MOD_HEALING_AND_ABSORB_FROM_CASTER           = 462,  // NYI
+    SPELL_AURA_MOD_HEALING_AND_ABSORB_FROM_CASTER           = 462,
     SPELL_AURA_CONVERT_CRIT_RATING_PCT_TO_PARRY_RATING      = 463,  // NYI
     SPELL_AURA_MOD_ATTACK_POWER_OF_BONUS_ARMOR              = 464,  // NYI
     SPELL_AURA_MOD_BONUS_ARMOR                              = 465,
