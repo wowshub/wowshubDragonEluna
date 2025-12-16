@@ -225,6 +225,10 @@ void TutorialSetFlag::Read()
 WorldPacket const* WorldServerInfo::Write()
 {
     _worldPacket << uint32(DifficultyID);
+    _worldPacket << HouseGuid;
+    _worldPacket << HouseOwnerBnetAccount;
+    _worldPacket << HouseOwnerPlayer;
+    _worldPacket << NeighborhoodGuid;
     _worldPacket << Bits<1>(IsTournamentRealm);
     _worldPacket << Bits<1>(XRealmPvpAlert);
     _worldPacket << Bits<1>(BlockExitingLoadingScreen);
@@ -672,7 +676,7 @@ WorldPacket const* AccountHeirloomUpdate::Write()
     _worldPacket << Bits<1>(IsFullUpdate);
     _worldPacket.FlushBits();
 
-    _worldPacket << int32(ItemCollectionType);
+    _worldPacket << int8(ItemCollectionType);
 
     // both lists have to have the same size
     _worldPacket << Size<uint32>(*Heirlooms);

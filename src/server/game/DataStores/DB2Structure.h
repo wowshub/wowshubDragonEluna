@@ -982,6 +982,7 @@ struct ConditionalContentTuningEntry
     int32 OrderIndex;
     int32 RedirectContentTuningID;
     int32 RedirectFlag;
+    int32 RedirectEnum;
     uint32 ParentContentTuningID;
 };
 
@@ -2204,6 +2205,7 @@ struct GossipNPCOptionEntry
     int32 TraitTreeID;
     int32 ProfessionID;
     int32 Unknown_1002_14;
+    int32 NeighborhoodMapID;
     int32 SkillLineID;
 };
 
@@ -2312,6 +2314,7 @@ struct ItemEntry
     int32 ContentTuningID;
     int32 ModifiedCraftingReagentItemID;
     int32 CraftingQualityID;
+    int32 Unknown1127;
 };
 
 struct ItemAppearanceEntry
@@ -2533,6 +2536,7 @@ struct ItemEffectEntry
     uint16 SpellCategoryID;
     int32 SpellID;
     uint16 ChrSpecializationID;
+    int32 PlayerConditionID;
 };
 
 #define MAX_ITEM_EXT_COST_ITEMS         5
@@ -2642,6 +2646,7 @@ struct ItemScalingConfigEntry
     int32 ItemLevel;
     int32 RequiredLevel;
     int32 Unknown1125;
+    int32 Flags;
 };
 
 struct ItemSearchNameEntry
@@ -2721,6 +2726,7 @@ struct ItemSparseEntry
     int32 PlayerLevelToItemLevelCurveID;
     int32 ItemLevelOffsetCurveID;
     int32 ItemLevelOffsetItemLevel;
+    int32 Unknown1127;
     uint16 ItemNameDescriptionID;
     uint16 RequiredTransmogHoliday;
     uint16 RequiredHoliday;
@@ -3081,9 +3087,10 @@ struct MapChallengeModeEntry
     uint32 ID;
     uint16 MapID;
     int32 Flags;
+    int32 MaxMedals;
     uint32 ExpansionLevel;
-    int32 RequiredWorldStateID; // maybe?
-    std::array<int16, 3> CriteriaCount;
+    int32 RequiredWorldStateID;
+    std::array<int16, 5> CriteriaCount;
     std::array<int32, 6> FirstRewardQuestID;
     std::array<int32, 6> RewardQuestID;
 };
@@ -4546,6 +4553,7 @@ struct SpellVisualEntry
     uint32 ID;
     std::array<float, 3> MissileCastOffset;
     std::array<float, 3> MissileImpactOffset;
+    int32 StateKit;
     uint32 AnimEventSoundID;
     int32 Flags;
     int8 MissileAttachment;
