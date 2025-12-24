@@ -4220,53 +4220,6 @@ class spell_pri_luminous_barrier : public AuraScript
     }
 };
 
-// 108945 - Angelic Bulwark
-class spell_pri_angelic_bulwark : public AuraScript
-{
-
-    bool Validate(SpellInfo const* spellInfo) override
-    {
-        return spellInfo->GetEffect(EFFECT_1).IsEffect(SPELL_EFFECT_APPLY_AURA);
-    }
-
-    bool CheckProc(ProcEventInfo& procInfo)
-    {
-        auto damageInfo = procInfo.GetDamageInfo();
-        Unit* target = procInfo.GetActionTarget();
-        auto auraEffect = GetEffect(EFFECT_0);
-
-        if (!damageInfo || !damageInfo->GetDamage() || !target || !auraEffect)
-            return false;
-
-        if (target->HasAura(114216))
-            return false;
-
-        uint32 health = target->GetHealth();
-        uint32 threashold = CalculatePct(target->GetMaxHealth(), auraEffect->GetAmount());
-
-        return (health - damageInfo->GetDamage() < threashold);
-    }
-
-    void HandleEffectProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
-    {
-        Unit* target = eventInfo.GetActionTarget();
-
-        int32 basePoints = GetSpellInfo()->GetEffect(EFFECT_1).BasePoints;
-        int32 bp0 = CalculatePct(target->GetMaxHealth(), basePoints);
-        CastSpellExtraArgs args(aurEff);
-        args.AddSpellBP0(bp0);
-
-        target->CastSpell(target, 114214, args);
-        target->CastSpell(target, 114216, true);
-    }
-
-    void Register() override
-    {
-        DoCheckProc += AuraCheckProcFn(spell_pri_angelic_bulwark::CheckProc);
-        OnEffectProc += AuraEffectProcFn(spell_pri_angelic_bulwark::HandleEffectProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
-    }
-};
-
 // 8122 - Mental Scream
 class spell_pri_mental_scream : public AuraScript
 {
@@ -4708,7 +4661,6 @@ void AddSC_priest_spell_scripts()
     //New
     RegisterSpellAndAuraScriptPair(spell_pri_penance_620, spell_pri_penance_620_aura);
     RegisterSpellScript(spell_pri_luminous_barrier);
-    RegisterSpellScript(spell_pri_angelic_bulwark);
     RegisterSpellScript(spell_pri_mental_scream);
     RegisterSpellScript(spell_pri_voidform);
     RegisterSpellScript(spell_pri_void_eruption);
