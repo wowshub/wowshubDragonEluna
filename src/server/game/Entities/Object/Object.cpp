@@ -158,22 +158,8 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
     if (IsWorldObject())
     {
         WorldObject const* worldObject = static_cast<WorldObject const*>(this);
-        if (!flags.MovementUpdate && !worldObject->m_movementInfo.transport.guid.IsEmpty())
-            flags.MovementTransport = true;
-
-        if (worldObject->GetAIAnimKitId() || worldObject->GetMovementAnimKitId() || worldObject->GetMeleeAnimKitId())
-            flags.AnimKit = true;
-
         if (worldObject->GetSmoothPhasing() && worldObject->GetSmoothPhasing()->GetInfoForSeer(target->GetGUID()))
             flags.SmoothPhasing = true;
-    }
-
-    if (Unit const* unit = ToUnit())
-    {
-        flags.PlayHoverAnim = unit->IsPlayingHoverAnim();
-
-        if (unit->GetVictim())
-            flags.CombatVictim = true;
     }
 
     ByteBuffer& buf = data->GetBuffer();
@@ -280,7 +266,7 @@ ByteBuffer& Object::PrepareValuesUpdateBuffer(UpdateData* data) const
     return buffer;
 }
 
-void Object::DestroyForPlayer(Player* target) const
+void Object::DestroyForPlayer(Player const* target) const
 {
     ASSERT(target);
 
@@ -291,7 +277,7 @@ void Object::DestroyForPlayer(Player* target) const
     target->SendDirectMessage(&packet);
 }
 
-void Object::SendOutOfRangeForPlayer(Player* target) const
+void Object::SendOutOfRangeForPlayer(Player const* target) const
 {
     ASSERT(target);
 
@@ -304,9 +290,9 @@ void Object::SendOutOfRangeForPlayer(Player* target) const
 
 void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Player const* target) const
 {
-    std::vector<uint32> const* PauseTimes = nullptr;
-    if (GameObject const* go = ToGameObject())
-        PauseTimes = go->GetPauseTimes();
+    std::span<uint32 const> PauseTimes;
+    if (IsGameObject())
+        PauseTimes = static_cast<GameObject const*>(this)->GetPauseTimes();
 
     data->WriteBit(IsWorldObject()); // HasPositionFragment
     data->WriteBit(flags.NoBirthAnim);
@@ -465,7 +451,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
             WorldPackets::Movement::CommonMovement::WriteCreateObjectSplineDataBlock(*unit->movespline, *data);
     }
 
-    *data << uint32(PauseTimes ? PauseTimes->size() : 0);
+    *data << uint32(PauseTimes.size());
 
     if (flags.Stationary)
     {
@@ -518,8 +504,8 @@ void Object::BuildMovementUpdate(ByteBuffer* data, CreateObjectBits flags, Playe
     //    *data << uint8(AttachmentFlags);
     //}
 
-    if (PauseTimes && !PauseTimes->empty())
-        data->append(PauseTimes->data(), PauseTimes->size());
+    if (!PauseTimes.empty())
+        data->append(PauseTimes.data(), PauseTimes.size());
 
     if (flags.MovementTransport)
     {
@@ -3783,6 +3769,12 @@ ObjectGuid WorldObject::GetTransGUID() const
     if (GetTransport())
         return GetTransport()->GetTransportGUID();
     return ObjectGuid::Empty;
+}
+
+void WorldObject::SetTransport(TransportBase* t)
+{
+    m_transport = t;
+    m_updateFlag.MovementTransport = !m_updateFlag.MovementUpdate && t != nullptr;
 }
 
 float WorldObject::GetFloorZ() const
