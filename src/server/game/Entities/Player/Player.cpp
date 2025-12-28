@@ -396,7 +396,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
     //FIXME: outfitId not used in player creating
     /// @todo need more checks against packet modifications
 
-    Object::_Create(ObjectGuid::Create<HighGuid::Player>(guidlow));
+    _Create(ObjectGuid::Create<HighGuid::Player>(guidlow));
 
     m_name = createInfo->Name;
 
@@ -18209,7 +18209,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
         return false;
     }
 
-    Object::_Create(guid);
+    _Create(guid);
 
     m_name = std::move(fields.name);
 
@@ -24578,7 +24578,7 @@ uint8 Player::GetStartLevel(uint8 race, uint8 playerClass, Optional<int32> chara
     return startLevel;
 }
 
-bool Player::HaveAtClient(Object const* u) const
+bool Player::HaveAtClient(BaseEntity const* u) const
 {
     return u == this || m_clientGUIDs.find(u->GetGUID()) != m_clientGUIDs.end();
 }
