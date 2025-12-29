@@ -1206,7 +1206,8 @@ void World::LoadConfigSettings(bool reload)
 
     _gameRules =
     {
-        { .Rule = ::GameRule::TransmogEnabled, .Value = true }
+        { .Rule = ::GameRule::TransmogEnabled, .Value = true },
+        { .Rule = ::GameRule::HousingEnabled, .Value = true }
     };
 
     if (reload)

@@ -49,6 +49,7 @@
 #include "ElunaMgr.h"
 #endif
 
+class BaseEntity;
 class Battleground;
 class BattlegroundMap;
 class BattlegroundScript;
@@ -574,12 +575,12 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
             return GetGuidSequenceGenerator(high).GetNextAfterMaxUsed();
         }
 
-        void AddUpdateObject(Object* obj)
+        void AddUpdateObject(BaseEntity* obj)
         {
             _updateObjects.insert(obj);
         }
 
-        void RemoveUpdateObject(Object* obj)
+        void RemoveUpdateObject(BaseEntity* obj)
         {
             _updateObjects.erase(obj);
         }
@@ -844,7 +845,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         std::unordered_map<ObjectGuid, Corpse*> _corpsesByPlayer;
         std::unordered_set<Corpse*> _corpseBones;
 
-        std::unordered_set<Object*> _updateObjects;
+        std::unordered_set<BaseEntity*> _updateObjects;
 
         MPSCQueue<FarSpellCallback> _farSpellCallbacks;
 #ifdef ELUNA
