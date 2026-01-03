@@ -1785,7 +1785,8 @@ class spell_pal_t8_2p_bonus : public AuraScript
 {
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
-        return ValidateSpellInfo({ SPELL_PALADIN_HOLY_MENDING });
+        return ValidateSpellEffect({ { SPELL_PALADIN_HOLY_MENDING, EFFECT_0 } })
+            && sSpellMgr->AssertSpellInfo(SPELL_PALADIN_HOLY_MENDING, DIFFICULTY_NONE)->GetEffect(EFFECT_0).GetPeriodicTickCount() > 0;
     }
 
     void HandleProc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
@@ -1799,11 +1800,10 @@ class spell_pal_t8_2p_bonus : public AuraScript
         Unit* caster = eventInfo.GetActor();
         Unit* target = eventInfo.GetProcTarget();
 
-        SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(SPELL_PALADIN_HOLY_MENDING, GetCastDifficulty());
+        SpellEffectInfo const& hotEffect = sSpellMgr->AssertSpellInfo(SPELL_PALADIN_HOLY_MENDING, GetCastDifficulty())->GetEffect(EFFECT_0);
         int32 amount = CalculatePct(static_cast<int32>(healInfo->GetHeal()), aurEff->GetAmount());
 
-        ASSERT(spellInfo->GetMaxTicks() > 0);
-        amount /= spellInfo->GetMaxTicks();
+        amount /= hotEffect.GetPeriodicTickCount();
 
         CastSpellExtraArgs args(aurEff);
         args.AddSpellBP0(amount);
@@ -1821,7 +1821,8 @@ class spell_pal_t30_2p_protection_bonus : public AuraScript
 {
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
-        return ValidateSpellInfo({ SPELL_PALADIN_T30_2P_HEARTFIRE_DAMAGE });
+        return ValidateSpellEffect({ { SPELL_PALADIN_T30_2P_HEARTFIRE_DAMAGE, EFFECT_0 } })
+            && sSpellMgr->AssertSpellInfo(SPELL_PALADIN_T30_2P_HEARTFIRE_DAMAGE, DIFFICULTY_NONE)->GetEffect(EFFECT_0).GetPeriodicTickCount() > 0;
     }
 
     void HandleProc(AuraEffect* aurEff, ProcEventInfo& procInfo)
@@ -1829,7 +1830,7 @@ class spell_pal_t30_2p_protection_bonus : public AuraScript
         PreventDefaultAction();
 
         Unit* caster = procInfo.GetActor();
-        uint32 ticks = sSpellMgr->AssertSpellInfo(SPELL_PALADIN_T30_2P_HEARTFIRE_DAMAGE, DIFFICULTY_NONE)->GetMaxTicks();
+        uint32 ticks = sSpellMgr->AssertSpellInfo(SPELL_PALADIN_T30_2P_HEARTFIRE_DAMAGE, DIFFICULTY_NONE)->GetEffect(EFFECT_0).GetPeriodicTickCount();
         uint32 damage = CalculatePct(procInfo.GetDamageInfo()->GetOriginalDamage(), aurEff->GetAmount()) / ticks;
 
         caster->CastSpell(procInfo.GetActionTarget(), SPELL_PALADIN_T30_2P_HEARTFIRE_DAMAGE, CastSpellExtraArgs(aurEff)

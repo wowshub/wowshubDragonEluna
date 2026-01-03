@@ -2985,7 +2985,8 @@ class spell_sha_t8_elemental_4p_bonus : public AuraScript
 {
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
-        return ValidateSpellInfo({ SPELL_SHAMAN_ELECTRIFIED });
+        return ValidateSpellEffect({ { SPELL_SHAMAN_ELECTRIFIED, EFFECT_0 } })
+            && sSpellMgr->AssertSpellInfo(SPELL_SHAMAN_ELECTRIFIED, DIFFICULTY_NONE)->GetEffect(EFFECT_0).GetPeriodicTickCount() > 0;
     }
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo const& eventInfo)
@@ -2996,11 +2997,10 @@ class spell_sha_t8_elemental_4p_bonus : public AuraScript
         if (!damageInfo || !damageInfo->GetDamage())
             return;
 
-        SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(SPELL_SHAMAN_ELECTRIFIED, GetCastDifficulty());
+        SpellEffectInfo const& dotEffect = sSpellMgr->AssertSpellInfo(SPELL_SHAMAN_ELECTRIFIED, GetCastDifficulty())->GetEffect(EFFECT_0);
         int32 amount = CalculatePct(static_cast<int32>(damageInfo->GetDamage()), aurEff->GetAmount());
 
-        ASSERT(spellInfo->GetMaxTicks() > 0);
-        amount /= spellInfo->GetMaxTicks();
+        amount /= dotEffect.GetPeriodicTickCount();
 
         Unit* caster = eventInfo.GetActor();
         Unit* target = eventInfo.GetProcTarget();
@@ -3023,7 +3023,8 @@ class spell_sha_t9_elemental_4p_bonus : public AuraScript
 {
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
-        return ValidateSpellInfo({ SPELL_SHAMAN_LAVA_BURST_BONUS_DAMAGE });
+        return ValidateSpellEffect({ { SPELL_SHAMAN_LAVA_BURST_BONUS_DAMAGE, EFFECT_0 } })
+            && sSpellMgr->AssertSpellInfo(SPELL_SHAMAN_LAVA_BURST_BONUS_DAMAGE, DIFFICULTY_NONE)->GetEffect(EFFECT_0).GetPeriodicTickCount() > 0;
     }
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo const& eventInfo)
@@ -3034,11 +3035,10 @@ class spell_sha_t9_elemental_4p_bonus : public AuraScript
         if (!damageInfo || !damageInfo->GetDamage())
             return;
 
-        SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(SPELL_SHAMAN_LAVA_BURST_BONUS_DAMAGE, GetCastDifficulty());
+        SpellEffectInfo const& dotEffect = sSpellMgr->AssertSpellInfo(SPELL_SHAMAN_LAVA_BURST_BONUS_DAMAGE, GetCastDifficulty())->GetEffect(EFFECT_0);
         int32 amount = CalculatePct(static_cast<int32>(damageInfo->GetDamage()), aurEff->GetAmount());
 
-        ASSERT(spellInfo->GetMaxTicks() > 0);
-        amount /= spellInfo->GetMaxTicks();
+        amount /= dotEffect.GetPeriodicTickCount();
 
         Unit* caster = eventInfo.GetActor();
         Unit* target = eventInfo.GetProcTarget();
@@ -3093,7 +3093,8 @@ class spell_sha_t10_restoration_4p_bonus : public AuraScript
 {
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
-        return ValidateSpellInfo({ SPELL_SHAMAN_CHAINED_HEAL });
+        return ValidateSpellEffect({ { SPELL_SHAMAN_CHAINED_HEAL, EFFECT_0 } })
+            && sSpellMgr->AssertSpellInfo(SPELL_SHAMAN_CHAINED_HEAL, DIFFICULTY_NONE)->GetEffect(EFFECT_0).GetPeriodicTickCount() > 0;
     }
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo const& eventInfo)
@@ -3104,11 +3105,10 @@ class spell_sha_t10_restoration_4p_bonus : public AuraScript
         if (!healInfo || !healInfo->GetHeal())
             return;
 
-        SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(SPELL_SHAMAN_CHAINED_HEAL, GetCastDifficulty());
+        SpellEffectInfo const& dotEffect = sSpellMgr->AssertSpellInfo(SPELL_SHAMAN_CHAINED_HEAL, GetCastDifficulty())->GetEffect(EFFECT_0);
         int32 amount = CalculatePct(static_cast<int32>(healInfo->GetHeal()), aurEff->GetAmount());
 
-        ASSERT(spellInfo->GetMaxTicks() > 0);
-        amount /= spellInfo->GetMaxTicks();
+        amount /= dotEffect.GetPeriodicTickCount();
 
         Unit* caster = eventInfo.GetActor();
         Unit* target = eventInfo.GetProcTarget();
