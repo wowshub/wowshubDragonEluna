@@ -2491,7 +2491,7 @@ public:
             for (AuraApplication* aurApp : caster->GetTargetAuraApplications(SPELL_MONK_TOUCH_OF_KARMA))
                 if (aurApp->GetTarget() != caster)
                 {
-                    int32 periodicDamage = int32(dmgInfo.GetDamage() / sSpellMgr->GetSpellInfo(SPELL_MONK_TOUCH_OF_KARMA_DAMAGE, DIFFICULTY_NONE)->GetMaxTicks());
+                    int32 periodicDamage = int32(dmgInfo.GetDamage() / sSpellMgr->GetSpellInfo(SPELL_MONK_TOUCH_OF_KARMA_DAMAGE, DIFFICULTY_NONE)->GetEffect(EFFECT_0).GetPeriodicTickCount());
                     caster->CastSpell(aurApp->GetTarget(), SPELL_MONK_TOUCH_OF_KARMA_DAMAGE, CastSpellExtraArgs(TRIGGERED_FULL_MASK).AddSpellBP0(periodicDamage).SetTriggeringAura(aurEff));
                     if (caster->HasAura(SPELL_GOOD_KARMA_TALENT))
                     {
