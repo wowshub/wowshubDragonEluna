@@ -3105,6 +3105,14 @@ bool Creature::CanSwim() const
     return false;
 }
 
+MovementGeneratorType Creature::GetDefaultMovementType() const
+{
+    if (!GetPlayerMovingMe())
+        return m_defaultMovementType;
+
+    return IDLE_MOTION_TYPE;
+}
+
 void Creature::AllLootRemovedFromCorpse()
 {
     time_t now = GameTime::GetGameTime();

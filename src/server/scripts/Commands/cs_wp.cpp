@@ -174,7 +174,7 @@ public:
             return false;
         }
 
-        if (!pathid)
+        if (!pathid || !sWaypointMgr->GetPath(pathid))
         {
             handler->PSendSysMessage("%s%s|r", "|cffff33ff", "No valid path number provided.");
             return true;
