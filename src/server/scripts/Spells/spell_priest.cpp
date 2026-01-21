@@ -272,7 +272,6 @@ enum PriestSpells
     SPELL_PRIEST_VOIDFORM_TENTACLES_3               = 210197,
     SPELL_PRIEST_VOIDFORM_TENTACLES_2               = 210198,
     SPELL_PRIEST_VOIDFORM_TENTACLES_1               = 210199,
-    SPELL_PRIEST_DEVOURING_PLAGUE                   = 335467,
     SPELL_PRIEST_VOID_BOLT                          = 205448,
     SPELL_ULTIMATE_PENITENCE_CHANNELING             = 421434,
     SPELL_POWER_WORD_BARRIER_BUFF                   = 81782,
@@ -5618,33 +5617,6 @@ class spell_pri_void_tendrils : public SpellScript
     }
 };
 
-// 341491 - Shadowy Apparitions WIP
-class spell_pri_shadowy_apparitions : public AuraScript
-{
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        return ValidateSpellInfo(
-            {
-                SPELL_PRIEST_MIND_BLAST,
-                SPELL_PRIEST_DEVOURING_PLAGUE,
-                SPELL_PRIEST_VOID_BOLT
-            });
-    }
-
-    bool CheckProc(ProcEventInfo& /*eventInfo*/)
-    {
-    }
-
-    void HandleProc(AuraEffect* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
-    {
-    }
-
-    void Register() override
-    {
-        OnEffectProc += AuraEffectProcFn(spell_pri_shadowy_apparitions::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
-        DoCheckProc += AuraCheckProcFn(spell_pri_shadowy_apparitions::CheckProc);
-    }
-};
 
 // 421453 - Ultimate Penitence
 class spell_ultimate_penitence : public SpellScript
