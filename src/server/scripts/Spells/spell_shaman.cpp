@@ -181,6 +181,9 @@ enum ShamanSpells
     SPELL_SHAMAN_STORM_ELEMENTAL_SUMMON         = 192249,
     SPELL_SHAMAN_STORM_ELEMENTAL_SUMMON_TRIGGERED = 157299,
     SPELL_SHAMAN_PRIMAL_ELEMENTALIST_STORM_ELEMENTAL_SUMMON = 157319,
+    SPELL_SHAMAN_FERAL_SPIRIT_SUMMON            = 228562,
+    SPELL_SHAMAN_FERAL_SPIRIT_ENERGIZE_DUMMY    = 333957,
+    SPELL_SHAMAN_FERAL_LUNGE_DAMAGE             = 215802,
 };
 
 enum ShamanSpellLabels
@@ -3550,6 +3553,72 @@ class spell_sha_fire_elemental : public SpellScript
     }
 };
 
+// 51533 - Feral Spirit
+class spell_sha_feral_spirit : public SpellScript
+{
+    void HandleDummy(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+
+        caster->CastSpell(GetHitUnit(), SPELL_SHAMAN_FERAL_SPIRIT_SUMMON, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_sha_feral_spirit::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+// 29264 - Spirit Wolf
+struct npc_feral_spirit : public ScriptedAI
+{
+    npc_feral_spirit(Creature* p_Creature) : ScriptedAI(p_Creature) {}
+
+    void DamageDealt(Unit* /*victim*/, uint32& /*damage*/, DamageEffectType /*damageType*/) override
+    {
+        if (TempSummon* tempSum = me->ToTempSummon())
+            if (Unit* owner = tempSum->GetOwner())
+                if (owner->HasAura(SPELL_SHAMAN_FERAL_SPIRIT_ENERGIZE_DUMMY))
+                    if (owner->GetPower(POWER_MAELSTROM) <= 95)
+                        owner->ModifyPower(POWER_MAELSTROM, +5);
+    }
+};
+
+// Feral Lunge - 196884
+class spell_sha_feral_lunge : public SpellScript
+{
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        if (!sSpellMgr->GetSpellInfo(SPELL_SHAMAN_FERAL_LUNGE_DAMAGE, DIFFICULTY_NONE))
+            return false;
+        return true;
+    }
+
+    void HandleDamage(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+        Unit* target = GetHitUnit();
+        if (!caster || !target)
+            return;
+
+        WorldLocation pTarget = target->GetWorldLocation();
+
+        caster->CastSpell(caster, SPELL_SHAMAN_GHOST_WOLF, true);
+
+        float speedXY, speedZ;
+        speedZ = 1.2f;
+        speedXY = caster->GetExactDist2d(&pTarget) * 10.0f / speedZ;
+
+        caster->CastSpell(target, SPELL_SHAMAN_FERAL_LUNGE_DAMAGE, true);
+        caster->GetMotionMaster()->MoveJump(EVENT_JUMP, pTarget, speedXY, {}, speedZ);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_sha_feral_lunge::HandleDamage, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     RegisterSpellScript(spell_sha_aftershock);
@@ -3659,4 +3728,7 @@ void AddSC_shaman_spell_scripts()
     RegisterSpellScript(spell_sha_generic_summon_elemental);
     RegisterSpellScript(spell_sha_earth_elemental);
     RegisterSpellScript(spell_sha_fire_elemental);
+    RegisterSpellScript(spell_sha_feral_spirit);
+    RegisterCreatureAI(npc_feral_spirit);
+    RegisterSpellScript(spell_sha_feral_lunge);
 }

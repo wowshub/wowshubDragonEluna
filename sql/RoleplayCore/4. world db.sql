@@ -600,6 +600,10 @@ REPLACE INTO `spell_script_names` VALUES (152175, 'spell_monk_whirling_dragon_pu
 REPLACE INTO `spell_script_names` VALUES (192249, 'spell_shaman_generic_summon_elemental');
 REPLACE INTO `spell_script_names` VALUES (198103, 'spell_sha_earth_elemental');
 REPLACE INTO `spell_script_names` VALUES (198067, 'spell_sha_fire_elemental');
+REPLACE INTO `spell_script_names` VALUES (196884, 'spell_sha_feral_lunge');
+REPLACE INTO `spell_script_names` VALUES (51533, 'spell_sha_feral_spirit');
+
+REPLACE INTO `creature_template` VALUES (29264, 0, 0, 'Spirit Wolf', '', NULL, NULL, NULL, 0, 0, 14, 0, 2, 2.14286, 1, 0, 0, 1500, 2000, 1, 1, 1, 0, 2048, 0, 0, 0, 1, 0, '', 0, 0, 0, 191, 0, 0, 1, 0, 64, 'npc_feral_spirit', NULL, 64743);
 
 -- ----------------------------
 -- DH spell fixes
