@@ -2372,16 +2372,25 @@ class spell_warl_hand_of_guldan : public SpellScript
         if (!caster || !target)
             return;
 
+        std::list<Creature*> oldImps;
+        caster->GetCreatureListWithEntryInGrid(oldImps, 55659, 100.0f);
+        for (Creature* imp : oldImps)
+        {
+            if (imp->IsAlive() && imp->GetOwnerGUID() == caster->GetGUID())
+                imp->DespawnOrUnsummon();
+        }
+
         SpellInfo const* summonSpellInfo = sSpellMgr->GetSpellInfo(SPELL_WARLOCK_WILD_IMP_SUMMON, DIFFICULTY_NONE);
         if (!summonSpellInfo)
             return;
 
         int32 nrofsummons = caster->GetPower(POWER_SOUL_SHARDS);
 
-        if (nrofsummons > 3)
+        if (nrofsummons >= 3)
             nrofsummons = 3;
-
-        if (nrofsummons < 1)
+        else if (nrofsummons == 2)
+            nrofsummons = 2;
+        else if (nrofsummons <= 1)
             nrofsummons = 1;
 
         SpellEffectInfo const& effect = summonSpellInfo->GetEffect(EFFECT_0);
@@ -2401,8 +2410,6 @@ class spell_warl_hand_of_guldan : public SpellScript
             float destX = x + radius * std::cos(angle);
             float destY = y + radius * std::sin(angle);
             float destZ = z;
-
-            caster->UpdateAllowedPositionZ(destX, destY, destZ);
 
             if (SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(propertiesId))
             {
