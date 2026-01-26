@@ -2130,18 +2130,32 @@ class aura_warl_haunt : public AuraScript
 // Summon Darkglare - 205180
 class spell_warlock_summon_darkglare : public SpellScript
 {
-
     void HandleOnHitTarget(SpellEffIndex /*effIndex*/)
     {
         if (Unit* target = GetHitUnit())
         {
-            Player::AuraEffectList effectList = target->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
-            /*
-                        // crash here
-                        for (AuraEffect* effect : effectList)
-                            if (Aura* aura = effect->GetBase())
-                                aura->ModDuration(8 * IN_MILLISECONDS);
-            */
+            std::vector<AuraEffect*> effects;
+
+            for (AuraEffect* aurEff : target->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE))
+            {
+                if (aurEff)
+                    effects.push_back(aurEff);
+            }
+
+            for (AuraEffect* effect : effects)
+            {
+                if (!effect)
+                    continue;
+
+                Aura* aura = effect->GetBase();
+                if (!aura)
+                    continue;
+
+                if (aura->GetCasterGUID() == GetCaster()->GetGUID())
+                {
+                    aura->SetDuration(aura->GetDuration() + 8 * IN_MILLISECONDS);
+                }
+            }
         }
     }
 
@@ -2152,32 +2166,78 @@ class spell_warlock_summon_darkglare : public SpellScript
 };
 
 // Darkglare - 103673
-class npc_pet_warlock_darkglare : public CreatureScript
+struct npc_pet_warlock_darkglare : public PetAI
 {
-public:
-    npc_pet_warlock_darkglare() : CreatureScript("npc_pet_warlock_darkglare") {}
+    npc_pet_warlock_darkglare(Creature* creature) : PetAI(creature) {}
 
-    struct npc_pet_warlock_darkglare_PetAI : public PetAI
+    void UpdateAI(uint32 diff) override
     {
-        npc_pet_warlock_darkglare_PetAI(Creature* creature) : PetAI(creature) {}
+        PetAI::UpdateAI(diff);
 
-        void UpdateAI(uint32 /*diff*/) override
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        if (me->GetSpellHistory()->HasCooldown(SPELL_WARLOCK_EYE_LASER))
+            return;
+
+        Unit* owner = me->GetOwner();
+        if (!owner)
+            return;
+
+        Unit* target = nullptr;
+
+        ObjectGuid targetGuid = owner->GetTarget();
+        if (!targetGuid.IsEmpty())
         {
-            Unit* owner = me->GetOwner();
-            if (!owner)
-                return;
+            target = ObjectAccessor::GetUnit(*me, targetGuid);
 
-            std::list<Unit*> targets;
-            owner->GetAttackableUnitListInRange(targets, 100.0f);
-            targets.remove_if(Trinity::UnitAuraCheck(false, SPELL_WARLOCK_DOOM, owner->GetGUID()));
-            if (!targets.empty())
-                me->CastSpell(targets.front(), SPELL_WARLOCK_EYE_LASER, true);
+            if (!target || !owner->IsValidAttackTarget(target) || !me->IsWithinDistInMap(target, 100.0f))
+                target = nullptr;
         }
-    };
 
-    CreatureAI* GetAI(Creature* creature) const override
+        if (!target)
+        {
+            std::list<Unit*> targets;
+
+            owner->GetAttackableUnitListInRange(targets, 100.0f);
+
+            if (!targets.empty())
+                target = targets.front();
+        }
+
+        if (target)
+        {
+            me->CastSpell(target, SPELL_WARLOCK_EYE_LASER, true);
+        }
+    }
+};
+
+// 205231 - Eye Laser (Darkglare damage spell)
+class spell_warl_darkglare_eye_laser : public SpellScript
+{
+    void HandleDamage(SpellEffIndex /*effIndex*/)
     {
-        return new npc_pet_warlock_darkglare_PetAI(creature);
+        Unit* caster = GetCaster();
+        Unit* owner = caster->GetOwner();
+
+        if (!owner)
+            return;
+
+        SpellEffectInfo const& effect = GetEffectInfo(EFFECT_0);
+
+        int32 damage = effect.CalcValue(owner);
+
+        float bonusCoefficient = effect.BonusCoefficient;
+        int32 spellPower = owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_SHADOW);
+
+        damage += int32(bonusCoefficient * spellPower);
+
+        SetHitDamage(damage);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_warl_darkglare_eye_laser::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
 
@@ -2618,39 +2678,6 @@ public:
             UpdateVictim();
         }
     };
-};
-
-// Eye Laser - 205231
-class spell_warl_eye_laser : public SpellScriptLoader
-{
-public:
-    spell_warl_eye_laser() : SpellScriptLoader("spell_warl_eye_laser") {}
-
-    class spell_warl_eye_laser_SpellScript : public SpellScript
-    {
-
-        void HandleTargets(std::list<WorldObject*>& targets)
-        {
-            Unit* caster = GetOriginalCaster();
-            if (!caster)
-                return;
-            targets.clear();
-            Trinity::AllWorldObjectsInRange check(caster, 100.f);
-            Trinity::WorldObjectListSearcher<Trinity::AllWorldObjectsInRange> search(caster, targets, check);
-            Cell::VisitAllObjects(caster, search, 100.f);
-            targets.remove_if(Trinity::UnitAuraCheck(false, SPELL_WARLOCK_DOOM, caster->GetGUID()));
-        }
-
-        void Register() override
-        {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warl_eye_laser_SpellScript::HandleTargets, EFFECT_0, TARGET_UNIT_TARGET_ENEMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_warl_eye_laser_SpellScript();
-    }
 };
 
 // 264178 - Demonbolt
@@ -3369,7 +3396,8 @@ void AddSC_warlock_spell_scripts()
     RegisterSpellScript(aura_warl_phantomatic_singularity);
     RegisterSpellScript(aura_warl_haunt);
     RegisterSpellScript(spell_warlock_summon_darkglare);
-    new npc_pet_warlock_darkglare();
+    RegisterCreatureAI(npc_pet_warlock_darkglare);
+    RegisterSpellScript(spell_warl_darkglare_eye_laser);
     new spell_warlock_unending_breath();
     new spell_warl_demonic_gateway();
     new npc_warl_demonic_gateway();
@@ -3377,7 +3405,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_hand_of_guldan_damage();
     new spell_warlock_call_dreadstalkers();
     new npc_warlock_dreadstalker();
-    new spell_warl_eye_laser();
     new spell_warlock_demonbolt_new();
     new spell_warl_demonic_calling();
     new spell_warl_implosion();
