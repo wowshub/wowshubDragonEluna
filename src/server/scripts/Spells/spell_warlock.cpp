@@ -895,49 +895,64 @@ class spell_warl_haunt : public AuraScript
 // 755 - Health Funnel
 class spell_warl_health_funnel : public AuraScript
 {
-    void ApplyEffect(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    bool Load() override
+    {
+        Unit const* caster = GetCaster();
+        if (!caster)
+            return false;
+    }
+
+    void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster();
         if (!caster)
             return;
 
         Unit* target = GetTarget();
+        
         if (caster->HasAura(SPELL_WARLOCK_IMPROVED_HEALTH_FUNNEL_R2))
             target->CastSpell(target, SPELL_WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R2, true);
         else if (caster->HasAura(SPELL_WARLOCK_IMPROVED_HEALTH_FUNNEL_R1))
             target->CastSpell(target, SPELL_WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R1, true);
     }
 
-    void RemoveEffect(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* target = GetTarget();
         target->RemoveAurasDueToSpell(SPELL_WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R1);
         target->RemoveAurasDueToSpell(SPELL_WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R2);
     }
 
-    void OnPeriodic(AuraEffect const* aurEff)
+    void HandlePeriodic(AuraEffect const* aurEff)
     {
         Unit* caster = GetCaster();
-        if (!caster)
+        Unit* target = GetTarget();
+
+        if (!caster || !target)
             return;
-        //! HACK for self damage, is not blizz :/
-        uint32 damage = caster->CountPctFromMaxHealth(aurEff->GetBaseAmount());
 
-        if (Player* modOwner = caster->GetSpellModOwner())
-            modOwner->ApplySpellMod(GetSpellInfo(), SpellModOp::PowerCost0, damage);
+        int32 pct = aurEff->GetAmount(); 
+        uint32 damage = caster->CountPctFromMaxHealth(pct);
 
-        SpellNonMeleeDamage damageInfo(caster, caster, GetSpellInfo(), GetAura()->GetSpellVisual(), GetSpellInfo()->SchoolMask, GetAura()->GetCastId());
+        SpellNonMeleeDamage damageInfo(caster, caster, GetSpellInfo(), GetAura()->GetSpellVisual(), GetSpellInfo()->GetSchoolMask(), GetAura()->GetCastId());
         damageInfo.periodicLog = true;
         damageInfo.damage = damage;
+        
         caster->DealSpellDamage(&damageInfo, false);
         caster->SendSpellNonMeleeDamageLog(&damageInfo);
+        
+        int32 healAmount = int32(damage) * 2;
+
+        HealInfo healInfo(caster, target, healAmount, GetSpellInfo(), GetSpellInfo()->GetSchoolMask());
+
+        caster->HealBySpell(healInfo);
     }
 
     void Register() override
     {
-        OnEffectApply += AuraEffectApplyFn(spell_warl_health_funnel::ApplyEffect, EFFECT_0, SPELL_AURA_OBS_MOD_HEALTH, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_warl_health_funnel::RemoveEffect, EFFECT_0, SPELL_AURA_OBS_MOD_HEALTH, AURA_EFFECT_HANDLE_REAL);
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_health_funnel::OnPeriodic, EFFECT_0, SPELL_AURA_OBS_MOD_HEALTH);
+        OnEffectApply += AuraEffectApplyFn(spell_warl_health_funnel::HandleEffectApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_warl_health_funnel::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_health_funnel::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
     }
 };
 
@@ -2156,7 +2171,7 @@ public:
             owner->GetAttackableUnitListInRange(targets, 100.0f);
             targets.remove_if(Trinity::UnitAuraCheck(false, SPELL_WARLOCK_DOOM, owner->GetGUID()));
             if (!targets.empty())
-                me->CastSpell(targets.front(), SPELL_WARLOCK_EYE_LASER, CastSpellExtraArgs(TRIGGERED_NONE).SetOriginalCaster(owner->GetGUID()));
+                me->CastSpell(targets.front(), SPELL_WARLOCK_EYE_LASER, true);
         }
     };
 
@@ -2390,7 +2405,7 @@ class spell_warl_hand_of_guldan : public SpellScript
             nrofsummons = 3;
         else if (nrofsummons == 2)
             nrofsummons = 2;
-        else if (nrofsummons <= 1)
+        else if (nrofsummons < 1)
             nrofsummons = 1;
 
         SpellEffectInfo const& effect = summonSpellInfo->GetEffect(EFFECT_0);
@@ -2446,10 +2461,10 @@ public:
         bool Load() override
         {
             soulshards += GetCaster()->GetPower(POWER_SOUL_SHARDS);
-            if (soulshards > 3)
+            if (soulshards > 4)
             {
                 GetCaster()->SetPower(POWER_SOUL_SHARDS, 1);
-                soulshards = 3;
+                soulshards = 4;
 
             }
             else
