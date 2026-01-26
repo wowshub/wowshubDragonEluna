@@ -3574,6 +3574,28 @@ struct npc_feral_spirit : public ScriptedAI
 {
     npc_feral_spirit(Creature* p_Creature) : ScriptedAI(p_Creature) {}
 
+    void Reset() override
+    {
+        me->SetReactState(REACT_AGGRESSIVE);
+    }
+
+    void IsSummonedBy(WorldObject* summoner) override
+    {
+        if (Unit* owner = summoner->ToUnit())
+        {
+            Unit* target = owner->GetVictim();
+
+            if (!target)
+                target = owner->ToPlayer()->GetSelectedUnit();
+
+            if (target && me->IsValidAttackTarget(target))
+            {
+                me->GetThreatManager().AddThreat(target, 9999999.f);
+                AttackStart(target);
+            }
+        }
+    }
+
     void DamageDealt(Unit* /*victim*/, uint32& /*damage*/, DamageEffectType /*damageType*/) override
     {
         if (TempSummon* tempSum = me->ToTempSummon())
