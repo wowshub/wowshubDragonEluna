@@ -2376,13 +2376,15 @@ class spell_warl_hand_of_guldan : public SpellScript
         if (!summonSpellInfo)
             return;
 
-        int32 nrofsummons = 1;
-        nrofsummons += caster->GetPower(POWER_SOUL_SHARDS);
+        int32 nrofsummons = caster->GetPower(POWER_SOUL_SHARDS);
+
         if (nrofsummons > 3)
             nrofsummons = 3;
 
-        SpellEffectInfo const& effect = summonSpellInfo->GetEffect(EFFECT_0);
+        if (nrofsummons < 1)
+            nrofsummons = 1;
 
+        SpellEffectInfo const& effect = summonSpellInfo->GetEffect(EFFECT_0);
         uint32 creatureEntry = effect.MiscValue;
         uint32 propertiesId = effect.MiscValueB;
         Milliseconds duration = Milliseconds(summonSpellInfo->GetDuration());
