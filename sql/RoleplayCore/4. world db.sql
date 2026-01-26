@@ -364,7 +364,7 @@ REPLACE INTO `spell_script_names` VALUES (215941, 'spell_warl_soul_conduit');
 REPLACE INTO `spell_script_names` VALUES (232670, 'spell_warr_shadowbolt_affliction');
 REPLACE INTO `spell_script_names` VALUES (104318, 'spell_warlock_fel_firebolt_wild_imp');
 
-REPLACE INTO `creature_template` VALUES (99739, 0, 0, 'Wild Imps', '', '', NULL, '', 0, 0, 90, 0, 1, 1.14286, 1, 0, 0, 0, 2000, 1, 1, 4, 0, 0, 0, 0, 0, 3, 0, '', 0, 1, 0, 121, 0, 0, 1, 0, 0, 'npc_pet_warlock_wild_imp', NULL, 53040);
+REPLACE INTO `creature_template` VALUES (55659, 0, 0, 'Wild Imps', '', '', NULL, '', 0, 0, 90, 0, 1, 1.14286, 1, 6, 0, 0, 2000, 1, 1, 4, 0, 0, 0, 0, 0, 3, 0, '', 0, 1, 0, 121, 0, 0, 1, 0, 0, 'npc_pet_warlock_wild_imp', NULL, 64743);
 
 REPLACE INTO `spell_script_names` VALUES (386344, 'spell_warlock_inquisitors_gaze');
 REPLACE INTO `spell_script_names` VALUES (29722, 'spell_warl_incinerate');
