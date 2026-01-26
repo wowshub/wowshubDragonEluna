@@ -2364,26 +2364,51 @@ public:
 // Hand of Gul'Dan - 105174
 class spell_warl_hand_of_guldan : public SpellScript
 {
-
     void HandleOnHit()
     {
-        if (Unit* caster = GetCaster())
+        Unit* caster = GetCaster();
+        Unit* target = GetHitUnit();
+
+        if (!caster || !target)
+            return;
+
+        SpellInfo const* summonSpellInfo = sSpellMgr->GetSpellInfo(SPELL_WARLOCK_WILD_IMP_SUMMON, DIFFICULTY_NONE);
+        if (!summonSpellInfo)
+            return;
+
+        int32 nrofsummons = 1;
+        nrofsummons += caster->GetPower(POWER_SOUL_SHARDS);
+        if (nrofsummons > 3)
+            nrofsummons = 3;
+
+        SpellEffectInfo const& effect = summonSpellInfo->GetEffect(EFFECT_0);
+
+        uint32 creatureEntry = effect.MiscValue;
+        uint32 propertiesId = effect.MiscValueB;
+        Milliseconds duration = Milliseconds(summonSpellInfo->GetDuration());
+
+        float x = target->GetPositionX();
+        float y = target->GetPositionY();
+        float z = target->GetPositionZ();
+
+        for (int32 i = 0; i < nrofsummons; ++i)
         {
-            if (Unit* target = GetHitUnit())
+            float angle = rand_norm() * 2 * M_PI;
+            float radius = rand_norm() * 4.0f;
+
+            float destX = x + radius * std::cos(angle);
+            float destY = y + radius * std::sin(angle);
+            float destZ = z;
+
+            caster->UpdateAllowedPositionZ(destX, destY, destZ);
+
+            if (SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(propertiesId))
             {
-                int32 nrofsummons = 1;
-                nrofsummons += caster->GetPower(POWER_SOUL_SHARDS);
-                if (nrofsummons > 4)
-                    nrofsummons = 4;
-
-                int8 offsetX[4]{ 0, 0, 1, 1 };
-                int8 offsetY[4]{ 0, 1, 0, 1 };
-
-                for (int i = 0; i < nrofsummons; i++)
-                    caster->CastSpell(Position(target->GetPositionX() + offsetX[i], target->GetPositionY() + offsetY[i], target->GetPositionZ()), 104317, true);
-                caster->CastSpell(target, SPELL_WARLOCK_HAND_OF_GULDAN_DAMAGE, true);
+                caster->GetMap()->SummonCreature(creatureEntry, Position(destX, destY, destZ, 0.0f), properties, duration, caster);
             }
         }
+
+        caster->CastSpell(target, SPELL_WARLOCK_HAND_OF_GULDAN_DAMAGE, true);
     }
 
     void Register() override
@@ -2412,10 +2437,10 @@ public:
         bool Load() override
         {
             soulshards += GetCaster()->GetPower(POWER_SOUL_SHARDS);
-            if (soulshards > 4)
+            if (soulshards > 3)
             {
                 GetCaster()->SetPower(POWER_SOUL_SHARDS, 1);
-                soulshards = 4;
+                soulshards = 3;
 
             }
             else
@@ -2923,7 +2948,7 @@ public:
     }
 };
 
-// Wild Imp - 99739
+// Wild Imp - 55659
 struct npc_pet_warlock_wild_imp : public PetAI
 {
     npc_pet_warlock_wild_imp(Creature* creature) : PetAI(creature)
