@@ -1925,7 +1925,7 @@ public:
     }
 };
 
-// 321530 - Bloodshed
+// 321530 - Bloodshed - Work half
 class spell_hun_bloodshed : public SpellScript
 {
     void HandleDummy(SpellEffIndex /*effIndex*/)
@@ -2583,7 +2583,7 @@ void AddSC_hunter_spell_scripts()
     RegisterSpellScript(spell_hun_bestial_wrath);
     new spell_hun_barbed_shot();
     new spell_hun_dire_beast();
-    RegisterSpellScript(spell_hun_bloodshed); //Does the pet jump the enemy?
+    RegisterSpellScript(spell_hun_bloodshed); //work half
     RegisterSpellAndAuraScriptPair(spell_hun_volley, spell_hun_volley_aura);
     new spell_bursting_shot();
     new at_hun_steel_trap();

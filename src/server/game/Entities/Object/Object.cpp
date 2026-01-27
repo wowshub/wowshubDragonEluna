@@ -2870,13 +2870,6 @@ void WorldObject::GetContactPoint(WorldObject const* obj, float& x, float& y, fl
     GetNearPoint(obj, x, y, z, distance2d, GetAbsoluteAngle(obj));
 }
 
-float WorldObject::GetObjectSize() const
-{
-    if (auto unit = ToUnit())
-        return unit->GetCombatReach();
-    return 0.388999998569489f;
-}
-
 void WorldObject::MovePosition(Position &pos, float dist, float angle, float maxHeightChange /*= 6.0f*/) const
 {
     angle += GetOrientation();

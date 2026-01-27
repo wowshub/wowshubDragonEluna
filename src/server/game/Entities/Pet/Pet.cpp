@@ -449,16 +449,13 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool c
     return true;
 }
 
-void Pet::SavePetToDB(PetSaveMode mode, bool stampeded /*= false*/)
+void Pet::SavePetToDB(PetSaveMode mode)
 {
     if (!GetEntry())
         return;
 
     // save only fully controlled creature
     if (!isControlled())
-        return;
-
-    if (stampeded)
         return;
 
     // not save not player pets
@@ -712,9 +709,9 @@ void Pet::Update(uint32 diff)
     Creature::Update(diff);
 }
 
-void Pet::Remove(PetSaveMode mode, bool returnreagent, bool stampeded /*= false*/)
+void Pet::Remove(PetSaveMode mode, bool returnreagent)
 {
-    GetOwner()->RemovePet(this, mode, returnreagent, stampeded);
+    GetOwner()->RemovePet(this, mode, returnreagent);
 }
 
 void Pet::GivePetXP(uint32 xp)

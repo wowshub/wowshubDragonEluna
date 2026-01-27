@@ -1138,7 +1138,7 @@ void Player::Update(uint32 p_time)
     Pet* pet = GetPet();
     if (pet && !pet->IsWithinDistInMap(this, GetMap()->GetVisibilityRange()) && !pet->isPossessed())
     //if (pet && !pet->IsWithinDistInMap(this, GetMap()->GetVisibilityDistance()) && (GetCharmGUID() && (pet->GetGUID() != GetCharmGUID())))
-        RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true, pet->IsInStampeded());
+        RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
 
     if (IsAlive())
     {
@@ -20934,7 +20934,7 @@ void Player::SaveToDB(LoginDatabaseTransaction loginTransaction, CharacterDataba
 
     // save pet (hunter pet level and experience and all type pets health/mana).
     if (Pet* pet = GetPet())
-        pet->SavePetToDB(PET_SAVE_AS_CURRENT, pet->IsInStampeded());
+        pet->SavePetToDB(PET_SAVE_AS_CURRENT);
 }
 
 // fast save function for item/money cheating preventing - save only inventory and money state
@@ -22281,7 +22281,7 @@ Pet* Player::GetPet() const
     return nullptr;
 }
 
-void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent, bool stampeded /*= false*/)
+void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
 {
     if (!pet)
         pet = GetPet();
@@ -22330,19 +22330,13 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent, bool stam
         return;
     }
 
-    if (!pet || pet->GetOwnerGUID() != GetGUID())
-        return;
-
-    if (pet->IsAnimalCompanion())
-        SetAnimalCompanion(ObjectGuid::Empty);
-
     pet->CombatStop();
 
     // exit areatriggers before saving to remove auras applied by them
     pet->ExitAllAreaTriggers();
 
     // only if current pet in slot
-    pet->SavePetToDB(mode, stampeded);
+    pet->SavePetToDB(mode);
 
     PetStable::PetInfo const* currentPet = m_petStable->GetCurrentPet();
     ASSERT(currentPet && currentPet->PetNumber == pet->GetCharmInfo()->GetPetNumber());
@@ -22367,7 +22361,7 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent, bool stam
     // else if (stable slots) handled in opcode handlers due to required swaps
     // else (current pet) doesnt need to do anything
 
-    SetMinion(pet, false, stampeded);
+    SetMinion(pet, false);
 
     pet->AddObjectToRemoveList();
     pet->m_removed = true;
@@ -22375,7 +22369,7 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent, bool stam
     WorldPackets::Pet::PetGuids guids;
     SendDirectMessage(guids.Write());
 
-    if (pet->isControlled() && !stampeded)
+    if (pet->isControlled())
     {
         SendRemoveControlBar();
 
@@ -24682,7 +24676,7 @@ template<>
 inline void BeforeVisibilityDestroy<Creature>(Creature* t, Player* p)
 {
     if (p->GetPetGUID() == t->GetGUID() && t->IsPet())
-        t->ToPet()->Remove(PET_SAVE_NOT_IN_SLOT, true, t->ToPet()->IsInStampeded());
+        t->ToPet()->Remove(PET_SAVE_NOT_IN_SLOT, true);
 
     if (Vignettes::VignetteData const* vignette = t->GetVignette())
     {
@@ -30609,13 +30603,11 @@ Guild const* Player::GetGuild() const
     return guildId ? sGuildMgr->GetGuildById(guildId) : nullptr;
 }
 
-Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float y, float z, float ang, uint32 duration, bool* isNew /*= nullptr*/, bool stampeded /*= false*/, bool animalCompanion /*= false*/, std::function<void(Pet*, bool)> callBack /*[](Pet*, bool) {}*/)
+Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float y, float z, float ang, uint32 duration, bool* isNew /*= nullptr*/)
 {
     PetStable& petStable = GetOrInitPetStable();
 
     Pet* pet = new Pet(this, SUMMON_PET);
-    pet->SetStampeded(stampeded);
-    pet->SetAnimalCompanion(animalCompanion);
 
     if (pet->LoadPetFromDB(this, entry, 0, false, slot))
     {
@@ -30625,7 +30617,6 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
         if (isNew)
             *isNew = false;
 
-        callBack(pet, true);
         return pet;
     }
 
@@ -30633,7 +30624,6 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
     if (!entry)
     {
         delete pet;
-        callBack(nullptr, false);
         return nullptr;
     }
 
@@ -30644,7 +30634,6 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
     {
         TC_LOG_ERROR("misc", "Player::SummonPet: Pet ({}, Entry: {}) not summoned. Suggested coordinates aren't valid (X: {} Y: {})", pet->GetGUID().ToString(), pet->GetEntry(), pet->GetPositionX(), pet->GetPositionY());
         delete pet;
-        callBack(nullptr, false);
         return nullptr;
     }
 
@@ -30654,7 +30643,6 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
     {
         TC_LOG_ERROR("misc", "Player::SummonPet: No such creature entry {}", entry);
         delete pet;
-        callBack(nullptr, false);
         return nullptr;
     }
 
@@ -30700,8 +30688,6 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
 
     if (isNew)
         *isNew = true;
-
-    callBack(pet, true);
 
     return pet;
 }
