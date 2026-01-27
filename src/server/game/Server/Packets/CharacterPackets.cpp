@@ -90,6 +90,7 @@ void SetupWarbandGroups::Read()
         _worldPacket >> Groups[i].OrderIndex;
         _worldPacket >> Groups[i].WarbandSceneID;
         _worldPacket >> Groups[i].Flags;
+        _worldPacket >> Groups[i].ContentSetID;
 
         uint32 memberCount;
         _worldPacket >> memberCount;
@@ -99,19 +100,15 @@ void SetupWarbandGroups::Read()
         {
             _worldPacket >> Groups[i].Members[j].WarbandScenePlacementID;
             _worldPacket >> Groups[i].Members[j].Type;
+            _worldPacket >> Groups[i].Members[j].ContentSetID;
 
             if (Groups[i].Members[j].Type == 0)
                 _worldPacket >> Groups[i].Members[j].Guid;
         }
 
-        uint8 nameLenDiv2;
-        _worldPacket >> nameLenDiv2;
-
-        uint32 nameLenMod2 = _worldPacket.ReadBits(1);
+        _worldPacket >> SizedString::BitsSize<9>(Groups[i].Name);
         _worldPacket.FlushBits();
-
-        uint32 nameLen = (nameLenDiv2 * 2) + nameLenMod2;
-        Groups[i].Name = _worldPacket.ReadString(nameLen);
+        _worldPacket >> SizedString::Data(Groups[i].Name);
     }
 }
 
