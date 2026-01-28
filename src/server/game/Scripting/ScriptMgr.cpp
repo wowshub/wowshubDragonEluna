@@ -2536,6 +2536,11 @@ void ScriptMgr::OnCreatureSummoned(Player* player, Creature* creature)
     FOREACH_SCRIPT(PlayerScript)->OnCreatureSummoned(player, creature);
 }
 
+void ScriptMgr::OnCreatureUnsummoned(Player* player, Creature* creature)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnCreatureUnsummoned(player, creature);
+}
+
 void ScriptMgr::OnChargeRecoveryTimeStart(Player* player, uint32 chargeCategoryId, int32& chargeRecoveryTime)
 {
     FOREACH_SCRIPT(PlayerScript)->OnChargeRecoveryTimeStart(player, chargeCategoryId, chargeRecoveryTime);

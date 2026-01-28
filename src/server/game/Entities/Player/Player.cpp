@@ -22281,7 +22281,7 @@ Pet* Player::GetPet() const
     return nullptr;
 }
 
-void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent, bool stampeded)
+void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent, bool stampeded /*= false*/)
 {
     if (!pet)
         pet = GetPet();
@@ -22330,6 +22330,9 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent, bool stam
         return;
     }
 
+    if (!pet || pet->GetOwnerGUID() != GetGUID())
+        return;
+
     if (pet->IsAnimalCompanion())
         SetAnimalCompanion(ObjectGuid::Empty);
 
@@ -22371,6 +22374,8 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent, bool stam
 
     WorldPackets::Pet::PetGuids guids;
     SendDirectMessage(guids.Write());
+
+    sScriptMgr->OnCreatureUnsummoned(this, pet);
 
     if (pet->isControlled() && !stampeded)
     {

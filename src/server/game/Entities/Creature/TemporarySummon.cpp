@@ -347,6 +347,8 @@ void TempSummon::UnSummon(uint32 msTime)
 
     if (WorldObject * owner = GetSummoner())
     {
+        if (owner->IsPlayer())
+            sScriptMgr->OnCreatureUnsummoned(owner->ToPlayer(), this);
         if (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->IsAIEnabled())
             owner->ToCreature()->AI()->SummonedCreatureDespawn(this);
         else if (owner->GetTypeId() == TYPEID_GAMEOBJECT && owner->ToGameObject()->AI())

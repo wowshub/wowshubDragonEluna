@@ -454,7 +454,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool c
     return true;
 }
 
-void Pet::SavePetToDB(PetSaveMode mode, bool stampeded)
+void Pet::SavePetToDB(PetSaveMode mode, bool stampeded /*= false*/)
 {
     if (!GetEntry())
         return;
@@ -723,9 +723,13 @@ void Pet::Update(uint32 diff)
     Creature::Update(diff);
 }
 
-void Pet::Remove(PetSaveMode mode, bool returnreagent, bool stampeded)
+void Pet::Remove(PetSaveMode mode, bool returnreagent /*= false*/, bool stampeded /*= false*/)
 {
-    GetOwner()->RemovePet(this, mode, returnreagent, stampeded);
+    if (Player* owner = GetOwner())
+    {
+        owner->RemovePet(this, mode, returnreagent, stampeded);
+        sScriptMgr->OnCreatureUnsummoned(owner, this);
+    }
 }
 
 void Pet::GivePetXP(uint32 xp)
