@@ -353,7 +353,7 @@ NonDefaultConstructible<SpellEffectHandlerFn> SpellEffectHandlers[TOTAL_SPELL_EF
     &Spell::EffectUnused,                                   //257 SPELL_EFFECT_257
     &Spell::EffectNULL,                                     //258 SPELL_EFFECT_MODIFY_KEYSTONE
     &Spell::EffectRespecAzeriteEmpoweredItem,               //259 SPELL_EFFECT_RESPEC_AZERITE_EMPOWERED_ITEM
-    &Spell::EffectNULL,                                     //260 SPELL_EFFECT_SUMMON_STABLED_PET
+    &Spell::EffectSummonStabledPet,                         //260 SPELL_EFFECT_SUMMON_STABLED_PET
     &Spell::EffectScrapItem,                                //261 SPELL_EFFECT_SCRAP_ITEM
     &Spell::EffectUnused,                                   //262 SPELL_EFFECT_262
     &Spell::EffectNULL,                                     //263 SPELL_EFFECT_REPAIR_ITEM
@@ -2746,6 +2746,14 @@ void Spell::EffectSummonPet()
     Pet* pet = owner->SummonPet(petentry, petSlot, x, y, z, owner->GetOrientation(), 0, &isNew);
     if (!pet)
         return;
+
+    if (m_caster->IsUnit())
+    {
+        Unit::AuraEffectList const& animalCompanion = m_caster->ToUnit()->GetAuraEffectsByType(SPELL_AURA_ANIMAL_COMPANION);
+        for (AuraEffect const* aurEff : animalCompanion)
+            if (sSpellMgr->GetSpellInfo(aurEff->GetTriggerSpell(), DIFFICULTY_NONE) && petentry)
+                m_caster->CastSpell(m_caster, aurEff->GetTriggerSpell(), true);
+    }
 
     if (isNew)
     {
@@ -5996,6 +6004,70 @@ void Spell::EffectLearnTransmogSet()
         return;
 
     unitTarget->ToPlayer()->GetSession()->GetCollectionMgr()->AddTransmogSet(effectInfo->MiscValue);
+}
+
+void Spell::EffectSummonStabledPet()
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH)
+        return;
+
+    if (m_caster->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    Player* player = m_caster->ToPlayer();
+
+    if (!player)
+        return;
+
+    auto stable = player->GetPetStable();
+    if (!stable)
+        return;
+
+    if (!stable->GetCurrentUnslottedPetIndex().has_value())
+        return;
+
+    SpellInfo const* spellInfo = GetSpellInfo();
+
+    if (auto playerPetData = stable->GetCurrentPet())
+    {
+        float x, y, z;
+        player->GetClosePoint(x, y, z, player->GetObjectSize());
+        player->SummonPet(playerPetData->CreatureId, PetSaveMode::PET_SAVE_NOT_IN_SLOT, x, y, z, player->GetOrientation(), player->CalcSpellDuration(spellInfo, 0), nullptr, true, true,
+            [spellInfo](Pet* pet, bool result) -> void
+        {
+            if (!result || !pet)
+                return;
+
+            Player* owner = pet->GetOwner();
+
+            if (owner == nullptr)
+                return;
+
+            if (!pet->IsAlive())
+                pet->setDeathState(ALIVE);
+
+            // Set pet at full health
+            pet->SetHealth(pet->GetMaxHealth());
+            pet->SetReactState(REACT_ASSIST);
+            owner->SetAnimalCompanion(pet->GetGUID());
+
+            std::list<uint32> spellsToRemove;
+            for (auto iter : pet->m_spells)
+                spellsToRemove.push_back(iter.first);
+
+            // Summoned pets with Stamped don't use abilities
+            for (uint32 id : spellsToRemove)
+            {
+                auto iter = pet->m_spells.find(id);
+                pet->m_spells.erase(iter);
+            }
+
+            pet->m_autospells.clear();
+            pet->m_Events.KillAllEvents(true);    // Disable automatic cast spells
+
+            pet->SetCreatedBySpell(spellInfo->Id);
+        });
+    }
 }
 
 void Spell::EffectRespecAzeriteEmpoweredItem()

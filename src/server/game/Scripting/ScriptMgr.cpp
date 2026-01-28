@@ -2531,6 +2531,11 @@ void ScriptMgr::OnCooldownStart(Player* player, SpellInfo const* spellInfo, uint
     FOREACH_SCRIPT(PlayerScript)->OnCooldownStart(player, spellInfo, itemId, cooldown, categoryId, categoryCooldown);
 }
 
+void ScriptMgr::OnCreatureSummoned(Player* player, Creature* creature)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnCreatureSummoned(player, creature);
+}
+
 void ScriptMgr::OnChargeRecoveryTimeStart(Player* player, uint32 chargeCategoryId, int32& chargeRecoveryTime)
 {
     FOREACH_SCRIPT(PlayerScript)->OnChargeRecoveryTimeStart(player, chargeCategoryId, chargeRecoveryTime);

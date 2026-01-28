@@ -1335,6 +1335,10 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
     Trinity::AIRelocationNotifier notifier(*summon);
     Cell::VisitAllObjects(summon, notifier, GetVisibilityRange());
 
+    if (summoner)
+        if (Player* player = summoner->ToPlayer())
+            sScriptMgr->OnCreatureSummoned(player, summon);
+
     return summon;
 }
 
@@ -2868,6 +2872,13 @@ void WorldObject::GetContactPoint(WorldObject const* obj, float& x, float& y, fl
 {
     // angle to face `obj` to `this` using distance includes size of `obj`
     GetNearPoint(obj, x, y, z, distance2d, GetAbsoluteAngle(obj));
+}
+
+float WorldObject::GetObjectSize() const
+{
+    if (auto unit = ToUnit())
+        return unit->GetCombatReach();
+    return 0.388999998569489f;
 }
 
 void WorldObject::MovePosition(Position &pos, float dist, float angle, float maxHeightChange /*= 6.0f*/) const
