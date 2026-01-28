@@ -6379,7 +6379,7 @@ Guardian* Unit::GetGuardianPet() const
     return nullptr;
 }
 
-void Unit::SetMinion(Minion *minion, bool apply, bool stampeded /*= false*/)
+void Unit::SetMinion(Minion *minion, bool apply)
 {
     TC_LOG_DEBUG("entities.unit", "SetMinion {} for {}, apply {}", minion->GetEntry(), GetEntry(), apply);
 
@@ -6412,11 +6412,11 @@ void Unit::SetMinion(Minion *minion, bool apply, bool stampeded /*= false*/)
         {
             if (Guardian* oldPet = GetGuardianPet())
             {
-                if (oldPet != minion && (oldPet->IsPet() || minion->IsPet() || oldPet->GetEntry() != minion->GetEntry()) && !stampeded)
+                if (oldPet != minion && (oldPet->IsPet() || minion->IsPet() || oldPet->GetEntry() != minion->GetEntry()))
                 {
                     // remove existing minion pet
                     if (Pet* oldPetAsPet = oldPet->ToPet())
-                        oldPetAsPet->Remove(PET_SAVE_NOT_IN_SLOT, false, oldPetAsPet->IsInStampeded());
+                        oldPetAsPet->Remove(PET_SAVE_NOT_IN_SLOT);
                     else
                         oldPet->UnSummon();
                     SetPetGUID(minion->GetGUID());

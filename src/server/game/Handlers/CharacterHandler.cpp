@@ -61,8 +61,6 @@
 #include "SocialMgr.h"
 #include "StringConvert.h"
 #include "SystemPackets.h"
-#include "SpellAuras.h"
-#include "SpellAuraEffects.h"
 #include "Util.h"
 #include "World.h"
 #include <boost/circular_buffer.hpp>
@@ -1632,14 +1630,6 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
 
     if (!pCurrChar->IsStandState() && !pCurrChar->HasUnitState(UNIT_STATE_STUNNED))
         pCurrChar->SetStandState(UNIT_STAND_STATE_STAND);
-
-    if (pCurrChar->GetPet())
-    {
-        Unit::AuraEffectList const& animalCompanion = _player->GetAuraEffectsByType(SPELL_AURA_ANIMAL_COMPANION);
-        for (AuraEffect const* aurEff : animalCompanion)
-            if (sSpellMgr->GetSpellInfo(aurEff->GetTriggerSpell(), DIFFICULTY_NONE))
-                _player->CastSpell(_player, aurEff->GetTriggerSpell(), true);
-    }
 
     pCurrChar->UpdateAverageItemLevelTotal();
     pCurrChar->UpdateAverageItemLevelEquipped();

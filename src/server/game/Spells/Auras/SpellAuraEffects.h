@@ -57,7 +57,6 @@ class TC_GAME_API AuraEffect
 
         int32 GetMiscValueB() const { return GetSpellEffectInfo().MiscValueB; }
         int32 GetMiscValue() const { return GetSpellEffectInfo().MiscValue; }
-        uint32 GetTriggerSpell() const { return GetSpellEffectInfo().TriggerSpell; }
         AuraType GetAuraType() const { return GetSpellEffectInfo().ApplyAuraName; }
         int32 GetAmount() const { return _amount; }
         void SetAmount(int32 amount) { _amount = amount; m_canBeRecalculated = false; }
@@ -214,7 +213,6 @@ class TC_GAME_API AuraEffect
         void HandleModCharm(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleCharmConvert(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraControlVehicle(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraAnimalCompanion(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         //  modify speed
         void HandleAuraModIncreaseSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraModIncreaseMountedSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const;

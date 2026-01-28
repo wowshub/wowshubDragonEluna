@@ -840,11 +840,6 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called when a cooldown start for that player
         virtual void OnCooldownStart(Player* /*player*/, SpellInfo const* /*spellInfo*/, uint32 /*itemId*/, int32& /*cooldown*/, uint32& /*categoryId*/, int32& /*categoryCooldown*/) { }
 
-        virtual void OnCreatureSummoned(Player* /*player*/, Creature* /*creature*/) {}
-
-        // Called when summoned creature has been unsummoned
-        virtual void OnCreatureUnsummoned(Player* /*player*/, Creature* /*creature*/) {}
-
         // Called when a charge recovery cooldown start for that player
         virtual void OnChargeRecoveryTimeStart(Player* /*player*/, uint32 /*chargeCategoryId*/, int32& /*chargeRecoveryTime*/) { }
 
@@ -1334,8 +1329,6 @@ class TC_GAME_API ScriptMgr
         void OnPlayerChoiceResponse(WorldObject* object, Player* player, PlayerChoice const* choice, PlayerChoiceResponse const* response, uint16 clientIdentifier);
         void OnPlayerSuccessfulSpellCast(Player* player, Spell* spell);
         void OnCooldownStart(Player* player, SpellInfo const* spellInfo, uint32 itemId, int32& cooldown, uint32& categoryId, int32& categoryCooldown);
-        void OnCreatureSummoned(Player* player, Creature* creature);
-        void OnCreatureUnsummoned(Player* player, Creature* creature);
         void OnChargeRecoveryTimeStart(Player* player, uint32 chargeCategoryId, int32& chargeRecoveryTime);
         void OnPlayerEnterVehicle(Player* player);
         void OnPlayerExitVehicle(Player* player);
