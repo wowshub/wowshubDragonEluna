@@ -528,7 +528,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CRAFTING_QUALITY, "SELECT MAX(ID) + 1 FROM crafting_quality", CONNECTION_SYNCH);
 
     // CraftingReagentQuality.db2
-    PrepareStatement(HOTFIX_SEL_CRAFTING_REAGENT_QUALITY, "SELECT ID, `OrderIndex`, ItemID, MaxDifficultyAdjustment, ReagentEffectPct, ModifiedCraftingCategoryID "
+    PrepareStatement(HOTFIX_SEL_CRAFTING_REAGENT_QUALITY, "SELECT ID, `OrderIndex`, ItemID, CurrencyTypesID, MaxDifficultyAdjustment, ReagentEffectPct, Field_12_0_0_64124_006, ModifiedCraftingCategoryID "
         "FROM crafting_reagent_quality WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_CRAFTING_REAGENT_QUALITY, "SELECT MAX(ID) + 1 FROM crafting_reagent_quality", CONNECTION_SYNCH);
 
@@ -1224,9 +1224,9 @@ void HotfixDatabaseConnection::DoPrepareStatements()
 
     // LightParams.db2
     PrepareStatement(HOTFIX_SEL_LIGHT_PARAMS, "SELECT ID, OverrideCelestialSphere1, OverrideCelestialSphere2, OverrideCelestialSphere3, "
-        "Field_11_0_0_54210_0011, Field_11_0_0_54210_0012, Field_11_0_0_54210_0013, HighlightSky, LightSkyboxID, CloudTypeID, Glow, "
-        "WaterShallowAlpha, WaterDeepAlpha, OceanShallowAlpha, OceanDeepAlpha, Flags, SsaoSettingsID, Field_11_0_0_54210_012, Field_11_0_0_54210_013, "
-        "Field_11_0_0_54210_014, Field_11_0_0_54210_015 FROM light_params WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
+        "OverrideSunPosition1, OverrideSunPosition2, OverrideSunPosition3, HighlightSky, LightSkyboxID, CloudTypeID, Glow, "
+        "WaterShallowAlpha, WaterDeepAlpha, OceanShallowAlpha, OceanDeepAlpha, Flags, SsaoSettingsID, SunPolar, SunAzimuth, "
+        "SunAttenuationStart, SunAttenuationEnd, Field_12_0_1_65617_016, Field_12_0_1_65617_017, Field_12_0_1_65617_018, Field_12_0_1_65617_019, Field_12_0_1_65617_020, Field_12_0_1_65617_021, Field_12_0_1_65617_022, Field_12_0_1_65617_023, Field_12_0_1_65617_024, Field_12_0_1_65617_025, Field_12_0_1_65617_026, Field_12_0_1_65617_027, Field_12_0_1_65617_028, Field_12_0_1_65617_029 FROM light_params WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_LIGHT_PARAMS, "SELECT MAX(ID) + 1 FROM light_params", CONNECTION_SYNCH);
 
     // LiquidType.db2
@@ -1300,7 +1300,7 @@ void HotfixDatabaseConnection::DoPrepareStatements()
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_MODIFIED_CRAFTING_SPELL_SLOT, "SELECT MAX(ID) + 1 FROM modified_crafting_spell_slot", CONNECTION_SYNCH);
 
     // ModifiedCraftingReagentSlot.db2
-    PrepareStatement(HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_SLOT, "SELECT Name, ID, Field_9_0_1_33978_001, PlayerConditionID, ReagentType, Field_10_0_2_46091_005, Field_11_2_0_61476_006 "
+    PrepareStatement(HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_SLOT, "SELECT Name, ID, Flags, PlayerConditionID, ReagentType, ReagentSource, Field_11_2_0_61476_006, Field_12_0_0_63534_007 "
         "FROM modified_crafting_reagent_slot WHERE (`VerifiedBuild` > 0) = ?", CONNECTION_SYNCH);
     PREPARE_MAX_ID_STMT(HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_SLOT, "SELECT MAX(ID) + 1 FROM modified_crafting_reagent_slot", CONNECTION_SYNCH);
     PREPARE_LOCALE_STMT(HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_SLOT, "SELECT ID, Name_lang FROM modified_crafting_reagent_slot_locale WHERE (`VerifiedBuild` > 0) = ?"

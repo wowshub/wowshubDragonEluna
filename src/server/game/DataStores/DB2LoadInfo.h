@@ -1517,17 +1517,19 @@ struct CraftingQualityLoadInfo
 
 struct CraftingReagentQualityLoadInfo
 {
-	static constexpr DB2FieldMeta Fields[6] =
+	static constexpr DB2FieldMeta Fields[8] =
 	{
 		{ .IsSigned = false, .Type = FT_INT, .Name = "ID" },
 		{ .IsSigned = true, .Type = FT_INT, .Name = "OrderIndex" },
 		{ .IsSigned = true, .Type = FT_INT, .Name = "ItemID" },
+        { .IsSigned = true, .Type = FT_INT, .Name = "CurrencyTypesID" },
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "MaxDifficultyAdjustment" },
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "ReagentEffectPct" },
+        { .IsSigned = true, .Type = FT_INT, .Name = "Field_12_0_0_64124_006" },
 		{ .IsSigned = false, .Type = FT_INT, .Name = "ModifiedCraftingCategoryID" },
 	};
 
-	static constexpr DB2LoadInfo Instance{ Fields, 6, &CraftingReagentQualityMeta::Instance, HOTFIX_SEL_CRAFTING_REAGENT_QUALITY };
+	static constexpr DB2LoadInfo Instance{ Fields, 8, &CraftingReagentQualityMeta::Instance, HOTFIX_SEL_CRAFTING_REAGENT_QUALITY };
 };
 
 struct CreatureDisplayInfoLoadInfo
@@ -2254,7 +2256,7 @@ struct GameTipsLoadInfo
 	{
 		{ .IsSigned = false, .Type = FT_INT, .Name = "ID" },
 		{ .IsSigned = false, .Type = FT_STRING, .Name = "Text" },
-		{ .IsSigned = false, .Type = FT_BYTE, .Name = "SortIndex" },
+		{ .IsSigned = true, .Type = FT_INT, .Name = "SortIndex" },
 		{ .IsSigned = true, .Type = FT_INT, .Name = "MinLevel" },
 		{ .IsSigned = true, .Type = FT_INT, .Name = "MaxLevel" },
 		{ .IsSigned = true, .Type = FT_INT, .Name = "ContentTuningID" },
@@ -2575,7 +2577,7 @@ struct GlobalStringsLoadInfo
         {.IsSigned = false, .Type = FT_INT, .Name = "ID" },
         {.IsSigned = false, .Type = FT_STRING_NOT_LOCALIZED, .Name = "BaseTag" },
         {.IsSigned = false, .Type = FT_STRING, .Name = "TagText" },
-        {.IsSigned = false, .Type = FT_BYTE, .Name = "Flags" },
+        {.IsSigned = true, .Type = FT_INT, .Name = "Flags" },
     };
 
     static constexpr DB2LoadInfo Instance{ Fields, 4, &GlobalStringsMeta::Instance, HOTFIX_SEL_GLOBAL_STRINGS };
@@ -3915,15 +3917,15 @@ struct LightLoadInfo
 
 struct LightParamsLoadInfo
 {
-	static constexpr DB2FieldMeta Fields[21] =
+	static constexpr DB2FieldMeta Fields[35] =
 	{
 		{ .IsSigned = false, .Type = FT_INT, .Name = "ID" },
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "OverrideCelestialSphere1" },
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "OverrideCelestialSphere2" },
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "OverrideCelestialSphere3" },
-		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_11_0_0_54210_0011" },
-		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_11_0_0_54210_0012" },
-		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_11_0_0_54210_0013" },
+		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "OverrideSunPosition1" },
+		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "OverrideSunPosition2" },
+		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "OverrideSunPosition3" },
 		{ .IsSigned = false, .Type = FT_BYTE, .Name = "HighlightSky" },
 		{ .IsSigned = false, .Type = FT_SHORT, .Name = "LightSkyboxID" },
 		{ .IsSigned = false, .Type = FT_BYTE, .Name = "CloudTypeID" },
@@ -3934,13 +3936,27 @@ struct LightParamsLoadInfo
 		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "OceanDeepAlpha" },
 		{ .IsSigned = true, .Type = FT_INT, .Name = "Flags" },
 		{ .IsSigned = true, .Type = FT_INT, .Name = "SsaoSettingsID" },
-		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_11_0_0_54210_012" },
-		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_11_0_0_54210_013" },
-		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_11_0_0_54210_014" },
-		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_11_0_0_54210_015" },
+		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "SunPolar" },
+		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "SunAzimuth" },
+		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "SunAttenuationStart" },
+		{ .IsSigned = false, .Type = FT_FLOAT, .Name = "SunAttenuationEnd" },
+        { .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_12_0_1_65617_016" },
+        { .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_12_0_1_65617_017" },
+        { .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_12_0_1_65617_018" },
+        { .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_12_0_1_65617_019" },
+        { .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_12_0_1_65617_020" },
+        { .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_12_0_1_65617_021" },
+        { .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_12_0_1_65617_022" },
+        { .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_12_0_1_65617_023" },
+        { .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_12_0_1_65617_024" },
+        { .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_12_0_1_65617_025" },
+        { .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_12_0_1_65617_026" },
+        { .IsSigned = true, .Type = FT_INT, .Name = "Field_12_0_1_65617_027" },
+        { .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_12_0_1_65617_028" },
+        { .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_12_0_1_65617_029" },
 	};
 
-	static constexpr DB2LoadInfo Instance{ Fields, 21, &LightParamsMeta::Instance, HOTFIX_SEL_LIGHT_PARAMS };
+	static constexpr DB2LoadInfo Instance{ Fields, 35, &LightParamsMeta::Instance, HOTFIX_SEL_LIGHT_PARAMS };
 };
  
 struct LightSkyboxLoadInfo
@@ -4296,18 +4312,19 @@ struct ModifiedCraftingReagentItemLoadInfo
  
 struct ModifiedCraftingReagentSlotLoadInfo
 {
-	static constexpr DB2FieldMeta Fields[7] =
+	static constexpr DB2FieldMeta Fields[8] =
 	{
 		{ .IsSigned = false, .Type = FT_STRING, .Name = "Name" },
 		{ .IsSigned = false, .Type = FT_INT, .Name = "ID" },
-		{ .IsSigned = true, .Type = FT_INT, .Name = "Field_9_0_1_33978_001" },
+		{ .IsSigned = true, .Type = FT_INT, .Name = "Flags" },
 		{ .IsSigned = true, .Type = FT_INT, .Name = "PlayerConditionID" },
 		{ .IsSigned = true, .Type = FT_INT, .Name = "ReagentType" },
-		{ .IsSigned = false, .Type = FT_BYTE, .Name = "Field_10_0_2_46091_005" },
+		{ .IsSigned = false, .Type = FT_BYTE, .Name = "ReagentSource" },
         { .IsSigned = true, .Type = FT_INT, .Name = "Field_11_2_0_61476_006" },
+        { .IsSigned = false, .Type = FT_FLOAT, .Name = "Field_12_0_0_63534_007" },
 	};
 
-	static constexpr DB2LoadInfo Instance{ Fields, 7, &ModifiedCraftingReagentSlotMeta::Instance, HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_SLOT };
+	static constexpr DB2LoadInfo Instance{ Fields, 8, &ModifiedCraftingReagentSlotMeta::Instance, HOTFIX_SEL_MODIFIED_CRAFTING_REAGENT_SLOT };
 };
 
 struct ModifiedCraftingSpellSlotLoadInfo

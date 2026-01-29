@@ -1124,8 +1124,10 @@ struct CraftingReagentQualityEntry
     uint32 ID;
     int32 OrderIndex;
     int32 ItemID;
+    int32 CurrencyTypesID;
     float MaxDifficultyAdjustment;
     float ReagentEffectPct;
+    int32 Field_12_0_0_64124_006;
     int32 ModifiedCraftingCategoryID;
 };
 
@@ -1930,7 +1932,7 @@ struct GameTipsEntry
 {
     uint32 ID;
     LocalizedString Text;
-    uint8 SortIndex;
+    int32 SortIndex;
     int32 MinLevel;
     int32 MaxLevel;
     int32 ContentTuningID;
@@ -2165,7 +2167,7 @@ struct GlobalStringsEntry
     uint32 ID;
     char const* BaseTag;
     LocalizedString Text;
-    uint8 Flags;
+    uint32 Flags;
 };
 
 struct GlyphBindableSpellEntry
@@ -3200,11 +3202,12 @@ struct ModifiedCraftingReagentSlotEntry
 {
     LocalizedString Name;
     uint32 ID;
-    int32 Field_9_0_1_33978_001;
+    int32 Flags;
     int32 PlayerConditionID;
     int32 ReagentType;
-    int8 Field_10_0_2_46091_005;
+    int8 ReagentSource;
     int32 Field_11_2_0_61476_006;
+    float Field_12_0_0_63534_007;
 };
 
 struct ModifiedCraftingSpellSlotEntry
@@ -5433,7 +5436,7 @@ struct LightParamsEntry
 {
     uint32 ID;
     float OverrideCelestialSphere[3];
-    float Field_11_0_0_54210_001[3];
+    float OverrideSunPosition[3];
     uint8 HighlightSky;
     uint16 LightSkyboxID;
     uint8 CloudTypeID;
@@ -5444,10 +5447,24 @@ struct LightParamsEntry
     float OceanDeepAlpha;
     int32 Flags;
     int32 SsaoSettingsID;
-    float Field_11_0_0_54210_012;
-    float Field_11_0_0_54210_013;
-    float Field_11_0_0_54210_014;
-    float Field_11_0_0_54210_015;
+    float SunPolar;
+    float SunAzimuth;
+    float SunAttenuationStart;
+    float SunAttenuationEnd;
+    float Field_12_0_1_65617_016;
+    float Field_12_0_1_65617_017;
+    float Field_12_0_1_65617_018;
+    float Field_12_0_1_65617_019;
+    float Field_12_0_1_65617_020;
+    float Field_12_0_1_65617_021;
+    float Field_12_0_1_65617_022;
+    float Field_12_0_1_65617_023;
+    float Field_12_0_1_65617_024;
+    float Field_12_0_1_65617_025;
+    float Field_12_0_1_65617_026;
+    int32 Field_12_0_1_65617_027;
+    float Field_12_0_1_65617_028;
+    float Field_12_0_1_65617_029;
 };
 
 struct SoundAmbienceEntry
