@@ -8894,7 +8894,7 @@ void Player::CastItemCombatSpell(DamageInfo const& damageInfo, Item* item, ItemT
     }
 }
 
-void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, ObjectGuid castCount, int32* misc)
+void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, ObjectGuid castCount, std::array<int32, 3> const& misc)
 {
     if (!item->GetTemplate()->HasFlag(ITEM_FLAG_LEGACY))
     {
@@ -8921,8 +8921,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, Objec
 
             spell->m_fromClient = true;
             spell->m_CastItem = item;
-            spell->m_misc.Raw.Data[0] = misc[0];
-            spell->m_misc.Raw.Data[1] = misc[1];
+            std::ranges::copy(misc, std::ranges::begin(spell->m_misc.Raw.Data));
             spell->prepare(targets);
             return;
         }
@@ -8956,8 +8955,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, Objec
 
             spell->m_fromClient = true;
             spell->m_CastItem = item;
-            spell->m_misc.Raw.Data[0] = misc[0];
-            spell->m_misc.Raw.Data[1] = misc[1];
+            std::ranges::copy(misc, std::ranges::begin(spell->m_misc.Raw.Data));
             spell->prepare(targets);
             return;
         }
@@ -31555,8 +31553,7 @@ void Player::ExecutePendingSpellCastRequest()
     SendDirectMessage(spellPrepare.Write());
 
     spell->m_fromClient = true;
-    spell->m_misc.Raw.Data[0] = _pendingSpellCastRequest->CastRequest.Misc[0];
-    spell->m_misc.Raw.Data[1] = _pendingSpellCastRequest->CastRequest.Misc[1];
+    std::ranges::copy(_pendingSpellCastRequest->CastRequest.Misc, std::ranges::begin(spell->m_misc.Raw.Data));
     spell->prepare(targets);
 
     _pendingSpellCastRequest = nullptr;

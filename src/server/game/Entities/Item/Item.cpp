@@ -20,6 +20,7 @@
 #include "AzeriteEmpoweredItem.h"
 #include "AzeriteItem.h"
 #include "Bag.h"
+#include "ClientBuildInfo.h"
 #include "CollectionMgr.h"
 #include "Common.h"
 #include "ConditionMgr.h"
@@ -39,6 +40,7 @@
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "Player.h"
+#include "RealmList.h"
 #include "ScriptMgr.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
@@ -2363,7 +2365,28 @@ uint32 Item::GetItemLevel(ItemTemplate const* itemTemplate, BonusData const& bon
             itemLevel = bonusData.PvpItemLevel;
 
         itemLevel += bonusData.PvpItemLevelBonus;
-        itemLevel += sDB2Manager.GetPvpItemLevelBonus(itemTemplate->GetId());
+    }
+
+    if (!bonusData.IgnoreSquish)
+    {
+        if (std::shared_ptr<Realm const> currentRealm = sRealmList->GetCurrentRealm())
+        {
+            int32 currentBuild = ClientBuild::GetMinorMajorBugfixVersionForBuild(currentRealm->Build);
+
+            // apply all squishes between items_squish and server_squish
+            for (uint32 squishId = bonusData.ItemSquishEraID; squishId < sItemSquishEraStore.GetNumRows(); ++squishId)
+            {
+                ItemSquishEraEntry const* squish = sItemSquishEraStore.LookupEntry(squishId);
+                if (!squish)
+                    continue;
+
+                if (squish->Patch > currentBuild)
+                    break;
+
+                if (squish->CurveID)
+                    itemLevel = uint32(sDB2Manager.GetCurveValueAt(squish->CurveID, itemLevel));
+            }
+        }
     }
 
     if (itemTemplate->GetInventoryType() != INVTYPE_NON_EQUIP)
@@ -2627,7 +2650,7 @@ uint16 Item::GetVisibleItemVisual(Player const* owner) const
 
 void Item::AddBonuses(uint32 bonusListID)
 {
-    if (std::find(GetBonusListIDs().begin(), GetBonusListIDs().end(), int32(bonusListID)) != GetBonusListIDs().end())
+    if (advstd::ranges::contains(GetBonusListIDs(), int32(bonusListID)))
         return;
 
     WorldPackets::Item::ItemBonusKey itemBonusKey;
@@ -2974,6 +2997,7 @@ void BonusData::Initialize(ItemTemplate const* proto)
     ItemLevelOffsetCurveId = proto->GetItemLevelOffsetCurveId();
     ItemLevelOffsetItemLevel = proto->GetItemLevelOffsetItemLevel();
     ItemLevelOffset = 0;
+    ItemSquishEraID = proto->GetItemSquishEraId();
 
     EffectCount = 0;
     for (ItemEffectEntry const* itemEffect : proto->Effects)
@@ -2989,6 +3013,7 @@ void BonusData::Initialize(ItemTemplate const* proto)
     CanSalvage = !proto->HasFlag(ITEM_FLAG4_NO_SALVAGE);
     CanRecraft = proto->HasFlag(ITEM_FLAG4_RECRAFTABLE);
     CannotTradeBindOnPickup = proto->HasFlag(ITEM_FLAG2_NO_TRADE_BIND_ON_ACQUIRE);
+    IgnoreSquish = false;
 
     _state.SuffixPriority = std::numeric_limits<int32>::max();
     _state.AppearanceModPriority = std::numeric_limits<int32>::max();
@@ -3197,6 +3222,9 @@ void BonusData::AddBonus(uint32 type, std::array<int32, 4> const& values)
                     }
 
                     ItemLevelOffsetItemLevel = scalingConfig->ItemLevel;
+                    ItemSquishEraID = scalingConfig->ItemSquishEraID;
+                    if (scalingConfig->Flags & 0x1)
+                        IgnoreSquish = true;
 
                     if (values[1] < _state.RequiredLevelCurvePriority)
                     {
@@ -3205,6 +3233,9 @@ void BonusData::AddBonus(uint32 type, std::array<int32, 4> const& values)
                     }
                 }
             }
+            break;
+        case ITEM_BONUS_ITEM_BONUS_LIST:
+            AddBonusList(values[0]);
             break;
         case ITEM_BONUS_SCALING_CONFIG:
             if (values[1] < _state.ScalingStatDistributionPriority)
@@ -3218,6 +3249,9 @@ void BonusData::AddBonus(uint32 type, std::array<int32, 4> const& values)
                     }
 
                     ItemLevelOffsetItemLevel = 0;
+                    ItemSquishEraID = scalingConfig->ItemSquishEraID;
+                    if (scalingConfig->Flags & 0x1)
+                        IgnoreSquish = true;
                 }
             }
             break;
