@@ -98,13 +98,14 @@ enum Expansions
     EXPANSION_SHADOWLANDS              = 8,
     EXPANSION_DRAGONFLIGHT             = 9,
     EXPANSION_THE_WAR_WITHIN           = 10,
-    EXPANSION_CLASS_AND_RACE_BLOCKER   = 11,
+    EXPANSION_MIDNIGHT                 = 11,
+    EXPANSION_CLASS_AND_RACE_BLOCKER   = 12,
     MAX_EXPANSIONS,
 
     MAX_ACCOUNT_EXPANSIONS
 };
 
-#define CURRENT_EXPANSION EXPANSION_THE_WAR_WITHIN
+#define CURRENT_EXPANSION EXPANSION_MIDNIGHT
 
 constexpr uint32 GetMaxLevelForExpansion(uint32 expansion)
 {
@@ -132,8 +133,10 @@ constexpr uint32 GetMaxLevelForExpansion(uint32 expansion)
             return 70;
         case EXPANSION_THE_WAR_WITHIN:
             return 80;
+        case EXPANSION_MIDNIGHT:
+            return 90;
         case EXPANSION_CLASS_AND_RACE_BLOCKER:
-            return 80;
+            return 90;
         default:
             break;
     }
