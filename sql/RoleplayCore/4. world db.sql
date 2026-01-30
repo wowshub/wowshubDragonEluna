@@ -497,6 +497,8 @@ REPLACE INTO `spell_script_names` VALUES (51723, 'spell_rog_fan_of_knives');
 REPLACE INTO `spell_script_names` VALUES (195457, 'spell_rog_grappling_hook');
 REPLACE INTO `spell_script_names` VALUES (271877, 'spell_rog_blade_rush');
 REPLACE INTO `spell_script_names` VALUES (197835, 'spell_rog_shuriken_storm');
+REPLACE INTO `spell_script_names` VALUES (280719, 'spell_rog_secret_technique');
+REPLACE INTO `spell_script_names` VALUES (91023, 'spell_rog_find_weakness');
 
 -- ----------------------------
 -- Priest spell fixes

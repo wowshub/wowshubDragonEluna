@@ -9793,3 +9793,21 @@ SpellCastVisual::operator WorldPackets::Spells::SpellCastVisual() const
 {
     return { int32(SpellXSpellVisualID), int32(ScriptVisualID) };
 }
+
+SpellPowerCost const* Spell::GetPowerCost(Powers power) const
+{
+    std::vector<SpellPowerCost> const& costs = GetPowerCost();
+    auto c = std::find_if(costs.begin(), costs.end(), [power](SpellPowerCost const& cost) { return cost.Power == power; });
+    if (c != costs.end())
+        return &(*c);
+
+    return nullptr;
+}
+
+int32 Spell::GetUsedComboPoints() const
+{
+    auto cost = GetPowerCost(POWER_COMBO_POINTS);
+    if (!cost)
+        return 0;
+    return cost->Amount;
+}
