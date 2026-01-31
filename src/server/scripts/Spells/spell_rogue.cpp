@@ -451,17 +451,36 @@ class spell_rog_eviscerate : public SpellScript
 {
     void CalculateDamage(SpellEffIndex /*effIndex*/)
     {
+        Unit* caster = GetCaster();
+        Unit* target = GetHitUnit();
+        if (!caster || !target)
+            return;
+
         int32 damagePerCombo = GetHitDamage();
-        if (AuraEffect const* t5 = GetCaster()->GetAuraEffect(SPELL_ROGUE_T5_2P_SET_BONUS, EFFECT_0))
+
+        if (AuraEffect const* t5 = caster->GetAuraEffect(SPELL_ROGUE_T5_2P_SET_BONUS, EFFECT_0))
             damagePerCombo += t5->GetAmount();
 
-        int32 finalDamage = damagePerCombo;
-        std::vector<SpellPowerCost> const& costs = GetSpell()->GetPowerCost();
-        auto c = std::find_if(costs.begin(), costs.end(), [](SpellPowerCost const& cost) { return cost.Power == POWER_COMBO_POINTS; });
-        if (c != costs.end())
-            finalDamage *= c->Amount;
+        int32 comboPoints = 0;
+        if (Spell* spell = GetSpell())
+            comboPoints = spell->GetUsedComboPoints();
 
-        SetHitDamage(finalDamage);
+        if (comboPoints == 0)
+            comboPoints = 1;
+
+        int32 totalDamage = damagePerCombo * comboPoints;
+        SetHitDamage(totalDamage);
+
+        if (AuraEffect const* darkFinish = caster->GetAuraEffect(382511, EFFECT_0))
+        {
+            if (target->HasAura(91021))
+            {
+                int32 bonusPct = darkFinish->GetAmount();
+                int32 shadowDamage = CalculatePct(totalDamage, bonusPct);
+
+                caster->DealDamage(caster, target, shadowDamage, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_SHADOW, GetSpellInfo(), false);
+            }
+        }
     }
 
     void Register() override
