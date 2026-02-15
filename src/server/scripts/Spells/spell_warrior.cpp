@@ -369,6 +369,42 @@ class spell_warr_bladesmasters_torment : public AuraScript
     }
 };
 
+// 384361 - Bloodsurge
+class spell_warr_bloodsurge : public AuraScript
+{
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_WARRIOR_BLOODSURGE_ENERGIZE });
+    }
+
+    void HandlePeriodic(AuraEffect const* aurEff) const
+    {
+        Unit* caster = GetTarget();
+        float rends = 0.0f;
+        auto work = [&rends, warrior = caster->GetGUID()](Unit const* target)
+        {
+            if (target->HasAuraEffect(SPELL_WARRIOR_REND_AURA, EFFECT_0, warrior))
+                rends += 1.0f;
+        };
+        Trinity::UnitWorker worker(caster, work);
+        Cell::VisitAllObjects(caster, worker, 50.0f);
+
+        float chance = std::sqrt(rends) * aurEff->GetAmount();
+        if (!roll_chance_f(chance))
+            return;
+
+        caster->CastSpell(caster, SPELL_WARRIOR_BLOODSURGE_ENERGIZE, CastSpellExtraArgsInit{
+            .TriggerFlags = TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_DONT_REPORT_CAST_ERROR,
+            .TriggeringAura = aurEff
+        });
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_warr_bloodsurge::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
 // 23881 - Bloodthirst
 // 335096 - Bloodbath
 class spell_warr_bloodthirst : public SpellScript
@@ -1125,7 +1161,7 @@ class spell_warr_impending_victory : public SpellScript
 };
 
 // 12950 - Improved Whirlwind (attached to 190411 - Whirlwind)
-class spell_improved_whirlwind : public SpellScript
+class spell_warr_improved_whirlwind : public SpellScript
 {
     bool Validate(SpellInfo const* spellInfo) override
     {
@@ -1164,7 +1200,57 @@ class spell_improved_whirlwind : public SpellScript
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_improved_whirlwind::HandleHit, EFFECT_1, SPELL_EFFECT_DUMMY);
+        OnEffectHitTarget += SpellEffectFn(spell_warr_improved_whirlwind::HandleHit, EFFECT_1, SPELL_EFFECT_DUMMY);
+    }
+};
+
+// 3411 - Intervene
+class spell_warr_intervene : public SpellScript
+{
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_WARRIOR_INTERVENE_CHARGE });
+    }
+
+    void HandleDummy(SpellEffIndex /*effIndex*/) const
+    {
+        Unit* caster = GetCaster();
+        Unit* target = GetHitUnit();
+        uint32 spellId = SPELL_WARRIOR_INTERVENE_CHARGE;
+        if (caster->IsWithinCombatRange(target, 3.0f))
+            spellId = SPELL_WARRIOR_INTERVENE_AURA;
+
+        caster->CastSpell(target, spellId, CastSpellExtraArgsInit{
+            .TriggerFlags = TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_DONT_REPORT_CAST_ERROR,
+            .TriggeringSpell = GetSpell()
+        });
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_warr_intervene::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+// 316531 - Intervene (charge)
+class spell_warr_intervene_charge : public SpellScript
+{
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_WARRIOR_INTERVENE_AURA });
+    }
+
+    void HandleAura(SpellEffIndex /*effIndex*/) const
+    {
+        GetCaster()->CastSpell(GetHitUnit(), SPELL_WARRIOR_INTERVENE_AURA, CastSpellExtraArgsInit{
+            .TriggerFlags = TRIGGERED_FULL_MASK & ~TRIGGERED_CAST_DIRECTLY,
+            .TriggeringSpell = GetSpell()
+        });
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_warr_intervene_charge::HandleAura, EFFECT_0, SPELL_EFFECT_CHARGE);
     }
 };
 
@@ -1913,71 +1999,6 @@ class spell_warr_victory_rush : public SpellScript
     }
 };
 
-// 3411 - Intervene
-class spell_warr_intervene : public SpellScript
-{
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        return ValidateSpellInfo({ SPELL_WARRIOR_INTERVENE_CHARGE });
-    }
-
-    void HandleDummy(SpellEffIndex /*effIndex*/) const
-    {
-        GetCaster()->CastSpell(GetHitUnit(), SPELL_WARRIOR_INTERVENE_CHARGE, CastSpellExtraArgsInit{
-            .TriggerFlags = TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_DONT_REPORT_CAST_ERROR,
-            .TriggeringSpell = GetSpell()
-            });
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_warr_intervene::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-    }
-};
-
-// 316531 - Intervene (charge)
-class spell_warr_intervene_charge : public SpellScript
-{
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        return ValidateSpellInfo({ SPELL_WARRIOR_INTERVENE_AURA });
-    }
-
-    void HandleAura(SpellEffIndex /*effIndex*/) const
-    {
-        GetCaster()->CastSpell(GetHitUnit(), SPELL_WARRIOR_INTERVENE_AURA, CastSpellExtraArgsInit{
-            .TriggerFlags = TRIGGERED_FULL_MASK & ~TRIGGERED_CAST_DIRECTLY,
-            .TriggeringSpell = GetSpell()
-            });
-    }
-
-    void HandleStopAttack()
-    {
-        // Prevent caster from attacking the friendly target
-        GetCaster()->AttackStop();
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_warr_intervene_charge::HandleAura, EFFECT_0, SPELL_EFFECT_CHARGE);
-        AfterHit += SpellHitFn(spell_warr_intervene_charge::HandleStopAttack);
-    }
-};
-
-// 382551 - Pain and Gain (heal)
-class spell_warr_pain_and_gain_heal : public SpellScript
-{
-    void CalculateHeal(SpellEffectInfo const& /*effInfo*/, Unit const* /*victim*/, int32& /*healing*/, int32& /*flatMod*/, float& pctMod) const
-    {
-        pctMod *= 0.1f;
-    }
-
-    void Register() override
-    {
-        CalcHealing += SpellCalcDamageFn(spell_warr_pain_and_gain_heal::CalculateHeal);
-    }
-};
-
 // 23920 Spell Reflect
 class spell_warr_spell_reflect : public SpellScriptLoader
 {
@@ -2544,46 +2565,6 @@ class spell_warr_unshackled_fury : public AuraScript
     }
 };
 
-// Enrage - 184361
-class spell_warr_enrage : public AuraScript
-{
-    bool CheckProc(ProcEventInfo& eventInfo)
-    {
-        if (eventInfo.GetSpellInfo()->Id == SPELL_WARRIOR_BLOODTHIRST_DAMAGE &&
-            eventInfo.GetHitMask() & PROC_HIT_CRITICAL)
-            return true;
-        return false;
-    }
-
-    void Register() override
-    {
-        DoCheckProc += AuraCheckProcFn(spell_warr_enrage::CheckProc);
-    }
-};
-
-// Enrage Aura - 184362
-class spell_warr_enrage_aura : public AuraScript
-{
-    void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        if (Unit* caster = GetCaster())
-            if (caster->HasAura(SPELL_WARRIOR_ENDLESS_RAGE))
-                caster->CastSpell(nullptr, SPELL_WARRIOR_ENDLESS_RAGE_GIVE_POWER, true);
-    }
-
-    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        Unit* caster = GetCaster();
-        caster->RemoveAurasDueToSpell(SPELL_WARRIOR_UNCHACKLED_FURY);
-    }
-
-    void Register() override
-    {
-        OnEffectApply += AuraEffectApplyFn(spell_warr_enrage_aura::OnApply, EFFECT_0, SPELL_AURA_MELEE_SLOW, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_warr_enrage_aura::HandleRemove, EFFECT_0, SPELL_AURA_MELEE_SLOW, AURA_EFFECT_HANDLE_REAL);
-    }
-};
-
 //214871 - Odyn's fury
 class spell_warr_odyns_fury : public AuraScript
 {
@@ -2722,7 +2703,7 @@ void AddSC_warrior_spell_scripts()
     RegisterSpellScript(spell_warr_heroic_leap);
     RegisterSpellScript(spell_warr_heroic_leap_damage);
     RegisterSpellScript(spell_warr_impending_victory);
-    RegisterSpellScript(spell_improved_whirlwind);
+    RegisterSpellScript(spell_warr_improved_whirlwind);
     RegisterSpellScript(spell_warr_intimidating_shout);
     RegisterSpellScript(spell_warr_intimidating_shout_menace_knock_back);
     RegisterSpellScript(spell_warr_invigorating_fury);
@@ -2757,7 +2738,6 @@ void AddSC_warrior_spell_scripts()
     RegisterSpellScript(spell_warr_bladesmasters_torment);
     RegisterSpellScript(spell_warr_intervene);
     RegisterSpellScript(spell_warr_intervene_charge);
-    RegisterSpellScript(spell_warr_pain_and_gain_heal);
 
     //new
     new spell_warr_spell_reflect();
@@ -2772,8 +2752,6 @@ void AddSC_warrior_spell_scripts()
     RegisterSpellScript(spell_warr_shiel_charge);
     RegisterSpellScript(spell_warr_whirlwind);
     new spell_warr_unshackled_fury();
-    new spell_warr_enrage();
-    RegisterSpellScript(spell_warr_enrage_aura);
     new spell_warr_odyns_fury();
     new anger_management();
     RegisterSpellScript(spell_warr_overpower);
