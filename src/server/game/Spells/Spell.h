@@ -445,10 +445,12 @@ class TC_GAME_API Spell
         void EffectLearnAzeriteEssencePower();
         void EffectCreatePrivateConversation();
         void EffectApplyMountEquipment();
+        void EffectSkipCampaign();
         void EffectSendChatMessage();
         void EffectGrantBattlePetExperience();
         void EffectLearnTransmogIllusion();
         void EffectCraftItem();
+        void EffectEquipTransmogOutfit();
         void EffectModifyAuraStacks();
         void EffectModifyCooldown();
         void EffectModifyCooldowns();
@@ -458,6 +460,7 @@ class TC_GAME_API Spell
         void EffectChangeActiveCombatTraitConfig();
         void EffectTeleportGraveyard();
         void EffectUpdateInteractions();
+        void EffectSkipQuestLine();
         void EffectLearnWarbandScene();
         void EffectSetPlayerDataElementAccount();
         void EffectSetPlayerDataElementCharacter();

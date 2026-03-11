@@ -62,10 +62,7 @@ EndScriptData */
 #include "PacketUtilities.h"
 #include "WorldSocket.h"
 #include "ClientConfigPackets.h"
-#include "WorldSession.h"
 #include "WorldPacket.h"
-#include "WorldSocket.h"
-#include "ObjectAccessor.h"
 #include "Corpse.h"
 #include "Creature.h"
 #include "DynamicObject.h"
@@ -196,11 +193,11 @@ public:
             { "vehicle_template",              rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE,                 true,  &HandleReloadVehicleTemplateCommand,            "" },
             { "vehicle_accessory",             rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_ACCESORY,                 true,  &HandleReloadVehicleAccessoryCommand,           "" },
             { "vehicle_template_accessory",    rbac::RBAC_PERM_COMMAND_RELOAD_VEHICLE_TEMPLATE_ACCESSORY,       true,  &HandleReloadVehicleTemplateAccessoryCommand,   "" },
-			{ "hotfixes",	                   rbac::RBAC_PERM_COMMAND_RELOAD_ALL,							    true,  &HandleReloadHotfixesCommand,				   "" },
-            { "creature_equip_template",	   rbac::RBAC_PERM_COMMAND_RELOAD_ALL,							    true,  &HandleReloadCreatureEquipTemplateCommand,	   "" },
-            { "gameobject_template",		   rbac::RBAC_PERM_COMMAND_RELOAD_ALL,							    true,  &HandleReloadGameObjectTemplateCommand,		   "" },
-            { "creature_template_addons",      rbac::RBAC_PERM_COMMAND_RELOAD_ALL,							    true,  &HandleReloadCreatureTemplateAddCommand,		   "" },
-            { "creature_addons",			   rbac::RBAC_PERM_COMMAND_RELOAD_ALL,							    true,  &HandleReloadCreatureAddonsCommand,			   "" },
+            { "hotfixes",                      rbac::RBAC_PERM_COMMAND_RELOAD_ALL,                              true,  &HandleReloadHotfixesCommand,                   "" },
+            { "creature_equip_template",       rbac::RBAC_PERM_COMMAND_RELOAD_ALL,                              true,  &HandleReloadCreatureEquipTemplateCommand,      "" },
+            { "gameobject_template",           rbac::RBAC_PERM_COMMAND_RELOAD_ALL,                              true,  &HandleReloadGameObjectTemplateCommand,         "" },
+            { "creature_template_addons",      rbac::RBAC_PERM_COMMAND_RELOAD_ALL,                              true,  &HandleReloadCreatureTemplateAddCommand,        "" },
+            { "creature_addons",               rbac::RBAC_PERM_COMMAND_RELOAD_ALL,                              true,  &HandleReloadCreatureAddonsCommand,             "" },
             { "creature_template_all",         rbac::RBAC_PERM_COMMAND_RELOAD_CREATURE_TEMPLATE,                true,  &HandleReloadCreatureTemplateAllCommand,        "" },
             { "creature_template_outfits",     rbac::RBAC_PERM_COMMAND_RELOAD_CREATURE_TEMPLATE,                true,  &HandleReloadCreatureTemplateOutfitsCommand,    "" },
         };
@@ -506,9 +503,18 @@ public:
         {
             for (auto e : map->GetCreatureBySpawnIdStore())
             {
-                auto const& outfit = e.second->GetOutfit();
-                if (outfit && outfit->GetId())
-                    e.second->SetDisplayId(outfit->GetId());
+                // Get current outfit from creature
+                std::shared_ptr<CreatureOutfit> const& oldOutfit = e.second->GetOutfit();
+                if (!oldOutfit || !oldOutfit->GetId())
+                    continue;
+
+                // Get updated outfit from ObjectMgr by outfit ID
+                std::shared_ptr<CreatureOutfit> const& newOutfit = sObjectMgr->GetOutfit(oldOutfit->GetId());
+                if (newOutfit)
+                {
+                    // Update creature with new outfit (this will also update displayId)
+                    e.second->SetOutfit(newOutfit);
+                }
             }
         });
 
@@ -1218,11 +1224,12 @@ public:
 	
 	static bool HandleReloadHotfixesCommand(ChatHandler* handler, const char* /*args*/)
     {
-        // hotfix_data
+        // Reload hotfix data
         TC_LOG_INFO("misc", "Reloading hotfix info...");
         sDB2Manager.LoadHotfixData(13); //change on your lang mask 
 
-        // DB2
+        // DB2 stores - now thread-safe with RCU (Read-Copy-Update) semantics
+        // The DB2StorageBase uses atomic snapshots, so readers always see consistent data
         sAreaTableStore.LoadFromDB();
         sAreaTriggerStore.LoadFromDB();
         sArmorLocationStore.LoadFromDB();
@@ -1275,7 +1282,7 @@ public:
         sItemSetStore.LoadFromDB();
         sItemSetSpellStore.LoadFromDB();
         sItemSparseStore.LoadFromDB();
-        sItemSparseStore.LoadStringsFromDB(LocaleConstant::LOCALE_ruRU); // locale ruRU
+        sItemSparseStore.LoadStringsFromDB(LocaleConstant::LOCALE_ruRU);
         sItemSpecStore.LoadFromDB();
         sItemSpecOverrideStore.LoadFromDB();
         sMapStore.LoadFromDB();
@@ -1322,25 +1329,24 @@ public:
         sTalentStore.LoadFromDB();
         sTaxiNodesStore.LoadFromDB();
         sTaxiPathStore.LoadFromDB();
-
         sTextureFileDataStore.LoadFromDB();
         sModelFileDataStore.LoadFromDB();
         sChrCustomizationMaterialStore.LoadFromDB();
 
-        // For items.
+        // For items
         sObjectMgr->LoadItemTemplates();
         sObjectMgr->LoadItemTemplateAddon();
         sObjectMgr->LoadItemScriptNames();
 
 
-        // Send Packet
+        // Send hotfix packet to players
         std::shared_lock<std::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
 
         HashMapHolder<Player>::MapType const& m = ObjectAccessor::GetPlayers();
         for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
             itr->second->GetSession()->SendAvailableHotfixes();
 
-        handler->SendGlobalGMSysMessage("101 DB2 reloaded.");
+        handler->SendGlobalGMSysMessage("101 DB2 stores reloaded (thread-safe).");
         handler->SendGlobalGMSysMessage("Hotfixes data reloaded.");
 
         return true;
