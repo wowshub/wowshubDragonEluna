@@ -12214,41 +12214,42 @@ void Player::SetVisibleItemSlot(uint8 slot, Item const* item)
                 {
                     if (ItemModifiedAppearanceEntry const* itemModifiedAppearance = sItemModifiedAppearanceStore.LookupEntry(transmogOutfitItem.ItemModifiedAppearanceID))
                     {
-                        itemId = itemModifiedAppearance->ItemID;
-                        itemAppearanceModId = itemModifiedAppearance->ItemAppearanceModifierID;
-                        itemModifiedAppearanceId = itemModifiedAppearance->ID;
+                        TransmogHolidayEntry const* transmogHoliday = sTransmogHolidayStore.LookupEntry(itemModifiedAppearance->ItemID);
+                        if (!transmogHoliday || IsHolidayActive(static_cast<HolidayIds>(transmogHoliday->RequiredTransmogHoliday)))
+                        {
+                            itemId = itemModifiedAppearance->ItemID;
+                            itemAppearanceModId = itemModifiedAppearance->ItemAppearanceModifierID;
+                            itemModifiedAppearanceId = itemModifiedAppearance->ID;
+                            hasTransmog = true;
+                        }
                     }
-
-                    hasTransmog = true;
                 }
+
+                auto getSecondaryItemModifiedAppearance = [isTransmogDisplayed](UF::TransmogOutfitSlotData const& secondaryTransmogOutfitItem) -> int32
+                {
+                    if (isTransmogDisplayed(static_cast<TransmogOutfitDisplayType>(*secondaryTransmogOutfitItem.AppearanceDisplayType))
+                        || static_cast<TransmogOutfitDisplayType>(*secondaryTransmogOutfitItem.AppearanceDisplayType) == TransmogOutfitDisplayType::Equipped)
+                    {
+                        if (ItemModifiedAppearanceEntry const* itemModifiedAppearance = sItemModifiedAppearanceStore.LookupEntry(secondaryTransmogOutfitItem.ItemModifiedAppearanceID))
+                        {
+                            TransmogHolidayEntry const* transmogHoliday = sTransmogHolidayStore.LookupEntry(itemModifiedAppearance->ItemID);
+                            if (!transmogHoliday || IsHolidayActive(static_cast<HolidayIds>(transmogHoliday->RequiredTransmogHoliday)))
+                                return secondaryTransmogOutfitItem.ItemModifiedAppearanceID;
+                        }
+                    }
+                    return 0;
+                };
 
                 if (TransmogOutfitSlotInfoEntry const* secondarySlot = sTransmogOutfitSlotInfoStore.LookupEntry(slotInfo->Slot->SecondarySlotID))
-                {
                     if (TransmogMgr::TransmogOutfitSlotAndOptionInfo const* secondarySlotInfo = TransmogMgr::GetSlotAndOption(secondarySlot->GetSlot(), transmogSlotOption))
-                    {
-                        UF::TransmogOutfitSlotData const& secondaryTransmogOutfitItem = m_activePlayerData->ViewedOutfit->Slots[secondarySlotInfo->SlotIndex];
-                        if (isTransmogDisplayed(static_cast<TransmogOutfitDisplayType>(*secondaryTransmogOutfitItem.AppearanceDisplayType))
-                            || static_cast<TransmogOutfitDisplayType>(*secondaryTransmogOutfitItem.AppearanceDisplayType) == TransmogOutfitDisplayType::Equipped)
-                        {
-                            secondaryItemModifiedAppearanceId = secondaryTransmogOutfitItem.ItemModifiedAppearanceID;
-                            hasTransmog = true;
-                        }
-                    }
-                }
+                        secondaryItemModifiedAppearanceId = getSecondaryItemModifiedAppearance(m_activePlayerData->ViewedOutfit->Slots[secondarySlotInfo->SlotIndex]);
 
                 if (TransmogOutfitSlotOptionEntry const* secondarySlotOption = sTransmogOutfitSlotOptionInfoStore.LookupEntry(slotInfo->SlotOption ? slotInfo->SlotOption->SecondaryOptionID : 0))
-                {
                     if (TransmogMgr::TransmogOutfitSlotAndOptionInfo const* secondarySlotInfo = TransmogMgr::GetSlotAndOption(slotInfo->Slot->GetSlot(), secondarySlotOption->GetOption()))
-                    {
-                        UF::TransmogOutfitSlotData const& secondaryTransmogOutfitItem = m_activePlayerData->ViewedOutfit->Slots[secondarySlotInfo->SlotIndex];
-                        if (isTransmogDisplayed(static_cast<TransmogOutfitDisplayType>(*secondaryTransmogOutfitItem.AppearanceDisplayType))
-                            || static_cast<TransmogOutfitDisplayType>(*secondaryTransmogOutfitItem.AppearanceDisplayType) == TransmogOutfitDisplayType::Equipped)
-                        {
-                            secondaryItemModifiedAppearanceId = secondaryTransmogOutfitItem.ItemModifiedAppearanceID;
-                            hasTransmog = true;
-                        }
-                    }
-                }
+                        secondaryItemModifiedAppearanceId = getSecondaryItemModifiedAppearance(m_activePlayerData->ViewedOutfit->Slots[secondarySlotInfo->SlotIndex]);
+
+                if (secondaryItemModifiedAppearanceId)
+                    hasTransmog = true;
 
                 if (isTransmogDisplayed(static_cast<TransmogOutfitDisplayType>(*transmogOutfitItem.IllusionDisplayType)))
                 {
@@ -22538,7 +22539,7 @@ Pet* Player::GetPet() const
     return nullptr;
 }
 
-void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
+void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent, bool stampeded /*= false*/)
 {
     if (!pet)
         pet = GetPet();
@@ -22589,11 +22590,32 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
 
     pet->CombatStop();
 
+    if (pet->IsAnimalCompanion())
+        SetAnimalCompanion(ObjectGuid::Empty);
+
     // exit areatriggers before saving to remove auras applied by them
     pet->ExitAllAreaTriggers();
 
+    // Stampeded/animal companion pets are not in PetStable, skip all stable logic
+    if (pet->IsInStampeded() || pet->IsAnimalCompanion())
+    {
+        SetMinion(pet, false, true);
+        pet->AddObjectToRemoveList();
+        pet->m_removed = true;
+
+        if (pet->isControlled())
+        {
+            WorldPackets::Pet::PetSpells petSpellsPacket;
+            SendDirectMessage(petSpellsPacket.Write());
+
+            if (GetGroup())
+                SetGroupUpdateFlag(GROUP_UPDATE_FLAG_PET);
+        }
+        return;
+    }
+
     // only if current pet in slot
-    pet->SavePetToDB(mode);
+    pet->SavePetToDB(mode, stampeded);
 
     PetStable::PetInfo const* currentPet = m_petStable->GetCurrentPet();
     ASSERT(currentPet && currentPet->PetNumber == pet->GetCharmInfo()->GetPetNumber());
@@ -31028,11 +31050,13 @@ Guild const* Player::GetGuild() const
     return guildId ? sGuildMgr->GetGuildById(guildId) : nullptr;
 }
 
-Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float y, float z, float ang, uint32 duration, bool* isNew /*= nullptr*/)
+Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float y, float z, float ang, uint32 duration, bool* isNew /*= nullptr*/, bool stampeded /*= false*/, bool animalCompanion /*= false*/, std::function<void(Pet*, bool)> callBack /*[](Pet*, bool) {}*/)
 {
     PetStable& petStable = GetOrInitPetStable();
 
     Pet* pet = new Pet(this, SUMMON_PET);
+    pet->SetStampeded(stampeded);
+    pet->SetAnimalCompanion(animalCompanion);
 
     if (pet->LoadPetFromDB(this, entry, 0, false, slot))
     {
@@ -31042,6 +31066,7 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
         if (isNew)
             *isNew = false;
 
+        callBack(pet, true);
         return pet;
     }
 
@@ -31049,6 +31074,7 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
     if (!entry)
     {
         delete pet;
+        callBack(nullptr, false);
         return nullptr;
     }
 
@@ -31059,6 +31085,7 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
     {
         TC_LOG_ERROR("misc", "Player::SummonPet: Pet ({}, Entry: {}) not summoned. Suggested coordinates aren't valid (X: {} Y: {})", pet->GetGUID().ToString(), pet->GetEntry(), pet->GetPositionX(), pet->GetPositionY());
         delete pet;
+        callBack(nullptr, false);
         return nullptr;
     }
 
@@ -31113,6 +31140,8 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
 
     if (isNew)
         *isNew = true;
+
+    callBack(pet, true);
 
     return pet;
 }
@@ -31981,14 +32010,18 @@ std::string Player::GetCharacterSelectOutfit() const
             uint32 secondaryItemModifiedAppearanceId = 0;
             if (ItemModifiedAppearanceEntry const* itemModifiedAppearance = sItemModifiedAppearanceStore.LookupEntry(itemModifiedAppearanceId))
             {
-                if (ItemEntry const* item = sItemStore.LookupEntry(itemModifiedAppearance->ItemID))
+                TransmogHolidayEntry const* transmogHoliday = sTransmogHolidayStore.LookupEntry(itemModifiedAppearance->ItemID);
+                if (!transmogHoliday || IsHolidayActive(static_cast<HolidayIds>(transmogHoliday->RequiredTransmogHoliday)))
                 {
-                    subClass = item->SubclassID;
-                    inventoryType = static_cast<InventoryType>(item->InventoryType);
-                }
+                    if (ItemEntry const* item = sItemStore.LookupEntry(itemModifiedAppearance->ItemID))
+                    {
+                        subClass = item->SubclassID;
+                        inventoryType = static_cast<InventoryType>(item->InventoryType);
+                    }
 
-                if (ItemAppearanceEntry const* itemAppearance = sItemAppearanceStore.LookupEntry(itemModifiedAppearance->ItemAppearanceID))
-                    displayId = itemAppearance->ItemDisplayInfoID;
+                    if (ItemAppearanceEntry const* itemAppearance = sItemAppearanceStore.LookupEntry(itemModifiedAppearance->ItemAppearanceID))
+                        displayId = itemAppearance->ItemDisplayInfoID;
+                }
             }
 
             if (SpellItemEnchantmentEntry const* spellItemEnchantment = sSpellItemEnchantmentStore.LookupEntry(transmogOutfitSlot.SpellItemEnchantmentID))
@@ -32006,6 +32039,11 @@ std::string Player::GetCharacterSelectOutfit() const
                     secondaryItemModifiedAppearanceId = secondaryTransmogOutfitSlot.ItemModifiedAppearanceID;
                     if (!isTransmogDisplayed(static_cast<TransmogOutfitDisplayType>(*secondaryTransmogOutfitSlot.AppearanceDisplayType)))
                         secondaryItemModifiedAppearanceId = m_playerData->VisibleItems[i].SecondaryItemModifiedAppearanceID;
+
+                    if (ItemModifiedAppearanceEntry const* itemModifiedAppearance = sItemModifiedAppearanceStore.LookupEntry(secondaryItemModifiedAppearanceId))
+                        if (TransmogHolidayEntry const* transmogHoliday = sTransmogHolidayStore.LookupEntry(itemModifiedAppearance->ItemID))
+                            if (!IsHolidayActive(static_cast<HolidayIds>(transmogHoliday->RequiredTransmogHoliday)))
+                                secondaryItemModifiedAppearanceId = 0;
                 }
             }
 
