@@ -12193,12 +12193,17 @@ void Player::SetVisibleItemSlot(uint8 slot, Item const* item)
             if (transmogSlotOption != TransmogOutfitSlotOption::None)
             {
                 // check if artifact override is active
-                TransmogOutfitSlotOption artifactOption = static_cast<TransmogOutfitSlotOption>(AsUnderlyingType(TransmogOutfitSlotOption::ArtifactSpecOne) + GetPrimarySpecializationEntry()->OrderIndex);
-                TransmogMgr::TransmogOutfitSlotAndOptionInfo const* artifactSlotInfo = TransmogMgr::GetSlotAndOption(EquipmentSlots(slot), artifactOption);
-                if (artifactSlotInfo && static_cast<TransmogOutfitDisplayType>(*m_activePlayerData->ViewedOutfit->Slots[artifactSlotInfo->SlotIndex].AppearanceDisplayType) == TransmogOutfitDisplayType::Assigned)
+                static constexpr int32 MaxArtifactSpecializations = AsUnderlyingType(TransmogOutfitSlotOption::ArtifactSpecFour) - AsUnderlyingType(TransmogOutfitSlotOption::ArtifactSpecOne) + 1;
+                int32 specIndex = GetPrimarySpecializationEntry()->OrderIndex;
+                if (specIndex >= 0 && specIndex < MaxArtifactSpecializations)
                 {
-                    transmogSlotOption = artifactOption;
-                    slotInfo = artifactSlotInfo;
+                    TransmogOutfitSlotOption artifactOption = static_cast<TransmogOutfitSlotOption>(AsUnderlyingType(TransmogOutfitSlotOption::ArtifactSpecOne) + specIndex);
+                    TransmogMgr::TransmogOutfitSlotAndOptionInfo const* artifactSlotInfo = TransmogMgr::GetSlotAndOption(EquipmentSlots(slot), artifactOption);
+                    if (artifactSlotInfo && static_cast<TransmogOutfitDisplayType>(*m_activePlayerData->ViewedOutfit->Slots[artifactSlotInfo->SlotIndex].AppearanceDisplayType) == TransmogOutfitDisplayType::Assigned)
+                    {
+                        transmogSlotOption = artifactOption;
+                        slotInfo = artifactSlotInfo;
+                    }
                 }
             }
 
@@ -28478,6 +28483,22 @@ void Player::ResummonPetTemporaryUnSummonedIfAny()
     m_temporaryUnsummonedPetNumber = 0;
 }
 
+void Player::ResummonAnimalCompanionIfAny()
+{
+    if (GetPet() && GetAnimalCompanion().IsEmpty())
+    {
+        Unit::AuraEffectList const& animalCompanion = GetAuraEffectsByType(SPELL_AURA_ANIMAL_COMPANION);
+        for (AuraEffect const* aurEff : animalCompanion)
+        {
+            if (uint32 triggerSpell = aurEff->GetSpellEffectInfo().TriggerSpell)
+            {
+                if (sSpellMgr->GetSpellInfo(triggerSpell, DIFFICULTY_NONE))
+                    CastSpell(this, triggerSpell, true);
+            }
+        }
+    }
+}
+
 void Player::UnsummonBattlePetTemporaryIfAny(bool onFlyingMount /*= false*/)
 {
     Creature* battlepet = GetSummonedBattlePet();
@@ -29066,8 +29087,16 @@ void Player::_LoadTraits(PreparedQueryResult configsResult, PreparedQueryResult 
                 }
             }
 
-            // Skip clearing on validation failure - private server with level 90
-            TraitMgr::ValidateConfig(traitConfig, this, false, true);
+            if (TraitMgr::ValidateConfig(traitConfig, this, false, true) != TraitMgr::LearnResult::Ok)
+            {
+                traitConfig.Entries.clear();
+                traitConfig.SubTrees.clear();
+                for (UF::TraitEntry const& grantedEntry : TraitMgr::GetGrantedTraitEntriesForConfig(traitConfig, this))
+                    traitConfig.Entries.emplace_back(grantedEntry);
+
+                // rebuild subtrees
+                TraitMgr::ValidateConfig(traitConfig, this, false, true);
+            }
 
             AddTraitConfig(traitConfig);
 
@@ -30157,8 +30186,12 @@ void Player::AddPetToUpdateFields(PetStable::PetInfo const& pet, PetSaveMode slo
     ufPet.ModifyValue(&UF::StablePetInfo::CreatureID).SetValue(pet.CreatureId);
     ufPet.ModifyValue(&UF::StablePetInfo::DisplayID).SetValue(pet.DisplayId);
     ufPet.ModifyValue(&UF::StablePetInfo::ExperienceLevel).SetValue(pet.Level);
-    ufPet.ModifyValue(&UF::StablePetInfo::PetFlags).SetValue(flags);
+    uint8 petFlags = flags;
+    if (pet.IsFavorite)
+        petFlags |= PET_STABLE_FAVORITE;
+    ufPet.ModifyValue(&UF::StablePetInfo::PetFlags).SetValue(petFlags);
     ufPet.ModifyValue(&UF::StablePetInfo::Name).SetValue(pet.Name);
+    ufPet.ModifyValue(&UF::StablePetInfo::Specialization).SetValue(pet.SpecializationId);
 }
 
 void Player::SetPetSlot(uint32 petNumber, PetSaveMode dstPetSlot)
@@ -30575,8 +30608,8 @@ void Player::_LoadPetStable(uint32 summonedPetNumber, PreparedQueryResult result
 
     m_petStable = std::make_unique<PetStable>();
 
-    //         0      1        2      3    4           5     6     7        8          9       10      11        12              13       14              15
-    // SELECT id, entry, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = ?
+    //         0      1        2      3    4           5     6     7        8          9       10      11        12              13       14            15        16
+    // SELECT id, entry, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization, favorite FROM character_pet WHERE owner = ?
     if (result)
     {
 
@@ -30600,6 +30633,7 @@ void Player::_LoadPetStable(uint32 summonedPetNumber, PreparedQueryResult result
             petInfo.CreatedBySpellId = fields[13].GetUInt32();
             petInfo.Type = PetType(fields[14].GetUInt8());
             petInfo.SpecializationId = fields[15].GetUInt16();
+            petInfo.IsFavorite = fields[16].GetBool();
             if (slot >= PET_SAVE_FIRST_ACTIVE_SLOT && slot < PET_SAVE_LAST_ACTIVE_SLOT)
             {
                 m_petStable->ActivePets[slot] = std::move(petInfo);
