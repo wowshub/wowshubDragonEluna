@@ -1416,7 +1416,6 @@ bool Player::TeleportTo(TeleportLocation const& teleportLocation, TeleportToOpti
         SetSemaphoreTeleportNear(false);
         //setup delayed teleport flag
         SetDelayedTeleportFlag(IsCanDelayTeleport());
-        SetSemaphoreTeleportFar(true);
         //if teleport spell is cast in Unit::Update() func
         //then we need to delay it until update process will be finished
         if (IsHasDelayedTeleport())
@@ -1427,6 +1426,7 @@ bool Player::TeleportTo(TeleportLocation const& teleportLocation, TeleportToOpti
             m_teleportSpellId = teleportSpellId;
             return true;
         }
+        SetSemaphoreTeleportFar(true);
 
         SetSelection(ObjectGuid::Empty);
 
@@ -5407,7 +5407,7 @@ void Player::UpdateRating(CombatRating cr)
     if (amount < 0)
         amount = 0;
 
-    uint32 oldRating = m_activePlayerData->CombatRatings[cr];
+    int32 oldRating = m_activePlayerData->CombatRatings[cr];
     SetUpdateFieldValue(m_values.ModifyValue(&Player::m_activePlayerData).ModifyValue(&UF::ActivePlayerData::CombatRatings, cr), amount);
 
     bool affectStats = CanModifyStats();
@@ -8667,7 +8667,7 @@ void Player::ApplyArtifactPowerRank(Item* artifact, ArtifactPowerRankEntry const
             args.SetCastItem(artifact);
             if (artifactPowerRank->AuraPointsOverride)
                 for (SpellEffectInfo const& spellEffectInfo : spellInfo->GetEffects())
-                    args.AddSpellMod(SpellValueMod(SPELLVALUE_BASE_POINT0 + AsUnderlyingType(spellEffectInfo.EffectIndex)), artifactPowerRank->AuraPointsOverride);
+                    args.AddSpellMod(SpellValueModFloat(SPELLVALUE_BASE_POINT0 + AsUnderlyingType(spellEffectInfo.EffectIndex)), artifactPowerRank->AuraPointsOverride);
 
             CastSpell(this, artifactPowerRank->SpellID, args);
         }
@@ -8882,7 +8882,7 @@ void Player::CastItemCombatSpell(DamageInfo const& damageInfo, Item* item, ItemT
                 else if (chance > 100.0f)
                     chance = GetWeaponProcChance();
 
-                if (roll_chance_f(chance) && sScriptMgr->OnCastItemCombatSpell(this, damageInfo.GetVictim(), spellInfo, item))
+                if (roll_chance(chance) && sScriptMgr->OnCastItemCombatSpell(this, damageInfo.GetVictim(), spellInfo, item))
                     CastSpell(damageInfo.GetVictim(), spellInfo->Id, item);
             }
         }
@@ -8945,7 +8945,7 @@ void Player::CastItemCombatSpell(DamageInfo const& damageInfo, Item* item, ItemT
             if (FindCurrentSpellBySpellId(5938) && e_slot == TEMP_ENCHANTMENT_SLOT)
                 chance = 100.0f;
 
-            if (roll_chance_f(chance))
+            if (roll_chance(chance))
             {
                 if (spellInfo->IsPositive())
                     CastSpell(this, spellInfo->Id, item);
@@ -8953,7 +8953,7 @@ void Player::CastItemCombatSpell(DamageInfo const& damageInfo, Item* item, ItemT
                     CastSpell(damageInfo.GetVictim(), spellInfo->Id, item);
             }
 
-            if (roll_chance_f(chance))
+            if (roll_chance(chance))
             {
                 Unit* target = spellInfo->IsPositive() ? this : damageInfo.GetVictim();
 
@@ -8968,7 +8968,7 @@ void Player::CastItemCombatSpell(DamageInfo const& damageInfo, Item* item, ItemT
 
                     for (SpellEffectInfo const& spellEffectInfo : spellInfo->GetEffects())
                         if (spellEffectInfo.IsEffect())
-                            args.AddSpellMod(static_cast<SpellValueMod>(SPELLVALUE_BASE_POINT0 + AsUnderlyingType(spellEffectInfo.EffectIndex)), CalculatePct(spellEffectInfo.CalcValue(this), effectPct));
+                            args.AddSpellMod(static_cast<SpellValueModFloat>(SPELLVALUE_BASE_POINT0 + AsUnderlyingType(spellEffectInfo.EffectIndex)), CalculatePct(spellEffectInfo.CalcValue(this), effectPct));
                 }
                 CastSpell(target, spellInfo->Id, args);
             }
@@ -19474,8 +19474,8 @@ void Player::_LoadAuras(PreparedQueryResult auraResult, PreparedQueryResult effe
                 itemGuid.SetRawValue(rawGuidBytes);
                 AuraKey key{ casterGuid, itemGuid, fields[2].GetUInt32(), fields[3].GetUInt32() };
                 AuraLoadEffectInfo& info = effectInfo[key];
-                info.Amounts[effectIndex] = fields[5].GetInt32();
-                info.BaseAmounts[effectIndex] = fields[6].GetInt32();
+                info.Amounts[effectIndex] = fields[5].GetDouble();
+                info.BaseAmounts[effectIndex] = fields[6].GetDouble();
             }
         }
         while (effectResult->NextRow());
@@ -21545,8 +21545,8 @@ void Player::_SaveAuras(CharacterDatabaseTransaction trans)
             stmt->setUInt32(index++, key.SpellId);
             stmt->setUInt32(index++, key.EffectMask);
             stmt->setUInt8(index++, effect->GetEffIndex());
-            stmt->setInt32(index++, effect->GetAmount());
-            stmt->setInt32(index++, effect->GetBaseAmount());
+            stmt->setDouble(index++, effect->GetAmount());
+            stmt->setDouble(index++, effect->GetBaseAmount());
             trans->Append(stmt);
         }
     }
@@ -23311,7 +23311,7 @@ void Player::GetSpellModValues(SpellInfo const* spellInfo, SpellModOp op, Spell*
                 if (!IsAffectedBySpellmod(spellInfo, mod, spell))
                     continue;
 
-                if (base < 10000.0 && static_cast<SpellModifierByClassMask*>(mod)->value <= -100)
+                if (base < 10000.0 && static_cast<SpellPctModifierByClassMask*>(mod)->value <= -100)
                 {
                     modInstantSpell = mod;
                     break;
@@ -23350,7 +23350,7 @@ void Player::GetSpellModValues(SpellInfo const* spellInfo, SpellModOp op, Spell*
                 if (!IsAffectedBySpellmod(spellInfo, mod, spell))
                     continue;
 
-                if (static_cast<SpellModifierByClassMask*>(mod)->value >= 100)
+                if (static_cast<SpellFlatModifierByClassMask*>(mod)->value >= 100)
                 {
                     modCritical = mod;
                     break;
@@ -23390,7 +23390,7 @@ void Player::GetSpellModValues(SpellInfo const* spellInfo, SpellModOp op, Spell*
         if (!applyCount)
             continue;
 
-        int32 value = static_cast<SpellModifierByClassMask*>(mod)->value;
+        int32 value = static_cast<SpellFlatModifierByClassMask*>(mod)->value;
         if (value == 0)
             continue;
 
@@ -23422,7 +23422,7 @@ void Player::GetSpellModValues(SpellInfo const* spellInfo, SpellModOp op, Spell*
         if (base + *flat == 0)
             continue;
 
-        int32 value = static_cast<SpellModifierByClassMask*>(mod)->value;
+        float value = static_cast<SpellPctModifierByClassMask*>(mod)->value;
         if (value == 0)
             continue;
 
@@ -23523,7 +23523,7 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
                         auto itr = std::ranges::lower_bound(m_spellMods, std::make_pair(mod->op, SPELLMOD_FLAT), std::ranges::less(), [](SpellModifier const* sm) { return std::make_pair(sm->op, sm->type); });
                         while (itr != m_spellMods.end() && (*itr)->op == mod->op && (*itr)->type == SPELLMOD_FLAT)
                         {
-                            SpellModifierByClassMask const* spellMod = static_cast<SpellModifierByClassMask const*>(*itr++);
+                            SpellFlatModifierByClassMask const* spellMod = static_cast<SpellFlatModifierByClassMask const*>(*itr++);
                             if (spellMod->mask[classIndex / 32] & (1u << (classIndex % 32)))
                                 modData.ModifierValue += spellMod->value;
                         }
@@ -23534,7 +23534,7 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
                         auto itr = std::ranges::lower_bound(m_spellMods, std::make_pair(mod->op, SPELLMOD_PCT), std::ranges::less(), [](SpellModifier const* sm) { return std::make_pair(sm->op, sm->type); });
                         while (itr != m_spellMods.end() && (*itr)->op == mod->op && (*itr)->type == SPELLMOD_PCT)
                         {
-                            SpellModifierByClassMask const* spellMod = static_cast<SpellModifierByClassMask const*>(*itr++);
+                            SpellPctModifierByClassMask const* spellMod = static_cast<SpellPctModifierByClassMask const*>(*itr++);
                             if (spellMod->mask[classIndex / 32] & (1u << (classIndex % 32)))
                                 modData.ModifierValue *= 1.0f + CalculatePct(1.0f, spellMod->value);
                         }
@@ -23628,9 +23628,6 @@ void Player::SendSpellModifiers() const
 
     for (SpellModifier const* mod : m_spellMods)
     {
-        if (mod->type != SPELLMOD_FLAT && mod->type != SPELLMOD_PCT)
-            continue;
-
         switch (mod->type)
         {
             case SPELLMOD_FLAT:
@@ -23643,7 +23640,7 @@ void Player::SendSpellModifiers() const
                 for (std::size_t classIndex = mask.find_first(); classIndex != decltype(mask)::npos; classIndex = mask.find_next(classIndex))
                 {
                     float& modifierValue = getOrCreateModifierData(flatModifier->ModifierData, classIndex, 0.0f);
-                    modifierValue += static_cast<SpellModifierByClassMask const*>(mod)->value;
+                    modifierValue += static_cast<SpellFlatModifierByClassMask const*>(mod)->value;
                 }
                 break;
             case SPELLMOD_PCT:
@@ -23656,7 +23653,7 @@ void Player::SendSpellModifiers() const
                 for (std::size_t classIndex = mask.find_first(); classIndex != decltype(mask)::npos; classIndex = mask.find_next(classIndex))
                 {
                     float& modifierValue = getOrCreateModifierData(pctModifier->ModifierData, classIndex, 1.0f);
-                    modifierValue *= 1.0f + CalculatePct(1.0f, static_cast<SpellModifierByClassMask const*>(mod)->value);
+                    modifierValue *= 1.0f + CalculatePct(1.0f, static_cast<SpellPctModifierByClassMask const*>(mod)->value);
                 }
                 break;
             default:
@@ -24451,7 +24448,7 @@ bool Player::BuyItemFromVendorSlot(ObjectGuid vendorguid, uint32 vendorslot, uin
         price = uint64(floor(price * GetReputationPriceDiscount(creature)));
         price = pProto->GetBuyPrice() > 0 ? std::max(uint64(1), price) : price;
 
-        if (int32 priceMod = GetTotalAuraModifier(SPELL_AURA_MOD_VENDOR_ITEMS_PRICES))
+        if (float priceMod = GetTotalAuraModifier(SPELL_AURA_MOD_VENDOR_ITEMS_PRICES))
             price -= CalculatePct(price, priceMod);
 
         if (!HasEnoughMoney(price))
@@ -26895,7 +26892,7 @@ void Player::InitializeSelfResurrectionSpells()
         if ((*itr)->GetSpellInfo()->SpellFamilyName == SPELLFAMILY_WARLOCK && (*itr)->GetSpellInfo()->SpellFamilyFlags[1] & 0x1000000)
             spells[0] = 3026;
         // Twisting Nether                                  // prio: 2 (max)
-        else if ((*itr)->GetId() == 23701 && roll_chance_i(10))
+        else if ((*itr)->GetId() == 23701 && roll_chance(10))
             spells[1] = 23700;
     }
 
@@ -27631,12 +27628,12 @@ uint8 Player::GetRunesState() const
 
 uint32 Player::GetRuneBaseCooldown() const
 {
-    float cooldown = RUNE_BASE_COOLDOWN;
+    double cooldown = RUNE_BASE_COOLDOWN;
 
     AuraEffectList const& regenAura = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
     for (AuraEffectList::const_iterator i = regenAura.begin();i != regenAura.end(); ++i)
         if ((*i)->GetMiscValue() == POWER_RUNES)
-            cooldown *= 1.0f - (*i)->GetAmount() / 100.0f;
+            cooldown *= 1.0 - (*i)->GetAmount() / 100.0;
 
     // Runes cooldown are now affected by player's haste from equipment ...
     float hastePct = GetRatingBonusValue(CR_HASTE_MELEE);
@@ -27646,9 +27643,9 @@ uint32 Player::GetRuneBaseCooldown() const
     hastePct += GetTotalAuraModifier(SPELL_AURA_MOD_MELEE_HASTE_2);
     hastePct += GetTotalAuraModifier(SPELL_AURA_MOD_MELEE_HASTE_3);
 
-    cooldown *=  1.0f - (hastePct / 100.0f);
+    cooldown *= 1.0f - (hastePct / 100.0f);
 
-    return cooldown;
+    return static_cast<float>(cooldown);
 }
 
 void Player::SetRuneCooldown(uint8 index, uint32 cooldown)
@@ -28049,7 +28046,7 @@ void Player::HandleFall(MovementInfo const& movementInfo)
         !HasAuraType(SPELL_AURA_FLY) && !IsImmunedToDamage(SPELL_SCHOOL_MASK_NORMAL))
     {
         //Safe fall, fall height reduction
-        int32 safe_fall = GetTotalAuraModifier(SPELL_AURA_SAFE_FALL);
+        float safe_fall = GetTotalAuraModifier(SPELL_AURA_SAFE_FALL);
 
         float damageperc = 0.018f*(z_diff-safe_fall)-0.2426f;
 

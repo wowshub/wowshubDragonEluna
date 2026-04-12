@@ -239,6 +239,9 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    // Mark all realms as offline on bnetserver startup - worldserver will clear this flag when ready
+    LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag | {}", Trinity::Legacy::REALM_FLAG_OFFLINE);
+
     // Get the list of realms for the server
     sRealmList->Initialize(*ioContext, sConfigMgr->GetIntDefault("RealmsStateUpdateDelay", 10));
 
