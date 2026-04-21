@@ -214,12 +214,9 @@ Player::Player(WorldSession* session) : Unit(true), m_sceneMgr(this)
 
     m_atLoginFlags = AT_LOGIN_NONE;
 
-    mSemaphoreTeleport_Near = false;
-    mSemaphoreTeleport_Far = false;
-
     m_DelayedOperations = 0;
     m_bCanDelayTeleport = false;
-    m_bHasDelayedTeleport = false;
+    m_teleport_state = TeleportState::NotTeleporting;
     m_teleport_options = TELE_TO_NONE;
     m_teleportSpellId = 0;
     m_newWorldCounter = 0;
@@ -1159,8 +1156,11 @@ void Player::Update(uint32 p_time)
 
     //we should execute delayed teleports only for alive(!) players
     //because we don't want player's ghost teleported from graveyard
-    if (IsHasDelayedTeleport() && IsAlive())
+    if ((GetTeleportState() == TeleportState::DelayedTeleport || GetTeleportState() == TeleportState::DelayedWorldPort) && IsAlive())
+    {
+        SetTeleportState(TeleportState::NotTeleporting); // skip state check inside TeleportTo
         TeleportTo(m_teleport_dest, m_teleport_options, m_teleportSpellId);
+	}
 
     if (_justPassedBarberChecks)
         _justPassedBarberChecks = false;
@@ -1290,6 +1290,9 @@ bool Player::TeleportTo(TeleportLocation const& teleportLocation, TeleportToOpti
         return false;
     }
 
+    if (GetTeleportState() != TeleportState::NotTeleporting)
+        return false;
+
     // preparing unsummon pet if lost (we must get pet before teleportation or will not find it later)
     Pet* pet = GetPet();
 
@@ -1341,15 +1344,12 @@ bool Player::TeleportTo(TeleportLocation const& teleportLocation, TeleportToOpti
 
     if (GetMapId() == teleportLocation.Location.GetMapId() && (!teleportLocation.InstanceId || GetInstanceId() == teleportLocation.InstanceId))
     {
-        //lets reset far teleport flag if it wasn't reset during chained teleport
-        SetSemaphoreTeleportFar(false);
-        //setup delayed teleport flag
-        SetDelayedTeleportFlag(IsCanDelayTeleport());
+        SetTeleportState(TeleportState::Initiated);
         //if teleport spell is cast in Unit::Update() func
         //then we need to delay it until update process will be finished
-        if (IsHasDelayedTeleport())
+        if (IsCanDelayTeleport())
         {
-            SetSemaphoreTeleportNear(true);
+            SetTeleportState(TeleportState::DelayedTeleport);
             //lets save teleport destination for player
             m_teleport_dest = teleportLocation;
             m_teleport_options = options;
@@ -1378,16 +1378,13 @@ bool Player::TeleportTo(TeleportLocation const& teleportLocation, TeleportToOpti
 
         // code for finish transfer called in WorldSession::HandleMovementOpcodes()
         // at client packet CMSG_MOVE_TELEPORT_ACK
-        SetSemaphoreTeleportNear(true);
+        SetTeleportState(TeleportState::WaitingForTeleportAck);
         // near teleport, triggering send CMSG_MOVE_TELEPORT_ACK from client at landing
         if (!GetSession()->PlayerLogout())
             SendTeleportPacket(m_teleport_dest);
     }
     else
     {
-        if (IsBeingTeleportedFar())
-            return false;
-
         if (GetClass() == CLASS_DEATH_KNIGHT && GetMapId() == 609 && !IsGameMaster() && !HasSpell(50977))
         {
             SendTransferAborted(teleportLocation.Location.GetMapId(), TRANSFER_ABORT_UNIQUE_MESSAGE, 1);
@@ -1412,21 +1409,18 @@ bool Player::TeleportTo(TeleportLocation const& teleportLocation, TeleportToOpti
             !((oldmap->GetEntry()->CosmeticParentMapID != -1) ^ (oldmap->GetEntry()->CosmeticParentMapID != mEntry->CosmeticParentMapID))))
             options &= ~TELE_TO_SEAMLESS;
 
-        //lets reset near teleport flag if it wasn't reset during chained teleports
-        SetSemaphoreTeleportNear(false);
-        //setup delayed teleport flag
-        SetDelayedTeleportFlag(IsCanDelayTeleport());
+        SetTeleportState(TeleportState::Initiated);
         //if teleport spell is cast in Unit::Update() func
         //then we need to delay it until update process will be finished
-        if (IsHasDelayedTeleport())
+        if (IsCanDelayTeleport())
         {
             //lets save teleport destination for player
+            SetTeleportState(TeleportState::DelayedWorldPort);
             m_teleport_dest = teleportLocation;
             m_teleport_options = options;
             m_teleportSpellId = teleportSpellId;
             return true;
         }
-        SetSemaphoreTeleportFar(true);
 
         SetSelection(ObjectGuid::Empty);
 
@@ -1507,6 +1501,8 @@ bool Player::TeleportTo(TeleportLocation const& teleportLocation, TeleportToOpti
         // if the player is saved before worldportack (at logout for example)
         // this will be used instead of the current location in SaveToDB
 
+        SetTeleportState(TeleportState::WaitingForSuspendTokenResponse);
+
         if (!GetSession()->PlayerLogout())
         {
             ++m_newWorldCounter;
@@ -1516,10 +1512,6 @@ bool Player::TeleportTo(TeleportLocation const& teleportLocation, TeleportToOpti
             suspendToken.Reason = options & TELE_TO_SEAMLESS ? 2 : 1;
             SendDirectMessage(suspendToken.Write());
         }
-
-        // move packet sent by client always after far teleport
-        // code for finish transfer to new map called in WorldSession::HandleMoveWorldportAckOpcode at client packet
-        SetSemaphoreTeleportFar(true);
     }
     return true;
 }
@@ -12285,8 +12277,7 @@ void Player::SetVisibleItemSlot(uint8 slot, Item const* item)
 
                 auto getSecondaryItemModifiedAppearance = [isTransmogDisplayed](UF::TransmogOutfitSlotData const& secondaryTransmogOutfitItem) -> int32
                 {
-                    if (isTransmogDisplayed(static_cast<TransmogOutfitDisplayType>(*secondaryTransmogOutfitItem.AppearanceDisplayType))
-                        || static_cast<TransmogOutfitDisplayType>(*secondaryTransmogOutfitItem.AppearanceDisplayType) == TransmogOutfitDisplayType::Equipped)
+                    if (isTransmogDisplayed(static_cast<TransmogOutfitDisplayType>(*secondaryTransmogOutfitItem.AppearanceDisplayType)))
                     {
                         if (ItemModifiedAppearanceEntry const* itemModifiedAppearance = sItemModifiedAppearanceStore.LookupEntry(secondaryTransmogOutfitItem.ItemModifiedAppearanceID))
                         {
@@ -12300,11 +12291,19 @@ void Player::SetVisibleItemSlot(uint8 slot, Item const* item)
 
                 if (TransmogOutfitSlotInfoEntry const* secondarySlot = sTransmogOutfitSlotInfoStore.LookupEntry(slotInfo->Slot->SecondarySlotID))
                     if (TransmogMgr::TransmogOutfitSlotAndOptionInfo const* secondarySlotInfo = TransmogMgr::GetSlotAndOption(secondarySlot->GetSlot(), transmogSlotOption))
-                        secondaryItemModifiedAppearanceId = getSecondaryItemModifiedAppearance(m_activePlayerData->ViewedOutfit->Slots[secondarySlotInfo->SlotIndex]);
+                    {
+                        int32 outfitSecondary = getSecondaryItemModifiedAppearance(m_activePlayerData->ViewedOutfit->Slots[secondarySlotInfo->SlotIndex]);
+                        if (outfitSecondary)
+                            secondaryItemModifiedAppearanceId = outfitSecondary;
+                    }
 
                 if (TransmogOutfitSlotOptionEntry const* secondarySlotOption = sTransmogOutfitSlotOptionInfoStore.LookupEntry(slotInfo->SlotOption ? slotInfo->SlotOption->SecondaryOptionID : 0))
                     if (TransmogMgr::TransmogOutfitSlotAndOptionInfo const* secondarySlotInfo = TransmogMgr::GetSlotAndOption(slotInfo->Slot->GetSlot(), secondarySlotOption->GetOption()))
-                        secondaryItemModifiedAppearanceId = getSecondaryItemModifiedAppearance(m_activePlayerData->ViewedOutfit->Slots[secondarySlotInfo->SlotIndex]);
+                    {
+                        int32 outfitSecondary = getSecondaryItemModifiedAppearance(m_activePlayerData->ViewedOutfit->Slots[secondarySlotInfo->SlotIndex]);
+                        if (outfitSecondary)
+                            secondaryItemModifiedAppearanceId = outfitSecondary;
+                    }
 
                 if (secondaryItemModifiedAppearanceId)
                     hasTransmog = true;
@@ -27357,11 +27356,20 @@ int32 Player::NextGroupUpdateSequenceNumber(GroupCategory category)
     return m_groupUpdateSequences[category].UpdateSequenceNumber++;
 }
 
-void Player::ProcessTerrainStatusUpdate(ZLiquidStatus oldLiquidStatus, Optional<LiquidData> const& newLiquidData)
+void Player::ProcessPositionDataChanged(PositionFullTerrainStatus const& data)
 {
-    // process liquid auras using generic unit code
-    Unit::ProcessTerrainStatusUpdate(oldLiquidStatus, newLiquidData);
+    ZLiquidStatus oldLiquidStatus = GetLiquidStatus();
+    Unit::ProcessPositionDataChanged(data);
 
+    UpdateLiquidMirrorTimerFlagsOnPositionChange(data.liquidInfo);
+
+    // mount capability depends on liquid state change
+    if (oldLiquidStatus != GetLiquidStatus())
+        UpdateMountCapability();
+}
+
+void Player::UpdateLiquidMirrorTimerFlagsOnPositionChange(Optional<LiquidData> const& newLiquidData)
+{
     m_MirrorTimerFlags &= ~(UNDERWATER_INWATER | UNDERWATER_INLAVA | UNDERWATER_INSLIME | UNDERWATER_INDARKWATER);
 
     // player specific logic for mirror timers
@@ -27374,15 +27382,31 @@ void Player::ProcessTerrainStatusUpdate(ZLiquidStatus oldLiquidStatus, Optional<
 
         // Fatigue bar state (if not on flight path or transport)
         if (newLiquidData->type_flags.HasFlag(map_liquidHeaderTypeFlags::DarkWater) && !IsInFlight() && !GetTransport())
-            m_MirrorTimerFlags |= UNDERWATER_INDARKWATER;
+        {
+            bool ignoreFatigue = false;
+            if (WmoLocation const* wmoLocation = GetCurrentWmo())
+                if (WMOAreaTableEntry const* wmoEntry = DB2Manager::GetWMOAreaTable(wmoLocation->RootId, wmoLocation->NameSetId, wmoLocation->GroupId, true))
+                    if (wmoEntry->HasFlag(WMOAreaTableFlags::IgnoreFatigue))
+                        ignoreFatigue = true;
+
+            if (Vehicle const* vehicle = GetVehicle())
+                if (VehicleSeatEntry const* vehicleSeat = vehicle->GetSeatForPassenger(this))
+                    if (vehicleSeat->HasFlag(VehicleSeatFlagsC::NoFatigue))
+                        ignoreFatigue = true;
+
+            if (!ignoreFatigue)
+                m_MirrorTimerFlags |= UNDERWATER_INDARKWATER;
+        }
+
+        bool const hasSafeLiquidType = newLiquidData->type_flags.HasFlag(map_liquidHeaderTypeFlags::Water | map_liquidHeaderTypeFlags::Ocean);
 
         // Lava state (any contact)
-        if (newLiquidData->type_flags.HasFlag(map_liquidHeaderTypeFlags::Magma))
+        if (newLiquidData->type_flags.HasFlag(map_liquidHeaderTypeFlags::Magma) && !hasSafeLiquidType)
             if (GetLiquidStatus() & MAP_LIQUID_STATUS_IN_CONTACT)
                 m_MirrorTimerFlags |= UNDERWATER_INLAVA;
 
         // Slime state (any contact)
-        if (newLiquidData->type_flags.HasFlag(map_liquidHeaderTypeFlags::Slime))
+        if (newLiquidData->type_flags.HasFlag(map_liquidHeaderTypeFlags::Slime) && !hasSafeLiquidType)
             if (GetLiquidStatus() & MAP_LIQUID_STATUS_IN_CONTACT)
                 m_MirrorTimerFlags |= UNDERWATER_INSLIME;
     }
@@ -30831,6 +30855,7 @@ void Player::SendPlayerChoice(ObjectGuid sender, int32 choiceId)
     displayPlayerChoice.KeepOpenAfterChoice = playerChoice->KeepOpenAfterChoice;
     displayPlayerChoice.ShowChoicesAsList = playerChoice->ShowChoicesAsList;
     displayPlayerChoice.ForceDontShowChoicesAsList = playerChoice->ForceDontShowChoicesAsList;
+    displayPlayerChoice.RequiresSelection = playerChoice->RequiresSelection;
 
     for (std::size_t i = 0; i < playerChoice->Responses.size() && (!playerChoice->MaxResponses || displayPlayerChoice.Responses.size() < *playerChoice->MaxResponses); ++i)
     {
@@ -32000,7 +32025,28 @@ void Player::EquipTransmogOutfit(uint32 id, TransmogSituationTrigger trigger, Op
     {
         for (UF::TransmogOutfitSlotData const& slot : transmogOutfit->Slots)
         {
-            uint32 slotIndex = TransmogMgr::GetSlotAndOption(static_cast<TransmogOutfitSlot>(*slot.Slot), static_cast<TransmogOutfitSlotOption>(*slot.SlotOption))->SlotIndex;
+            TransmogMgr::TransmogOutfitSlotAndOptionInfo const* slotInfo = TransmogMgr::GetSlotAndOption(static_cast<TransmogOutfitSlot>(*slot.Slot), static_cast<TransmogOutfitSlotOption>(*slot.SlotOption));
+            if (!slotInfo)
+                continue;
+
+            int32 equipSlot = slotInfo->Slot->InventorySlotEnum;
+            if (slotInfo->Slot->HasFlag(TransmogOutfitSlotFlags::IsSecondarySlot))
+            {
+                for (TransmogMgr::TransmogOutfitSlotAndOptionInfo const& primarySlotInfo : TransmogMgr::GetAllSlots())
+                {
+                    if (!primarySlotInfo.Slot->HasFlag(TransmogOutfitSlotFlags::IsSecondarySlot)
+                        && primarySlotInfo.Slot->SecondarySlotID == static_cast<int32>(slotInfo->Slot->ID))
+                    {
+                        equipSlot = primarySlotInfo.Slot->InventorySlotEnum;
+                        break;
+                    }
+                }
+            }
+
+            if (equipSlot < 0 || equipSlot >= EQUIPMENT_SLOT_END || !GetItemByPos(INVENTORY_SLOT_BAG_0, equipSlot))
+                continue;
+
+            uint32 slotIndex = slotInfo->SlotIndex;
             auto viewedOutfitSlot = viewedOutfit.ModifyValue(&UF::TransmogOutfitData::Slots, slotIndex);
             if (static_cast<TransmogOutfitDisplayType>(*slot.AppearanceDisplayType) != TransmogOutfitDisplayType::Unassigned)
             {

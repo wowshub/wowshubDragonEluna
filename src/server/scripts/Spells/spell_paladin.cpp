@@ -58,6 +58,7 @@ enum PaladinSpells
     SPELL_PALADIN_CRUSADING_STRIKES_ENERGIZE     = 406834,
     SPELL_PALADIN_DIVINE_AUXILIARY_ENERGIZE      = 408386,
     SPELL_PALADIN_DIVINE_AUXILIARY_TALENT        = 406158,
+    SPELL_PALADIN_DIVINE_TOLL                    = 375576,
     SPELL_PALADIN_DIVINE_PURPOSE_TRIGGERED       = 223819,
     SPELL_PALADIN_DIVINE_STEED_HUMAN             = 221883,
     SPELL_PALADIN_DIVINE_STEED_DWARF             = 276111,
@@ -100,6 +101,7 @@ enum PaladinSpells
     SPELL_PALADIN_INFUSION_OF_LIGHT_ENERGIZE     = 356717,
     SPELL_PALADIN_IMMUNE_SHIELD_MARKER           = 61988, // Serverside
     SPELL_PALADIN_ITEM_HEALING_TRANCE            = 37706,
+    SPELL_PALADIN_JUDGMENT                       = 20271,
     SPELL_PALADIN_JUDGMENT_GAIN_HOLY_POWER       = 220637,
     SPELL_PALADIN_JUDGMENT_RANK_3                = 315867,
     SPELL_PALADIN_LIGHT_HAMMER_COSMETIC          = 122257,
@@ -122,6 +124,10 @@ enum PaladinSpells
     SPELL_PALADIN_RIGHTEOUS_PROTECTOR            = 204074,
     SPELL_PALADIN_LIGHT_OF_THE_PROTECTOR         = 184092,
     SPELL_PALADIN_HAND_OF_THE_PROTECTOR          = 213652,
+    SPELL_PALADIN_LIGHTS_CONVICTION              = 414073,
+    SPELL_PALADIN_WORD_OF_GLORY                  = 85673,
+    SPELL_PALADIN_LIGHT_OF_THE_TITANS            = 378405,
+    SPELL_PALADIN_LIGHT_OF_THE_TITANS_HOT        = 378412,
 };
 
 enum PaladinCovenantSpells
@@ -1058,7 +1064,7 @@ class spell_pal_judgment : public SpellScript
         ({
             SPELL_PALADIN_JUDGMENT_RANK_3,
             SPELL_PALADIN_JUDGMENT_GAIN_HOLY_POWER
-        });
+            });
     }
 
     bool Load() override
@@ -1069,15 +1075,36 @@ class spell_pal_judgment : public SpellScript
     void HandleOnCast() const
     {
         Unit* caster = GetCaster();
-        caster->CastSpell(caster, SPELL_PALADIN_JUDGMENT_GAIN_HOLY_POWER, CastSpellExtraArgsInit{
-            .TriggerFlags = TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_DONT_REPORT_CAST_ERROR,
-            .TriggeringSpell = GetSpell()
-        });
+        caster->CastSpell(caster, SPELL_PALADIN_JUDGMENT_GAIN_HOLY_POWER, true);
+    }
+
+    void FilterTargets(std::list<WorldObject*>& targets)
+    {
+        if (auto* flag = std::any_cast<bool>(&GetSpell()->m_customArg))
+        {
+            if (*flag)
+            {
+                WorldObject* explicitTarget = GetExplTargetWorldObject();
+                targets.clear();
+                if (explicitTarget)
+                    targets.push_back(explicitTarget);
+                return;
+            }
+        }
+
+        if (GetSpell()->IsTriggered())
+            return;
+
+        WorldObject* explicitTarget = GetExplTargetWorldObject();
+        targets.clear();
+        if (explicitTarget)
+            targets.push_back(explicitTarget);
     }
 
     void Register() override
     {
         OnCast += SpellCastFn(spell_pal_judgment::HandleOnCast);
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pal_judgment::FilterTargets, EFFECT_2, TARGET_UNIT_DEST_AREA_ENEMY);
     }
 };
 
@@ -1226,10 +1253,23 @@ class spell_pal_holy_shock : public SpellScript
 
         if (Unit* unitTarget = GetHitUnit())
         {
-            if (caster->IsFriendlyTo(unitTarget))
-                caster->CastSpell(unitTarget, SPELL_PALADIN_HOLY_SHOCK_HEALING, GetSpell());
-            else
-                caster->CastSpell(unitTarget, SPELL_PALADIN_HOLY_SHOCK_DAMAGE, GetSpell());
+            uint32 targetSpell = caster->IsFriendlyTo(unitTarget) ? SPELL_PALADIN_HOLY_SHOCK_HEALING : SPELL_PALADIN_HOLY_SHOCK_DAMAGE;
+
+            CastSpellExtraArgs args(GetSpell());
+            if (auto* flag = std::any_cast<bool>(&GetSpell()->m_customArg))
+            {
+                if (*flag)
+                    args.SetCustomArg(true);
+            }
+
+            caster->CastSpell(unitTarget, targetSpell, args);
+
+            if (caster->HasAura(SPELL_PALADIN_LIGHTS_CONVICTION))
+            {
+                int32 manaCost = GetSpell()->GetPowerTypeCostAmount(POWER_MANA).value_or(0);
+                if (manaCost > 0)
+                    caster->ModifyPower(POWER_MANA, CalculatePct(manaCost, 50));
+            }
         }
     }
 
@@ -1249,6 +1289,15 @@ class spell_pal_holy_shock_damage_visual : public SpellScript
             && sSpellVisualStore.HasRecord(PALADIN_VISUAL_SPELL_HOLY_SHOCK_DAMAGE_CRIT);
     }
 
+    void CalculateDamage(SpellEffectInfo const&, Unit const*, int32&, int32&, float& pctMod) const
+    {
+        if (auto* flag = std::any_cast<bool>(&GetSpell()->m_customArg))
+        {
+            if (*flag)
+                AddPct(pctMod, -40);
+        }
+    }
+
     void PlayVisual()
     {
         GetCaster()->SendPlaySpellVisual(GetHitUnit(), IsHitCrit() ? PALADIN_VISUAL_SPELL_HOLY_SHOCK_DAMAGE_CRIT : PALADIN_VISUAL_SPELL_HOLY_SHOCK_DAMAGE, 0, 0, 0.0f, false);
@@ -1256,6 +1305,7 @@ class spell_pal_holy_shock_damage_visual : public SpellScript
 
     void Register() override
     {
+        CalcDamage += SpellCalcDamageFn(spell_pal_holy_shock_damage_visual::CalculateDamage);
         AfterHit += SpellHitFn(spell_pal_holy_shock_damage_visual::PlayVisual);
     }
 };
@@ -1269,6 +1319,15 @@ class spell_pal_holy_shock_heal_visual : public SpellScript
             && sSpellVisualStore.HasRecord(PALADIN_VISUAL_SPELL_HOLY_SHOCK_HEAL_CRIT);
     }
 
+    void CalculateHealing(SpellEffectInfo const&, Unit const*, int32&, int32&, float& pctMod) const
+    {
+        if (auto* flag = std::any_cast<bool>(&GetSpell()->m_customArg))
+        {
+            if (*flag)
+                AddPct(pctMod, -40);
+        }
+    }
+
     void PlayVisual()
     {
         GetCaster()->SendPlaySpellVisual(GetHitUnit(), IsHitCrit() ? PALADIN_VISUAL_SPELL_HOLY_SHOCK_HEAL_CRIT : PALADIN_VISUAL_SPELL_HOLY_SHOCK_HEAL, 0, 0, 0.0f, false);
@@ -1276,6 +1335,7 @@ class spell_pal_holy_shock_heal_visual : public SpellScript
 
     void Register() override
     {
+        CalcHealing += SpellCalcHealingFn(spell_pal_holy_shock_heal_visual::CalculateHealing);
         AfterHit += SpellHitFn(spell_pal_holy_shock_heal_visual::PlayVisual);
     }
 };
@@ -1912,6 +1972,199 @@ class spell_pal_holy_shield : public AuraScript
     }
 };
 
+// 375576 - Divine Toll
+class spell_pal_divine_toll : public SpellScript
+{
+    uint32 _holyTargetCount = 0;
+
+    bool Validate(SpellInfo const* spellInfo) override
+    {
+        return ValidateSpellInfo(
+            {
+                SPELL_PALADIN_JUDGMENT,
+                SPELL_PALADIN_AVENGERS_SHIELD,
+                SPELL_PALADIN_JUDGMENT_GAIN_HOLY_POWER,
+                SPELL_PALADIN_HOLY_SHOCK
+            }) && ValidateSpellEffect({ { spellInfo->Id, EFFECT_0 }, { spellInfo->Id, EFFECT_2 } });
+    }
+
+    void FilterTargetsEnemy(std::list<WorldObject*>& targets)
+    {
+        uint32 maxTargets = static_cast<uint32>(GetSpellInfo()->GetEffect(EFFECT_0).CalcValue()) + 1;
+
+        Player* player = GetCaster()->ToPlayer();
+        if (player && player->GetPrimarySpecialization() == ChrSpecialization::PaladinHoly)
+        {
+            targets.remove_if([this](WorldObject* obj) { return obj == GetCaster(); });
+            if (targets.size() > maxTargets)
+                targets.resize(maxTargets);
+            _holyTargetCount = static_cast<uint32>(targets.size());
+        }
+        else if (player && player->GetPrimarySpecialization() == ChrSpecialization::PaladinProtection)
+        {
+            if (!targets.empty())
+                targets.resize(1);
+        }
+        else
+        {
+            if (targets.size() > maxTargets)
+                targets.resize(maxTargets);
+        }
+    }
+
+    void FilterTargetsAlly(std::list<WorldObject*>& targets)
+    {
+        Player* player = GetCaster()->ToPlayer();
+        if (!player || player->GetPrimarySpecialization() != ChrSpecialization::PaladinHoly)
+            return;
+
+        uint32 maxTargets = static_cast<uint32>(GetSpellInfo()->GetEffect(EFFECT_0).CalcValue()) + 1;
+        targets.remove_if([this](WorldObject* obj) { return obj == GetCaster(); });
+        uint32 remaining = maxTargets > _holyTargetCount ? maxTargets - _holyTargetCount : 0;
+        if (targets.size() > remaining)
+            targets.resize(remaining);
+    }
+
+    void HandleDummyEnemy(SpellEffIndex /*effIndex*/) const
+    {
+        Unit* caster = GetCaster();
+        Player* player = caster->ToPlayer();
+        if (!player)
+            return;
+
+        if (player->GetPrimarySpecialization() == ChrSpecialization::PaladinRetribution)
+        {
+            if (Unit* target = GetHitUnit())
+                caster->CastSpell(target, SPELL_PALADIN_JUDGMENT, CastSpellExtraArgs(GetSpell()).SetCustomArg(true));
+        }
+        else if (player->GetPrimarySpecialization() == ChrSpecialization::PaladinProtection)
+        {
+            if (Unit* target = GetHitUnit())
+                caster->CastSpell(target, SPELL_PALADIN_AVENGERS_SHIELD, CastSpellExtraArgs(GetSpell()));
+        }
+        else if (player->GetPrimarySpecialization() == ChrSpecialization::PaladinHoly)
+        {
+            if (Unit* target = GetHitUnit())
+                caster->CastSpell(target, SPELL_PALADIN_HOLY_SHOCK, CastSpellExtraArgs(GetSpell()).SetCustomArg(true));
+        }
+    }
+
+    void HandleDummyAlly(SpellEffIndex /*effIndex*/) const
+    {
+        Unit* caster = GetCaster();
+        Player* player = caster->ToPlayer();
+        if (!player || player->GetPrimarySpecialization() != ChrSpecialization::PaladinHoly)
+            return;
+
+        if (Unit* target = GetHitUnit())
+            caster->CastSpell(target, SPELL_PALADIN_HOLY_SHOCK, CastSpellExtraArgs(GetSpell()).SetCustomArg(true));
+    }
+
+    void Register() override
+    {
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pal_divine_toll::FilterTargetsEnemy, EFFECT_1, TARGET_UNIT_DEST_AREA_ENEMY);
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pal_divine_toll::FilterTargetsAlly, EFFECT_2, TARGET_UNIT_DEST_AREA_ALLY);
+        OnEffectHitTarget += SpellEffectFn(spell_pal_divine_toll::HandleDummyEnemy, EFFECT_1, SPELL_EFFECT_DUMMY);
+        OnEffectHitTarget += SpellEffectFn(spell_pal_divine_toll::HandleDummyAlly, EFFECT_2, SPELL_EFFECT_DUMMY);
+    }
+};
+
+// 31935 - Avenger's Shield
+class spell_pal_avengers_shield : public SpellScript
+{
+    void HandleOnHit(SpellEffIndex /*effIndex*/)
+    {
+        GetCaster()->CastSpell(GetCaster(), SPELL_PALADIN_JUDGMENT_GAIN_HOLY_POWER, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_pal_avengers_shield::HandleOnHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
+// 378405 - Light of the Titans
+class spell_pal_light_of_the_titans : public AuraScript
+{
+    bool Validate(SpellInfo const* spellInfo) override
+    {
+        return ValidateSpellInfo({ SPELL_PALADIN_LIGHT_OF_THE_TITANS_HOT })
+            && ValidateSpellEffect({ { SPELL_PALADIN_LIGHT_OF_THE_TITANS_HOT, EFFECT_0 }, { spellInfo->Id, EFFECT_1 } })
+            && sSpellMgr->AssertSpellInfo(SPELL_PALADIN_LIGHT_OF_THE_TITANS_HOT, DIFFICULTY_NONE)->GetEffect(EFFECT_0).GetPeriodicTickCount() > 0;
+    }
+
+    bool CheckEffectProc(AuraEffect const* /*aurEff*/, ProcEventInfo& eventInfo)
+    {
+        if (SpellInfo const* procSpell = eventInfo.GetSpellInfo())
+            return procSpell->Id == SPELL_PALADIN_WORD_OF_GLORY;
+        return false;
+    }
+
+    void HandleEffect0Proc(AuraEffect* aurEff, ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+
+        Unit* caster = eventInfo.GetActor();
+        Unit* target = eventInfo.GetProcTarget();
+        if (!caster || !target)
+            return;
+
+        SpellEffectValue healPct = GetEffectInfo(EFFECT_0).CalcValue(caster) / 100.0;
+        SpellEffectValue totalHeal = healPct * target->GetMaxHealth();
+
+        if (caster == target)
+        {
+            Unit::AuraEffectList const& periodicDamage = caster->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
+            if (!periodicDamage.empty())
+            {
+                SpellEffectValue bonusPct = GetEffectInfo(EFFECT_1).CalcValue(caster);
+                AddPct(totalHeal, bonusPct);
+            }
+        }
+
+        uint32 ticks = sSpellMgr->AssertSpellInfo(SPELL_PALADIN_LIGHT_OF_THE_TITANS_HOT, DIFFICULTY_NONE)->GetEffect(EFFECT_0).GetPeriodicTickCount();
+        SpellEffectValue healPerTick = totalHeal / ticks;
+
+        caster->CastSpell(target, SPELL_PALADIN_LIGHT_OF_THE_TITANS_HOT, CastSpellExtraArgsInit{
+            .TriggerFlags = TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_DONT_REPORT_CAST_ERROR,
+            .TriggeringAura = aurEff,
+            .SpellValueOverrides = { { SPELLVALUE_BASE_POINT0, healPerTick } }
+            });
+    }
+
+    void HandleEffect1Proc(AuraEffect* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
+    {
+        PreventDefaultAction();
+    }
+
+    void Register() override
+    {
+        DoCheckEffectProc += AuraCheckEffectProcFn(spell_pal_light_of_the_titans::CheckEffectProc, EFFECT_0, SPELL_AURA_DUMMY);
+        DoCheckEffectProc += AuraCheckEffectProcFn(spell_pal_light_of_the_titans::CheckEffectProc, EFFECT_1, SPELL_AURA_DUMMY);
+        OnEffectProc += AuraEffectProcFn(spell_pal_light_of_the_titans::HandleEffect0Proc, EFFECT_0, SPELL_AURA_DUMMY);
+        OnEffectProc += AuraEffectProcFn(spell_pal_light_of_the_titans::HandleEffect1Proc, EFFECT_1, SPELL_AURA_DUMMY);
+    }
+};
+
+// 378412 - Light of the Titans (HoT)
+class spell_pal_light_of_the_titans_hot : public AuraScript
+{
+    bool Validate(SpellInfo const* spellInfo) override
+    {
+        return ValidateSpellEffect({ { spellInfo->Id, EFFECT_0 } });
+    }
+
+    void CalculateAmount(AuraEffect const* /*aurEff*/, SpellEffectValue& /*amount*/, bool& canBeRecalculated)
+    {
+        canBeRecalculated = false;
+    }
+
+    void Register() override
+    {
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_light_of_the_titans_hot::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+    }
+};
+
 void AddSC_paladin_spell_scripts()
 {
     RegisterSpellScript(spell_pal_a_just_reward);
@@ -1972,4 +2225,8 @@ void AddSC_paladin_spell_scripts()
 
     //new
     RegisterSpellScript(spell_pal_holy_shield);
+    RegisterSpellScript(spell_pal_divine_toll);
+    RegisterSpellScript(spell_pal_avengers_shield);
+    RegisterSpellScript(spell_pal_light_of_the_titans);
+    RegisterSpellScript(spell_pal_light_of_the_titans_hot);
 }

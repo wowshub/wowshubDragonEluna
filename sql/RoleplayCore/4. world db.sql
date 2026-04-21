@@ -530,6 +530,11 @@ REPLACE INTO `areatrigger_scripts` VALUES (1489, 'at_pri_power_word_barrier');
 -- ----------------------------
 REPLACE INTO `spell_script_names` VALUES (85043, 'spell_pal_grand_crusader');
 REPLACE INTO `spell_script_names` VALUES (152261, 'spell_pal_holy_shield');
+REPLACE INTO `spell_script_names` VALUES (375576, 'spell_pal_divine_toll');
+REPLACE INTO `spell_script_names` VALUES (31935, 'spell_pal_avengers_shield');
+REPLACE INTO `spell_script_names` VALUES (378405, 'spell_pal_light_of_the_titans');
+REPLACE INTO `spell_script_names` VALUES (378412, 'spell_pal_light_of_the_titans_hot');
+REPLACE INTO `spell_linked_spell` VALUES (321136, 327510, 2, 'Shining Light aura');
 
 -- ----------------------------
 -- Monk spell fixes
@@ -681,6 +686,8 @@ REPLACE INTO `areatrigger_scripts` VALUES (9695, 'at_demon_hunter_mana_rift');
 REPLACE INTO `areatrigger_scripts` VALUES (6482, 'at_demon_hunter_demonic_trample');
 
 REPLACE INTO `areatrigger_create_properties` VALUES (6482, 1, 11107, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'at_demon_hunter_demonic_trample', 40120);
+REPLACE INTO `areatrigger_scripts` VALUES (1266619, 'spell_first_in_last_out');
+REPLACE INTO `areatrigger_scripts` VALUES (1266497, 'spell_first_in_last_out'); -- It is necessary to protect against false alarms and auras.
 
 -- ----------------------------
 -- Druid spell fixes
@@ -705,6 +712,12 @@ REPLACE INTO `creature_template` VALUES (102199, 0, 0, 'Stampede', '', '', NULL,
 REPLACE INTO `creature_template` VALUES (73967, 0, 0, 'Niuzao', '', '', NULL, '', 0, 0, 35, 0, 1, 0.857143, 1, 0, 0, 1989, 2000, 1, 1, 1, 32768, 2048, 0, 0, 0, 1, 0, '', 0, 1, 0, 121, 0, 0, 1, 0, 0, '', NULL, 53040);
 
 ALTER TABLE `scrapping_loot_template` ADD `ItemType` tinyint NOT NULL DEFAULT 0 AFTER `Entry`;
+
+REPLACE INTO `spell_linked_spell` VALUES (297744, 297871, 2, 'Transport item - Water Striders');
+REPLACE INTO `spell_linked_spell` VALUES (297729, 299712, 2, 'Transport item - Light-Step Hoofplates');
+REPLACE INTO `spell_linked_spell` VALUES (299293, 300027, 2, 'Transport item - Comfortable Rider Barding');
+REPLACE INTO `spell_linked_spell` VALUES (296790, 296863, 2, 'Transport item - Inflatable Mount Shoes');
+REPLACE INTO `spell_linked_spell` VALUES (297090, 300031, 2, 'Transport item - Saddlechute');
 
 -- ----------------------------
 -- Toys fix
